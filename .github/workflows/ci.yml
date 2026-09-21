@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    name: Lint, typecheck, tests
+    runs-on: ubuntu-latest
+    env:
+      # Tests run against an in-memory Postgres; the app only needs a well-formed URL to compile.
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5433/postgres
+      AUTH_SECRET: ci-only-not-a-real-secret
+      TEACHER_INVITE_CODE: ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test

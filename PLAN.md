@@ -293,7 +293,7 @@ Key idea, again: **questions are independent records; assessments point at them.
 
 ## 9. Phased roadmap (revised)
 
-**Phase 0 — Foundation (1–2 weekends)**
+**Phase 0 — Foundation (1–2 weekends)** — *complete locally, Sept 21, 2026 (Tickets 0.1–0.9, 0.11; Vercel deploy in 0.10 pending Neon + Vercel credentials)*
 Repo, Next.js + Tailwind + shadcn scaffold, Neon project + Drizzle schema/migrations, server-side authorization layer with tests, Auth.js email/password for teacher + student, design tokens, dashboard shell.
 *Outcome:* both teachers can log in; a student account can be created.
 
