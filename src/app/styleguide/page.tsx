@@ -44,9 +44,9 @@ export default function StyleguidePage() {
   return (
     <main className="mx-auto w-full max-w-5xl px-5 py-10">
       <header className="mb-10">
-        <p className="text-brand-deep text-xs font-medium tracking-wide uppercase">Bloom</p>
+        <p className="text-xs font-medium tracking-wide text-brand-deep uppercase">Bloom</p>
         <h1 className="mt-1 text-3xl">Style guide</h1>
-        <p className="text-muted-foreground mt-2 max-w-prose">
+        <p className="mt-2 max-w-prose text-muted-foreground">
           The tokens from PLAN.md §5 as they render through Tailwind and shadcn. Teal carries
           structure and selection, coral is reserved for the one action that matters, and green,
           amber, and red are status only.
@@ -56,7 +56,7 @@ export default function StyleguidePage() {
       <Section title="Color">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
           {swatches.map((s) => (
-            <div key={s.name} className="border-border overflow-hidden rounded-lg border">
+            <div key={s.name} className="overflow-hidden rounded-lg border border-border">
               <div className={`${s.token} ${s.text} flex h-20 items-end p-3 text-xs font-medium`}>
                 {s.hex}
               </div>
@@ -67,7 +67,7 @@ export default function StyleguidePage() {
       </Section>
 
       <Section title="Type">
-        <div className="bg-card border-border space-y-4 rounded-lg border p-6">
+        <div className="space-y-4 rounded-lg border border-border bg-card p-6">
           <h1 className="text-3xl">Heading 1 · Lexend 600</h1>
           <h2 className="text-2xl">Heading 2 · Unit 2 Test · Cell transport</h2>
           <h3 className="text-lg">Heading 3 · Needed before your retake</h3>
@@ -75,17 +75,15 @@ export default function StyleguidePage() {
             Body · Inter 400 at 15px for question stems. A red blood cell is placed in a beaker of
             solution. Which best describes the solution in the beaker?
           </p>
-          <p className="text-muted-foreground max-w-prose text-sm">
+          <p className="max-w-prose text-sm text-muted-foreground">
             Muted · Inter 400 at 14px. Attempt 1: 37/40 · retake window closes Fri Oct 16
           </p>
-          <p className="tabular text-sm">
-            Tabular numerals: 1,284 questions · 23:41 · 92.5%
-          </p>
+          <p className="text-sm tabular">Tabular numerals: 1,284 questions · 23:41 · 92.5%</p>
         </div>
       </Section>
 
       <Section title="Buttons">
-        <div className="bg-card border-border flex flex-wrap items-center gap-3 rounded-lg border p-6">
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card p-6">
           <Button>Start retake</Button>
           <Button variant="secondary">Resume</Button>
           <Button variant="outline">Previous</Button>
@@ -99,7 +97,7 @@ export default function StyleguidePage() {
       </Section>
 
       <Section title="Badges and status pills">
-        <div className="bg-card border-border space-y-4 rounded-lg border p-6">
+        <div className="space-y-4 rounded-lg border border-border bg-card p-6">
           <div className="flex flex-wrap gap-2">
             <Badge>Summative</Badge>
             <Badge variant="secondary">Formative</Badge>
@@ -114,13 +112,13 @@ export default function StyleguidePage() {
             ))}
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="bg-brand-soft text-brand-deep inline-flex h-6 items-center rounded-md px-2 text-xs font-medium">
+            <span className="inline-flex h-6 items-center rounded-md bg-brand-soft px-2 text-xs font-medium text-brand-deep">
               LT2 · Diffusion &amp; osmosis
             </span>
-            <span className="bg-coral-soft inline-flex h-6 items-center rounded-md px-2 text-xs font-medium text-[#B93E27]">
+            <span className="inline-flex h-6 items-center rounded-md bg-coral-soft px-2 text-xs font-medium text-[#B93E27]">
               LT4 · 70% · required
             </span>
-            <span className="bg-muted text-muted-foreground inline-flex h-6 items-center rounded-md px-2 text-xs font-medium">
+            <span className="inline-flex h-6 items-center rounded-md bg-muted px-2 text-xs font-medium text-muted-foreground">
               LT3 · 90% · optional
             </span>
           </div>
@@ -162,13 +160,13 @@ export default function StyleguidePage() {
                   <TabsTrigger value="practice">Practice</TabsTrigger>
                   <TabsTrigger value="results">My results</TabsTrigger>
                 </TabsList>
-                <TabsContent value="assignments" className="text-muted-foreground pt-3 text-sm">
+                <TabsContent value="assignments" className="pt-3 text-sm text-muted-foreground">
                   Nothing assigned yet. When your teacher opens a quiz or test, it shows up here.
                 </TabsContent>
-                <TabsContent value="practice" className="text-muted-foreground pt-3 text-sm">
+                <TabsContent value="practice" className="pt-3 text-sm text-muted-foreground">
                   Practice is always open and never graded.
                 </TabsContent>
-                <TabsContent value="results" className="text-muted-foreground pt-3 text-sm">
+                <TabsContent value="results" className="pt-3 text-sm text-muted-foreground">
                   Your highest score always counts.
                 </TabsContent>
               </Tabs>

@@ -8,3 +8,4 @@ next-env.d.ts
 
 # Markdown docs are hand-written specs; never reformat them
 *.md
+drizzle/meta
