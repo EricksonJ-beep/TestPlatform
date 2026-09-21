@@ -300,3 +300,10 @@ export function withAuthzRoute<Ctx = unknown>(handler: RouteHandler<Ctx>): Route
 export function publicRoute<Ctx = unknown>(handler: RouteHandler<Ctx>): RouteHandler<Ctx> {
   return handler;
 }
+
+/** Marks a server action as intentionally unauthenticated (login, signup, logout). Use sparingly. */
+export function publicAction<A extends unknown[], T>(
+  fn: (...args: A) => Promise<T>
+): (...args: A) => Promise<T> {
+  return fn;
+}

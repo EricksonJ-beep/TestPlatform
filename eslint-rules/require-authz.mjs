@@ -46,8 +46,9 @@ function containsCall(root, predicate) {
 }
 
 const hasGuard = (node) => containsCall(node, (c) => GUARDS.has(calleeName(c) ?? ""));
+const PUBLIC_MARKERS = new Set(["publicRoute", "publicAction"]);
 const isPublic = (node) =>
-  node && node.type === "CallExpression" && calleeName(node) === "publicRoute";
+  node && node.type === "CallExpression" && PUBLIC_MARKERS.has(calleeName(node) ?? "");
 
 const requireAuthz = {
   meta: {
@@ -59,7 +60,7 @@ const requireAuthz = {
     schema: [],
     messages: {
       missing:
-        "`{{name}}` touches the server without an authorization guard. Call requireTeacher()/requireOwner()/requireStudent()/... first, or wrap an intentionally public handler in publicRoute().",
+        "`{{name}}` touches the server without an authorization guard. Call requireTeacher()/requireOwner()/requireStudent()/... first, or wrap an intentionally public handler in publicRoute() / publicAction().",
     },
   },
   create(context) {

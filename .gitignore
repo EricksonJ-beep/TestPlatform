@@ -42,3 +42,6 @@ next-env.d.ts
 
 # local dev database (PGlite) and drizzle output
 /.pglite/
+
+# keep the example env file
+!.env.example

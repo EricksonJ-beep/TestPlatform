@@ -1,44 +1,48 @@
 /**
  * Drizzle database client.
  *
- * Production / any env with DATABASE_URL: Neon serverless over HTTP.
- * Local dev without DATABASE_URL: an embedded PGlite Postgres in ./.pglite so the
- * app, migrations, seed, and tests run with no external service.
+ * DATABASE_URL decides the driver:
+ *   - a Neon host (…neon.tech) → @neondatabase/serverless over HTTP (Vercel + Neon)
+ *   - anything else            → node-postgres Pool (local dev against `npm run db:local`,
+ *                                which serves an embedded PGlite Postgres on 127.0.0.1:5433)
  *
- * Server-only: import this from server components, server actions, route
- * handlers, and scripts. Never from a "use client" module.
+ * Server-only: import from server components, server actions, route handlers,
+ * and scripts. Never from a "use client" module.
  */
+import { neon } from "@neondatabase/serverless";
+import { drizzle as drizzleNeon } from "drizzle-orm/neon-http";
+import { drizzle as drizzlePg } from "drizzle-orm/node-postgres";
 import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
+import { Pool } from "pg";
 import * as schema from "./schema";
 
 export type Db = PgDatabase<PgQueryResultHKT, typeof schema>;
-export type DbDriver = "neon" | "pglite";
+export type DbDriver = "neon" | "pg";
 
 declare global {
-  // Survive Next.js dev hot reloads without opening a second PGlite on the same directory.
+  // Survive Next.js dev hot reloads without opening a new pool each time.
   var __bloomDb: { db: Db; driver: DbDriver } | undefined;
 }
 
-export const PGLITE_DIR = process.env.PGLITE_DIR ?? ".pglite";
-
-async function createDb(): Promise<{ db: Db; driver: DbDriver }> {
-  const url = process.env.DATABASE_URL;
-  if (url && url.trim() !== "") {
-    const { neon } = await import("@neondatabase/serverless");
-    const { drizzle } = await import("drizzle-orm/neon-http");
-    const client = neon(url);
-    return { db: drizzle({ client, schema }) as unknown as Db, driver: "neon" };
-  }
-  if (process.env.NODE_ENV === "production" && !process.env.ALLOW_PGLITE_IN_PRODUCTION) {
-    throw new Error("DATABASE_URL is not set. Add the Neon pooled connection string.");
-  }
-  const { PGlite } = await import("@electric-sql/pglite");
-  const { drizzle } = await import("drizzle-orm/pglite");
-  const client = new PGlite(PGLITE_DIR);
-  return { db: drizzle({ client, schema }) as unknown as Db, driver: "pglite" };
+export function isNeonUrl(url: string): boolean {
+  return /neon\.tech/i.test(url) || process.env.DB_DRIVER === "neon";
 }
 
-const instance = globalThis.__bloomDb ?? (await createDb());
+function createDb(): { db: Db; driver: DbDriver } {
+  const url = process.env.DATABASE_URL?.trim();
+  if (!url) {
+    throw new Error(
+      "DATABASE_URL is not set. Locally: run `npm run db:local` and use the URL from .env.example. On Vercel: paste the Neon pooled connection string."
+    );
+  }
+  if (isNeonUrl(url)) {
+    return { db: drizzleNeon({ client: neon(url), schema }) as unknown as Db, driver: "neon" };
+  }
+  const pool = new Pool({ connectionString: url, max: 4 });
+  return { db: drizzlePg({ client: pool, schema }) as unknown as Db, driver: "pg" };
+}
+
+const instance = globalThis.__bloomDb ?? createDb();
 if (process.env.NODE_ENV !== "production") globalThis.__bloomDb = instance;
 
 export const db: Db = instance.db;
