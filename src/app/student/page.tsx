@@ -1,19 +1,60 @@
+import { BarChart3, ClipboardList, Layers } from "lucide-react";
 import { requireStudent } from "@/lib/authz";
-import { logoutAction } from "@/app/(auth)/actions";
-import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/empty-state";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-// Placeholder until Ticket 0.7 builds the student shell.
 export default async function StudentHome() {
   const session = await requireStudent();
+  const attention = 0; // Phase 1: count of assignments needing action
+
   return (
-    <main className="mx-auto max-w-3xl px-6 py-12">
-      <h1 className="text-2xl">Hi, {session.firstName}</h1>
-      <p className="mt-2 text-muted-foreground">Student home arrives in Ticket 0.7.</p>
-      <form action={logoutAction} className="mt-6">
-        <Button variant="outline" type="submit">
-          Log out
-        </Button>
-      </form>
-    </main>
+    <div className="flex flex-col gap-5">
+      <div>
+        <h1 className="text-2xl">Hi, {session.firstName}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {attention === 0
+            ? "Nothing needs your attention right now."
+            : `${attention} ${attention === 1 ? "thing needs" : "things need"} your attention.`}
+        </p>
+      </div>
+
+      <Tabs defaultValue="assignments">
+        <TabsList className="w-full justify-start sm:w-auto">
+          <TabsTrigger value="assignments">Assignments</TabsTrigger>
+          <TabsTrigger value="practice">Practice</TabsTrigger>
+          <TabsTrigger value="results">My results</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="assignments">
+          <div className="rounded-lg border border-border bg-card">
+            <EmptyState
+              icon={ClipboardList}
+              title="No assignments yet"
+              description="When your teacher opens a quiz or test for your class, it shows up here with a Start button."
+            />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="practice">
+          <div className="rounded-lg border border-border bg-card">
+            <EmptyState
+              icon={Layers}
+              title="Practice is always open"
+              description="Practice sets and relearning activities never count against you. Your teacher hasn't published any yet."
+            />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="results">
+          <div className="rounded-lg border border-border bg-card">
+            <EmptyState
+              icon={BarChart3}
+              title="No results yet"
+              description="After you finish something, every attempt lands here. Your highest score always counts."
+            />
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 }
