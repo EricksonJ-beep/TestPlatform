@@ -139,7 +139,7 @@ export function BankHeader({
             ) : (
               <Archive data-icon="inline-start" aria-hidden />
             )}
-            {bank.isArchived ? "Restore" : "Archive"}
+            {bank.isArchived ? "Restore bank" : "Archive bank"}
           </Button>
         </>
       ) : null}

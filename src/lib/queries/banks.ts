@@ -156,6 +156,8 @@ export type QuestionFilters = {
   difficulty?: number;
   bloom?: string;
   tag?: string;
+  /** Show archived questions instead of live ones. */
+  archived?: boolean;
 };
 
 export type BankQuestionRow = {
@@ -190,7 +192,10 @@ export async function listBankQuestions(
   bankId: string,
   f: QuestionFilters = {}
 ): Promise<BankQuestionRow[]> {
-  const conds = [eq(schema.questions.bankId, bankId), eq(schema.questions.isArchived, false)];
+  const conds = [
+    eq(schema.questions.bankId, bankId),
+    eq(schema.questions.isArchived, f.archived === true),
+  ];
   if (f.type) conds.push(sql`${schema.questions.type} = ${f.type}`);
   if (f.difficulty) conds.push(eq(schema.questions.difficulty, f.difficulty));
   if (f.bloom) conds.push(sql`${schema.questions.bloom} = ${f.bloom}`);
@@ -277,4 +282,109 @@ export async function listBankTags(bankId: string): Promise<string[]> {
     .from(schema.questions)
     .where(and(eq(schema.questions.bankId, bankId), eq(schema.questions.isArchived, false)));
   return rows.map((r) => r.tag).sort();
+}
+
+// ---------------------------------------------------------------------------
+// One question for the editor (Ticket 1.3)
+// ---------------------------------------------------------------------------
+
+export type QuestionForEdit = {
+  id: string;
+  bankId: string;
+  type: (typeof schema.questionType.enumValues)[number];
+  stem: string;
+  explanation: string | null;
+  points: number;
+  difficulty: number;
+  bloom: (typeof schema.bloomLevel.enumValues)[number] | null;
+  grading: "auto" | "manual";
+  gradingConfig: unknown;
+  topic: string | null;
+  unitId: string | null;
+  tags: string[];
+  notes: string | null;
+  mediaUrl: string | null;
+  videoUrl: string | null;
+  stimulusId: string | null;
+  externalId: string | null;
+  version: number;
+  isArchived: boolean;
+  targetIds: string[];
+  standardCodes: string[];
+  options: {
+    content: string;
+    isCorrect: boolean;
+    feedback: string | null;
+    matchText: string | null;
+    correctPosition: number | null;
+  }[];
+};
+
+export async function getQuestionForEdit(questionId: string): Promise<QuestionForEdit | null> {
+  const q = await db.query.questions.findFirst({ where: eq(schema.questions.id, questionId) });
+  if (!q) return null;
+  const [targets, stds, options] = await Promise.all([
+    db.query.questionTargets.findMany({ where: eq(schema.questionTargets.questionId, questionId) }),
+    db
+      .select({ code: schema.standards.code })
+      .from(schema.questionStandards)
+      .innerJoin(schema.standards, eq(schema.questionStandards.standardId, schema.standards.id))
+      .where(eq(schema.questionStandards.questionId, questionId)),
+    db.query.questionOptions.findMany({
+      where: eq(schema.questionOptions.questionId, questionId),
+      orderBy: (o, { asc: a }) => [a(o.sortOrder)],
+    }),
+  ]);
+  return {
+    id: q.id,
+    bankId: q.bankId,
+    type: q.type,
+    stem: q.stem,
+    explanation: q.explanation,
+    points: q.points,
+    difficulty: q.difficulty,
+    bloom: q.bloom,
+    grading: q.grading,
+    gradingConfig: q.gradingConfig,
+    topic: q.topic,
+    unitId: q.unitId,
+    tags: q.tags,
+    notes: q.notes,
+    mediaUrl: q.mediaUrl,
+    videoUrl: q.videoUrl,
+    stimulusId: q.stimulusId,
+    externalId: q.externalId,
+    version: q.version,
+    isArchived: q.isArchived,
+    targetIds: targets.map((t) => t.learningTargetId),
+    standardCodes: stds.map((s) => s.code),
+    options: options.map((o) => ({
+      content: o.content,
+      isCorrect: o.isCorrect,
+      feedback: o.feedback,
+      matchText: o.matchText,
+      correctPosition: o.correctPosition,
+    })),
+  };
+}
+
+/** Banks this teacher can move questions into: own banks on the same course (Phase 1 keeps moves course-scoped). */
+export async function listMoveTargets(
+  teacherId: string,
+  courseId: string | null,
+  excludeBankId: string
+) {
+  if (!courseId) return [];
+  return db
+    .select({ id: schema.questionBanks.id, name: schema.questionBanks.name })
+    .from(schema.questionBanks)
+    .where(
+      and(
+        eq(schema.questionBanks.ownerId, teacherId),
+        eq(schema.questionBanks.courseId, courseId),
+        eq(schema.questionBanks.isArchived, false),
+        sql`${schema.questionBanks.id} <> ${excludeBankId}`
+      )
+    )
+    .orderBy(asc(schema.questionBanks.name));
 }
