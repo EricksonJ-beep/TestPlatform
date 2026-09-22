@@ -158,6 +158,8 @@ export type QuestionFilters = {
   tag?: string;
   /** Show archived questions instead of live ones. */
   archived?: boolean;
+  /** Restrict to these ids regardless of archive state (served sets keep pointing at old versions). */
+  ids?: string[];
 };
 
 export type BankQuestionRow = {
@@ -199,10 +201,9 @@ export async function listBankQuestions(
   bankId: string,
   f: QuestionFilters = {}
 ): Promise<BankQuestionRow[]> {
-  const conds = [
-    eq(schema.questions.bankId, bankId),
-    eq(schema.questions.isArchived, f.archived === true),
-  ];
+  const conds = [eq(schema.questions.bankId, bankId)];
+  if (f.ids) conds.push(inArray(schema.questions.id, f.ids));
+  else conds.push(eq(schema.questions.isArchived, f.archived === true));
   if (f.type) conds.push(sql`${schema.questions.type} = ${f.type}`);
   if (f.difficulty) conds.push(eq(schema.questions.difficulty, f.difficulty));
   if (f.bloom) conds.push(sql`${schema.questions.bloom} = ${f.bloom}`);
