@@ -6,6 +6,7 @@ import { cn } from "cn";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -53,12 +54,14 @@ export function AccountMenu({
           <ChevronDown className="size-4 text-muted-foreground" aria-hidden />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="min-w-56">
-          <DropdownMenuLabel className="font-normal">
-            <span className="block font-medium">
-              {firstName} {lastName}
-            </span>
-            <span className="block truncate text-xs text-muted-foreground">{email}</span>
-          </DropdownMenuLabel>
+          <DropdownMenuGroup>
+            <DropdownMenuLabel className="font-normal">
+              <span className="block font-medium">
+                {firstName} {lastName}
+              </span>
+              <span className="block truncate text-xs text-muted-foreground">{email}</span>
+            </DropdownMenuLabel>
+          </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => formRef.current?.requestSubmit()}>
             <LogOut aria-hidden />

@@ -161,7 +161,7 @@ function Step({
         {done ? "✓" : n}
       </span>
       <span className="flex-1">{title}</span>
-      <Button variant="ghost" size="sm" render={<Link href={href} />}>
+      <Button variant="ghost" size="sm" nativeButton={false} render={<Link href={href} />}>
         {soon ? `${cta} (Phase 1)` : cta}
       </Button>
     </div>

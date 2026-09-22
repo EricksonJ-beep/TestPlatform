@@ -7,6 +7,7 @@ import { BookOpen, Check, ChevronsUpDown, Settings2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -43,14 +44,18 @@ export function CourseSwitcher({
         <ChevronsUpDown className="size-4 text-muted-foreground" aria-hidden />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-56">
-        <DropdownMenuLabel>Course</DropdownMenuLabel>
-        {courses.map((c) => (
-          <DropdownMenuItem key={c.id} onClick={() => choose(c.id)}>
-            <span className="flex-1 truncate">{c.name}</span>
-            {current?.id === c.id ? <Check aria-hidden /> : null}
-          </DropdownMenuItem>
-        ))}
-        {courses.length === 0 ? <DropdownMenuItem disabled>No courses yet</DropdownMenuItem> : null}
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>Course</DropdownMenuLabel>
+          {courses.map((c) => (
+            <DropdownMenuItem key={c.id} onClick={() => choose(c.id)}>
+              <span className="flex-1 truncate">{c.name}</span>
+              {current?.id === c.id ? <Check aria-hidden /> : null}
+            </DropdownMenuItem>
+          ))}
+          {courses.length === 0 ? (
+            <DropdownMenuItem disabled>No courses yet</DropdownMenuItem>
+          ) : null}
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem render={<Link href="/app/courses" />}>
           <Settings2 aria-hidden />
