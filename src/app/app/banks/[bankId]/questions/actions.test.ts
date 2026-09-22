@@ -268,6 +268,20 @@ describe("create", () => {
     expect(rangeBad).toMatchObject({ ok: false, status: 400 });
   });
 
+  it("accepts uploaded (/api/media) and https media URLs, rejects other strings", async () => {
+    asUser(ids.owner);
+    const proxied = "/api/media/u/" + ids.owner + "/2026/2bb3a3b1-3a0e-4a4c-9a6d-7d1a2a4d5b6c.png";
+    const r = await createQuestion(
+      ids.bank,
+      mc({ mediaUrl: proxied, videoUrl: "https://youtu.be/x" })
+    );
+    expect(r.ok).toBe(true);
+    if (r.ok) expect((await getQuestionForEdit(r.data.questionId))!.mediaUrl).toBe(proxied);
+    const bad = await createQuestion(ids.bank, mc({ mediaUrl: "graph.png" }));
+    expect(bad).toMatchObject({ ok: false, status: 400 });
+    if (!bad.ok) expect(bad.fieldErrors?.mediaUrl?.[0]).toMatch(/https/);
+  });
+
   it("targets must belong to the bank's course", async () => {
     asUser(ids.owner);
     await expect(createQuestion(ids.bank, mc({ targetIds: [ids.ltOther] }))).resolves.toMatchObject(

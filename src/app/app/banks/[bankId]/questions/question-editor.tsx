@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 import { cn } from "cn";
+import { MediaField } from "@/components/media/media-field";
 import { RichText } from "@/components/rich-text";
 import { TargetPicker } from "@/components/targets/target-picker";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,7 @@ export type EditorProps = {
   onSaved?: (questionId: string) => void;
   onCancel?: () => void;
   compact?: boolean;
+  storageConfigured?: boolean;
 };
 
 const EDITABLE_TYPES = IMPORTABLE_TYPES.filter(
@@ -95,6 +97,7 @@ export function QuestionEditor({
   onSaved,
   onCancel,
   compact = false,
+  storageConfigured = false,
 }: EditorProps) {
   const isEdit = !!question;
   const [type, setType] = useState<ImportableType>(
@@ -692,19 +695,23 @@ export function QuestionEditor({
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="grid gap-1.5">
-          <Label htmlFor="qe-image">Image URL</Label>
-          <Input
-            id="qe-image"
+          <MediaField
             name="mediaUrl"
-            type="url"
-            defaultValue={question?.mediaUrl ?? ""}
-            placeholder="https://… (upload arrives in Ticket 1.4)"
+            label="Image"
+            kind="image"
+            defaultUrl={question?.mediaUrl}
+            storageConfigured={storageConfigured}
           />
           <FieldError errors={fieldErrors} name="mediaUrl" />
         </div>
         <div className="grid gap-1.5">
-          <Label htmlFor="qe-video">Video URL (YouTube ok)</Label>
-          <Input id="qe-video" name="videoUrl" type="url" defaultValue={question?.videoUrl ?? ""} />
+          <MediaField
+            name="videoUrl"
+            label="Video"
+            kind="video"
+            defaultUrl={question?.videoUrl}
+            storageConfigured={storageConfigured}
+          />
           <FieldError errors={fieldErrors} name="videoUrl" />
         </div>
       </div>

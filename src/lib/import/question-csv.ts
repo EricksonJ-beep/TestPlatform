@@ -94,7 +94,8 @@ export type ParsedRow = {
   status: "ok" | "warning" | "error";
 };
 
-const ABSOLUTE_URL = /^https?:\/\//i;
+/** Absolute http(s) URLs, or media the app serves itself (/api/media/…). */
+const ABSOLUTE_URL = /^(https?:\/\/|\/api\/media\/)/i;
 
 function blank(v: string | undefined): string | null {
   const s = (v ?? "").trim();

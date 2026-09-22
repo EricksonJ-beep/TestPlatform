@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { isAuthzError, requireShared } from "@/lib/authz";
 import { getBank } from "@/lib/queries/banks";
+import { isStorageConfigured } from "@/lib/storage";
 import { ImportWizard } from "./import-wizard";
 
 export const metadata: Metadata = { title: "Import questions" };
@@ -34,7 +35,12 @@ export default async function ImportPage({ params }: PageProps<"/app/banks/[bank
           confirm the preview.
         </p>
       </div>
-      <ImportWizard bankId={bank.id} bankName={bank.name} courseName={bank.courseName} />
+      <ImportWizard
+        bankId={bank.id}
+        bankName={bank.name}
+        courseName={bank.courseName}
+        storageConfigured={isStorageConfigured()}
+      />
     </div>
   );
 }

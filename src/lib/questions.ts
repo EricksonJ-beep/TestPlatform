@@ -56,6 +56,19 @@ const numericSchema = z.object({
     .transform((v) => v || null),
 });
 
+/** Absolute http(s) URL or a media path the app serves itself. */
+const mediaUrl = z
+  .string()
+  .trim()
+  .max(2000)
+  .optional()
+  .nullable()
+  .or(z.literal(""))
+  .transform((v) => v || null)
+  .refine((v) => v === null || /^https?:\/\//i.test(v) || v.startsWith("/api/media/"), {
+    message: "Use a full https:// link or upload the file.",
+  });
+
 export const questionPayloadSchema = z.object({
   type: z.enum(IMPORTABLE_TYPES),
   stem: z.string().trim().min(1, "Write the question stem.").max(5000),
@@ -97,22 +110,8 @@ export const questionPayloadSchema = z.object({
     .transform((v) => v || null),
   targetIds: z.array(z.string().uuid()).max(10).default([]),
   standardCodes: z.array(z.string().trim().min(1).max(40)).max(10).default([]),
-  mediaUrl: z
-    .string()
-    .trim()
-    .url()
-    .optional()
-    .nullable()
-    .or(z.literal(""))
-    .transform((v) => v || null),
-  videoUrl: z
-    .string()
-    .trim()
-    .url()
-    .optional()
-    .nullable()
-    .or(z.literal(""))
-    .transform((v) => v || null),
+  mediaUrl,
+  videoUrl: mediaUrl,
   stimulusId: z
     .string()
     .uuid()
@@ -349,14 +348,12 @@ async function writeQuestionRow(
     );
   }
   if (p.targetIds.length) {
-    await db
-      .insert(schema.questionTargets)
-      .values(
-        Array.from(new Set(p.targetIds)).map((learningTargetId) => ({
-          questionId: q.id,
-          learningTargetId,
-        }))
-      );
+    await db.insert(schema.questionTargets).values(
+      Array.from(new Set(p.targetIds)).map((learningTargetId) => ({
+        questionId: q.id,
+        learningTargetId,
+      }))
+    );
   }
   if (standardIds.length) {
     await db
@@ -453,19 +450,17 @@ export async function duplicateQuestionRow(
     })
     .returning({ id: schema.questions.id });
   if (opts.length) {
-    await db
-      .insert(schema.questionOptions)
-      .values(
-        opts.map((o) => ({
-          questionId: n.id,
-          content: o.content,
-          isCorrect: o.isCorrect,
-          feedback: o.feedback,
-          matchText: o.matchText,
-          correctPosition: o.correctPosition,
-          sortOrder: o.sortOrder,
-        }))
-      );
+    await db.insert(schema.questionOptions).values(
+      opts.map((o) => ({
+        questionId: n.id,
+        content: o.content,
+        isCorrect: o.isCorrect,
+        feedback: o.feedback,
+        matchText: o.matchText,
+        correctPosition: o.correctPosition,
+        sortOrder: o.sortOrder,
+      }))
+    );
   }
   if (sameCourse && targets.length) {
     await db

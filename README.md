@@ -34,6 +34,16 @@ Drizzle · Auth.js v5 (email + password, bcrypt) · Vercel. Cloudflare R2 arrive
 To use the real Neon database instead, set `DATABASE_URL` in `.env.local` to the pooled Neon
 connection string; the client switches to the Neon serverless driver automatically.
 
+## Media storage (Cloudflare R2)
+
+Uploads go straight from the browser to R2 with a presigned URL, then the app records a
+`media_assets` row. Set `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, and
+`R2_BUCKET` (see `.env.example`). Add a CORS rule on the bucket that allows `PUT` from
+`http://localhost:3000` and the production URL with the `Content-Type` header. Without
+`R2_PUBLIC_URL`, files are served through `/api/media/<key>` to signed-in users only, so the
+bucket can stay private. Until the variables are set, upload buttons are disabled and the CSV
+importer keeps file names as warnings.
+
 ## Scripts
 
 | Script                | What it does                                                         |

@@ -15,6 +15,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { parseCsvRecords } from "@/lib/csv";
+import {
+  collectFiles,
+  referencedFileNames,
+  uploadReferencedMedia,
+  type MediaUploadReport,
+} from "@/lib/import/media-files";
 import { CSV_COLUMNS, missingHeaders, type RawRecord } from "@/lib/import/question-csv";
 import type { ImportPlan, ImportResult } from "@/lib/import/question-import";
 import { TYPE_LABEL } from "@/lib/question-types";
@@ -30,10 +36,12 @@ export function ImportWizard({
   bankId,
   bankName,
   courseName,
+  storageConfigured,
 }: {
   bankId: string;
   bankName: string;
   courseName: string | null;
+  storageConfigured: boolean;
 }) {
   const [step, setStep] = useState<Step>({ name: "upload" });
   const [headers, setHeaders] = useState<string[]>([]);
@@ -42,6 +50,9 @@ export function ImportWizard({
   const [editingLine, setEditingLine] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [mediaFiles, setMediaFiles] = useState<File[]>([]);
+  const [mediaReport, setMediaReport] = useState<MediaUploadReport | null>(null);
+  const [mediaProgress, setMediaProgress] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
   const preview = (h: string[], r: RawRecord[]) => {
@@ -71,9 +82,25 @@ export function ImportWizard({
       return;
     }
     setHeaders(parsed.headers);
-    setRecords(parsed.records);
     setSkipped(new Set());
-    preview(parsed.headers, parsed.records);
+    let recs = parsed.records;
+    const referenced = referencedFileNames(recs);
+    if (referenced.length && mediaFiles.length) {
+      if (!storageConfigured) {
+        setError("This CSV references files, but media storage isn't set up yet (R2_* variables).");
+      } else {
+        setMediaProgress(`Uploading 0 of ${referenced.length} files…`);
+        const files = await collectFiles(mediaFiles);
+        const r = await uploadReferencedMedia(recs, files, (d, t) =>
+          setMediaProgress(`Uploading ${d} of ${t} files…`)
+        );
+        setMediaProgress(null);
+        setMediaReport(r.report);
+        recs = r.records;
+      }
+    }
+    setRecords(recs);
+    preview(parsed.headers, recs);
   }
 
   function saveEdit(line: number, patch: RawRecord) {
@@ -188,6 +215,23 @@ export function ImportWizard({
             don&apos;t exist yet are created by name.
           </p>
         </div>
+        <div className="grid gap-1.5">
+          <Label htmlFor="media">Images and videos the CSV refers to (optional)</Label>
+          <Input
+            id="media"
+            type="file"
+            multiple
+            accept=".zip,image/*,video/*,audio/*"
+            onChange={(e) => setMediaFiles(Array.from(e.target.files ?? []))}
+            disabled={pending}
+          />
+          <p className="text-xs text-muted-foreground">
+            A zip or several files. Rows whose image_url / video_url name a file (not a link) are
+            matched by file name and uploaded first.
+            {storageConfigured ? "" : " Uploads are off until the R2_* variables are set."}
+          </p>
+        </div>
+        {mediaProgress ? <p className="text-sm text-muted-foreground">{mediaProgress}</p> : null}
         {pending ? <p className="text-sm text-muted-foreground">Checking {fileName}…</p> : null}
         {error ? (
           <p
@@ -263,6 +307,18 @@ export function ImportWizard({
           className="rounded-md bg-error-soft px-3 py-2 text-sm text-error-foreground"
         >
           {error}
+        </p>
+      ) : null}
+      {mediaReport ? (
+        <p className="rounded-lg border border-border bg-card px-4 py-2 text-sm">
+          Media: {Object.keys(mediaReport.uploaded).length} file(s) uploaded
+          {mediaReport.missing.length
+            ? `, ${mediaReport.missing.length} referenced but not provided (${mediaReport.missing.slice(0, 5).join(", ")}${mediaReport.missing.length > 5 ? "…" : ""})`
+            : ""}
+          {Object.keys(mediaReport.failed).length
+            ? `, ${Object.keys(mediaReport.failed).length} failed`
+            : ""}
+          .
         </p>
       ) : null}
 

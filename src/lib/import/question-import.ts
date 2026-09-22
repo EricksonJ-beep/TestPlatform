@@ -60,6 +60,16 @@ type Ctx = {
 
 const key = (s: string) => s.trim().toLowerCase();
 
+/** media_assets row id for a URL the app minted (uploads), else null. */
+async function assetIdForUrl(url: string | null): Promise<string | null> {
+  if (!url) return null;
+  const row = await db.query.mediaAssets.findFirst({
+    columns: { id: true },
+    where: eq(schema.mediaAssets.url, url),
+  });
+  return row?.id ?? null;
+}
+
 async function loadContext(bankId: string): Promise<Ctx> {
   const [bank] = await db
     .select({
@@ -324,6 +334,7 @@ export async function commitImport(
         title: s.ref.trim(),
         content: s.text,
         mediaUrl: s.imageUrl ?? s.videoUrl ?? null,
+        mediaAssetId: await assetIdForUrl(s.imageUrl ?? s.videoUrl ?? null),
       })
       .returning({ id: schema.stimuli.id });
     ctx.stimuli.set(k, row.id);
@@ -394,6 +405,7 @@ export async function commitImport(
           topic: row.topic,
           tags: row.tags,
           mediaUrl: row.imageUrl,
+          mediaAssetId: await assetIdForUrl(row.imageUrl),
           videoUrl: row.videoUrl,
           stimulusId,
           externalId: row.externalId,

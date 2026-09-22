@@ -5,6 +5,7 @@ import { ChevronLeft, FileUp, Library, Plus } from "lucide-react";
 import { isAuthzError, requireShared } from "@/lib/authz";
 import { getBank, listBankQuestions, listBankTags, listMoveTargets } from "@/lib/queries/banks";
 import { getCourseDetail, listCourses } from "@/lib/queries/courses";
+import { isStorageConfigured } from "@/lib/storage";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { BankHeader } from "./bank-header";
@@ -164,7 +165,7 @@ export default async function BankPage({ params, searchParams }: PageProps<"/app
           questions={questions}
           canEdit={canEdit}
           archivedView={archivedView}
-          editor={{ targets, units, moveTargets }}
+          editor={{ targets, units, moveTargets, storageConfigured: isStorageConfigured() }}
         />
       )}
     </div>

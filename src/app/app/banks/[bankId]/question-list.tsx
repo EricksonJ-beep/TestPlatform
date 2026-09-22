@@ -63,6 +63,7 @@ export type ListEditorProps = {
   targets: { id: string; code: string; title: string }[];
   units: { id: string; name: string }[];
   moveTargets: { id: string; name: string }[];
+  storageConfigured: boolean;
 };
 
 /** Question list with selection, bulk actions, and a slide-in editor. */
@@ -298,6 +299,7 @@ export function QuestionList({
                 question={editing}
                 targets={editor.targets}
                 units={editor.units}
+                storageConfigured={editor.storageConfigured}
                 compact
                 onSaved={() => setEditing(null)}
                 onCancel={() => setEditing(null)}

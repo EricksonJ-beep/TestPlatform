@@ -5,6 +5,7 @@ import { ChevronLeft, History } from "lucide-react";
 import { isAuthzError, requireShared } from "@/lib/authz";
 import { getBank, getQuestionForEdit } from "@/lib/queries/banks";
 import { getCourseDetail } from "@/lib/queries/courses";
+import { isStorageConfigured } from "@/lib/storage";
 import { questionHistory } from "@/lib/questions";
 import { RichText } from "@/components/rich-text";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -57,6 +58,7 @@ export default async function Page({
               title: t.title,
             }))}
             units={(course?.units ?? []).map((u) => ({ id: u.id, name: u.name }))}
+            storageConfigured={isStorageConfigured()}
           />
         </div>
         <Card className="h-fit">
