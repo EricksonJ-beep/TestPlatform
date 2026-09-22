@@ -16,9 +16,10 @@ jobs:
       TEACHER_INVITE_CODE: ci
     steps:
       - uses: actions/checkout@v4
+      # Node 24 ships npm 11, which wrote package-lock.json; npm 10 (Node 22) misreads its nested entries.
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
       - run: npm ci
       - run: npm run lint
