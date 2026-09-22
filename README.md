@@ -65,6 +65,11 @@ connection string; the client switches to the Neon serverless driver automatical
 
 ## Deploying (Vercel + Neon)
 
+Production: <https://bloom-iota-six.vercel.app> (Vercel project `bloom`; the Neon database was
+created through the Vercel Neon integration, so its `DATABASE_URL` is managed there). Pushes to
+`main` deploy automatically. For a fresh environment:
+
+
 1. Create a Neon project `bloom` and copy the **pooled** connection string.
 2. Import the GitHub repo into Vercel. Set `DATABASE_URL`, `AUTH_SECRET`, `AUTH_URL` (the
    production URL), and `TEACHER_INVITE_CODE`.
