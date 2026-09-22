@@ -252,6 +252,7 @@ export const questionBanks = pgTable(
     courseId: uuid("course_id").references(() => courses.id, { onDelete: "set null" }),
     name: text("name").notNull(),
     description: text("description"),
+    isArchived: boolean("is_archived").default(false).notNull(),
     ...timestamps,
   },
   (t) => [index("question_banks_owner_idx").on(t.ownerId)]
@@ -352,6 +353,7 @@ export const questions = pgTable(
       onDelete: "set null",
     }),
     mediaUrl: text("media_url"),
+    videoUrl: text("video_url"),
     stimulusId: uuid("stimulus_id").references(() => stimuli.id, { onDelete: "set null" }),
     templateId: uuid("template_id").references(() => questionTemplates.id, {
       onDelete: "set null",

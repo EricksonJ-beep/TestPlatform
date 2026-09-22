@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Share2 } from "lucide-react";
 import { requireTeacher } from "@/lib/authz";
 import { listBanksSharedWithMe } from "@/lib/queries/banks";
@@ -32,23 +33,25 @@ export default async function SharedPage() {
       ) : (
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {banks.map((b) => (
-            <li
-              key={b.id}
-              className="flex flex-col gap-2 rounded-lg border border-border bg-card p-4"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <h2 className="text-base leading-tight">{b.name}</h2>
-                <span className="shrink-0 rounded-md bg-brand-soft px-2 py-0.5 text-xs font-medium text-brand-deep">
-                  {PERMISSION_LABEL[b.permission]}
-                </span>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                From {b.ownerFirstName} {b.ownerLastName}
-                {b.description ? ` · ${b.description}` : ""}
-              </p>
-              <p className="mt-auto text-xs text-muted-foreground tabular">
-                {b.questions} {b.questions === 1 ? "question" : "questions"}
-              </p>
+            <li key={b.id}>
+              <Link
+                href={`/app/banks/${b.id}`}
+                className="flex h-full flex-col gap-2 rounded-lg border border-border bg-card p-4 transition-colors outline-none hover:border-brand/50 focus-visible:ring-3 focus-visible:ring-ring/50"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <h2 className="text-base leading-tight">{b.name}</h2>
+                  <span className="shrink-0 rounded-md bg-brand-soft px-2 py-0.5 text-xs font-medium text-brand-deep">
+                    {PERMISSION_LABEL[b.permission]}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  From {b.ownerFirstName} {b.ownerLastName}
+                  {b.description ? ` · ${b.description}` : ""}
+                </p>
+                <p className="mt-auto text-xs text-muted-foreground tabular">
+                  {b.questions} {b.questions === 1 ? "question" : "questions"}
+                </p>
+              </Link>
             </li>
           ))}
         </ul>

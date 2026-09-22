@@ -1,0 +1,1 @@
+ALTER TABLE "question_banks" ADD COLUMN "is_archived" boolean DEFAULT false NOT NULL;
