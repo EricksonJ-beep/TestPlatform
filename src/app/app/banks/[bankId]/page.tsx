@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, FileUp, Library, Plus } from "lucide-react";
+import { ChevronLeft, Eye, FileUp, Library, Plus } from "lucide-react";
 import { isAuthzError, requireShared } from "@/lib/authz";
 import { getBank, listBankQuestions, listBankTags, listMoveTargets } from "@/lib/queries/banks";
 import { getCourseDetail, listCourses } from "@/lib/queries/courses";
+import { listStimulusOptions, stimulusLabel } from "@/lib/queries/stimuli";
 import { isStorageConfigured } from "@/lib/storage";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
@@ -39,13 +40,15 @@ export default async function BankPage({ params, searchParams }: PageProps<"/app
     tag: str("tag"),
     archived: archivedView,
   };
-  const [questions, tags, course, courses, moveTargets] = await Promise.all([
+  const [questions, tags, course, courses, moveTargets, stimulusOptions] = await Promise.all([
     listBankQuestions(bank.id, filters),
     listBankTags(bank.id),
     bank.courseId ? getCourseDetail(bank.courseId) : Promise.resolve(null),
     access.access === "owner" ? listCourses(access.userId) : Promise.resolve([]),
     canEdit ? listMoveTargets(access.userId, bank.courseId, bank.id) : Promise.resolve([]),
+    bank.courseId ? listStimulusOptions(bank.courseId) : Promise.resolve([]),
   ]);
+  const stimuli = stimulusOptions.map((s) => ({ id: s.id, label: stimulusLabel(s) }));
   const targets = (course?.targets ?? []).map((t) => ({ id: t.id, code: t.code, title: t.title }));
   const units = (course?.units ?? []).map((u) => ({ id: u.id, name: u.name }));
   const filtering = [
@@ -75,6 +78,14 @@ export default async function BankPage({ params, searchParams }: PageProps<"/app
           action={
             canEdit ? (
               <>
+                <Button
+                  variant="outline"
+                  nativeButton={false}
+                  render={<Link href={`/app/banks/${bank.id}/preview`} />}
+                >
+                  <Eye data-icon="inline-start" aria-hidden />
+                  Preview
+                </Button>
                 <Button
                   variant="outline"
                   nativeButton={false}
@@ -165,7 +176,13 @@ export default async function BankPage({ params, searchParams }: PageProps<"/app
           questions={questions}
           canEdit={canEdit}
           archivedView={archivedView}
-          editor={{ targets, units, moveTargets, storageConfigured: isStorageConfigured() }}
+          editor={{
+            targets,
+            units,
+            moveTargets,
+            stimuli,
+            storageConfigured: isStorageConfigured(),
+          }}
         />
       )}
     </div>

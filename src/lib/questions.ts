@@ -278,6 +278,18 @@ async function assertCourseScoped(bank: BankCtx, targetIds: string[], unitId: st
   }
 }
 
+// Rule: a question may only share a stimulus from its bank's course.
+export async function assertStimulusInCourse(bank: BankCtx, stimulusId: string | null) {
+  if (!stimulusId) return;
+  const s = await db.query.stimuli.findFirst({
+    columns: { courseId: true },
+    where: eq(schema.stimuli.id, stimulusId),
+  });
+  if (!s || !bank.courseId || s.courseId !== bank.courseId) {
+    throw new ActionError("That stimulus isn't in this bank's course.", 400);
+  }
+}
+
 async function ensureStandards(codes: string[]): Promise<string[]> {
   const ids: string[] = [];
   for (const raw of Array.from(new Set(codes.map((c) => c.trim()).filter(Boolean)))) {
@@ -306,6 +318,7 @@ async function writeQuestionRow(
 ): Promise<string> {
   const { options, gradingConfig, grading } = validatePayload(p);
   await assertCourseScoped(bank, p.targetIds, p.unitId);
+  await assertStimulusInCourse(bank, p.stimulusId);
   const standardIds = await ensureStandards(p.standardCodes);
 
   const [q] = await db

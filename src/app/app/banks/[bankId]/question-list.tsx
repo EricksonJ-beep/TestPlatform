@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Archive, ArchiveRestore, Copy, FolderInput, Pencil, Tag } from "lucide-react";
+import { Archive, ArchiveRestore, Copy, FileText, FolderInput, Pencil, Tag } from "lucide-react";
 import { RichText } from "@/components/rich-text";
+import { StimulusPanel } from "@/components/stimulus/stimulus-panel";
 import { TargetChip } from "@/components/targets/target-chip";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,10 +28,12 @@ import {
 import { useAction } from "@/components/use-action";
 import type { BankQuestionRow, QuestionForEdit } from "@/lib/queries/banks";
 import { BLOOM_LABEL, TYPE_LABEL } from "@/lib/question-types";
+import { groupByStimulus } from "@/lib/stimulus-groups";
 import {
   bulkArchive,
   bulkDuplicate,
   bulkMove,
+  bulkSetStimulus,
   bulkTag,
   loadQuestionForEdit,
 } from "./questions/actions";
@@ -63,10 +66,11 @@ export type ListEditorProps = {
   targets: { id: string; code: string; title: string }[];
   units: { id: string; name: string }[];
   moveTargets: { id: string; name: string }[];
+  stimuli: { id: string; label: string }[];
   storageConfigured: boolean;
 };
 
-/** Question list with selection, bulk actions, and a slide-in editor. */
+/** Question list with selection, bulk actions, stimulus grouping, and a slide-in editor. */
 export function QuestionList({
   bankId,
   questions,
@@ -82,10 +86,11 @@ export function QuestionList({
 }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [editing, setEditing] = useState<QuestionForEdit | null>(null);
-  const [dialog, setDialog] = useState<"tag" | "move" | null>(null);
+  const [dialog, setDialog] = useState<"tag" | "move" | "stimulus" | null>(null);
   const { run, pending, error } = useAction();
   const ids = [...selected];
   const allSelected = questions.length > 0 && selected.size === questions.length;
+  const groups = groupByStimulus(questions);
 
   function toggleAll() {
     setSelected(allSelected ? new Set() : new Set(questions.map((q) => q.id)));
@@ -101,6 +106,117 @@ export function QuestionList({
     if (r.ok && r.data) setEditing(r.data);
   }
   const done = () => setSelected(new Set());
+
+  const row = (q: BankQuestionRow, inGroup: boolean) => {
+    const summary = gradingSummary(q);
+    return (
+      <li key={q.id} className={inGroup ? "border-l-4 border-l-brand/30" : undefined}>
+        <details className="group">
+          <summary className="flex cursor-pointer list-none items-start gap-3 px-4 py-3 text-sm hover:bg-muted/60 [&::-webkit-details-marker]:hidden">
+            {canEdit ? (
+              <input
+                type="checkbox"
+                className="mt-1 size-4 accent-brand"
+                checked={selected.has(q.id)}
+                onChange={() => toggle(q.id)}
+                onClick={(e) => e.stopPropagation()}
+                aria-label="Select question"
+              />
+            ) : null}
+            <Badge variant="secondary" className="mt-0.5 shrink-0">
+              {TYPE_LABEL[q.type]}
+            </Badge>
+            <div className="min-w-0 flex-1">
+              <RichText text={q.stem} as="p" className="line-clamp-2" />
+              <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                {q.targets.map((t) => (
+                  <TargetChip key={t.id} code={t.code} title={t.title} />
+                ))}
+                {q.tags.map((t) => (
+                  <span
+                    key={t}
+                    className="rounded-md bg-muted px-1.5 py-0.5 text-xs text-muted-foreground"
+                  >
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="shrink-0 text-right text-xs leading-5 text-muted-foreground tabular">
+              <div>
+                {q.points} {q.points === 1 ? "pt" : "pts"}
+              </div>
+              <div>
+                D{q.difficulty}
+                {q.bloom ? ` · ${BLOOM_LABEL[q.bloom]}` : ""}
+              </div>
+            </div>
+            {canEdit && !archivedView ? (
+              <Button
+                size="icon-sm"
+                variant="ghost"
+                aria-label="Edit question"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  void openEditor(q.id);
+                }}
+              >
+                <Pencil aria-hidden />
+              </Button>
+            ) : null}
+          </summary>
+          <div className="border-t border-border px-4 py-3 text-sm text-muted-foreground">
+            {q.options.length ? (
+              <ol className="mb-2 grid gap-1">
+                {q.options.map((o, i) => (
+                  <li key={i} className={o.isCorrect ? "font-medium text-success-foreground" : ""}>
+                    <span className="mr-2 tabular">{String.fromCharCode(97 + i)}.</span>
+                    <RichText text={o.content} />
+                    {o.matchText ? (
+                      <span className="text-muted-foreground"> :: {o.matchText}</span>
+                    ) : null}
+                    {o.correctPosition ? (
+                      <span className="text-muted-foreground"> (position {o.correctPosition})</span>
+                    ) : null}
+                    {o.isCorrect ? " ✓" : ""}
+                  </li>
+                ))}
+              </ol>
+            ) : null}
+            {summary ? <p className="mb-1">{summary}</p> : null}
+            {q.explanation ? (
+              <p className="mb-1">
+                <span className="font-medium">Explanation:</span> <RichText text={q.explanation} />
+              </p>
+            ) : null}
+            {q.mediaUrl ? <p className="truncate">Image: {q.mediaUrl}</p> : null}
+            {q.videoUrl ? <p className="truncate">Video: {q.videoUrl}</p> : null}
+            <p className="mt-2 flex flex-wrap items-center gap-x-3 text-xs">
+              <span>
+                {[
+                  q.topic,
+                  q.externalId ? `ID ${q.externalId}` : null,
+                  `v${q.version}`,
+                  q.grading === "manual" ? "manual grading" : "auto-graded",
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
+              {canEdit ? (
+                <Link
+                  href={`/app/banks/${bankId}/questions/${q.id}`}
+                  className="font-medium text-brand-deep hover:underline"
+                >
+                  Open full editor and history
+                </Link>
+              ) : null}
+            </p>
+          </div>
+        </details>
+      </li>
+    );
+  };
 
   return (
     <div className="flex flex-col gap-3">
@@ -124,6 +240,14 @@ export function QuestionList({
             onClick={() => setDialog("tag")}
           >
             <Tag data-icon="inline-start" aria-hidden /> Tag
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!ids.length || pending}
+            onClick={() => setDialog("stimulus")}
+          >
+            <FileText data-icon="inline-start" aria-hidden /> Stimulus
           </Button>
           <Button
             size="sm"
@@ -161,126 +285,27 @@ export function QuestionList({
         </div>
       ) : null}
 
-      <ul className="divide-y divide-border rounded-lg border border-border bg-card">
-        {questions.map((q) => {
-          const summary = gradingSummary(q);
-          return (
-            <li key={q.id}>
-              <details className="group">
-                <summary className="flex cursor-pointer list-none items-start gap-3 px-4 py-3 text-sm hover:bg-muted/60 [&::-webkit-details-marker]:hidden">
-                  {canEdit ? (
-                    <input
-                      type="checkbox"
-                      className="mt-1 size-4 accent-brand"
-                      checked={selected.has(q.id)}
-                      onChange={() => toggle(q.id)}
-                      onClick={(e) => e.stopPropagation()}
-                      aria-label="Select question"
-                    />
-                  ) : null}
-                  <Badge variant="secondary" className="mt-0.5 shrink-0">
-                    {TYPE_LABEL[q.type]}
-                  </Badge>
-                  <div className="min-w-0 flex-1">
-                    <RichText text={q.stem} as="p" className="line-clamp-2" />
-                    <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                      {q.targets.map((t) => (
-                        <TargetChip key={t.id} code={t.code} title={t.title} />
-                      ))}
-                      {q.tags.map((t) => (
-                        <span
-                          key={t}
-                          className="rounded-md bg-muted px-1.5 py-0.5 text-xs text-muted-foreground"
-                        >
-                          {t}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="shrink-0 text-right text-xs leading-5 text-muted-foreground tabular">
-                    <div>
-                      {q.points} {q.points === 1 ? "pt" : "pts"}
-                    </div>
-                    <div>
-                      D{q.difficulty}
-                      {q.bloom ? ` · ${BLOOM_LABEL[q.bloom]}` : ""}
-                    </div>
-                  </div>
-                  {canEdit && !archivedView ? (
-                    <Button
-                      size="icon-sm"
-                      variant="ghost"
-                      aria-label="Edit question"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        void openEditor(q.id);
-                      }}
-                    >
-                      <Pencil aria-hidden />
-                    </Button>
-                  ) : null}
-                </summary>
-                <div className="border-t border-border px-4 py-3 text-sm text-muted-foreground">
-                  {q.options.length ? (
-                    <ol className="mb-2 grid gap-1">
-                      {q.options.map((o, i) => (
-                        <li
-                          key={i}
-                          className={o.isCorrect ? "font-medium text-success-foreground" : ""}
-                        >
-                          <span className="mr-2 tabular">{String.fromCharCode(97 + i)}.</span>
-                          <RichText text={o.content} />
-                          {o.matchText ? (
-                            <span className="text-muted-foreground"> :: {o.matchText}</span>
-                          ) : null}
-                          {o.correctPosition ? (
-                            <span className="text-muted-foreground">
-                              {" "}
-                              (position {o.correctPosition})
-                            </span>
-                          ) : null}
-                          {o.isCorrect ? " ✓" : ""}
-                        </li>
-                      ))}
-                    </ol>
-                  ) : null}
-                  {summary ? <p className="mb-1">{summary}</p> : null}
-                  {q.explanation ? (
-                    <p className="mb-1">
-                      <span className="font-medium">Explanation:</span>{" "}
-                      <RichText text={q.explanation} />
-                    </p>
-                  ) : null}
-                  {q.mediaUrl ? <p className="truncate">Image: {q.mediaUrl}</p> : null}
-                  {q.videoUrl ? <p className="truncate">Video: {q.videoUrl}</p> : null}
-                  <p className="mt-2 flex flex-wrap items-center gap-x-3 text-xs">
-                    <span>
-                      {[
-                        q.topic,
-                        q.stimulusRef ? `Stimulus: ${q.stimulusRef}` : null,
-                        q.externalId ? `ID ${q.externalId}` : null,
-                        `v${q.version}`,
-                        q.grading === "manual" ? "manual grading" : "auto-graded",
-                      ]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </span>
-                    {canEdit ? (
-                      <Link
-                        href={`/app/banks/${bankId}/questions/${q.id}`}
-                        className="font-medium text-brand-deep hover:underline"
-                      >
-                        Open full editor and history
-                      </Link>
-                    ) : null}
-                  </p>
-                </div>
-              </details>
-            </li>
-          );
-        })}
-      </ul>
+      <div className="flex flex-col gap-3">
+        {groups.map((g) =>
+          g.stimulus ? (
+            <section key={g.key} className="rounded-lg border border-border bg-card">
+              <div className="p-3">
+                <StimulusPanel stimulus={g.stimulus} count={g.questions.length} />
+              </div>
+              <ul className="divide-y divide-border border-t">
+                {g.questions.map((q) => row(q, true))}
+              </ul>
+            </section>
+          ) : (
+            <ul
+              key={g.key}
+              className="divide-y divide-border rounded-lg border border-border bg-card"
+            >
+              {g.questions.map((q) => row(q, false))}
+            </ul>
+          )
+        )}
+      </div>
 
       <Sheet open={editing !== null} onOpenChange={(o) => !o && setEditing(null)}>
         <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-2xl">
@@ -299,6 +324,7 @@ export function QuestionList({
                 question={editing}
                 targets={editor.targets}
                 units={editor.units}
+                stimuli={editor.stimuli}
                 storageConfigured={editor.storageConfigured}
                 compact
                 onSaved={() => setEditing(null)}
@@ -341,6 +367,60 @@ export function QuestionList({
               </Button>
               <Button type="submit" disabled={pending}>
                 Add tags
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={dialog === "stimulus"} onOpenChange={(o) => !o && setDialog(null)}>
+        <DialogContent>
+          <form
+            className="flex flex-col gap-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const v = String(new FormData(e.currentTarget).get("stimulusId") ?? "");
+              run(bulkSetStimulus(bankId, ids, v || null), () => {
+                setDialog(null);
+                done();
+              });
+            }}
+          >
+            <DialogHeader>
+              <DialogTitle>
+                Shared stimulus for {ids.length} question{ids.length === 1 ? "" : "s"}
+              </DialogTitle>
+              <DialogDescription>
+                The chosen passage or graph renders once above these questions, and they stay
+                together in tests.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-1.5">
+              <Label htmlFor="bs-stim">Stimulus</Label>
+              <select
+                id="bs-stim"
+                name="stimulusId"
+                className="h-8 rounded-lg border border-input bg-background px-2 text-sm outline-none"
+              >
+                <option value="">None (detach)</option>
+                {editor.stimuli.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.label}
+                  </option>
+                ))}
+              </select>
+              {editor.stimuli.length === 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  No stimuli on this course yet. Add them from the course page → Shared stimuli.
+                </p>
+              ) : null}
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="ghost" onClick={() => setDialog(null)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={pending}>
+                Apply
               </Button>
             </DialogFooter>
           </form>

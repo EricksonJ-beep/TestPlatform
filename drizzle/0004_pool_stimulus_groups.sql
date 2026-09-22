@@ -1,0 +1,1 @@
+ALTER TABLE "question_pools" ADD COLUMN "draw_stimulus_groups" boolean DEFAULT false NOT NULL;

@@ -7,6 +7,7 @@ import { db, schema } from "@/db";
 import { ActionError, requireShared, withAuthz } from "@/lib/authz";
 import { getQuestionForEdit } from "@/lib/queries/banks";
 import {
+  assertStimulusInCourse,
   createQuestionRow,
   duplicateQuestionRow,
   fieldErrorsOf,
@@ -163,3 +164,16 @@ export const loadQuestionForEdit = withAuthz(async (bankId: string, questionId: 
   await assertAllInBank(bankId, [questionId]);
   return await getQuestionForEdit(questionId);
 });
+
+/** Attach one stimulus to many questions (or detach with null). The stimulus must be on the bank's course. */
+export const bulkSetStimulus = withAuthz(
+  async (bankId: string, questionIds: string[], stimulusId: string | null) => {
+    await requireShared({ type: "question_bank", id: bankId }, "co_edit");
+    const ids = await assertAllInBank(bankId, questionIds);
+    const bank = await loadBankCtx(bankId);
+    await assertStimulusInCourse(bank, stimulusId);
+    await db.update(schema.questions).set({ stimulusId }).where(inArray(schema.questions.id, ids));
+    revalidate(bankId);
+    return { updated: ids.length };
+  }
+);

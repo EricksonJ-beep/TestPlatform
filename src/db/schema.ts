@@ -434,6 +434,8 @@ export const questionPools = pgTable(
     courseId: uuid("course_id").references(() => courses.id, { onDelete: "set null" }),
     name: text("name").notNull(),
     description: text("description"),
+    /** When a draw picks a question that shares a stimulus, pull its whole group. */
+    drawStimulusGroups: boolean("draw_stimulus_groups").default(false).notNull(),
     ...timestamps,
   },
   (t) => [

@@ -89,6 +89,11 @@ export function PoolsPanel({
                       Not tagged to a target yet.
                     </p>
                   )}
+                  {p.drawStimulusGroups ? (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Draws whole stimulus groups
+                    </p>
+                  ) : null}
                 </div>
                 <Button
                   size="icon-xs"
@@ -154,6 +159,23 @@ export function PoolsPanel({
                 targets={targets}
                 defaultSelected={editing?.mode === "edit" ? editing.pool.targetIds : []}
               />
+              <label className="flex items-start gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  name="drawStimulusGroups"
+                  className="mt-0.5 size-4 accent-brand"
+                  defaultChecked={
+                    editing?.mode === "edit" ? editing.pool.drawStimulusGroups : false
+                  }
+                />
+                <span>
+                  Draw whole stimulus groups
+                  <span className="block text-xs text-muted-foreground">
+                    When a draw picks a question that shares a passage or graph, include the rest of
+                    its group so the stimulus is never split.
+                  </span>
+                </span>
+              </label>
             </div>
             {error && !Object.keys(fieldErrors).length ? (
               <p

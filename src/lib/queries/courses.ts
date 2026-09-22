@@ -52,6 +52,7 @@ export type PoolRow = {
   description: string | null;
   questions: number;
   targetIds: string[];
+  drawStimulusGroups: boolean;
 };
 
 export async function getCourseDetail(courseId: string) {
@@ -95,6 +96,7 @@ export async function getCourseDetail(courseId: string) {
       id: schema.questionPools.id,
       name: schema.questionPools.name,
       description: schema.questionPools.description,
+      drawStimulusGroups: schema.questionPools.drawStimulusGroups,
       questions: countDistinct(schema.poolQuestions.questionId),
       targetIds: sql<
         string[]

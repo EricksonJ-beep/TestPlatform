@@ -22,7 +22,7 @@ export function MediaField({
 }: {
   name: string;
   label: string;
-  kind: "image" | "video";
+  kind: "image" | "video" | "audio";
   defaultUrl?: string | null;
   storageConfigured: boolean;
 }) {
@@ -73,6 +73,8 @@ export function MediaField({
           {kind === "image" ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={url} alt="" className="h-16 w-24 rounded object-cover" />
+          ) : kind === "audio" ? (
+            <audio src={url} controls className="h-10 w-48" />
           ) : isYouTube ? (
             <span className="inline-flex h-16 w-24 items-center justify-center rounded bg-black/80 text-xs text-muted-foreground text-white">
               YouTube

@@ -29,6 +29,13 @@
       "when": 1790086351480,
       "tag": "0003_question_video_url",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790105511747,
+      "tag": "0004_pool_stimulus_groups",
+      "breakpoints": true
     }
   ]
 }

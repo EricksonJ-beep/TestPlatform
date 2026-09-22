@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, FileText } from "lucide-react";
 import { isAuthzError, requireOwner } from "@/lib/authz";
 import { getCourseDetail } from "@/lib/queries/courses";
 import { CourseHeader } from "./course-header";
@@ -34,6 +34,12 @@ export default async function CoursePage({ params }: PageProps<"/app/courses/[co
         <CourseHeader
           course={{ id: course.id, name: course.name, description: course.description }}
         />
+        <Link
+          href={`/app/courses/${course.id}/stimuli`}
+          className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-brand-deep hover:underline"
+        >
+          <FileText className="size-4" aria-hidden /> Shared stimuli
+        </Link>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1fr_1.4fr]">

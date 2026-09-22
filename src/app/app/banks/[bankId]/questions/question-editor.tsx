@@ -38,6 +38,7 @@ export type EditorProps = {
   question?: QuestionForEdit | null;
   targets: { id: string; code: string; title: string }[];
   units: { id: string; name: string }[];
+  stimuli?: { id: string; label: string }[];
   onSaved?: (questionId: string) => void;
   onCancel?: () => void;
   compact?: boolean;
@@ -94,6 +95,7 @@ export function QuestionEditor({
   question,
   targets,
   units,
+  stimuli = [],
   onSaved,
   onCancel,
   compact = false,
@@ -170,6 +172,7 @@ export function QuestionEditor({
       notes: String(fd.get("notes") ?? ""),
       targetIds: fd.getAll("targetIds").map(String),
       standardCodes: list("standardCodes", /,/),
+      stimulusId: (fd.get("stimulusId") as string) || null,
       mediaUrl: String(fd.get("mediaUrl") ?? ""),
       videoUrl: String(fd.get("videoUrl") ?? ""),
       options: hasOptions
@@ -661,6 +664,22 @@ export function QuestionEditor({
             defaultValue={question?.topic ?? ""}
             placeholder="Blood"
           />
+        </div>
+        <div className="grid gap-1.5">
+          <Label htmlFor="qe-stimulus">Shared stimulus</Label>
+          <select
+            id="qe-stimulus"
+            name="stimulusId"
+            defaultValue={question?.stimulusId ?? ""}
+            className={selectClass}
+          >
+            <option value="">None</option>
+            {stimuli.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.label}
+              </option>
+            ))}
+          </select>
         </div>
         <div className="grid gap-1.5">
           <Label htmlFor="qe-standards">Standards (comma-separated codes)</Label>

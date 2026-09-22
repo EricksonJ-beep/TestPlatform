@@ -5,6 +5,7 @@ import { ChevronLeft, History } from "lucide-react";
 import { isAuthzError, requireShared } from "@/lib/authz";
 import { getBank, getQuestionForEdit } from "@/lib/queries/banks";
 import { getCourseDetail } from "@/lib/queries/courses";
+import { listStimulusOptions, stimulusLabel } from "@/lib/queries/stimuli";
 import { isStorageConfigured } from "@/lib/storage";
 import { questionHistory } from "@/lib/questions";
 import { RichText } from "@/components/rich-text";
@@ -29,6 +30,7 @@ export default async function Page({
     bank.courseId ? getCourseDetail(bank.courseId) : Promise.resolve(null),
     questionHistory(questionId),
   ]);
+  const stimuli = bank.courseId ? await listStimulusOptions(bank.courseId) : [];
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-5">
@@ -58,6 +60,7 @@ export default async function Page({
               title: t.title,
             }))}
             units={(course?.units ?? []).map((u) => ({ id: u.id, name: u.name }))}
+            stimuli={stimuli.map((x) => ({ id: x.id, label: stimulusLabel(x) }))}
             storageConfigured={isStorageConfigured()}
           />
         </div>

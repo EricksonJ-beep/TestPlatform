@@ -289,6 +289,10 @@ async function assertUniqueCode(courseId: string, code: string, exceptId?: strin
 const poolSchema = z.object({
   name: name("Pool name"),
   description: optionalText(500),
+  drawStimulusGroups: z
+    .string()
+    .optional()
+    .transform((v) => v === "on" || v === "true"),
 });
 
 function targetIdsFrom(formData: FormData): string[] {

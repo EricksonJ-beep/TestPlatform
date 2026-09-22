@@ -177,6 +177,13 @@ export type BankQuestionRow = {
   mediaUrl: string | null;
   videoUrl: string | null;
   stimulusRef: string | null;
+  stimulus: {
+    id: string;
+    kind: "text" | "image" | "video" | "audio";
+    title: string | null;
+    content: string | null;
+    mediaUrl: string | null;
+  } | null;
   targets: { id: string; code: string; title: string }[];
   options: {
     content: string;
@@ -225,6 +232,11 @@ export async function listBankQuestions(
       mediaUrl: schema.questions.mediaUrl,
       videoUrl: schema.questions.videoUrl,
       stimulusRef: schema.stimuli.ref,
+      stimulusId: schema.stimuli.id,
+      stimulusKind: schema.stimuli.kind,
+      stimulusTitle: schema.stimuli.title,
+      stimulusContent: schema.stimuli.content,
+      stimulusMediaUrl: schema.stimuli.mediaUrl,
       updatedAt: schema.questions.updatedAt,
     })
     .from(schema.questions)
@@ -268,11 +280,23 @@ export async function listBankQuestions(
   for (const o of optionRows)
     (optionsBy.get(o.questionId) ?? optionsBy.set(o.questionId, []).get(o.questionId)!).push(o);
 
-  return base.map((b) => ({
-    ...b,
-    targets: targetsBy.get(b.id) ?? [],
-    options: optionsBy.get(b.id) ?? [],
-  }));
+  return base.map(
+    ({ stimulusId, stimulusKind, stimulusTitle, stimulusContent, stimulusMediaUrl, ...b }) => ({
+      ...b,
+      stimulus:
+        stimulusId && stimulusKind
+          ? {
+              id: stimulusId,
+              kind: stimulusKind,
+              title: stimulusTitle ?? null,
+              content: stimulusContent ?? null,
+              mediaUrl: stimulusMediaUrl ?? null,
+            }
+          : null,
+      targets: targetsBy.get(b.id) ?? [],
+      options: optionsBy.get(b.id) ?? [],
+    })
+  );
 }
 
 /** Distinct tags used in a bank, for the filter dropdown. */

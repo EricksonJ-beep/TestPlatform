@@ -164,9 +164,7 @@ export async function putObject(key: string, body: Uint8Array, contentType: stri
 }
 
 /** Stream an object for the /api/media proxy. */
-export async function getObjectStream(
-  key: string
-): Promise<{
+export async function getObjectStream(key: string): Promise<{
   body: ReadableStream<Uint8Array>;
   contentType: string;
   contentLength: number | null;

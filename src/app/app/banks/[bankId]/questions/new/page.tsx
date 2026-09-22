@@ -5,6 +5,7 @@ import { ChevronLeft } from "lucide-react";
 import { isAuthzError, requireShared } from "@/lib/authz";
 import { getBank } from "@/lib/queries/banks";
 import { getCourseDetail } from "@/lib/queries/courses";
+import { listStimulusOptions, stimulusLabel } from "@/lib/queries/stimuli";
 import { isStorageConfigured } from "@/lib/storage";
 import { NewQuestionPage } from "../new-question-page";
 
@@ -21,6 +22,7 @@ export default async function Page({ params }: PageProps<"/app/banks/[bankId]/qu
   const bank = await getBank(bankId);
   if (!bank) notFound();
   const course = bank.courseId ? await getCourseDetail(bank.courseId) : null;
+  const stimuli = bank.courseId ? await listStimulusOptions(bank.courseId) : [];
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-5">
@@ -38,6 +40,7 @@ export default async function Page({ params }: PageProps<"/app/banks/[bankId]/qu
           bankId={bank.id}
           targets={(course?.targets ?? []).map((t) => ({ id: t.id, code: t.code, title: t.title }))}
           units={(course?.units ?? []).map((u) => ({ id: u.id, name: u.name }))}
+          stimuli={stimuli.map((x) => ({ id: x.id, label: stimulusLabel(x) }))}
           storageConfigured={isStorageConfigured()}
         />
       </div>
