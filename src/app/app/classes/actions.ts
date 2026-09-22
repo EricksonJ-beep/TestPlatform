@@ -269,6 +269,37 @@ export const removeStudent = withAuthz(async (classId: string, studentId: string
   return { removed: true };
 });
 
+/** Per-student accommodations (PLAN.md §3.6): extra time as a percent, font scale as a percent. */
+export const setAccommodations = withAuthz(
+  async (classId: string, studentId: string, formData: FormData) => {
+    await requireOwner({ type: "class", id: classId });
+    await assertStudentInClass(classId, studentId);
+    const parsed = accommodationSchema.safeParse(Object.fromEntries(formData));
+    if (!parsed.success) throw new ActionError("Check the form.", 400, fieldErrors(parsed.error));
+    await db
+      .update(schema.enrollments)
+      .set(parsed.data)
+      .where(
+        and(eq(schema.enrollments.classId, classId), eq(schema.enrollments.studentId, studentId))
+      );
+    revalidatePath(`/app/classes/${classId}`);
+    return { ok: true };
+  }
+);
+
+const accommodationSchema = z.object({
+  extraTimePercent: z
+    .string()
+    .optional()
+    .transform((v) => (v && v.trim() ? Number(v) : 0))
+    .refine((n) => Number.isInteger(n) && n >= 0 && n <= 300, "Extra time is 0–300%."),
+  fontScale: z
+    .string()
+    .optional()
+    .transform((v) => (v && v.trim() ? Number(v) : 100))
+    .refine((n) => Number.isInteger(n) && n >= 100 && n <= 200, "Font scale is 100–200%."),
+});
+
 // Rule: roster actions only reach students enrolled in the class being acted on.
 async function assertStudentInClass(classId: string, studentId: string) {
   const enrolled = await db.query.enrollments.findFirst({

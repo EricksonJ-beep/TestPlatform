@@ -170,6 +170,9 @@ export const enrollments = pgTable(
     studentId: uuid("student_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
+    /** Accommodations (PLAN.md §3.6): extra time as a percent of the limit, font scale as a percent. */
+    extraTimePercent: integer("extra_time_percent").default(0).notNull(),
+    fontScale: integer("font_scale").default(100).notNull(),
     ...timestamps,
   },
   (t) => [

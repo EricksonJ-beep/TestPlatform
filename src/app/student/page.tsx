@@ -1,13 +1,21 @@
 import { BarChart3, ClipboardList, Layers } from "lucide-react";
 import { requireStudent } from "@/lib/authz";
+import { listStudentAssignments } from "@/lib/queries/assignments";
 import { listStudentClasses } from "@/lib/queries/classes";
 import { EmptyState } from "@/components/empty-state";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AssignmentCard } from "./assignment-card";
 
 export default async function StudentHome() {
   const session = await requireStudent();
-  const classes = await listStudentClasses(session.userId);
-  const attention = 0; // Phase 1: count of assignments needing action
+  const [classes, assignments] = await Promise.all([
+    listStudentClasses(session.userId),
+    listStudentAssignments(session.userId),
+  ]);
+  // Things needing action: open assignments not yet started or still in progress.
+  const attention = assignments.filter(
+    (a) => a.state === "not_started" || a.state === "in_progress"
+  ).length;
 
   return (
     <div className="flex flex-col gap-5">
@@ -44,13 +52,21 @@ export default async function StudentHome() {
         </TabsList>
 
         <TabsContent value="assignments">
-          <div className="rounded-lg border border-border bg-card">
-            <EmptyState
-              icon={ClipboardList}
-              title="No assignments yet"
-              description="When your teacher opens a quiz or test for your class, it shows up here with a Start button."
-            />
-          </div>
+          {assignments.length === 0 ? (
+            <div className="rounded-lg border border-border bg-card">
+              <EmptyState
+                icon={ClipboardList}
+                title="No assignments yet"
+                description="When your teacher opens a quiz or test for your class, it shows up here with a Start button."
+              />
+            </div>
+          ) : (
+            <ul className="flex flex-col gap-3" aria-label="Assignments">
+              {assignments.map((a) => (
+                <AssignmentCard key={a.id} a={a} />
+              ))}
+            </ul>
+          )}
         </TabsContent>
 
         <TabsContent value="practice">

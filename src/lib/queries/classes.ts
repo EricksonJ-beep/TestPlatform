@@ -43,6 +43,8 @@ export type RosterRow = {
   lastLoginAt: Date | null;
   mustChangePassword: boolean;
   enrolledAt: Date;
+  extraTimePercent: number;
+  fontScale: number;
 };
 
 export async function getClassDetail(classId: string) {
@@ -71,6 +73,8 @@ export async function getClassDetail(classId: string) {
       lastLoginAt: schema.users.lastLoginAt,
       mustChangePassword: schema.users.mustChangePassword,
       enrolledAt: schema.enrollments.createdAt,
+      extraTimePercent: schema.enrollments.extraTimePercent,
+      fontScale: schema.enrollments.fontScale,
     })
     .from(schema.enrollments)
     .innerJoin(schema.users, eq(schema.enrollments.studentId, schema.users.id))

@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/table";
 import type { RosterRow } from "@/lib/queries/classes";
 import { removeStudent, resetStudentPassword } from "../actions";
+import { AccommodationsDialog } from "./accommodations-dialog";
 import { PasswordReveal } from "./password-reveal";
 
 function formatDate(d: Date | null): string {
@@ -94,6 +95,7 @@ export function Roster({ classId, roster }: { classId: string; roster: RosterRow
               <TableHead>Email</TableHead>
               <TableHead className="hidden sm:table-cell">Last login</TableHead>
               <TableHead className="hidden md:table-cell">Status</TableHead>
+              <TableHead className="hidden lg:table-cell">Accommodations</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -115,6 +117,9 @@ export function Roster({ classId, roster }: { classId: string; roster: RosterRow
                   ) : (
                     <Badge className="bg-success-soft text-success-foreground">Active</Badge>
                   )}
+                </TableCell>
+                <TableCell className="hidden lg:table-cell">
+                  <AccommodationsDialog classId={classId} row={row} />
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="inline-flex gap-1">
