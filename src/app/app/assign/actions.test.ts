@@ -155,6 +155,7 @@ describe("createAssignments", () => {
           timeLimitMinutes: "20",
           attemptsAllowed: "",
           useTypeDefault: "on",
+          retakeWaitHours: "24",
         })
       )
     );
@@ -167,6 +168,7 @@ describe("createAssignments", () => {
       timeLimitMinutes: 20,
       attemptsAllowed: 2,
       enrolled: 2,
+      retakeWaitHours: 24,
     });
     expect(row.opensAt?.toISOString()).toBe("2026-09-22T13:00:00.000Z"); // 8:00 Central Daylight
     expect(row.closesAt?.toISOString()).toBe("2026-09-22T20:00:00.000Z");

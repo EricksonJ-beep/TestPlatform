@@ -332,6 +332,22 @@ export function AssignmentDialog({
                 <FieldError errors={fieldErrors} name="tier2Max" />
               </div>
             </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="as-wait">Wait between attempts (hours)</Label>
+              <Input
+                id="as-wait"
+                name="retakeWaitHours"
+                type="number"
+                min={0}
+                max={720}
+                className="w-32"
+                defaultValue={existing?.retakeWaitHours ?? 0}
+              />
+              <p className="text-xs text-muted-foreground">
+                0 means a student can retake right away. 24 means a full day after submitting.
+              </p>
+              <FieldError errors={fieldErrors} name="retakeWaitHours" />
+            </div>
             <Toggle
               key={`o-${assessmentId}`}
               name="optionalRetakes"

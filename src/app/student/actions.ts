@@ -4,7 +4,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db, schema } from "@/db";
-import { START_REASON_TEXT, canStartAttempt } from "@/lib/assignments";
+import { canStartAttempt, startReasonText } from "@/lib/assignments";
 import { createAttempt, finalizeAttempt } from "@/lib/attempts";
 import {
   ActionError,
@@ -65,10 +65,27 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
   }
 
   const assignment = await db.query.assignments.findFirst({
-    columns: { opensAt: true, closesAt: true, accessCode: true, attemptsAllowed: true },
+    columns: {
+      opensAt: true,
+      closesAt: true,
+      accessCode: true,
+      attemptsAllowed: true,
+      retakeWaitHours: true,
+    },
     where: eq(schema.assignments.id, assignmentId),
   });
   if (!assignment) throw new ActionError("Not found.", 404);
+  const [last] = await db
+    .select({ submittedAt: sql<Date | null>`max(${schema.attempts.submittedAt})` })
+    .from(schema.attempts)
+    .where(
+      and(
+        eq(schema.attempts.assignmentId, assignmentId),
+        eq(schema.attempts.studentId, access.userId),
+        sql`${schema.attempts.status} <> 'in_progress'`
+      )
+    );
+  const lastSubmittedAt = last?.submittedAt ? new Date(last.submittedAt) : null;
   const used = await db.$count(
     schema.attempts,
     and(
@@ -76,15 +93,21 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
       eq(schema.attempts.studentId, access.userId)
     )
   );
-  const check = canStartAttempt({ assignment, attemptsUsed: used, accessCode, now });
+  const check = canStartAttempt({
+    assignment,
+    attemptsUsed: used,
+    lastSubmittedAt,
+    accessCode,
+    now,
+  });
   if (!check.ok) {
     throw new ActionError(
-      START_REASON_TEXT[check.reason],
+      startReasonText(check),
       check.reason === "code_required" || check.reason === "code_wrong" ? 400 : 403,
       {
         accessCode:
           check.reason === "code_required" || check.reason === "code_wrong"
-            ? [START_REASON_TEXT[check.reason]]
+            ? [startReasonText(check)]
             : [],
       }
     );

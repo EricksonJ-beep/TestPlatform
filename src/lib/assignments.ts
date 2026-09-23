@@ -19,7 +19,9 @@ export type StartCheck =
   | { ok: true }
   | {
       ok: false;
-      reason: "not_open" | "closed" | "code_required" | "code_wrong" | "no_attempts_left";
+      reason: "not_open" | "closed" | "code_required" | "code_wrong" | "no_attempts_left" | "wait";
+      /** For "wait": when the next attempt opens. */
+      availableAt?: Date;
     };
 
 /**
@@ -27,13 +29,21 @@ export type StartCheck =
  * code when one is set, and while attempts remain (null = unlimited).
  */
 export function canStartAttempt(input: {
-  assignment: WindowLike & { accessCode: string | null; attemptsAllowed: number | null };
+  assignment: WindowLike & {
+    accessCode: string | null;
+    attemptsAllowed: number | null;
+    /** Hours to wait after a submission before the next attempt (0 or undefined = none). */
+    retakeWaitHours?: number;
+  };
   attemptsUsed: number;
+  /** When the student's most recent finished attempt was submitted. */
+  lastSubmittedAt?: Date | null;
   accessCode?: string | null;
   now?: Date;
 }): StartCheck {
   const { assignment, attemptsUsed } = input;
-  const status = assignmentStatus(assignment, input.now ?? new Date());
+  const now = input.now ?? new Date();
+  const status = assignmentStatus(assignment, now);
   if (status === "scheduled") return { ok: false, reason: "not_open" };
   if (status === "closed") return { ok: false, reason: "closed" };
   if (assignment.accessCode) {
@@ -44,7 +54,33 @@ export function canStartAttempt(input: {
   if (assignment.attemptsAllowed !== null && attemptsUsed >= assignment.attemptsAllowed) {
     return { ok: false, reason: "no_attempts_left" };
   }
+  const wait = assignment.retakeWaitHours ?? 0;
+  if (wait > 0 && input.lastSubmittedAt) {
+    const availableAt = new Date(input.lastSubmittedAt.getTime() + wait * 3_600_000);
+    if (now < availableAt) return { ok: false, reason: "wait", availableAt };
+  }
   return { ok: true };
+}
+
+/** Human text for a refused start, including when a waiting period ends. */
+export function startReasonText(check: Exclude<StartCheck, { ok: true }>): string {
+  if (check.reason === "wait" && check.availableAt) {
+    const when = check.availableAt.toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      timeZone: "America/Chicago",
+    });
+    return `Your next attempt opens ${when}.`;
+  }
+  return START_REASON_TEXT[check.reason];
+}
+
+/** When the next attempt may start under the wait rule; null when no wait applies. */
+export function nextAttemptAt(retakeWaitHours: number, lastSubmittedAt: Date | null): Date | null {
+  if (!retakeWaitHours || !lastSubmittedAt) return null;
+  return new Date(lastSubmittedAt.getTime() + retakeWaitHours * 3_600_000);
 }
 
 export const START_REASON_TEXT: Record<Exclude<StartCheck, { ok: true }>["reason"], string> = {
@@ -53,6 +89,7 @@ export const START_REASON_TEXT: Record<Exclude<StartCheck, { ok: true }>["reason
   code_required: "Enter the access code from your teacher.",
   code_wrong: "That access code isn't right.",
   no_attempts_left: "You've used every attempt.",
+  wait: "You have to wait before your next attempt.",
 };
 
 /** Codes are compared case-insensitively, ignoring spaces and dashes. */

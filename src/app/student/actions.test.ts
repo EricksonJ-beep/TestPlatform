@@ -21,6 +21,7 @@ vi.mock("@/db", async () => {
 
 import { and, eq } from "drizzle-orm";
 import { db, schema } from "@/db";
+import { listStudentAssignments } from "@/lib/queries/assignments";
 import { getRunnerPayload, listAssignmentAttempts, listFinalScores } from "@/lib/queries/attempts";
 import { recordTabSwitch, saveAnswer, setFlag, startAttempt, submitAttempt } from "./actions";
 
@@ -353,6 +354,20 @@ describe("submitAttempt", () => {
 
   it("a second attempt avoids nothing here (fixed items) but counts; a third is refused", async () => {
     asUser(ids.s1, "student");
+    // A 24-hour wait blocks the retake until a day after the last submission.
+    await db
+      .update(schema.assignments)
+      .set({ retakeWaitHours: 24 })
+      .where(eq(schema.assignments.id, ids.assignment));
+    const blocked = await startAttempt(ids.assignment, "AB3K9Q");
+    expect(blocked).toMatchObject({ ok: false, status: 403 });
+    expect(blocked.ok ? "" : blocked.error).toMatch(/next attempt opens/);
+    const [home] = await listStudentAssignments(ids.s1);
+    expect(home.nextAttemptAt).toBeInstanceOf(Date);
+    await db
+      .update(schema.assignments)
+      .set({ retakeWaitHours: 0 })
+      .where(eq(schema.assignments.id, ids.assignment));
     const { attemptId } = await ok(startAttempt(ids.assignment, "AB3K9Q"));
     const a2 = (await db.query.attempts.findFirst({ where: eq(schema.attempts.id, attemptId) }))!;
     expect(a2.number).toBe(2);

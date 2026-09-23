@@ -586,6 +586,8 @@ export const assignments = pgTable(
     /** Tier boundaries: Tier 2 = 1..tier2Max targets below threshold; Tier 3 = more. */
     tier2Max: integer("tier2_max").default(2).notNull(),
     resultsReleased: boolean("results_released").default(true).notNull(),
+    /** Hours a student must wait after submitting before the next attempt; 0 = none. */
+    retakeWaitHours: integer("retake_wait_hours").default(0).notNull(),
     ...timestamps,
   },
   (t) => [

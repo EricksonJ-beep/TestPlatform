@@ -68,6 +68,11 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
               {a.attemptsAllowed === 1 ? "attempt" : "attempts"} used
             </span>
           ) : null}
+          {a.nextAttemptAt ? (
+            <span>
+              Next attempt <LocalTime date={a.nextAttemptAt} />
+            </span>
+          ) : null}
           {a.bestPercent !== null && a.resultsReleased ? (
             <span className="tabular">Best {Math.round(a.bestPercent)}%</span>
           ) : null}

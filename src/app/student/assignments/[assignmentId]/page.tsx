@@ -75,6 +75,11 @@ export default async function StudentAssignmentPage({
         <p className="rounded-lg border border-border bg-card px-4 py-3 text-sm">
           This opens <LocalTime date={a.opensAt} />. Check back then.
         </p>
+      ) : a.nextAttemptAt && a.state !== "in_progress" ? (
+        <p className="rounded-lg border border-border bg-card px-4 py-3 text-sm">
+          Your next attempt opens <LocalTime date={a.nextAttemptAt} />. Your teacher set a{" "}
+          {a.retakeWaitHours}-hour wait between attempts.
+        </p>
       ) : canStart ? (
         <StartForm
           assignmentId={a.id}

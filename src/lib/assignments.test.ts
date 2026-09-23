@@ -6,7 +6,9 @@ import {
   codesMatch,
   defaultAttempts,
   generateAccessCode,
+  nextAttemptAt,
   parseLocalDateTime,
+  startReasonText,
   toLocalDateTimeValue,
 } from "./assignments";
 
@@ -64,6 +66,37 @@ describe("canStartAttempt", () => {
       canStartAttempt({ assignment: coded, attemptsUsed: 0, now, accessCode: " ab3 k9q " })
     ).toEqual({ ok: true });
     expect(codesMatch("ab3k9q", "AB3-K9Q")).toBe(true);
+  });
+  it("enforces a waiting period after the last submission", () => {
+    const waited = { ...open, retakeWaitHours: 24 };
+    const submitted = at("2026-09-22T00:00:00Z");
+    const early = canStartAttempt({
+      assignment: waited,
+      attemptsUsed: 1,
+      lastSubmittedAt: submitted,
+      now,
+    });
+    expect(early).toMatchObject({
+      ok: false,
+      reason: "wait",
+      availableAt: at("2026-09-23T00:00:00Z"),
+    });
+    expect(startReasonText(early as Exclude<typeof early, { ok: true }>)).toMatch(
+      /next attempt opens/
+    );
+    expect(
+      canStartAttempt({
+        assignment: waited,
+        attemptsUsed: 1,
+        lastSubmittedAt: submitted,
+        now: at("2026-09-23T00:00:00Z"),
+      })
+    ).toEqual({ ok: true });
+    expect(
+      canStartAttempt({ assignment: waited, attemptsUsed: 0, lastSubmittedAt: null, now })
+    ).toEqual({ ok: true });
+    expect(nextAttemptAt(24, submitted)).toEqual(at("2026-09-23T00:00:00Z"));
+    expect(nextAttemptAt(0, submitted)).toBeNull();
   });
   it("stops at the attempt limit; null is unlimited", () => {
     expect(canStartAttempt({ assignment: open, attemptsUsed: 3, now })).toMatchObject({

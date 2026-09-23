@@ -119,6 +119,7 @@ export function AssignmentsTable({
                         : `${a.attemptsAllowed} ${a.attemptsAllowed === 1 ? "attempt" : "attempts"}`}
                     </span>
                     <span>{a.retakeThreshold}% threshold</span>
+                    {a.retakeWaitHours ? <span>{a.retakeWaitHours} h between attempts</span> : null}
                   </span>
                 </TableCell>
                 <TableCell className="hidden text-muted-foreground tabular sm:table-cell">

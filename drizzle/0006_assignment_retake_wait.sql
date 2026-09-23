@@ -1,0 +1,1 @@
+ALTER TABLE "assignments" ADD COLUMN "retake_wait_hours" integer DEFAULT 0 NOT NULL;

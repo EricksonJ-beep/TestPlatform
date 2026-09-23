@@ -4,7 +4,7 @@
  */
 import { and, asc, desc, eq, inArray, or, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
-import { assignmentStatus, type AssignmentStatus } from "@/lib/assignments";
+import { assignmentStatus, nextAttemptAt, type AssignmentStatus } from "@/lib/assignments";
 
 export type AssignmentRow = {
   id: string;
@@ -23,6 +23,7 @@ export type AssignmentRow = {
   optionalRetakes: boolean;
   tier2Max: number;
   resultsReleased: boolean;
+  retakeWaitHours: number;
   createdAt: Date;
   enrolled: number;
   started: number;
@@ -47,6 +48,7 @@ const baseSelect = {
   optionalRetakes: schema.assignments.optionalRetakes,
   tier2Max: schema.assignments.tier2Max,
   resultsReleased: schema.assignments.resultsReleased,
+  retakeWaitHours: schema.assignments.retakeWaitHours,
   createdAt: schema.assignments.createdAt,
   enrolled: sql<number>`(select count(*)::int from ${schema.enrollments} e where e.class_id = ${schema.assignments.classId})`,
   started: sql<number>`(select count(distinct a.student_id)::int from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id})`,
@@ -128,6 +130,9 @@ export type StudentAssignment = {
   attemptsAllowed: number | null;
   needsCode: boolean;
   resultsReleased: boolean;
+  retakeWaitHours: number;
+  /** When the wait rule lets the student start again; null when they may start now. */
+  nextAttemptAt: Date | null;
   status: AssignmentStatus;
   attemptsUsed: number;
   inProgressAttemptId: string | null;
@@ -164,6 +169,8 @@ export async function listStudentAssignments(
       attemptsAllowed: schema.assignments.attemptsAllowed,
       accessCode: schema.assignments.accessCode,
       resultsReleased: schema.assignments.resultsReleased,
+      retakeWaitHours: schema.assignments.retakeWaitHours,
+      lastSubmittedAt: sql<Date | null>`(select max(a.submitted_at) from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status <> 'in_progress')`,
       attemptsUsed: sql<number>`(select count(*)::int from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId})`,
       inProgressAttemptId: sql<
         string | null
@@ -180,8 +187,12 @@ export async function listStudentAssignments(
     .orderBy(asc(schema.assignments.closesAt), desc(schema.assignments.createdAt));
 
   return rows
-    .map(({ accessCode, ...r }): StudentAssignment => {
+    .map(({ accessCode, lastSubmittedAt, ...r }): StudentAssignment => {
       const status = assignmentStatus(r, now);
+      const next = nextAttemptAt(
+        r.retakeWaitHours,
+        lastSubmittedAt ? new Date(lastSubmittedAt) : null
+      );
       let state: StudentCardState;
       if (status === "scheduled") state = "upcoming";
       else if (status === "closed") state = "closed";
@@ -194,6 +205,7 @@ export async function listStudentAssignments(
         status,
         state,
         bestPercent: r.bestPercent === null ? null : Number(r.bestPercent),
+        nextAttemptAt: next && next > now ? next : null,
       };
     })
     .filter((r) => r.state !== "closed" || r.attemptsUsed > 0);
