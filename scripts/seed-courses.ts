@@ -7,6 +7,7 @@
  *   npm run db:seed:courses                      (owner = SEED_TEACHER_EMAIL, all definition files)
  *   npm run db:seed:courses -- --owner you@school.org biology
  */
+import { readdirSync } from "node:fs";
 import { and, eq, sql } from "drizzle-orm";
 import { db, schema } from "../src/db";
 
@@ -24,7 +25,11 @@ async function main() {
   )?.toLowerCase();
   if (!ownerEmail) throw new Error("Pass --owner <email> or set SEED_TEACHER_EMAIL.");
   const files = args.filter((a, i) => !a.startsWith("--") && args[i - 1] !== "--owner");
-  const names = files.length ? files : ["biology"];
+  const names = files.length
+    ? files
+    : readdirSync(new URL("./courses", import.meta.url))
+        .filter((f) => f.endsWith(".ts"))
+        .map((f) => f.replace(/\.ts$/, ""));
 
   const owner = await db.query.users.findFirst({
     columns: { id: true },
