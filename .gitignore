@@ -47,3 +47,6 @@ next-env.d.ts
 !.env.example
 
 .vercel
+
+# Raw question exports from other systems (CVTC test banks); imported, not committed
+imports/
