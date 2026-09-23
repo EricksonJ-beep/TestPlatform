@@ -2,7 +2,7 @@
  * Class and roster reads. Callers must have passed requireTeacher() /
  * requireOwner() first; these functions scope by the ids they are given.
  */
-import { and, asc, count, desc, eq } from "drizzle-orm";
+import { and, asc, count, desc, eq, isNull } from "drizzle-orm";
 import { db, schema } from "@/db";
 
 export type ClassSummary = {
@@ -39,12 +39,15 @@ export type RosterRow = {
   studentId: string;
   firstName: string;
   lastName: string;
-  email: string;
+  email: string | null;
+  username: string | null;
   lastLoginAt: Date | null;
   mustChangePassword: boolean;
   enrolledAt: Date;
   extraTimePercent: number;
   fontScale: number;
+  /** The student typed a name that wasn't on the roster; worth a look. */
+  selfEntered?: boolean;
 };
 
 export async function getClassDetail(classId: string) {
@@ -56,6 +59,8 @@ export async function getClassDetail(classId: string) {
       term: schema.classes.term,
       courseName: schema.courses.name,
       ownerId: schema.classes.ownerId,
+      joinCode: schema.classes.joinCode,
+      joinOpen: schema.classes.joinOpen,
     })
     .from(schema.classes)
     .leftJoin(schema.courses, eq(schema.classes.courseId, schema.courses.id))
@@ -70,6 +75,7 @@ export async function getClassDetail(classId: string) {
       firstName: schema.users.firstName,
       lastName: schema.users.lastName,
       email: schema.users.email,
+      username: schema.users.username,
       lastLoginAt: schema.users.lastLoginAt,
       mustChangePassword: schema.users.mustChangePassword,
       enrolledAt: schema.enrollments.createdAt,
@@ -81,7 +87,31 @@ export async function getClassDetail(classId: string) {
     .where(eq(schema.enrollments.classId, classId))
     .orderBy(asc(schema.users.lastName), asc(schema.users.firstName));
 
-  return { ...cls, roster };
+  const pending = await db
+    .select({
+      id: schema.rosterNames.id,
+      firstName: schema.rosterNames.firstName,
+      lastName: schema.rosterNames.lastName,
+    })
+    .from(schema.rosterNames)
+    .where(and(eq(schema.rosterNames.classId, classId), isNull(schema.rosterNames.studentId)))
+    .orderBy(asc(schema.rosterNames.lastName), asc(schema.rosterNames.firstName));
+  const selfEntered = new Set(
+    (
+      await db
+        .select({ studentId: schema.rosterNames.studentId })
+        .from(schema.rosterNames)
+        .where(
+          and(eq(schema.rosterNames.classId, classId), eq(schema.rosterNames.selfEntered, true))
+        )
+    ).map((r) => r.studentId)
+  );
+
+  return {
+    ...cls,
+    roster: roster.map((r) => ({ ...r, selfEntered: selfEntered.has(r.studentId) })),
+    pending,
+  };
 }
 
 export async function listCourses(teacherId: string) {

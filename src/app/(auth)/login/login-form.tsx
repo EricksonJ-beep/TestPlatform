@@ -14,14 +14,14 @@ export function LoginForm({ next }: { next?: string }) {
     <form action={action} className="mt-5 grid gap-4" noValidate>
       {next ? <input type="hidden" name="next" value={next} /> : null}
       <div className="grid gap-1.5">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">Email or username</Label>
         <Input
           id="email"
           name="email"
-          type="email"
+          type="text"
           autoComplete="username"
-          inputMode="email"
-          placeholder="you@cadott.k12.wi.us"
+          autoCapitalize="none"
+          placeholder="you@cadott.k12.wi.us or first.last"
           required
           aria-invalid={fe.email ? true : undefined}
         />

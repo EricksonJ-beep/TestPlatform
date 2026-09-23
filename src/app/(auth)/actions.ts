@@ -7,13 +7,14 @@ import { z } from "zod";
 import { signIn, signOut } from "@/auth";
 import { db, schema } from "@/db";
 import { publicAction } from "@/lib/authz";
+import { findUserByIdentifier } from "@/lib/join";
 import { hashPassword, passwordPolicy } from "@/lib/password";
 import { safeNext } from "@/lib/routes";
 
 export type AuthFormState = { error?: string; fieldErrors?: Record<string, string> } | null;
 
 const loginSchema = z.object({
-  email: z.string().trim().toLowerCase().email("Enter your school email."),
+  email: z.string().trim().min(1, "Enter your email or username.").max(200),
   password: z.string().min(1, "Enter your password."),
   next: z.string().optional(),
 });
@@ -27,14 +28,12 @@ export const loginAction = publicAction(
     }
     const { email, password, next } = parsed.data;
 
-    const user = await db.query.users.findFirst({
-      columns: { role: true },
-      where: sql`lower(${schema.users.email}) = ${email}`,
-    });
+    const user = await findUserByIdentifier(email);
     if (!user) {
       return {
-        error:
-          "We don't have an account for that email. Students: ask your teacher to add you. Teachers: create an account below.",
+        error: email.includes("@")
+          ? "We don't have an account for that email. Students: use your class join code. Teachers: create an account below."
+          : "We don't have an account with that username. Check the spelling, or join your class with its code.",
       };
     }
 

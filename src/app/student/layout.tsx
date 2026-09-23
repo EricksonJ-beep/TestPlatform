@@ -17,7 +17,7 @@ export default async function StudentLayout({ children }: LayoutProps<"/student"
           <AccountMenu
             firstName={session.firstName}
             lastName={session.lastName}
-            email={session.email}
+            email={session.email ?? session.username ?? null}
             logout={logoutAction}
           />
         </div>

@@ -1,4 +1,5 @@
-import { BarChart3, ClipboardList, Layers } from "lucide-react";
+import Link from "next/link";
+import { BarChart3, ClipboardList, Layers, Plus } from "lucide-react";
 import { requireStudent } from "@/lib/authz";
 import { listStudentAssignments } from "@/lib/queries/assignments";
 import { listStudentClasses } from "@/lib/queries/classes";
@@ -26,8 +27,19 @@ export default async function StudentHome() {
             ? "Nothing needs your attention right now."
             : `${attention} ${attention === 1 ? "thing needs" : "things need"} your attention.`}
         </p>
+        <ul className="mt-3 flex flex-wrap items-center gap-2" aria-label="Your classes">
+          <li className="hidden" aria-hidden />
+          <li>
+            <Link
+              href="/student/join"
+              className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs font-medium text-muted-foreground hover:text-foreground"
+            >
+              <Plus className="size-3" aria-hidden /> Join a class
+            </Link>
+          </li>
+        </ul>
         {classes.length > 0 ? (
-          <ul className="mt-3 flex flex-wrap gap-2" aria-label="Your classes">
+          <ul className="mt-2 flex flex-wrap gap-2" aria-label="Enrolled classes">
             {classes.map((c) => (
               <li
                 key={c.id}

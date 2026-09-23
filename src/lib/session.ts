@@ -5,7 +5,9 @@ import type { UserRole } from "@/db/types";
 export type Session = {
   userId: string;
   role: UserRole;
-  email: string;
+  /** null for students who joined with a class code; they log in with `username`. */
+  email: string | null;
+  username?: string | null;
   firstName: string;
   lastName: string;
 };
@@ -17,7 +19,8 @@ export async function getCurrentSession(): Promise<Session | null> {
   return {
     userId: s.user.id,
     role: s.user.role,
-    email: s.user.email,
+    email: s.user.email ?? null,
+    username: s.user.username ?? null,
     firstName: s.user.firstName,
     lastName: s.user.lastName,
   };

@@ -5,11 +5,13 @@ declare module "next-auth" {
     role: UserRole;
     firstName: string;
     lastName: string;
+    username?: string | null;
   }
   interface Session {
     user: {
       id: string;
-      email: string;
+      email: string | null;
+      username: string | null;
       name?: string | null;
       role: UserRole;
       firstName: string;
@@ -25,5 +27,6 @@ declare module "@auth/core/jwt" {
     role: UserRole;
     firstName: string;
     lastName: string;
+    username?: string | null;
   }
 }

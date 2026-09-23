@@ -6,6 +6,8 @@ import { isAuthzError, requireOwner } from "@/lib/authz";
 import { getClassDetail } from "@/lib/queries/classes";
 import { AddStudentDialog } from "./add-student-dialog";
 import { ImportCsvDialog } from "./import-csv-dialog";
+import { JoinCodeCard } from "./join-code-card";
+import { PendingNames } from "./pending-names";
 import { Roster } from "./roster";
 
 export const metadata: Metadata = { title: "Class" };
@@ -46,6 +48,11 @@ export default async function ClassPage({ params }: PageProps<"/app/classes/[cla
           <ImportCsvDialog classId={cls.id} />
           <AddStudentDialog classId={cls.id} />
         </div>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-[3fr_2fr] lg:items-start">
+        <JoinCodeCard classId={cls.id} code={cls.joinCode} open={cls.joinOpen} />
+        <PendingNames classId={cls.id} names={cls.pending} />
       </div>
 
       <Roster classId={cls.id} roster={cls.roster} />

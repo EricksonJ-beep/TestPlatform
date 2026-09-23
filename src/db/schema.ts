@@ -93,7 +93,10 @@ export const users = pgTable(
   "users",
   {
     id: id(),
-    email: text("email").notNull(),
+    /** Teachers always have one; students who joined with a class code may have none. */
+    email: text("email"),
+    /** Login name for students created through a join code (e.g. "braeden.allard"). */
+    username: text("username"),
     passwordHash: text("password_hash").notNull(),
     role: userRole("role").notNull(),
     firstName: text("first_name").notNull(),
@@ -108,6 +111,7 @@ export const users = pgTable(
   },
   (t) => [
     uniqueIndex("users_email_unique").on(sql`lower(${t.email})`),
+    uniqueIndex("users_username_unique").on(sql`lower(${t.username})`),
     index("users_organization_idx").on(t.organizationId),
     index("users_role_idx").on(t.role),
   ]
@@ -155,9 +159,35 @@ export const classes = pgTable(
     name: text("name").notNull(),
     period: text("period"),
     term: text("term"),
+    /** Short code students enter to join (PLAN.md: posted in Google Classroom); null = none yet. */
+    joinCode: text("join_code"),
+    joinOpen: boolean("join_open").default(true).notNull(),
     ...timestamps,
   },
-  (t) => [index("classes_owner_idx").on(t.ownerId), index("classes_course_idx").on(t.courseId)]
+  (t) => [
+    index("classes_owner_idx").on(t.ownerId),
+    index("classes_course_idx").on(t.courseId),
+    uniqueIndex("classes_join_code_unique").on(sql`lower(${t.joinCode})`),
+  ]
+);
+
+/** Names the teacher expects in a class; a student claims one when joining with the code. */
+export const rosterNames = pgTable(
+  "roster_names",
+  {
+    id: id(),
+    classId: uuid("class_id")
+      .notNull()
+      .references(() => classes.id, { onDelete: "cascade" }),
+    firstName: text("first_name").notNull(),
+    lastName: text("last_name").notNull(),
+    /** Set once a student has claimed this name. */
+    studentId: uuid("student_id").references(() => users.id, { onDelete: "set null" }),
+    /** True when a student typed a name that wasn't on the list (teacher should check it). */
+    selfEntered: boolean("self_entered").default(false).notNull(),
+    ...timestamps,
+  },
+  (t) => [index("roster_names_class_idx").on(t.classId)]
 );
 
 export const enrollments = pgTable(

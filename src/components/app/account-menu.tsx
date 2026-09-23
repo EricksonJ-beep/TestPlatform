@@ -27,7 +27,7 @@ export function AccountMenu({
 }: {
   firstName: string;
   lastName: string;
-  email: string;
+  email: string | null;
   logout: () => Promise<void>;
   compact?: boolean;
 }) {

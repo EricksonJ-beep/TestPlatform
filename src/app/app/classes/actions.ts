@@ -1,11 +1,13 @@
 "use server";
 
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db, schema } from "@/db";
 import { ActionError, requireOwner, requireTeacher, withAuthz } from "@/lib/authz";
 import { parseCsvRecords } from "@/lib/csv";
+import { rotateJoinCode } from "@/lib/join";
+import { parseRosterNames } from "@/lib/roster";
 import { generateTempPassword, hashPassword, passwordPolicy } from "@/lib/password";
 
 // ---------------------------------------------------------------------------
@@ -119,12 +121,19 @@ async function createOrEnrollStudent(
       return {
         studentId: existing.id,
         ...existing,
+        email: existing.email ?? input.email,
         tempPassword: null,
         status: "already_enrolled",
       };
     }
     await db.insert(schema.enrollments).values({ classId, studentId: existing.id });
-    return { studentId: existing.id, ...existing, tempPassword: null, status: "enrolled_existing" };
+    return {
+      studentId: existing.id,
+      ...existing,
+      email: existing.email ?? input.email,
+      tempPassword: null,
+      status: "enrolled_existing",
+    };
   }
 
   const tempPassword = input.tempPassword || generateTempPassword();
@@ -298,6 +307,78 @@ const accommodationSchema = z.object({
     .optional()
     .transform((v) => (v && v.trim() ? Number(v) : 100))
     .refine((n) => Number.isInteger(n) && n >= 100 && n <= 200, "Font scale is 100–200%."),
+});
+
+// ---------------------------------------------------------------------------
+// Join codes and roster names (students join with a code, no email needed)
+// ---------------------------------------------------------------------------
+
+/** Issue (or replace) the class join code. Regenerating stops the old code working. */
+export const regenerateJoinCode = withAuthz(async (classId: string) => {
+  await requireOwner({ type: "class", id: classId });
+  const cls = await db.query.classes.findFirst({
+    columns: { name: true },
+    where: eq(schema.classes.id, classId),
+  });
+  if (!cls) throw new ActionError("Not found.", 404);
+  const code = await rotateJoinCode(classId, cls.name);
+  revalidatePath(`/app/classes/${classId}`);
+  return { code };
+});
+
+export const setJoinOpen = withAuthz(async (classId: string, open: boolean) => {
+  await requireOwner({ type: "class", id: classId });
+  await db.update(schema.classes).set({ joinOpen: !!open }).where(eq(schema.classes.id, classId));
+  revalidatePath(`/app/classes/${classId}`);
+  return { open: !!open };
+});
+
+/** Add expected names to a class so students can claim them; duplicates of pending or enrolled names are skipped. */
+export const addRosterNames = withAuthz(async (classId: string, formData: FormData) => {
+  await requireOwner({ type: "class", id: classId });
+  const names = parseRosterNames(String(formData.get("names") ?? ""));
+  if (names.length === 0) throw new ActionError("Paste at least one name, one per line.", 400);
+  const key = (f: string, l: string) => `${f.trim().toLowerCase()}|${l.trim().toLowerCase()}`;
+  const existing = new Set([
+    ...(
+      await db
+        .select({ f: schema.rosterNames.firstName, l: schema.rosterNames.lastName })
+        .from(schema.rosterNames)
+        .where(eq(schema.rosterNames.classId, classId))
+    ).map((r) => key(r.f, r.l)),
+    ...(
+      await db
+        .select({ f: schema.users.firstName, l: schema.users.lastName })
+        .from(schema.enrollments)
+        .innerJoin(schema.users, eq(schema.enrollments.studentId, schema.users.id))
+        .where(eq(schema.enrollments.classId, classId))
+    ).map((r) => key(r.f, r.l)),
+  ]);
+  const fresh = names.filter((n) => {
+    const k = key(n.firstName, n.lastName);
+    if (existing.has(k)) return false;
+    existing.add(k);
+    return true;
+  });
+  if (fresh.length)
+    await db.insert(schema.rosterNames).values(fresh.map((n) => ({ classId, ...n })));
+  revalidatePath(`/app/classes/${classId}`);
+  return { added: fresh.length, skipped: names.length - fresh.length };
+});
+
+export const removeRosterName = withAuthz(async (classId: string, nameId: string) => {
+  await requireOwner({ type: "class", id: classId });
+  await db
+    .delete(schema.rosterNames)
+    .where(
+      and(
+        eq(schema.rosterNames.id, nameId),
+        eq(schema.rosterNames.classId, classId),
+        isNull(schema.rosterNames.studentId)
+      )
+    );
+  revalidatePath(`/app/classes/${classId}`);
+  return { ok: true };
 });
 
 // Rule: roster actions only reach students enrolled in the class being acted on.

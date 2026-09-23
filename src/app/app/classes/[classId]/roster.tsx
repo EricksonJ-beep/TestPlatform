@@ -51,7 +51,7 @@ export function Roster({ classId, roster }: { classId: string; roster: RosterRow
         setError(null);
         setReset({
           name: `${row.firstName} ${row.lastName}`,
-          email: row.email,
+          email: row.email ?? row.username ?? "",
           password: r.data.tempPassword,
         });
       } else setError(r.error);
@@ -92,7 +92,7 @@ export function Roster({ classId, roster }: { classId: string; roster: RosterRow
           <TableHeader>
             <TableRow>
               <TableHead>Student</TableHead>
-              <TableHead>Email</TableHead>
+              <TableHead>Login</TableHead>
               <TableHead className="hidden sm:table-cell">Last login</TableHead>
               <TableHead className="hidden md:table-cell">Status</TableHead>
               <TableHead className="hidden lg:table-cell">Accommodations</TableHead>
@@ -106,7 +106,17 @@ export function Roster({ classId, roster }: { classId: string; roster: RosterRow
                   {row.lastName}, {row.firstName}
                 </TableCell>
                 <TableCell className="max-w-56 truncate text-muted-foreground">
-                  {row.email}
+                  {row.email ?? (
+                    <span>
+                      <span className="text-xs">username </span>
+                      <span className="font-mono">{row.username}</span>
+                    </span>
+                  )}
+                  {row.selfEntered ? (
+                    <span className="ml-2 rounded-md bg-warning-soft px-1.5 py-0.5 text-xs text-warning-foreground">
+                      typed their own name
+                    </span>
+                  ) : null}
                 </TableCell>
                 <TableCell className="hidden text-muted-foreground sm:table-cell">
                   {formatDate(row.lastLoginAt)}

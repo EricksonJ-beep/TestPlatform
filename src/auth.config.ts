@@ -17,6 +17,7 @@ export const authConfig = {
         token.role = user.role;
         token.firstName = user.firstName;
         token.lastName = user.lastName;
+        token.username = user.username ?? null;
       }
       return token;
     },
@@ -25,6 +26,7 @@ export const authConfig = {
       session.user.role = token.role;
       session.user.firstName = token.firstName;
       session.user.lastName = token.lastName;
+      session.user.username = token.username ?? null;
       return session;
     },
   },

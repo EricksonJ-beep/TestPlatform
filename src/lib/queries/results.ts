@@ -430,7 +430,7 @@ export async function countPendingByAssignment(teacherId: string): Promise<Map<s
 export type ExportRow = {
   lastName: string;
   firstName: string;
-  email: string;
+  email: string | null;
   score: number | null;
   maxScore: number | null;
   percent: number | null;
