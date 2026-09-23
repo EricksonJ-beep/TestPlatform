@@ -80,7 +80,12 @@ export default async function DashboardPage() {
                 {recent.map((r) => (
                   <li key={r.assignmentId} className="flex items-center gap-3 px-6 py-3 text-sm">
                     <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium">{r.title}</p>
+                      <Link
+                        href={`/app/results/${r.assignmentId}`}
+                        className="block truncate font-medium hover:underline"
+                      >
+                        {r.title}
+                      </Link>
                       <p className="text-xs text-muted-foreground">{r.className}</p>
                     </div>
                     <Badge variant={r.type === "summative" ? "default" : "secondary"}>

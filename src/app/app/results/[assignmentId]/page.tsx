@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Download } from "lucide-react";
 import { isAuthzError, requireOwner } from "@/lib/authz";
 import { getAssignmentRow } from "@/lib/queries/assignments";
-import { listAssignmentAttempts, listFinalScores } from "@/lib/queries/attempts";
-import { getClassDetail } from "@/lib/queries/classes";
+import { getGradebook } from "@/lib/queries/results";
 import { LocalTime } from "@/components/local-time";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -19,7 +19,9 @@ import {
 
 export const metadata: Metadata = { title: "Results" };
 
-/** Students × attempts for one assignment, with the score that counts. */
+const fmt = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(1));
+
+/** Gradebook: students × attempts, the highest in bold, corrections status, finish time. */
 export default async function AssignmentResultsPage({
   params,
 }: PageProps<"/app/results/[assignmentId]">) {
@@ -32,108 +34,140 @@ export default async function AssignmentResultsPage({
   }
   const a = await getAssignmentRow(assignmentId);
   if (!a) notFound();
-  const [attempts, finals, cls] = await Promise.all([
-    listAssignmentAttempts(assignmentId),
-    listFinalScores(assignmentId),
-    getClassDetail(a.classId),
-  ]);
-  const finalBy = new Map(finals.map((f) => [f.studentId, f]));
-  const attemptsBy = new Map<string, typeof attempts>();
-  for (const t of attempts)
-    (attemptsBy.get(t.studentId) ?? attemptsBy.set(t.studentId, []).get(t.studentId)!).push(t);
-  const roster = cls?.roster ?? [];
+  const rows = await getGradebook(assignmentId);
+  const pending = rows.reduce((n, r) => n + r.attempts.reduce((m, t) => m + t.pendingManual, 0), 0);
+  const summative = a.assessmentType === "summative";
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-5">
-      <div>
-        <Link
-          href="/app/results"
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="mr-auto">
+          <Link
+            href="/app/results"
+            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <ChevronLeft className="size-4" aria-hidden /> Results
+          </Link>
+          <h1 className="mt-2 text-2xl">{a.assessmentTitle}</h1>
+          <p className="mt-1 text-sm text-muted-foreground tabular">
+            {a.className} · {a.submitted} of {a.enrolled} submitted · highest counts
+            {summative ? " per target" : ""}
+            {pending > 0
+              ? ` · ${pending} ${pending === 1 ? "response" : "responses"} to grade`
+              : ""}
+          </p>
+        </div>
+        {pending > 0 ? (
+          <Button
+            variant="outline"
+            nativeButton={false}
+            render={<Link href="/app/results/grading" />}
+          >
+            Grade {pending}
+          </Button>
+        ) : null}
+        <Button
+          variant="outline"
+          nativeButton={false}
+          render={<a href={`/api/results/${assignmentId}/export`} />}
         >
-          <ChevronLeft className="size-4" aria-hidden /> Results
-        </Link>
-        <h1 className="mt-2 text-2xl">{a.assessmentTitle}</h1>
-        <p className="mt-1 text-sm text-muted-foreground tabular">
-          {a.className} · {a.submitted} of {a.enrolled} submitted · highest counts
-          {a.assessmentType === "summative" ? " per target" : ""}
-        </p>
+          <Download data-icon="inline-start" aria-hidden />
+          Export CSV
+        </Button>
       </div>
+
       <div className="rounded-lg border border-border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Student</TableHead>
-              <TableHead>Attempt</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Score</TableHead>
-              <TableHead className="hidden text-right sm:table-cell">Submitted</TableHead>
-              <TableHead className="hidden text-right md:table-cell">Tab switches</TableHead>
+              <TableHead>Attempts</TableHead>
+              <TableHead className="hidden md:table-cell">Corrections</TableHead>
               <TableHead className="text-right">Counts</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {roster.map((s) => {
-              const rows = attemptsBy.get(s.studentId) ?? [];
-              const final = finalBy.get(s.studentId);
-              if (rows.length === 0) {
-                return (
-                  <TableRow key={s.studentId} data-student={s.studentId}>
-                    <TableCell className="font-medium">
-                      {s.lastName}, {s.firstName}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground" colSpan={5}>
-                      Not started
-                    </TableCell>
-                    <TableCell className="text-right text-muted-foreground">—</TableCell>
-                  </TableRow>
-                );
-              }
-              return rows.map((t, i) => (
-                <TableRow key={t.id} data-student={s.studentId} data-attempt={t.number}>
-                  <TableCell className="font-medium">
-                    {i === 0 ? `${s.lastName}, ${s.firstName}` : ""}
-                  </TableCell>
-                  <TableCell className="tabular">{t.number}</TableCell>
-                  <TableCell>
-                    <Badge
-                      className={
-                        t.status === "graded"
-                          ? "bg-success-soft text-success-foreground"
-                          : t.status === "submitted"
-                            ? "bg-warning-soft text-warning-foreground"
-                            : "bg-brand-soft text-brand-deep"
-                      }
-                    >
-                      {t.status === "graded"
-                        ? "Graded"
-                        : t.status === "submitted"
-                          ? "Needs grading"
-                          : "In progress"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right tabular">
-                    {t.score !== null && t.maxScore !== null
-                      ? `${t.score} / ${t.maxScore} · ${Math.round(t.percent ?? 0)}%`
-                      : "—"}
-                  </TableCell>
-                  <TableCell className="hidden text-right text-muted-foreground sm:table-cell">
-                    {t.submittedAt ? (
-                      <LocalTime date={t.submittedAt} />
-                    ) : (
-                      <LocalTime date={t.startedAt} />
-                    )}
-                  </TableCell>
-                  <TableCell className="hidden text-right text-muted-foreground tabular md:table-cell">
-                    {t.tabSwitches}
-                  </TableCell>
-                  <TableCell className="text-right font-semibold tabular">
-                    {i === 0 && final
-                      ? `${final.totalEarned} / ${final.totalPossible} · ${Math.round(final.percent)}%`
-                      : ""}
-                  </TableCell>
-                </TableRow>
-              ));
-            })}
+            {rows.map((s) => (
+              <TableRow key={s.studentId} data-student={s.studentId}>
+                <TableCell className="align-top font-medium">
+                  {s.lastName}, {s.firstName}
+                </TableCell>
+                <TableCell className="align-top">
+                  {s.attempts.length === 0 ? (
+                    <span className="text-muted-foreground">Not started</span>
+                  ) : (
+                    <ul className="flex flex-col gap-1">
+                      {s.attempts.map((t) => {
+                        const best = t.id === s.bestAttemptId;
+                        return (
+                          <li
+                            key={t.id}
+                            className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm"
+                            data-attempt={t.number}
+                          >
+                            <span className={best ? "font-semibold" : ""}>Attempt {t.number}</span>
+                            {t.status === "in_progress" ? (
+                              <Badge className="bg-brand-soft text-brand-deep">In progress</Badge>
+                            ) : (
+                              <>
+                                <span className={`tabular ${best ? "font-semibold" : ""}`}>
+                                  {t.score !== null && t.maxScore !== null
+                                    ? `${fmt(t.score)} / ${fmt(t.maxScore)} · ${Math.round(t.percent ?? 0)}%`
+                                    : "—"}
+                                </span>
+                                {t.pendingManual > 0 ? (
+                                  <Badge className="bg-warning-soft text-warning-foreground">
+                                    {t.pendingManual} to grade
+                                  </Badge>
+                                ) : null}
+                                <span className="text-xs text-muted-foreground">
+                                  {t.submittedAt ? <LocalTime date={t.submittedAt} /> : null}
+                                  {t.tabSwitches > 0
+                                    ? ` · ${t.tabSwitches} tab ${t.tabSwitches === 1 ? "switch" : "switches"}`
+                                    : ""}
+                                </span>
+                              </>
+                            )}
+                            {t.status !== "in_progress" ? (
+                              <Link
+                                href={`/app/results/attempts/${t.id}`}
+                                className="text-xs font-medium text-brand-deep hover:underline"
+                              >
+                                Review
+                              </Link>
+                            ) : null}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </TableCell>
+                <TableCell className="hidden align-top text-sm text-muted-foreground md:table-cell">
+                  {(() => {
+                    const c = s.attempts.map((t) => t.corrections).filter(Boolean);
+                    if (c.length === 0) return "—";
+                    const total = c.reduce((n, x) => n + (x?.total ?? 0), 0);
+                    const approved = c.reduce((n, x) => n + (x?.approved ?? 0), 0);
+                    return `${approved}/${total} approved`;
+                  })()}
+                </TableCell>
+                <TableCell className="text-right align-top font-semibold tabular">
+                  {s.final ? (
+                    <>
+                      {fmt(s.final.totalEarned)} / {fmt(s.final.totalPossible)} ·{" "}
+                      {Math.round(s.final.percent)}%
+                      {summative && s.final.tier ? (
+                        <span className="block text-xs font-normal text-muted-foreground">
+                          Tier {s.final.tier} · {s.final.targetsBelowThreshold} below threshold
+                        </span>
+                      ) : null}
+                    </>
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </div>

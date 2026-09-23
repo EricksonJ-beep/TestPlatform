@@ -663,6 +663,10 @@ export const responses = pgTable(
     isCorrect: boolean("is_correct"),
     flagged: boolean("flagged").default(false).notNull(),
     answeredAt: timestamp("answered_at", { withTimezone: true }),
+    /** Set when a teacher grades or overrides this response (manual_score holds the points). */
+    graderNote: text("grader_note"),
+    gradedBy: uuid("graded_by").references(() => users.id, { onDelete: "set null" }),
+    gradedAt: timestamp("graded_at", { withTimezone: true }),
     ...timestamps,
   },
   (t) => [
