@@ -25,7 +25,7 @@ export default async function DashboardPage() {
     getDashboardCounts(session.userId),
     getRecentResults(session.userId),
   ]);
-  const attention = counts.needsGrading;
+  const attention = counts.needsGrading + counts.correctionsAwaiting;
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6">
@@ -55,10 +55,11 @@ export default async function DashboardPage() {
           href="/app/assign"
         />
         <MetricCard
-          label="Questions"
-          value={counts.questions}
-          hint="In your banks"
-          href="/app/banks"
+          label="Corrections"
+          value={counts.correctionsAwaiting}
+          hint="Sets awaiting your approval"
+          href="/app/results/corrections"
+          attention={counts.correctionsAwaiting > 0}
         />
         <MetricCard label="Classes" value={counts.classes} hint="This term" href="/app/classes" />
       </div>

@@ -64,7 +64,13 @@ export const bloomLevel = pgEnum("bloom_level", [
   "create",
 ]);
 export const attemptStatus = pgEnum("attempt_status", ["in_progress", "submitted", "graded"]);
-export const correctionStatus = pgEnum("correction_status", ["submitted", "approved", "returned"]);
+/** draft = autosaved, not yet submitted; submitted = awaiting review (auto mode approves at submit). */
+export const correctionStatus = pgEnum("correction_status", [
+  "draft",
+  "submitted",
+  "approved",
+  "returned",
+]);
 export const sharePermission = pgEnum("share_permission", ["view", "copy", "co_edit"]);
 export const shareResourceType = pgEnum("share_resource_type", ["question_bank", "assessment"]);
 export const stimulusKind = pgEnum("stimulus_kind", ["text", "image", "video", "audio"]);
@@ -777,13 +783,14 @@ export const corrections = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     correctAnswer: text("correct_answer").notNull(),
     explanation: text("explanation").notNull(),
-    status: correctionStatus("status").default("submitted").notNull(),
+    status: correctionStatus("status").default("draft").notNull(),
     aiFlag: boolean("ai_flag").default(false).notNull(),
     aiNote: text("ai_note"),
     reviewerId: uuid("reviewer_id").references(() => users.id, { onDelete: "set null" }),
     reviewerNote: text("reviewer_note"),
     reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
-    submittedAt: timestamp("submitted_at", { withTimezone: true }).defaultNow().notNull(),
+    /** null while the row is a draft. */
+    submittedAt: timestamp("submitted_at", { withTimezone: true }),
     ...timestamps,
   },
   (t) => [

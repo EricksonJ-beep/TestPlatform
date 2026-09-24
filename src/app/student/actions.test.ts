@@ -24,6 +24,7 @@ import { db, schema } from "@/db";
 import { listStudentAssignments } from "@/lib/queries/assignments";
 import { getRunnerPayload, listAssignmentAttempts, listFinalScores } from "@/lib/queries/attempts";
 import { recordTabSwitch, saveAnswer, setFlag, startAttempt, submitAttempt } from "./actions";
+import { saveCorrection, submitCorrections } from "./corrections/actions";
 
 const ids = {
   teacher: "",
@@ -368,6 +369,18 @@ describe("submitAttempt", () => {
       .update(schema.assignments)
       .set({ retakeWaitHours: 0 })
       .where(eq(schema.assignments.id, ids.assignment));
+    // Ticket 1.11: no retake until the missed LT1 items (MC3 wrong, MC4 blank) are corrected. Auto review approves at submit.
+    const locked = await startAttempt(ids.assignment, "AB3K9Q");
+    expect(locked).toMatchObject({ ok: false, status: 403 });
+    expect(locked.ok ? "" : locked.error).toMatch(/Finish your corrections/);
+    const why = {
+      correctAnswer: "Right",
+      explanation:
+        "I rushed and picked the first option. The right one is the one that matches our notes.",
+    };
+    await ok(saveCorrection(ids.attempt, ids.mc[2].id, why));
+    await ok(saveCorrection(ids.attempt, ids.mc[3].id, why));
+    expect((await ok(submitCorrections(ids.attempt))).state).toBe("approved");
     const { attemptId } = await ok(startAttempt(ids.assignment, "AB3K9Q"));
     const a2 = (await db.query.attempts.findFirst({ where: eq(schema.attempts.id, attemptId) }))!;
     expect(a2.number).toBe(2);
@@ -385,9 +398,10 @@ describe("submitAttempt", () => {
       .update(schema.attempts)
       .set({ dueAt: new Date(Date.now() - 60_000) })
       .where(eq(schema.attempts.id, attemptId));
-    const next = await ok(startAttempt(ids.assignment, "AB3K9Q"));
-    expect(next.resumed).toBe(false);
-    expect(next.attemptId).not.toBe(attemptId);
+    // Coming back finalizes the expired attempt; a blank attempt then needs corrections before attempt 2 (1.11).
+    const next = await startAttempt(ids.assignment, "AB3K9Q");
+    expect(next).toMatchObject({ ok: false, status: 403 });
+    expect(next.ok ? "" : next.error).toMatch(/Finish your corrections on attempt 1/);
     const old = (await db.query.attempts.findFirst({ where: eq(schema.attempts.id, attemptId) }))!;
     expect(old.status).toBe("graded"); // a blank extended response is wrong, not pending;
     expect(old.submittedAt).toEqual(old.dueAt);

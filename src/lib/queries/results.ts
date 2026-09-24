@@ -19,7 +19,13 @@ export type GradebookAttempt = {
   submittedAt: Date | null;
   tabSwitches: number;
   pendingManual: number;
-  corrections: { total: number; approved: number } | null;
+  corrections: {
+    total: number;
+    approved: number;
+    submitted: number;
+    returned: number;
+    state: "in_progress" | "submitted" | "returned" | "approved";
+  } | null;
 };
 
 export type GradebookRow = {
@@ -69,6 +75,8 @@ export async function getGradebook(assignmentId: string): Promise<GradebookRow[]
       pendingManual: sql<number>`(select count(*)::int from ${schema.responses} r where r.attempt_id = attempts.id and r.auto_score is null and r.manual_score is null)`,
       correctionsTotal: sql<number>`(select count(*)::int from ${schema.corrections} c where c.attempt_id = attempts.id)`,
       correctionsApproved: sql<number>`(select count(*)::int from ${schema.corrections} c where c.attempt_id = attempts.id and c.status = 'approved')`,
+      correctionsSubmitted: sql<number>`(select count(*)::int from ${schema.corrections} c where c.attempt_id = attempts.id and c.status = 'submitted')`,
+      correctionsReturned: sql<number>`(select count(*)::int from ${schema.corrections} c where c.attempt_id = attempts.id and c.status = 'returned')`,
     })
     .from(schema.attempts)
     .where(eq(schema.attempts.assignmentId, assignmentId))
@@ -82,12 +90,33 @@ export async function getGradebook(assignmentId: string): Promise<GradebookRow[]
   return roster.map((s) => {
     const mine = attempts
       .filter((a) => a.studentId === s.studentId)
-      .map(({ correctionsTotal, correctionsApproved, ...a }): GradebookAttempt => ({
-        ...a,
-        corrections: correctionsTotal
-          ? { total: correctionsTotal, approved: correctionsApproved }
-          : null,
-      }));
+      .map(
+        ({
+          correctionsTotal,
+          correctionsApproved,
+          correctionsSubmitted,
+          correctionsReturned,
+          ...a
+        }): GradebookAttempt => ({
+          ...a,
+          corrections: correctionsTotal
+            ? {
+                total: correctionsTotal,
+                approved: correctionsApproved,
+                submitted: correctionsSubmitted,
+                returned: correctionsReturned,
+                state:
+                  correctionsSubmitted > 0
+                    ? "submitted"
+                    : correctionsReturned > 0
+                      ? "returned"
+                      : correctionsApproved === correctionsTotal
+                        ? "approved"
+                        : "in_progress",
+              }
+            : null,
+        })
+      );
     const finished = mine.filter((a) => a.status !== "in_progress" && a.score !== null);
     const best = finished.reduce<GradebookAttempt | null>(
       (b, a) => (b === null || (a.score ?? 0) > (b.score ?? 0) ? a : b),
@@ -136,6 +165,13 @@ export type ReviewItem = {
     flagged: boolean;
     graderNote: string | null;
     gradedAt: Date | null;
+  } | null;
+  correction: {
+    correctAnswer: string;
+    explanation: string;
+    status: "draft" | "submitted" | "approved" | "returned";
+    reviewerNote: string | null;
+    aiFlag: boolean;
   } | null;
 };
 
@@ -232,6 +268,11 @@ export async function getAttemptReview(attemptId: string): Promise<AttemptReview
     .select()
     .from(schema.responses)
     .where(eq(schema.responses.attemptId, attemptId));
+  const corrections = await db
+    .select()
+    .from(schema.corrections)
+    .where(eq(schema.corrections.attemptId, attemptId));
+  const cBy = new Map(corrections.map((c) => [c.questionId, c]));
   const targetIds = [
     ...new Set(set.map((s) => s.learningTargetId).filter((x): x is string => !!x)),
   ];
@@ -297,6 +338,18 @@ export async function getAttemptReview(attemptId: string): Promise<AttemptReview
             gradedAt: r.gradedAt,
           }
         : null,
+      correction: (() => {
+        const c = cBy.get(s.questionId);
+        return c
+          ? {
+              correctAnswer: c.correctAnswer,
+              explanation: c.explanation,
+              status: c.status,
+              reviewerNote: c.reviewerNote,
+              aiFlag: c.aiFlag,
+            }
+          : null;
+      })(),
     });
   }
 

@@ -7,6 +7,8 @@ import { db, schema } from "@/db";
 
 export type DashboardCounts = {
   needsGrading: number;
+  /** Submitted correction sets waiting on the teacher (teacher-approved review mode). */
+  correctionsAwaiting: number;
   openTests: number;
   questions: number;
   classes: number;
@@ -20,6 +22,15 @@ export async function getDashboardCounts(teacherId: string): Promise<DashboardCo
     .from(schema.attempts)
     .innerJoin(schema.assignments, eq(schema.attempts.assignmentId, schema.assignments.id))
     .where(and(eq(schema.assignments.ownerId, teacherId), eq(schema.attempts.status, "submitted")));
+
+  const [correctionsAwaiting] = await db
+    .select({ n: sql<number>`count(distinct ${schema.corrections.attemptId})::int` })
+    .from(schema.corrections)
+    .innerJoin(schema.attempts, eq(schema.corrections.attemptId, schema.attempts.id))
+    .innerJoin(schema.assignments, eq(schema.attempts.assignmentId, schema.assignments.id))
+    .where(
+      and(eq(schema.assignments.ownerId, teacherId), eq(schema.corrections.status, "submitted"))
+    );
 
   const [openTests] = await db
     .select({ n: count() })
@@ -44,6 +55,7 @@ export async function getDashboardCounts(teacherId: string): Promise<DashboardCo
 
   return {
     needsGrading: needsGrading.n,
+    correctionsAwaiting: correctionsAwaiting?.n ?? 0,
     openTests: openTests.n,
     questions: questions.n,
     classes: classes.n,

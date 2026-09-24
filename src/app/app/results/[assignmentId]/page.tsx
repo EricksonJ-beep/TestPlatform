@@ -144,11 +144,25 @@ export default async function AssignmentResultsPage({
                 </TableCell>
                 <TableCell className="hidden align-top text-sm text-muted-foreground md:table-cell">
                   {(() => {
-                    const c = s.attempts.map((t) => t.corrections).filter(Boolean);
-                    if (c.length === 0) return "—";
-                    const total = c.reduce((n, x) => n + (x?.total ?? 0), 0);
-                    const approved = c.reduce((n, x) => n + (x?.approved ?? 0), 0);
-                    return `${approved}/${total} approved`;
+                    const latest = [...s.attempts].reverse().find((t) => t.corrections);
+                    const c = latest?.corrections;
+                    if (!latest || !c) return "—";
+                    const label =
+                      c.state === "submitted"
+                        ? "Awaiting approval"
+                        : c.state === "returned"
+                          ? "Returned"
+                          : c.state === "approved"
+                            ? "Approved"
+                            : "In progress";
+                    return (
+                      <span data-corrections-status>
+                        {label}
+                        <span className="block text-xs">
+                          attempt {latest.number} · {c.approved}/{c.total} approved
+                        </span>
+                      </span>
+                    );
                   })()}
                 </TableCell>
                 <TableCell className="text-right align-top font-semibold tabular">

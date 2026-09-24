@@ -5,6 +5,7 @@
 import { and, asc, desc, eq, inArray, or, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { assignmentStatus, nextAttemptAt, type AssignmentStatus } from "@/lib/assignments";
+import { getCorrectionsSummary, type CorrectionsSetSummary } from "@/lib/queries/corrections";
 
 export type AssignmentRow = {
   id: string;
@@ -116,7 +117,15 @@ export async function listAssignableAssessments(teacherId: string) {
 // Student side
 // ---------------------------------------------------------------------------
 
-export type StudentCardState = "upcoming" | "not_started" | "in_progress" | "done" | "closed";
+export type StudentCardState =
+  | "upcoming"
+  | "not_started"
+  | "in_progress"
+  | "corrections_needed"
+  | "corrections_returned"
+  | "corrections_submitted"
+  | "done"
+  | "closed";
 
 export type StudentAssignment = {
   id: string;
@@ -137,6 +146,8 @@ export type StudentAssignment = {
   attemptsUsed: number;
   inProgressAttemptId: string | null;
   bestPercent: number | null;
+  /** Corrections on the latest finished attempt; null when none are needed (or not applicable). */
+  corrections: CorrectionsSetSummary | null;
   state: StudentCardState;
 };
 
@@ -175,6 +186,9 @@ export async function listStudentAssignments(
       inProgressAttemptId: sql<
         string | null
       >`(select a.id from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status = 'in_progress' order by a.number desc limit 1)`,
+      latestAttemptId: sql<
+        string | null
+      >`(select a.id from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status <> 'in_progress' order by a.number desc limit 1)`,
       bestPercent: sql<
         number | null
       >`(select max(a.percent) from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status <> 'in_progress')`,
@@ -186,17 +200,31 @@ export async function listStudentAssignments(
     .where(inArray(schema.assignments.classId, classIds))
     .orderBy(asc(schema.assignments.closesAt), desc(schema.assignments.createdAt));
 
+  // Corrections state for the latest finished attempt (formative/summative only; practice never has any).
+  const summaries = new Map<string, CorrectionsSetSummary>();
+  await Promise.all(
+    rows.map(async (r) => {
+      if (r.type === "practice" || !r.latestAttemptId) return;
+      const s = await getCorrectionsSummary(r.latestAttemptId);
+      if (s && s.state !== "none") summaries.set(r.id, s);
+    })
+  );
+
   return rows
-    .map(({ accessCode, lastSubmittedAt, ...r }): StudentAssignment => {
+    .map(({ accessCode, lastSubmittedAt, latestAttemptId: _latest, ...r }): StudentAssignment => {
       const status = assignmentStatus(r, now);
       const next = nextAttemptAt(
         r.retakeWaitHours,
         lastSubmittedAt ? new Date(lastSubmittedAt) : null
       );
+      const corrections = summaries.get(r.id) ?? null;
       let state: StudentCardState;
       if (status === "scheduled") state = "upcoming";
       else if (status === "closed") state = "closed";
       else if (r.inProgressAttemptId) state = "in_progress";
+      else if (corrections?.state === "needed") state = "corrections_needed";
+      else if (corrections?.state === "returned") state = "corrections_returned";
+      else if (corrections?.state === "submitted") state = "corrections_submitted";
       else if (r.attemptsUsed > 0) state = "done";
       else state = "not_started";
       return {
@@ -204,6 +232,7 @@ export async function listStudentAssignments(
         needsCode: !!accessCode,
         status,
         state,
+        corrections,
         bestPercent: r.bestPercent === null ? null : Number(r.bestPercent),
         nextAttemptAt: next && next > now ? next : null,
       };

@@ -123,6 +123,46 @@ export function ReviewItemCard({
           {r.graderNote}
         </p>
       ) : null}
+      {item.correction ? (
+        <div
+          className="mt-3 rounded-md border border-dashed border-brand/50 px-3 py-2 text-sm"
+          data-correction
+        >
+          <p className="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground">
+            Correction
+            <span
+              className={cn(
+                "rounded-md px-1.5 py-0.5",
+                item.correction.status === "approved"
+                  ? "bg-success-soft text-success-foreground"
+                  : item.correction.status === "returned"
+                    ? "bg-warning-soft text-warning-foreground"
+                    : item.correction.status === "submitted"
+                      ? "bg-brand-soft text-brand-deep"
+                      : "bg-muted"
+              )}
+            >
+              {item.correction.status}
+            </span>
+            {item.correction.aiFlag ? (
+              <span className="text-warning-foreground">AI flagged</span>
+            ) : null}
+          </p>
+          <p className="mt-1">
+            <span className="text-xs font-medium text-muted-foreground">Their answer: </span>
+            <span className="whitespace-pre-wrap">{item.correction.correctAnswer || "—"}</span>
+          </p>
+          <p className="mt-1">
+            <span className="text-xs font-medium text-muted-foreground">Why: </span>
+            <span className="whitespace-pre-wrap">{item.correction.explanation || "—"}</span>
+          </p>
+          {item.correction.reviewerNote ? (
+            <p className="mt-1 text-xs text-muted-foreground">
+              Your note: {item.correction.reviewerNote}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
 
       {showForm ? (
         <div className="mt-3 border-t border-border pt-3">

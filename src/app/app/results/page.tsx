@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BarChart3, ClipboardCheck } from "lucide-react";
+import { BarChart3, ClipboardCheck, MessageSquareText } from "lucide-react";
 import { requireTeacher } from "@/lib/authz";
 import { listTeacherAssignments } from "@/lib/queries/assignments";
+import { countCorrectionsAwaiting } from "@/lib/queries/corrections";
 import { countPendingByAssignment } from "@/lib/queries/results";
 import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
@@ -19,9 +20,10 @@ const STATUS = {
 /** Results per assignment, plus the manual grading queue. */
 export default async function ResultsPage() {
   const session = await requireTeacher();
-  const [assignments, pending] = await Promise.all([
+  const [assignments, pending, corrections] = await Promise.all([
     listTeacherAssignments(session.userId),
     countPendingByAssignment(session.userId),
+    countCorrectionsAwaiting(session.userId),
   ]);
   const totalPending = [...pending.values()].reduce((a, b) => a + b, 0);
   return (
@@ -33,6 +35,14 @@ export default async function ResultsPage() {
             Every attempt, with the highest score counting. Pick an assignment.
           </p>
         </div>
+        <Button
+          variant={corrections > 0 ? "default" : "outline"}
+          nativeButton={false}
+          render={<Link href="/app/results/corrections" />}
+        >
+          <MessageSquareText data-icon="inline-start" aria-hidden />
+          Corrections{corrections > 0 ? ` · ${corrections}` : ""}
+        </Button>
         <Button
           variant={totalPending > 0 ? "default" : "outline"}
           nativeButton={false}

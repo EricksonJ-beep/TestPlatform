@@ -6,6 +6,7 @@ import { isAuthzError, requireAssignmentAccess } from "@/lib/authz";
 import { listStudentAssignments } from "@/lib/queries/assignments";
 import { listStudentAttempts } from "@/lib/queries/attempts";
 import { LocalTime } from "@/components/local-time";
+import { Button } from "@/components/ui/button";
 import { StartForm } from "./start-form";
 
 export const metadata: Metadata = { title: "Assignment" };
@@ -28,8 +29,12 @@ export default async function StudentAssignmentPage({
   const attempts = await listStudentAttempts(assignmentId, access.userId);
   const attemptsLeft =
     a.attemptsAllowed === null ? null : Math.max(0, a.attemptsAllowed - a.attemptsUsed);
+  const c = a.corrections;
+  const correctionsBlock = !!c && c.state !== "approved" && c.state !== "none";
   const canStart =
-    a.status === "open" && (a.state === "in_progress" || attemptsLeft === null || attemptsLeft > 0);
+    a.status === "open" &&
+    (a.state === "in_progress" || attemptsLeft === null || attemptsLeft > 0) &&
+    !correctionsBlock;
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-5">
@@ -80,6 +85,32 @@ export default async function StudentAssignmentPage({
           Your next attempt opens <LocalTime date={a.nextAttemptAt} />. Your teacher set a{" "}
           {a.retakeWaitHours}-hour wait between attempts.
         </p>
+      ) : c && correctionsBlock && a.state !== "in_progress" ? (
+        <div
+          className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm"
+          data-corrections-gate
+        >
+          <span className="mr-auto inline-flex items-center gap-2">
+            <Lock className="size-4 text-muted-foreground" aria-hidden />
+            {c.state === "submitted"
+              ? "Your corrections are in. Your teacher will approve them or send them back."
+              : c.state === "returned"
+                ? "Your teacher sent your corrections back. Revise and resubmit to unlock your next attempt."
+                : `Correct ${c.remaining} missed ${c.remaining === 1 ? "question" : "questions"} on attempt ${c.attemptNumber}${attemptsLeft === null || attemptsLeft > 0 ? " to unlock your next attempt" : ""}.`}
+          </span>
+          <Button
+            size="lg"
+            variant={c.state === "submitted" ? "outline" : "default"}
+            nativeButton={false}
+            render={<Link href={`/student/corrections/${c.attemptId}`} />}
+          >
+            {c.state === "submitted"
+              ? "View corrections"
+              : c.state === "returned"
+                ? "Revise corrections"
+                : "Do corrections"}
+          </Button>
+        </div>
       ) : canStart ? (
         <StartForm
           assignmentId={a.id}
@@ -108,6 +139,20 @@ export default async function StudentAssignmentPage({
                     ? `${t.score} / ${t.maxScore} · ${Math.round(t.percent ?? 0)}%${t.status === "submitted" ? " so far" : ""}`
                     : "Submitted"}
                 </span>
+                {c && c.attemptId === t.id ? (
+                  <Link
+                    href={`/student/corrections/${t.id}`}
+                    className="text-xs font-medium text-brand-deep hover:underline"
+                  >
+                    {c.state === "approved"
+                      ? "Corrections approved"
+                      : c.state === "submitted"
+                        ? "Corrections submitted"
+                        : c.state === "returned"
+                          ? "Corrections returned"
+                          : `Corrections · ${c.done} of ${c.needed}`}
+                  </Link>
+                ) : null}
               </li>
             ))}
           </ul>

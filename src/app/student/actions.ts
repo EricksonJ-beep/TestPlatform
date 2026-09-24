@@ -6,6 +6,8 @@ import { z } from "zod";
 import { db, schema } from "@/db";
 import { canStartAttempt, startReasonText } from "@/lib/assignments";
 import { createAttempt, finalizeAttempt } from "@/lib/attempts";
+import { correctionsClear } from "@/lib/corrections";
+import { getCorrectionsSummary, latestFinishedAttemptId } from "@/lib/queries/corrections";
 import {
   ActionError,
   type AttemptAccess,
@@ -110,6 +112,17 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
             ? [startReasonText(check)]
             : [],
       }
+    );
+  }
+  // Rule (PLAN.md §4): no retake until corrections on the last attempt are done (and approved, in that mode).
+  const lastAttemptId = await latestFinishedAttemptId(assignmentId, access.userId);
+  const corrections = lastAttemptId ? await getCorrectionsSummary(lastAttemptId) : null;
+  if (corrections && !correctionsClear(corrections)) {
+    throw new ActionError(
+      corrections.state === "submitted"
+        ? "Your corrections are waiting for your teacher's approval."
+        : `Finish your corrections on attempt ${corrections.attemptNumber} first.`,
+      403
     );
   }
   let created;
