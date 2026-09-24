@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db, schema } from "@/db";
 import { ActionError, type AttemptAccess, requireAttemptAccess, withAuthz } from "@/lib/authz";
+import { recomputeGates } from "@/lib/gates";
 
 function revalidate(assignmentId: string, attemptId: string) {
   revalidatePath("/app");
@@ -40,6 +41,7 @@ async function reviewSet(
     )
     .returning({ id: schema.corrections.id });
   if (updated.length === 0) throw new ActionError("Nothing here is waiting for review.", 409);
+  await recomputeGates(access.attempt.assignmentId, access.attempt.studentId);
   revalidate(access.attempt.assignmentId, attemptId);
   return { count: updated.length };
 }

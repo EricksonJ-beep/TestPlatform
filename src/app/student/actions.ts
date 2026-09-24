@@ -7,7 +7,10 @@ import { db, schema } from "@/db";
 import { canStartAttempt, startReasonText } from "@/lib/assignments";
 import { createAttempt, finalizeAttempt } from "@/lib/attempts";
 import { correctionsClear } from "@/lib/corrections";
+import { setOptIn } from "@/lib/gates";
 import { getCorrectionsSummary, latestFinishedAttemptId } from "@/lib/queries/corrections";
+import { getRetakeStatus } from "@/lib/queries/retakes";
+import { BLOCKER_TEXT } from "@/lib/retakes";
 import {
   ActionError,
   type AttemptAccess,
@@ -125,9 +128,18 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
       403
     );
   }
+  // Rule (PLAN.md §2, §4): a summative retake covers only the required and opted-in targets, and only once every gate is open.
+  let scope: string[] | null = null;
+  if (used > 0) {
+    const retake = await getRetakeStatus(assignmentId, access.userId);
+    if (retake) {
+      if (!retake.plan.canStart) throw new ActionError(BLOCKER_TEXT[retake.plan.blocker!], 403);
+      scope = retake.plan.selected;
+    }
+  }
   let created;
   try {
-    created = await createAttempt({ assignmentId, studentId: access.userId, now });
+    created = await createAttempt({ assignmentId, studentId: access.userId, scope, now });
   } catch (err) {
     if (err instanceof Error && err.message === "empty")
       throw new ActionError("This test has no questions yet. Tell your teacher.", 409);
@@ -136,6 +148,33 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
   revalidate(assignmentId);
   return { attemptId: created.attemptId, resumed: false };
 });
+
+/** Opt in to (or out of) retaking a target that is already proficient (PLAN.md §4). */
+export const setRetakeOptIn = withAuthz(
+  async (assignmentId: string, learningTargetId: string, optedIn: boolean) => {
+    const access = await requireAssignmentAccess(assignmentId);
+    if (access.as !== "student") throw new ActionError("Students only.", 403);
+    const status = await getRetakeStatus(assignmentId, access.userId);
+    if (!status) throw new ActionError("There's no retake to choose on this assignment.", 409);
+    if (!status.optionalRetakes)
+      throw new ActionError("Optional retakes are turned off for this test.", 403);
+    const target = status.targets.find((t) => t.id === learningTargetId);
+    if (!target) throw new ActionError("That target isn't on this test.", 400);
+    if (target.required) throw new ActionError("That target is already required.", 409);
+    const open = await db.query.attempts.findFirst({
+      columns: { id: true },
+      where: and(
+        eq(schema.attempts.assignmentId, assignmentId),
+        eq(schema.attempts.studentId, access.userId),
+        eq(schema.attempts.status, "in_progress")
+      ),
+    });
+    if (open) throw new ActionError("Finish the attempt you're on first.", 409);
+    await setOptIn(assignmentId, access.userId, learningTargetId, !!optedIn);
+    revalidate(assignmentId);
+    return { optedIn: !!optedIn };
+  }
+);
 
 // Rule: only the attempt's own student may write to it, only while in progress, only before the deadline (+ grace).
 async function writableAttempt(access: AttemptAccess) {

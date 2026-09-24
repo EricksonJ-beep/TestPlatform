@@ -6,12 +6,14 @@ import { isAuthzError, requireAssignmentAccess } from "@/lib/authz";
 import { listStudentAssignments } from "@/lib/queries/assignments";
 import { listStudentAttempts } from "@/lib/queries/attempts";
 import { LocalTime } from "@/components/local-time";
+import { TargetChip } from "@/components/targets/target-chip";
 import { Button } from "@/components/ui/button";
+import { RetakePicker } from "../../retake-picker";
 import { StartForm } from "./start-form";
 
 export const metadata: Metadata = { title: "Assignment" };
 
-/** The launch pad for one assignment: rules, the access code prompt, and past attempts. */
+/** The launch pad for one assignment: rules, the access code prompt, retake choices, and past attempts. */
 export default async function StudentAssignmentPage({
   params,
 }: PageProps<"/student/assignments/[assignmentId]">) {
@@ -31,9 +33,10 @@ export default async function StudentAssignmentPage({
     a.attemptsAllowed === null ? null : Math.max(0, a.attemptsAllowed - a.attemptsUsed);
   const c = a.corrections;
   const correctionsBlock = !!c && c.state !== "approved" && c.state !== "none";
+  const retaking = a.state === "retake_required" || a.state === "retake_available";
   const canStart =
     a.status === "open" &&
-    (a.state === "in_progress" || attemptsLeft === null || attemptsLeft > 0) &&
+    (a.state === "in_progress" || a.state === "not_started" || retaking) &&
     !correctionsBlock;
 
   return (
@@ -76,14 +79,20 @@ export default async function StudentAssignmentPage({
         </p>
       </div>
 
+      {a.retake && a.attemptsUsed > 0 && a.state !== "in_progress" ? (
+        <section className="rounded-lg border border-border bg-card px-4 py-3" data-retake-panel>
+          <h2 className="mb-2 text-sm font-medium">Retake by learning target</h2>
+          <RetakePicker
+            assignmentId={a.id}
+            retake={a.retake}
+            checklist={a.state === "relearning" || retaking}
+          />
+        </section>
+      ) : null}
+
       {a.state === "upcoming" ? (
         <p className="rounded-lg border border-border bg-card px-4 py-3 text-sm">
           This opens <LocalTime date={a.opensAt} />. Check back then.
-        </p>
-      ) : a.nextAttemptAt && a.state !== "in_progress" ? (
-        <p className="rounded-lg border border-border bg-card px-4 py-3 text-sm">
-          Your next attempt opens <LocalTime date={a.nextAttemptAt} />. Your teacher set a{" "}
-          {a.retakeWaitHours}-hour wait between attempts.
         </p>
       ) : c && correctionsBlock && a.state !== "in_progress" ? (
         <div
@@ -111,16 +120,61 @@ export default async function StudentAssignmentPage({
                 : "Do corrections"}
           </Button>
         </div>
+      ) : a.state === "relearning" ? (
+        <p
+          className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3 text-sm"
+          data-relearning-gate
+        >
+          <Lock className="size-4 text-muted-foreground" aria-hidden />
+          Finish the relearning checklist above for every target you&apos;re retaking. The retake
+          unlocks on its own.
+        </p>
+      ) : a.nextAttemptAt && a.state !== "in_progress" ? (
+        <p className="rounded-lg border border-border bg-card px-4 py-3 text-sm">
+          Your next attempt opens <LocalTime date={a.nextAttemptAt} />. Your teacher set a{" "}
+          {a.retakeWaitHours}-hour wait between attempts.
+        </p>
       ) : canStart ? (
         <StartForm
           assignmentId={a.id}
           needsCode={a.needsCode}
           resume={a.state === "in_progress"}
           timeLimitMinutes={a.timeLimitMinutes}
+          label={retaking ? "Start retake" : "Start"}
+          intro={
+            retaking && a.retake ? (
+              a.retake.plan.selected.length ? (
+                <p>
+                  Your retake covers{" "}
+                  {a.retake.targets
+                    .filter((t) => a.retake!.plan.selected.includes(t.id))
+                    .map((t) => t.code)
+                    .join(", ")}{" "}
+                  with new questions. Your highest score on each target counts.
+                  {a.timeLimitMinutes
+                    ? ` The clock runs for ${a.timeLimitMinutes} minutes once you start.`
+                    : ""}
+                </p>
+              ) : (
+                <p>Choose at least one target above to retake it.</p>
+              )
+            ) : a.type === "formative" && a.attemptsUsed > 0 ? (
+              <p>
+                Same quiz, new attempt. Your highest score counts.
+                {a.timeLimitMinutes
+                  ? ` The clock runs for ${a.timeLimitMinutes} minutes once you start.`
+                  : ""}
+              </p>
+            ) : undefined
+          }
         />
       ) : (
         <p className="rounded-lg border border-border bg-card px-4 py-3 text-sm">
-          {a.status === "closed" ? "This assignment has closed." : "You've used every attempt."}
+          {a.status === "closed"
+            ? "This assignment has closed."
+            : a.state === "done" && a.retake && a.retake.plan.required.length === 0
+              ? "All targets proficient. Nothing more to do here."
+              : "You've used every attempt."}
         </p>
       )}
 
@@ -130,7 +184,15 @@ export default async function StudentAssignmentPage({
           <ul className="divide-y divide-border">
             {attempts.map((t) => (
               <li key={t.id} className="flex flex-wrap items-center gap-3 px-4 py-3 text-sm">
-                <span className="font-medium">Attempt {t.number}</span>
+                <span className="font-medium">
+                  Attempt {t.number}
+                  {t.scope && a.retake
+                    ? ` · retake ${a.retake.targets
+                        .filter((x) => t.scope!.includes(x.id))
+                        .map((x) => x.code)
+                        .join(", ")}`
+                    : ""}
+                </span>
                 <span className="text-muted-foreground">
                   {t.submittedAt ? <LocalTime date={t.submittedAt} /> : null}
                 </span>
@@ -156,6 +218,19 @@ export default async function StudentAssignmentPage({
               </li>
             ))}
           </ul>
+          {a.resultsReleased && a.retake ? (
+            <p className="flex flex-wrap items-center gap-1.5 border-t border-border px-4 py-2 text-xs text-muted-foreground">
+              <span>Best per target:</span>
+              {a.retake.targets.map((t) => (
+                <TargetChip
+                  key={t.id}
+                  code={t.code}
+                  percent={t.percent}
+                  tone={t.required ? "required" : "default"}
+                />
+              ))}
+            </p>
+          ) : null}
           {a.resultsReleased && attempts.some((t) => t.status === "submitted") ? (
             <p className="border-t border-border px-4 py-2 text-xs text-muted-foreground">
               Some answers are waiting for your teacher to grade them; the score will update.

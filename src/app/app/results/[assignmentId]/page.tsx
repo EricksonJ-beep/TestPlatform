@@ -105,7 +105,10 @@ export default async function AssignmentResultsPage({
                             className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm"
                             data-attempt={t.number}
                           >
-                            <span className={best ? "font-semibold" : ""}>Attempt {t.number}</span>
+                            <span className={best ? "font-semibold" : ""}>
+                              Attempt {t.number}
+                              {t.scopeCodes ? ` · retake ${t.scopeCodes.join(", ")}` : ""}
+                            </span>
                             {t.status === "in_progress" ? (
                               <Badge className="bg-brand-soft text-brand-deep">In progress</Badge>
                             ) : (

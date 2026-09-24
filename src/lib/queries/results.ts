@@ -18,6 +18,8 @@ export type GradebookAttempt = {
   startedAt: Date;
   submittedAt: Date | null;
   tabSwitches: number;
+  /** Target codes a targeted retake covered; null for a full attempt. */
+  scopeCodes: string[] | null;
   pendingManual: number;
   corrections: {
     total: number;
@@ -72,6 +74,7 @@ export async function getGradebook(assignmentId: string): Promise<GradebookRow[]
       startedAt: schema.attempts.startedAt,
       submittedAt: schema.attempts.submittedAt,
       tabSwitches: schema.attempts.tabSwitches,
+      scope: schema.attempts.scope,
       pendingManual: sql<number>`(select count(*)::int from ${schema.responses} r where r.attempt_id = attempts.id and r.auto_score is null and r.manual_score is null)`,
       correctionsTotal: sql<number>`(select count(*)::int from ${schema.corrections} c where c.attempt_id = attempts.id)`,
       correctionsApproved: sql<number>`(select count(*)::int from ${schema.corrections} c where c.attempt_id = attempts.id and c.status = 'approved')`,
@@ -86,6 +89,14 @@ export async function getGradebook(assignmentId: string): Promise<GradebookRow[]
     .from(schema.assignmentFinalScores)
     .where(eq(schema.assignmentFinalScores.assignmentId, assignmentId));
   const finalBy = new Map(finals.map((f) => [f.studentId, f]));
+  const scopeIds = [...new Set(attempts.flatMap((a) => a.scope ?? []))];
+  const codes = scopeIds.length
+    ? await db
+        .select({ id: schema.learningTargets.id, code: schema.learningTargets.code })
+        .from(schema.learningTargets)
+        .where(inArray(schema.learningTargets.id, scopeIds))
+    : [];
+  const codeBy = new Map(codes.map((c) => [c.id, c.code]));
 
   return roster.map((s) => {
     const mine = attempts
@@ -96,9 +107,11 @@ export async function getGradebook(assignmentId: string): Promise<GradebookRow[]
           correctionsApproved,
           correctionsSubmitted,
           correctionsReturned,
+          scope,
           ...a
         }): GradebookAttempt => ({
           ...a,
+          scopeCodes: scope ? scope.map((id) => codeBy.get(id) ?? "?") : null,
           corrections: correctionsTotal
             ? {
                 total: correctionsTotal,

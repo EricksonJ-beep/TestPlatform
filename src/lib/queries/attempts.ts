@@ -338,6 +338,7 @@ export async function listStudentAttempts(assignmentId: string, studentId: strin
       maxScore: schema.attempts.maxScore,
       percent: schema.attempts.percent,
       submittedAt: schema.attempts.submittedAt,
+      scope: schema.attempts.scope,
     })
     .from(schema.attempts)
     .where(

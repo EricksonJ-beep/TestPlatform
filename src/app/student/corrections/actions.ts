@@ -12,6 +12,7 @@ import {
   withAuthz,
 } from "@/lib/authz";
 import { correctionIssues, ISSUE_TEXT, type CorrectionIssue } from "@/lib/corrections";
+import { recomputeGates } from "@/lib/gates";
 import { getCorrectionScope, getCorrectionsSummary } from "@/lib/queries/corrections";
 
 const draftSchema = z.object({
@@ -158,6 +159,7 @@ export const submitCorrections = withAuthz(async (attemptId: string) => {
       )
     );
   const summary = (await getCorrectionsSummary(attemptId))!;
+  await recomputeGates(scope.attempt.assignmentId, scope.attempt.studentId);
   revalidate(scope.attempt.assignmentId, attemptId);
   return { state: summary.state, assignmentId: scope.attempt.assignmentId };
 });

@@ -6,6 +6,8 @@ import { and, asc, desc, eq, inArray, or, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { assignmentStatus, nextAttemptAt, type AssignmentStatus } from "@/lib/assignments";
 import { getCorrectionsSummary, type CorrectionsSetSummary } from "@/lib/queries/corrections";
+import { getRetakeStatus, type RetakeStatus } from "@/lib/queries/retakes";
+import { cycleState, type CycleState } from "@/lib/retakes";
 
 export type AssignmentRow = {
   id: string;
@@ -117,15 +119,7 @@ export async function listAssignableAssessments(teacherId: string) {
 // Student side
 // ---------------------------------------------------------------------------
 
-export type StudentCardState =
-  | "upcoming"
-  | "not_started"
-  | "in_progress"
-  | "corrections_needed"
-  | "corrections_returned"
-  | "corrections_submitted"
-  | "done"
-  | "closed";
+export type StudentCardState = "upcoming" | "not_started" | "in_progress" | "closed" | CycleState;
 
 export type StudentAssignment = {
   id: string;
@@ -148,6 +142,8 @@ export type StudentAssignment = {
   bestPercent: number | null;
   /** Corrections on the latest finished attempt; null when none are needed (or not applicable). */
   corrections: CorrectionsSetSummary | null;
+  /** Summatives with a finished attempt: required / optional targets and their gates. */
+  retake: RetakeStatus | null;
   state: StudentCardState;
 };
 
@@ -202,11 +198,16 @@ export async function listStudentAssignments(
 
   // Corrections state for the latest finished attempt (formative/summative only; practice never has any).
   const summaries = new Map<string, CorrectionsSetSummary>();
+  const retakes = new Map<string, RetakeStatus>();
   await Promise.all(
     rows.map(async (r) => {
       if (r.type === "practice" || !r.latestAttemptId) return;
-      const s = await getCorrectionsSummary(r.latestAttemptId);
+      const [s, rt] = await Promise.all([
+        getCorrectionsSummary(r.latestAttemptId),
+        r.type === "summative" ? getRetakeStatus(r.id, studentId) : null,
+      ]);
       if (s && s.state !== "none") summaries.set(r.id, s);
+      if (rt) retakes.set(r.id, rt);
     })
   );
 
@@ -218,14 +219,21 @@ export async function listStudentAssignments(
         lastSubmittedAt ? new Date(lastSubmittedAt) : null
       );
       const corrections = summaries.get(r.id) ?? null;
+      const retake = retakes.get(r.id) ?? null;
+      const bestPercent = r.bestPercent === null ? null : Number(r.bestPercent);
       let state: StudentCardState;
       if (status === "scheduled") state = "upcoming";
       else if (status === "closed") state = "closed";
       else if (r.inProgressAttemptId) state = "in_progress";
-      else if (corrections?.state === "needed") state = "corrections_needed";
-      else if (corrections?.state === "returned") state = "corrections_returned";
-      else if (corrections?.state === "submitted") state = "corrections_submitted";
-      else if (r.attemptsUsed > 0) state = "done";
+      else if (r.attemptsUsed > 0)
+        state = cycleState({
+          type: r.type,
+          corrections: corrections?.state ?? "none",
+          attemptsUsed: r.attemptsUsed,
+          attemptsAllowed: r.attemptsAllowed,
+          bestPercent,
+          plan: retake?.plan ?? null,
+        });
       else state = "not_started";
       return {
         ...r,
@@ -233,6 +241,7 @@ export async function listStudentAssignments(
         status,
         state,
         corrections,
+        retake,
         bestPercent: r.bestPercent === null ? null : Number(r.bestPercent),
         nextAttemptAt: next && next > now ? next : null,
       };

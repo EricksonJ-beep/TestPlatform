@@ -19,6 +19,7 @@ import {
   type AttemptSummary,
   type ResponseRecord,
 } from "@/lib/grading";
+import { recomputeGates } from "@/lib/gates";
 import { loadBuilderSections } from "@/lib/queries/assessments";
 import { loadGradableQuestions } from "@/lib/queries/attempts";
 
@@ -296,4 +297,5 @@ export async function recomputeFinalScore(assignmentId: string, studentId: strin
       target: [schema.assignmentFinalScores.assignmentId, schema.assignmentFinalScores.studentId],
       set: values,
     });
+  await recomputeGates(assignmentId, studentId);
 }

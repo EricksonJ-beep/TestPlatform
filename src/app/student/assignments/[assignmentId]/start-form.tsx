@@ -13,11 +13,17 @@ export function StartForm({
   needsCode,
   resume,
   timeLimitMinutes,
+  label = "Start",
+  intro,
 }: {
   assignmentId: string;
   needsCode: boolean;
   resume: boolean;
   timeLimitMinutes: number | null;
+  /** Button text for retakes ("Start retake"). */
+  label?: string;
+  /** Replaces the default sentence above the button. */
+  intro?: React.ReactNode;
 }) {
   const router = useRouter();
   const { run, pending, error, fieldErrors } = useAction();
@@ -34,6 +40,8 @@ export function StartForm({
     >
       {resume ? (
         <p className="text-sm">You have an attempt in progress. Your answers are saved.</p>
+      ) : intro ? (
+        <div className="text-sm">{intro}</div>
       ) : (
         <p className="text-sm">
           {timeLimitMinutes
@@ -62,7 +70,7 @@ export function StartForm({
       <div>
         <Button type="submit" size="lg" disabled={pending}>
           <Play data-icon="inline-start" aria-hidden />
-          {resume ? "Continue" : "Start"}
+          {resume ? "Continue" : label}
         </Button>
       </div>
     </form>

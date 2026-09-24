@@ -3,6 +3,7 @@ import { Clock, Lock } from "lucide-react";
 import type { StudentAssignment } from "@/lib/queries/assignments";
 import { LocalTime } from "@/components/local-time";
 import { Button } from "@/components/ui/button";
+import { RetakePicker } from "./retake-picker";
 
 const PILL: Record<StudentAssignment["state"], { label: string; className: string }> = {
   upcoming: { label: "Opens soon", className: "bg-muted text-muted-foreground" },
@@ -20,6 +21,9 @@ const PILL: Record<StudentAssignment["state"], { label: string; className: strin
     label: "Corrections submitted",
     className: "bg-brand-soft text-brand-deep",
   },
+  relearning: { label: "Relearning in progress", className: "bg-brand-soft text-brand-deep" },
+  retake_required: { label: "Retake required", className: "bg-coral-soft text-[#B93E27]" },
+  retake_available: { label: "Retake available", className: "bg-brand-soft text-brand-deep" },
   done: { label: "Done for now", className: "bg-success-soft text-success-foreground" },
   closed: { label: "Closed", className: "bg-muted text-muted-foreground" },
 };
@@ -35,25 +39,37 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
   const href =
     correcting && c ? `/student/corrections/${c.attemptId}` : `/student/assignments/${a.id}`;
   const nextAttempt = a.attemptsAllowed === null || a.attemptsUsed < a.attemptsAllowed;
-  const action =
-    a.state === "not_started"
-      ? { label: "Start", primary: true }
-      : a.state === "in_progress"
-        ? { label: "Continue", primary: true }
-        : a.state === "corrections_needed"
-          ? { label: "Do corrections", primary: true }
-          : a.state === "corrections_returned"
-            ? { label: "Revise corrections", primary: true }
-            : a.state === "corrections_submitted"
-              ? { label: "View corrections", primary: false }
-              : a.state === "done" || a.state === "closed"
-                ? { label: "View", primary: false }
-                : null;
+  const action: { label: string; primary: boolean } | null = (() => {
+    switch (a.state) {
+      case "not_started":
+        return { label: "Start", primary: true };
+      case "in_progress":
+        return { label: "Continue", primary: true };
+      case "corrections_needed":
+        return { label: "Do corrections", primary: true };
+      case "corrections_returned":
+        return { label: "Revise corrections", primary: true };
+      case "corrections_submitted":
+        return { label: "View corrections", primary: false };
+      case "relearning":
+        return { label: "View checklist", primary: false };
+      case "retake_required":
+      case "retake_available":
+        return { label: "Start retake", primary: a.state === "retake_required" };
+      case "done":
+      case "closed":
+        return { label: "View", primary: false };
+      default:
+        return null;
+    }
+  })();
+  const allProficient = a.type === "summative" && a.retake && a.retake.plan.required.length === 0;
 
   return (
     <li
       className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card p-4"
       data-assignment={a.id}
+      data-state={a.state}
     >
       <div className="mr-auto min-w-0">
         <div className="flex flex-wrap items-center gap-2">
@@ -98,6 +114,11 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
               Next attempt <LocalTime date={a.nextAttemptAt} />
             </span>
           ) : null}
+          {a.bestPercent !== null && a.resultsReleased ? (
+            <span className="tabular">
+              Best {Math.round(a.bestPercent)}%{allProficient ? " · all targets proficient" : ""}
+            </span>
+          ) : null}
           {c && a.state === "corrections_needed" ? (
             <span className="inline-flex items-center gap-1" data-corrections-hint>
               <Lock className="size-3.5" aria-hidden />
@@ -109,10 +130,20 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
           ) : c && a.state === "corrections_submitted" ? (
             <span data-corrections-hint>Awaiting your teacher&apos;s approval</span>
           ) : null}
-          {a.bestPercent !== null && a.resultsReleased ? (
-            <span className="tabular">Best {Math.round(a.bestPercent)}%</span>
-          ) : null}
         </p>
+        {a.retake &&
+        (a.state === "retake_required" ||
+          a.state === "retake_available" ||
+          a.state === "relearning") ? (
+          <div className="mt-2">
+            <RetakePicker
+              assignmentId={a.id}
+              retake={a.retake}
+              checklist={a.state === "relearning"}
+              compact
+            />
+          </div>
+        ) : null}
       </div>
       {action ? (
         <Button

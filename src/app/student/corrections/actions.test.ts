@@ -413,7 +413,7 @@ describe("submitCorrections and the review gate", () => {
 
     asUser(ids.s1, "student");
     const card = (await listStudentAssignments(ids.s1)).find((a) => a.id === ids.formative)!;
-    expect(card.state).toBe("done");
+    expect(card.state).toBe("retake_available"); // formative, 1 of 3 attempts used, not perfect
     expect(card.corrections).toMatchObject({ state: "approved" });
     const next = await ok(startAttempt(ids.formative, null));
     expect(next.resumed).toBe(false);
