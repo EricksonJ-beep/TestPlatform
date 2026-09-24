@@ -71,6 +71,13 @@
       "when": 1790215017565,
       "tag": "0009_corrections_draft",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790215018565,
+      "tag": "0010_corrections_draft_defaults",
+      "breakpoints": true
     }
   ]
 }

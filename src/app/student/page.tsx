@@ -13,9 +13,13 @@ export default async function StudentHome() {
     listStudentClasses(session.userId),
     listStudentAssignments(session.userId),
   ]);
-  // Things needing action: open assignments not yet started or still in progress.
+  // Things needing action: open assignments not started, in progress, or waiting on corrections.
   const attention = assignments.filter(
-    (a) => a.state === "not_started" || a.state === "in_progress"
+    (a) =>
+      a.state === "not_started" ||
+      a.state === "in_progress" ||
+      a.state === "corrections_needed" ||
+      a.state === "corrections_returned"
   ).length;
 
   return (

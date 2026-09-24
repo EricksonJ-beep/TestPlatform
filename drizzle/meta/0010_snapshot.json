@@ -1,6 +1,6 @@
 {
-  "id": "07da70d2-7a72-4239-87a8-d2ceefad3c00",
-  "prevId": "e324adbf-19c0-41eb-a5a9-da43ecf55883",
+  "id": "1ce6ca82-bd68-4ae6-a0ea-b84712460f68",
+  "prevId": "07da70d2-7a72-4239-87a8-d2ceefad3c00",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -1710,8 +1710,7 @@
           "type": "correction_status",
           "typeSchema": "public",
           "primaryKey": false,
-          "notNull": true,
-          "default": "'submitted'"
+          "notNull": true
         },
         "ai_flag": {
           "name": "ai_flag",
@@ -1748,8 +1747,7 @@
           "name": "submitted_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",

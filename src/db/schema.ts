@@ -783,7 +783,8 @@ export const corrections = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     correctAnswer: text("correct_answer").notNull(),
     explanation: text("explanation").notNull(),
-    status: correctionStatus("status").default("draft").notNull(),
+    /** No database default: adding 'draft' to the enum and using it as a default cannot share one migration transaction, so inserts set it. */
+    status: correctionStatus("status").notNull(),
     aiFlag: boolean("ai_flag").default(false).notNull(),
     aiNote: text("ai_note"),
     reviewerId: uuid("reviewer_id").references(() => users.id, { onDelete: "set null" }),

@@ -84,7 +84,14 @@ export const saveCorrection = withAuthz(
     };
     await db
       .insert(schema.corrections)
-      .values({ attemptId, questionId, studentId: scope.attempt.studentId, ...values })
+      .values({
+        attemptId,
+        questionId,
+        studentId: scope.attempt.studentId,
+        status: "draft",
+        submittedAt: null,
+        ...values,
+      })
       .onConflictDoUpdate({
         target: [schema.corrections.attemptId, schema.corrections.questionId],
         set: values,
