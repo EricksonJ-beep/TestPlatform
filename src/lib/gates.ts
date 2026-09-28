@@ -284,6 +284,15 @@ async function practiceByTarget(
   return out;
 }
 
+/** After a practice or activity completion: every summative the student has a final score on. */
+export async function recomputeGatesForStudent(studentId: string): Promise<void> {
+  const rows = await db
+    .select({ assignmentId: schema.assignmentFinalScores.assignmentId })
+    .from(schema.assignmentFinalScores)
+    .where(eq(schema.assignmentFinalScores.studentId, studentId));
+  for (const r of rows) await recomputeGates(r.assignmentId, studentId);
+}
+
 /** Student opts in or out of retaking a target that is already proficient. */
 export async function setOptIn(
   assignmentId: string,

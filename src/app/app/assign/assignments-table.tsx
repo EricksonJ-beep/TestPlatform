@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Clock, Lock, Trash2 } from "lucide-react";
 import type { AssignmentRow } from "@/lib/queries/assignments";
@@ -128,6 +129,16 @@ export function AssignmentsTable({
                 <TableCell className="text-right">
                   <div className="inline-flex items-center gap-0.5">
                     <AssignmentDialog assessments={assessments} classes={classes} existing={a} />
+                    {a.assessmentType === "summative" ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        nativeButton={false}
+                        render={<Link href={`/app/assign/${a.id}/relearning`} />}
+                      >
+                        Relearning
+                      </Button>
+                    ) : null}
                     {a.status !== "closed" ? (
                       <Button
                         size="sm"

@@ -16,6 +16,8 @@ const GUARDS = new Set([
   "requireEnrolled",
   "requireAssignmentAccess",
   "requireAttemptAccess",
+  "requireContentAccess",
+  "requirePracticeAttemptAccess",
 ]);
 const ROUTE_METHODS = new Set(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]);
 const SKIP_KEYS = new Set(["parent", "loc", "range", "tokens", "comments"]);

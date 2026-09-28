@@ -870,6 +870,8 @@ export const relearningActivities = pgTable(
     worksheetId: uuid("worksheet_id").references(() => worksheets.id, { onDelete: "set null" }),
     requiresTeacherVerification: boolean("requires_teacher_verification").default(false).notNull(),
     isPublished: boolean("is_published").default(false).notNull(),
+    /** Teacher-set sequence within a course ("watch this, then do these notes"). */
+    sortOrder: integer("sort_order").default(0).notNull(),
     ...timestamps,
   },
   (t) => [index("relearning_activities_owner_idx").on(t.ownerId)]
@@ -935,6 +937,7 @@ export const practiceSets = pgTable(
     drawCount: integer("draw_count"),
     worksheetId: uuid("worksheet_id").references(() => worksheets.id, { onDelete: "set null" }),
     isPublished: boolean("is_published").default(false).notNull(),
+    sortOrder: integer("sort_order").default(0).notNull(),
     ...timestamps,
   },
   (t) => [index("practice_sets_owner_idx").on(t.ownerId)]

@@ -1,10 +1,11 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db, schema } from "@/db";
 import { defaultAttempts, parseLocalDateTime } from "@/lib/assignments";
+import { recomputeGatesForAssignment } from "@/lib/practice";
 import { ActionError, requireOwner, requireShared, requireTeacher, withAuthz } from "@/lib/authz";
 
 function fieldErrors(error: z.ZodError): Record<string, string[]> {
@@ -190,5 +191,91 @@ export const deleteAssignment = withAuthz(async (assignmentId: string) => {
     throw new ActionError("Students have started this; close it instead of deleting.", 409);
   await db.delete(schema.assignments).where(eq(schema.assignments.id, assignmentId));
   revalidate();
+  return { ok: true };
+});
+
+// ---------------------------------------------------------------------------
+// Relearning pins (Ticket 1.13): one activity and/or practice set per target
+// ---------------------------------------------------------------------------
+
+const pinSchema = z.object({
+  learningTargetId: z.string().uuid(),
+  activityId: z.string().uuid().nullable(),
+  practiceSetId: z.string().uuid().nullable(),
+});
+
+/**
+ * Pin the specific items a target's gate requires on this assignment (PLAN.md
+ * §3.7: "any of them by default; you can pin specific ones per assignment").
+ * Rule: pinned items are published and tagged to the target on the assessment's course.
+ */
+export const setAssignmentPin = withAuthz(async (assignmentId: string, input: unknown) => {
+  await requireOwner({ type: "assignment", id: assignmentId });
+  const parsed = pinSchema.safeParse(input);
+  if (!parsed.success) throw new ActionError("Bad pin.", 400);
+  const { learningTargetId, activityId, practiceSetId } = parsed.data;
+  const [asg] = await db
+    .select({ courseId: schema.assessments.courseId })
+    .from(schema.assignments)
+    .innerJoin(schema.assessments, eq(schema.assignments.assessmentId, schema.assessments.id))
+    .where(eq(schema.assignments.id, assignmentId))
+    .limit(1);
+  const target = await db.query.learningTargets.findFirst({
+    columns: { courseId: true },
+    where: eq(schema.learningTargets.id, learningTargetId),
+  });
+  if (!asg?.courseId || !target || target.courseId !== asg.courseId)
+    throw new ActionError("That target isn't on this assessment's course.", 400);
+  if (activityId) {
+    const [a] = await db
+      .select({ id: schema.relearningActivities.id })
+      .from(schema.relearningActivities)
+      .innerJoin(
+        schema.activityTargets,
+        eq(schema.activityTargets.activityId, schema.relearningActivities.id)
+      )
+      .where(
+        and(
+          eq(schema.relearningActivities.id, activityId),
+          eq(schema.relearningActivities.isPublished, true),
+          eq(schema.activityTargets.learningTargetId, learningTargetId)
+        )
+      )
+      .limit(1);
+    if (!a) throw new ActionError("Pin a published activity tagged to that target.", 400);
+  }
+  if (practiceSetId) {
+    const [s] = await db
+      .select({ id: schema.practiceSets.id })
+      .from(schema.practiceSets)
+      .innerJoin(
+        schema.practiceSetTargets,
+        eq(schema.practiceSetTargets.practiceSetId, schema.practiceSets.id)
+      )
+      .where(
+        and(
+          eq(schema.practiceSets.id, practiceSetId),
+          eq(schema.practiceSets.isPublished, true),
+          eq(schema.practiceSetTargets.learningTargetId, learningTargetId)
+        )
+      )
+      .limit(1);
+    if (!s) throw new ActionError("Pin a published practice set tagged to that target.", 400);
+  }
+  await db
+    .delete(schema.assignmentPins)
+    .where(
+      and(
+        eq(schema.assignmentPins.assignmentId, assignmentId),
+        eq(schema.assignmentPins.learningTargetId, learningTargetId)
+      )
+    );
+  if (activityId || practiceSetId)
+    await db
+      .insert(schema.assignmentPins)
+      .values({ assignmentId, learningTargetId, activityId, practiceSetId });
+  await recomputeGatesForAssignment(assignmentId);
+  revalidate();
+  revalidatePath(`/app/assign/${assignmentId}/relearning`);
   return { ok: true };
 });

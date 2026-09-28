@@ -12,7 +12,7 @@
  * reserved (treated as a teacher for now). Scores are written only by server
  * code — no guard hands a client the ability to set them.
  */
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { db, schema } from "@/db";
 import type { SharePermission } from "@/db/types";
 import { getCurrentSession, type Session } from "@/lib/session";
@@ -236,6 +236,56 @@ export async function requireAttemptAccess(attemptId: string): Promise<AttemptAc
   return { ...session, as: "teacher", attempt };
 }
 
+export type ContentRef = { type: "practice_set" | "relearning_activity"; id: string };
+export type ContentAccess = Session & { as: "teacher" | "student"; courseId: string | null };
+
+// Rule: practice sets and relearning activities are edited by their owner and used by students on the content's course (via a class or an assignment), and only once published.
+export async function requireContentAccess(ref: ContentRef): Promise<ContentAccess> {
+  const session = await requireSession();
+  const table = ref.type === "practice_set" ? schema.practiceSets : schema.relearningActivities;
+  const [row] = await db
+    .select({ ownerId: table.ownerId, courseId: table.courseId, isPublished: table.isPublished })
+    .from(table)
+    .where(eq(table.id, ref.id))
+    .limit(1);
+  if (!row) throw notFound();
+  if (session.role === "teacher" || session.role === "admin") {
+    if (row.ownerId !== session.userId) throw forbidden("Only the owner can do that.");
+    return { ...session, as: "teacher", courseId: row.courseId };
+  }
+  if (!row.isPublished) throw notFound();
+  if (!row.courseId) throw forbidden();
+  const courses = await studentCourseIds(session.userId);
+  if (!courses.includes(row.courseId)) throw forbidden("You're not in a class that uses this.");
+  return { ...session, as: "student", courseId: row.courseId };
+}
+
+/**
+ * The courses a student's content comes from: the course of every class they're
+ * in, plus the course of every assessment assigned to one of those classes (a
+ * class may sit on a different course than the tests it is given).
+ */
+export async function studentCourseIds(studentId: string): Promise<string[]> {
+  const classIds = db
+    .select({ classId: schema.enrollments.classId })
+    .from(schema.enrollments)
+    .where(eq(schema.enrollments.studentId, studentId));
+  const fromClasses = await db
+    .select({ courseId: schema.classes.courseId })
+    .from(schema.classes)
+    .where(inArray(schema.classes.id, classIds));
+  const fromAssignments = await db
+    .select({ courseId: schema.assessments.courseId })
+    .from(schema.assignments)
+    .innerJoin(schema.assessments, eq(schema.assignments.assessmentId, schema.assessments.id))
+    .where(inArray(schema.assignments.classId, classIds));
+  return [
+    ...new Set(
+      [...fromClasses, ...fromAssignments].map((r) => r.courseId).filter((x): x is string => !!x)
+    ),
+  ];
+}
+
 // Rule: a student may create or change only their own attempts, responses, and corrections (the row's student_id must equal their own id).
 export function assertOwnStudentRow(session: Session, row: { studentId: string }): void {
   if (session.role !== "student" || row.studentId !== session.userId) throw forbidden();
@@ -306,4 +356,39 @@ export function publicAction<A extends unknown[], T>(
   fn: (...args: A) => Promise<T>
 ): (...args: A) => Promise<T> {
   return fn;
+}
+
+export type PracticeAttemptAccess = Session & {
+  as: "teacher" | "student";
+  attempt: { id: string; studentId: string; practiceSetId: string; completedAt: Date | null };
+};
+
+// Rule: a practice attempt is read and written only by its own student; the set's owner may read it.
+export async function requirePracticeAttemptAccess(
+  attemptId: string
+): Promise<PracticeAttemptAccess> {
+  const session = await requireSession();
+  const [row] = await db
+    .select({
+      id: schema.practiceAttempts.id,
+      studentId: schema.practiceAttempts.studentId,
+      practiceSetId: schema.practiceAttempts.practiceSetId,
+      completedAt: schema.practiceAttempts.completedAt,
+      ownerId: schema.practiceSets.ownerId,
+    })
+    .from(schema.practiceAttempts)
+    .innerJoin(
+      schema.practiceSets,
+      eq(schema.practiceAttempts.practiceSetId, schema.practiceSets.id)
+    )
+    .where(eq(schema.practiceAttempts.id, attemptId))
+    .limit(1);
+  if (!row) throw notFound();
+  const { ownerId, ...attempt } = row;
+  if (session.role === "student") {
+    if (attempt.studentId !== session.userId) throw notFound();
+    return { ...session, as: "student", attempt };
+  }
+  if (ownerId !== session.userId) throw forbidden();
+  return { ...session, as: "teacher", attempt };
 }

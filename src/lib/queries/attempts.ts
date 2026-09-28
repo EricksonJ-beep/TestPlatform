@@ -176,7 +176,7 @@ export async function getRunnerPayload(attemptId: string): Promise<RunnerPayload
 }
 
 /** Rule: the student payload never carries isCorrect, matchText pairs, correctPosition, explanation, or option feedback. */
-async function sanitizedQuestions(
+export async function sanitizedQuestions(
   ids: string[],
   set: ServedQuestion[],
   attemptId: string

@@ -1,11 +1,13 @@
 import Link from "next/link";
-import { BarChart3, ClipboardList, Layers, Plus } from "lucide-react";
+import { BarChart3, ClipboardList, Plus } from "lucide-react";
 import { requireStudent } from "@/lib/authz";
 import { listStudentAssignments } from "@/lib/queries/assignments";
 import { listStudentClasses } from "@/lib/queries/classes";
+import { getStudentPractice } from "@/lib/queries/practice";
 import { EmptyState } from "@/components/empty-state";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AssignmentCard } from "./assignment-card";
+import { PracticeTab } from "./practice-tab";
 
 export default async function StudentHome() {
   const session = await requireStudent();
@@ -13,6 +15,7 @@ export default async function StudentHome() {
     listStudentClasses(session.userId),
     listStudentAssignments(session.userId),
   ]);
+  const practice = await getStudentPractice(session.userId, assignments);
   // Things needing action: open assignments not started, in progress, or waiting on corrections.
   const attention = assignments.filter(
     (a) =>
@@ -88,13 +91,7 @@ export default async function StudentHome() {
         </TabsContent>
 
         <TabsContent value="practice">
-          <div className="rounded-lg border border-border bg-card">
-            <EmptyState
-              icon={Layers}
-              title="Practice is always open"
-              description="Practice sets and relearning activities never count against you. Your teacher hasn't published any yet."
-            />
-          </div>
+          <PracticeTab practice={practice} />
         </TabsContent>
 
         <TabsContent value="results">
