@@ -166,7 +166,7 @@ describe("createAssignments", () => {
       className: "Biology · Period 3",
       accessCode: "AB3-K9Q",
       timeLimitMinutes: 20,
-      attemptsAllowed: 2,
+      attemptsAllowed: 1,
       enrolled: 2,
       retakeWaitHours: 24,
     });
