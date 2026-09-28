@@ -154,6 +154,237 @@ export async function getGradebook(assignmentId: string): Promise<GradebookRow[]
 }
 
 // ---------------------------------------------------------------------------
+// Mastery grid: students × learning targets, highest counts
+// ---------------------------------------------------------------------------
+
+export type MasteryTarget = { id: string; code: string; title: string };
+
+export type MasteryRow = {
+  studentId: string;
+  firstName: string;
+  lastName: string;
+  /** Target id → best percent; a target the student hasn't been scored on is absent. */
+  percents: Record<string, number>;
+  overall: number | null;
+};
+
+export type MasteryGrid = { targets: MasteryTarget[]; rows: MasteryRow[] };
+
+/**
+ * Per-target percent for every enrolled student. Summatives use the per-target
+ * best already stored on the final score; formatives/practice use the target
+ * scores of the attempt that counts (the best total), so the grid always
+ * matches the gradebook.
+ */
+export async function getMasteryGrid(assignmentId: string): Promise<MasteryGrid> {
+  const asg = await db
+    .select({
+      classId: schema.assignments.classId,
+      type: schema.assessments.type,
+      assessmentId: schema.assessments.id,
+    })
+    .from(schema.assignments)
+    .innerJoin(schema.assessments, eq(schema.assignments.assessmentId, schema.assessments.id))
+    .where(eq(schema.assignments.id, assignmentId))
+    .then((r) => r[0]);
+  if (!asg) return { targets: [], rows: [] };
+
+  // Targets in section order, so the columns read like the test does.
+  const targets = await db
+    .selectDistinctOn([schema.learningTargets.id], {
+      id: schema.learningTargets.id,
+      code: schema.learningTargets.code,
+      title: schema.learningTargets.title,
+      sortOrder: schema.assessmentSections.sortOrder,
+    })
+    .from(schema.assessmentSections)
+    .innerJoin(
+      schema.learningTargets,
+      eq(schema.assessmentSections.learningTargetId, schema.learningTargets.id)
+    )
+    .where(eq(schema.assessmentSections.assessmentId, asg.assessmentId))
+    .orderBy(schema.learningTargets.id, schema.assessmentSections.sortOrder)
+    .then((rows) => rows.sort((a, b) => a.sortOrder - b.sortOrder));
+
+  const roster = await db
+    .select({
+      studentId: schema.users.id,
+      firstName: schema.users.firstName,
+      lastName: schema.users.lastName,
+    })
+    .from(schema.enrollments)
+    .innerJoin(schema.users, eq(schema.enrollments.studentId, schema.users.id))
+    .where(eq(schema.enrollments.classId, asg.classId))
+    .orderBy(asc(schema.users.lastName), asc(schema.users.firstName));
+  const finals = await db
+    .select()
+    .from(schema.assignmentFinalScores)
+    .where(eq(schema.assignmentFinalScores.assignmentId, assignmentId));
+  const finalBy = new Map(finals.map((f) => [f.studentId, f]));
+
+  const percentsBy = new Map<string, Record<string, number>>();
+  if (asg.type === "summative") {
+    for (const f of finals)
+      percentsBy.set(
+        f.studentId,
+        Object.fromEntries(Object.entries(f.perTarget).map(([id, t]) => [id, t.percent]))
+      );
+  } else {
+    // The attempt that counts is the best total; tie → the later attempt (computeFinalScore).
+    const attempts = await db
+      .select({
+        id: schema.attempts.id,
+        studentId: schema.attempts.studentId,
+        number: schema.attempts.number,
+        score: schema.attempts.score,
+      })
+      .from(schema.attempts)
+      .where(
+        and(eq(schema.attempts.assignmentId, assignmentId), ne(schema.attempts.status, "in_progress"))
+      );
+    const bestBy = new Map<string, (typeof attempts)[number]>();
+    for (const a of attempts) {
+      const cur = bestBy.get(a.studentId);
+      if (
+        !cur ||
+        (a.score ?? 0) > (cur.score ?? 0) ||
+        ((a.score ?? 0) === (cur.score ?? 0) && a.number > cur.number)
+      )
+        bestBy.set(a.studentId, a);
+    }
+    const bestIds = [...bestBy.values()].map((a) => a.id);
+    const scores = bestIds.length
+      ? await db
+          .select({
+            attemptId: schema.attemptTargetScores.attemptId,
+            learningTargetId: schema.attemptTargetScores.learningTargetId,
+            percent: schema.attemptTargetScores.percent,
+          })
+          .from(schema.attemptTargetScores)
+          .where(inArray(schema.attemptTargetScores.attemptId, bestIds))
+      : [];
+    const studentByAttempt = new Map([...bestBy].map(([s, a]) => [a.id, s]));
+    for (const s of scores) {
+      const studentId = studentByAttempt.get(s.attemptId)!;
+      const rec = percentsBy.get(studentId) ?? {};
+      rec[s.learningTargetId] = s.percent;
+      percentsBy.set(studentId, rec);
+    }
+  }
+
+  return {
+    targets: targets.map((t) => ({ id: t.id, code: t.code, title: t.title })),
+    rows: roster.map((s) => ({
+      ...s,
+      percents: percentsBy.get(s.studentId) ?? {},
+      overall: finalBy.get(s.studentId)?.percent ?? null,
+    })),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Item analysis: how the class did on each question
+// ---------------------------------------------------------------------------
+
+export type ItemStat = {
+  questionId: string;
+  bankId: string;
+  stem: string;
+  type: QuestionType;
+  targetCode: string | null;
+  /** Finished attempts that served the question and have a score for it. */
+  answered: number;
+  correct: number;
+  /** correct / answered; null until someone has a scored response. */
+  rate: number | null;
+};
+
+/**
+ * Correct rate per question across every finished attempt. A served question
+ * with no response counts as answered wrong; one still waiting on manual
+ * grading is left out of the count. Manually graded items count as correct
+ * at full points.
+ */
+export async function getItemAnalysis(assignmentId: string): Promise<ItemStat[]> {
+  const attempts = await db
+    .select({ id: schema.attempts.id, questionSet: schema.attempts.questionSet })
+    .from(schema.attempts)
+    .where(
+      and(eq(schema.attempts.assignmentId, assignmentId), ne(schema.attempts.status, "in_progress"))
+    );
+  if (attempts.length === 0) return [];
+  const attemptIds = attempts.map((a) => a.id);
+  const responses = await db
+    .select({
+      attemptId: schema.responses.attemptId,
+      questionId: schema.responses.questionId,
+      autoScore: schema.responses.autoScore,
+      manualScore: schema.responses.manualScore,
+      isCorrect: schema.responses.isCorrect,
+    })
+    .from(schema.responses)
+    .where(inArray(schema.responses.attemptId, attemptIds));
+  const responseBy = new Map(responses.map((r) => [`${r.attemptId}:${r.questionId}`, r]));
+
+  const stats = new Map<
+    string,
+    { answered: number; correct: number; order: number; learningTargetId: string | null }
+  >();
+  for (const a of attempts) {
+    for (const item of a.questionSet) {
+      const s = stats.get(item.questionId) ?? {
+        answered: 0,
+        correct: 0,
+        order: item.order,
+        learningTargetId: item.learningTargetId,
+      };
+      const r = responseBy.get(`${a.id}:${item.questionId}`);
+      const pending = r && r.autoScore === null && r.manualScore === null;
+      if (!pending) {
+        s.answered++;
+        const earned = r ? (r.manualScore ?? r.autoScore ?? 0) : 0;
+        if (r?.isCorrect || (r?.manualScore !== null && earned >= item.points)) s.correct++;
+      }
+      stats.set(item.questionId, s);
+    }
+  }
+  const questionIds = [...stats.keys()];
+  const questions = await db
+    .select({
+      id: schema.questions.id,
+      bankId: schema.questions.bankId,
+      stem: schema.questions.stem,
+      type: schema.questions.type,
+    })
+    .from(schema.questions)
+    .where(inArray(schema.questions.id, questionIds));
+  const targetIds = [...new Set([...stats.values()].flatMap((s) => s.learningTargetId ?? []))];
+  const codes = targetIds.length
+    ? await db
+        .select({ id: schema.learningTargets.id, code: schema.learningTargets.code })
+        .from(schema.learningTargets)
+        .where(inArray(schema.learningTargets.id, targetIds))
+    : [];
+  const codeBy = new Map(codes.map((c) => [c.id, c.code]));
+
+  return questions
+    .sort((a, b) => stats.get(a.id)!.order - stats.get(b.id)!.order)
+    .map((q): ItemStat => {
+      const s = stats.get(q.id)!;
+      return {
+        questionId: q.id,
+        bankId: q.bankId,
+        stem: q.stem,
+        type: q.type,
+        targetCode: s.learningTargetId ? (codeBy.get(s.learningTargetId) ?? null) : null,
+        answered: s.answered,
+        correct: s.correct,
+        rate: s.answered > 0 ? s.correct / s.answered : null,
+      };
+    });
+}
+
+// ---------------------------------------------------------------------------
 // One attempt, question by question
 // ---------------------------------------------------------------------------
 

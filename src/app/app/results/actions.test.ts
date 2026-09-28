@@ -26,6 +26,8 @@ import {
   countPendingByAssignment,
   getAttemptReview,
   getGradebook,
+  getItemAnalysis,
+  getMasteryGrid,
   highestScoresRows,
   listGradingQueue,
 } from "@/lib/queries/results";
@@ -338,5 +340,25 @@ describe("manual grading and overrides", () => {
         attempts: 1,
       }),
     ]);
+  });
+
+  it("mastery grid: one column per target, best percent per student, blank when not started", async () => {
+    const grid = await getMasteryGrid(ids.assignment);
+    expect(grid.targets.map((t) => t.code)).toEqual(["U1"]);
+    const [ava, maya] = grid.rows;
+    expect(ava).toMatchObject({ lastName: "Peterson", percents: {}, overall: null });
+    expect(maya.lastName).toBe("Rivera");
+    expect(maya.percents[grid.targets[0].id]).toBeCloseTo((10 / 13) * 100, 1);
+    expect(maya.overall).toBeCloseTo((10 / 13) * 100, 1);
+  });
+
+  it("item analysis: the missed MC is 0 of 1, full-credit essays and the fill blank count as correct", async () => {
+    const items = await getItemAnalysis(ids.assignment);
+    const by = new Map(items.map((i) => [i.questionId, i]));
+    expect(by.get(ids.mc)).toMatchObject({ answered: 1, correct: 0, rate: 0, targetCode: "U1" });
+    expect(by.get(ids.fill)).toMatchObject({ answered: 1, correct: 1, rate: 1 });
+    // essay1 was graded 4/5 (partial), essay2 5/5.
+    expect(by.get(ids.essay1)).toMatchObject({ answered: 1, correct: 0 });
+    expect(by.get(ids.essay2)).toMatchObject({ answered: 1, correct: 1 });
   });
 });

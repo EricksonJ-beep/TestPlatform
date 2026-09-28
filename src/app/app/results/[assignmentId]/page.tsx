@@ -4,8 +4,9 @@ import { notFound } from "next/navigation";
 import { ChevronLeft, Download } from "lucide-react";
 import { isAuthzError, requireOwner } from "@/lib/authz";
 import { getAssignmentRow } from "@/lib/queries/assignments";
-import { getGradebook } from "@/lib/queries/results";
+import { getGradebook, getItemAnalysis, getMasteryGrid } from "@/lib/queries/results";
 import { LocalTime } from "@/components/local-time";
+import { HardQuestions, MasteryHeatmap } from "./mastery-grid";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,7 +35,11 @@ export default async function AssignmentResultsPage({
   }
   const a = await getAssignmentRow(assignmentId);
   if (!a) notFound();
-  const rows = await getGradebook(assignmentId);
+  const [rows, grid, items] = await Promise.all([
+    getGradebook(assignmentId),
+    getMasteryGrid(assignmentId),
+    getItemAnalysis(assignmentId),
+  ]);
   const pending = rows.reduce((n, r) => n + r.attempts.reduce((m, t) => m + t.pendingManual, 0), 0);
   const summative = a.assessmentType === "summative";
 
@@ -76,6 +81,10 @@ export default async function AssignmentResultsPage({
         </Button>
       </div>
 
+      {grid.targets.length > 0 ? <MasteryHeatmap grid={grid} /> : null}
+      <HardQuestions items={items} />
+
+      <h2 className="text-lg">Attempts</h2>
       <div className="rounded-lg border border-border bg-card">
         <Table>
           <TableHeader>
