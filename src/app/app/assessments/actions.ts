@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db, schema } from "@/db";
 import { ActionError, requireShared, requireTeacher, withAuthz } from "@/lib/authz";
-import { ownsCourse } from "@/lib/current-course";
+import { ownsCourse, rememberCourse } from "@/lib/current-course";
 
 const uuid = z.string().uuid();
 function fieldErrors(error: z.ZodError): Record<string, string[]> {
@@ -106,6 +106,7 @@ export const createAssessment = withAuthz(async (formData: FormData) => {
       showResultsImmediately: type !== "summative",
     })
     .returning({ id: schema.assessments.id });
+  await rememberCourse(courseId);
   revalidate(a.id);
   return { assessmentId: a.id };
 });

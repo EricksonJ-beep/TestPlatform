@@ -6,7 +6,7 @@ import { cookies } from "next/headers";
 import { z } from "zod";
 import { db, schema } from "@/db";
 import { ActionError, requireOwner, requireTeacher, withAuthz } from "@/lib/authz";
-import { CURRENT_COURSE_COOKIE } from "@/lib/current-course";
+import { CURRENT_COURSE_COOKIE, rememberCourse } from "@/lib/current-course";
 
 const uuid = z.string().uuid();
 const name = (label: string, maxLen = 80) =>
@@ -93,12 +93,7 @@ export const setCurrentCourse = withAuthz(async (courseId: string | null) => {
     jar.delete(CURRENT_COURSE_COOKIE);
   } else {
     await requireOwner({ type: "course", id: courseId });
-    jar.set(CURRENT_COURSE_COOKIE, courseId, {
-      path: "/",
-      httpOnly: true,
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 365,
-    });
+    await rememberCourse(courseId);
   }
   revalidatePath("/app", "layout");
   return { ok: true };

@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db, schema } from "@/db";
 import { ActionError, requireShared, requireTeacher, withAuthz } from "@/lib/authz";
-import { ownsCourse } from "@/lib/current-course";
+import { ownsCourse, rememberCourse } from "@/lib/current-course";
 import { missingHeaders, parseQuestionRecords, type RawRecord } from "@/lib/import/question-csv";
 import { commitImport, planImport } from "@/lib/import/question-import";
 
@@ -52,6 +52,7 @@ export const createBank = withAuthz(async (formData: FormData) => {
     .insert(schema.questionBanks)
     .values({ ownerId: session.userId, courseId, name, description })
     .returning({ id: schema.questionBanks.id });
+  if (courseId) await rememberCourse(courseId);
   revalidateBank(bank.id);
   return { bankId: bank.id };
 });
