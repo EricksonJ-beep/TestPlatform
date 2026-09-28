@@ -5,6 +5,7 @@ import { ChevronLeft } from "lucide-react";
 import { isAuthzError, requireOwner } from "@/lib/authz";
 import { getClassDetail } from "@/lib/queries/classes";
 import { AddStudentDialog } from "./add-student-dialog";
+import { DeleteClassButton } from "./delete-class-button";
 import { ImportCsvDialog } from "./import-csv-dialog";
 import { JoinCodeCard } from "./join-code-card";
 import { PendingNames } from "./pending-names";
@@ -47,6 +48,7 @@ export default async function ClassPage({ params }: PageProps<"/app/classes/[cla
           </div>
           <ImportCsvDialog classId={cls.id} />
           <AddStudentDialog classId={cls.id} />
+          <DeleteClassButton classId={cls.id} students={cls.roster.length} />
         </div>
       </div>
 

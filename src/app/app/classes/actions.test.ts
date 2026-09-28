@@ -22,6 +22,7 @@ import { verifyPassword } from "@/lib/password";
 import {
   addStudent,
   createClass,
+  deleteClass,
   importStudentsCsv,
   removeStudent,
   resetStudentPassword,
@@ -220,5 +221,40 @@ describe("students", () => {
       where: eq(schema.enrollments.classId, ids.classA),
     });
     expect(roster).toHaveLength(3);
+  });
+});
+
+describe("delete", () => {
+  it("only the owner can delete; a class with student attempts is kept; otherwise it and its enrollments go", async () => {
+    asUser(ids.teacherB, "teacher");
+    await expect(deleteClass(ids.classA)).resolves.toMatchObject({ ok: false, status: 403 });
+
+    asUser(ids.teacherA, "teacher");
+    const course = (await db.query.courses.findFirst({
+      where: eq(schema.courses.ownerId, ids.teacherA),
+    }))!;
+    const [assessment] = await db
+      .insert(schema.assessments)
+      .values({ ownerId: ids.teacherA, courseId: course.id, type: "formative", title: "Q" })
+      .returning();
+    const [asg] = await db
+      .insert(schema.assignments)
+      .values({ ownerId: ids.teacherA, assessmentId: assessment.id, classId: ids.classA })
+      .returning();
+    const [attempt] = await db
+      .insert(schema.attempts)
+      .values({ assignmentId: asg.id, studentId: ids.maya, number: 1, questionSet: [] })
+      .returning();
+    await expect(deleteClass(ids.classA)).resolves.toMatchObject({ ok: false, status: 409 });
+
+    await db.delete(schema.attempts).where(eq(schema.attempts.id, attempt.id));
+    await expect(deleteClass(ids.classA)).resolves.toMatchObject({ ok: true });
+    expect(
+      await db.query.classes.findFirst({ where: eq(schema.classes.id, ids.classA) })
+    ).toBeUndefined();
+    expect(await db.$count(schema.enrollments, eq(schema.enrollments.classId, ids.classA))).toBe(0);
+    expect(await db.$count(schema.assignments, eq(schema.assignments.id, asg.id))).toBe(0);
+    // Maya's account survives.
+    expect(await db.query.users.findFirst({ where: eq(schema.users.id, ids.maya) })).toBeDefined();
   });
 });

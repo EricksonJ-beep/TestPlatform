@@ -265,6 +265,29 @@ export const resetStudentPassword = withAuthz(async (classId: string, studentId:
   return { tempPassword };
 });
 
+/**
+ * Delete a class. Rule: a class whose assignments have student attempts is
+ * kept (same as assignments — work survives); enrollments, roster names, and
+ * unattempted assignments go with it. Student accounts are untouched.
+ */
+export const deleteClass = withAuthz(async (classId: string) => {
+  await requireOwner({ type: "class", id: classId });
+  const attempts = await db.$count(
+    schema.attempts,
+    sql`${schema.attempts.assignmentId} in (select id from ${schema.assignments} where class_id = ${classId})`
+  );
+  if (attempts > 0)
+    throw new ActionError(
+      "Students have submitted work in this class, so it can't be deleted. Remove the students instead.",
+      409
+    );
+  await db.delete(schema.classes).where(eq(schema.classes.id, classId));
+  revalidatePath("/app/classes");
+  revalidatePath("/app/assign");
+  revalidatePath("/app");
+  return { ok: true };
+});
+
 /** Remove a student from this class (keeps the account). */
 export const removeStudent = withAuthz(async (classId: string, studentId: string) => {
   await requireOwner({ type: "class", id: classId });
