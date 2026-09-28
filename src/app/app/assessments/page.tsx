@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ClipboardList } from "lucide-react";
 import { requireTeacher } from "@/lib/authz";
 import { getCurrentCourse } from "@/lib/current-course";
+import { groupByCourse } from "@/lib/group-by-course";
 import { listAssessments } from "@/lib/queries/assessments";
 import { EmptyState } from "@/components/empty-state";
 import { NewAssessmentDialog } from "./new-assessment-dialog";
@@ -45,35 +46,42 @@ export default async function AssessmentsPage() {
           />
         </div>
       ) : (
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {assessments.map((a) => (
-            <li key={a.id}>
-              <Link
-                href={`/app/assessments/${a.id}`}
-                className="flex h-full flex-col gap-2 rounded-lg border border-border bg-card p-4 transition-colors outline-none hover:border-brand/50 focus-visible:ring-3 focus-visible:ring-ring/50"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <h2 className="text-base leading-tight">{a.title}</h2>
-                  <span
-                    className={`shrink-0 rounded-md px-2 py-0.5 text-xs font-medium ${TYPE_STYLE[a.type]}`}
+        groupByCourse(assessments).map((g) => (
+          <section key={g.course} className="flex flex-col gap-3" aria-label={g.course}>
+            <h2 className="text-lg">
+              {g.course}{" "}
+              <span className="text-sm font-normal text-muted-foreground tabular">
+                · {g.items.length} {g.items.length === 1 ? "assessment" : "assessments"}
+              </span>
+            </h2>
+            <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {g.items.map((a) => (
+                <li key={a.id}>
+                  <Link
+                    href={`/app/assessments/${a.id}`}
+                    className="flex h-full flex-col gap-2 rounded-lg border border-border bg-card p-4 transition-colors outline-none hover:border-brand/50 focus-visible:ring-3 focus-visible:ring-ring/50"
                   >
-                    {a.type}
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {a.courseName ?? "No course"} ·{" "}
-                  <span className="tabular">
-                    {a.sections} {a.sections === 1 ? "section" : "sections"}
-                  </span>
-                </p>
-                <p className="mt-auto text-xs text-muted-foreground">
-                  {a.isPublished ? "Published" : "Draft"}
-                  {a.assignments > 0 ? ` · assigned ${a.assignments}×` : ""}
-                </p>
-              </Link>
-            </li>
-          ))}
-        </ul>
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="text-base leading-tight">{a.title}</h3>
+                      <span
+                        className={`shrink-0 rounded-md px-2 py-0.5 text-xs font-medium ${TYPE_STYLE[a.type]}`}
+                      >
+                        {a.type}
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground tabular">
+                      {a.sections} {a.sections === 1 ? "section" : "sections"}
+                    </p>
+                    <p className="mt-auto text-xs text-muted-foreground">
+                      {a.isPublished ? "Published" : "Draft"}
+                      {a.assignments > 0 ? ` · assigned ${a.assignments}×` : ""}
+                    </p>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))
       )}
     </div>
   );
