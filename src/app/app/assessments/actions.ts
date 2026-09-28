@@ -101,9 +101,17 @@ export const createAssessment = withAuthz(async (formData: FormData) => {
       courseId,
       title,
       type,
-      attemptLimit: type === "practice" ? null : type === "formative" ? 3 : 2,
-      reviewMode: "auto",
-      showResultsImmediately: type !== "summative",
+      // Jon's defaults (Sept 28, 2026): one summative attempt, corrections reviewed by
+      // the teacher, shuffled question order, one at a time, results shown right away.
+      attemptLimit: type === "practice" ? null : type === "formative" ? 3 : 1,
+      reviewMode: "teacher_approved",
+      retakeThreshold: 80,
+      optionalRetakes: true,
+      randomizeQuestions: true,
+      randomizeOptions: false,
+      oneAtATime: true,
+      allowBacktrack: true,
+      showResultsImmediately: true,
     })
     .returning({ id: schema.assessments.id });
   await rememberCourse(courseId);

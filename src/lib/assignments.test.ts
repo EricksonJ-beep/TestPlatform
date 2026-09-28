@@ -145,7 +145,7 @@ describe("defaults, dates, codes", () => {
   it("attempt defaults by type", () => {
     expect(defaultAttempts("practice")).toBeNull();
     expect(defaultAttempts("formative")).toBe(3);
-    expect(defaultAttempts("summative")).toBe(2);
+    expect(defaultAttempts("summative")).toBe(1);
   });
   it("datetime-local round-trips through the browser offset (Central Daylight = +300)", () => {
     const d = parseLocalDateTime("2026-09-22T08:00", 300);

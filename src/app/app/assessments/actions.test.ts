@@ -185,7 +185,16 @@ describe("create and settings", () => {
       )
     ).assessmentId;
     const s = await getAssessmentDetail(ids.summative);
-    expect(s).toMatchObject({ attemptLimit: 2, showResultsImmediately: false, isPublished: false });
+    expect(s).toMatchObject({
+      attemptLimit: 1,
+      reviewMode: "teacher_approved",
+      randomizeQuestions: true,
+      randomizeOptions: false,
+      oneAtATime: true,
+      allowBacktrack: true,
+      showResultsImmediately: true,
+      isPublished: false,
+    });
     const f = await getAssessmentDetail(ids.formative);
     expect(f).toMatchObject({ attemptLimit: 3, showResultsImmediately: true });
     await fails(createAssessment(fd({ title: "X", type: "practice", courseId: ids.courseB })), 403);

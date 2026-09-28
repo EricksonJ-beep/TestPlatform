@@ -119,9 +119,9 @@ export function attemptDueAt(input: {
   return due;
 }
 
-/** PLAN.md §2 attempt defaults: practice unlimited, formative 3, summative 1 + 1 retake. */
+/** Attempt defaults: practice unlimited, formative 3, summative 1 (Jon, Sept 28 2026; PLAN.md §2 said 1 + 1 retake). */
 export function defaultAttempts(type: "practice" | "formative" | "summative"): number | null {
-  return type === "practice" ? null : type === "formative" ? 3 : 2;
+  return type === "practice" ? null : type === "formative" ? 3 : 1;
 }
 
 /**
