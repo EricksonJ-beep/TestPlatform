@@ -166,3 +166,52 @@ export function correctionsSummary(
 export function correctionsClear(summary: CorrectionsSummary): boolean {
   return summary.state === "none" || summary.state === "approved";
 }
+
+// ---------------------------------------------------------------------------
+// Class progress (Jon, Sept 29 2026): one state per student for the results page
+// ---------------------------------------------------------------------------
+
+export type CorrectionsProgressState =
+  "no_attempt" | "none" | "not_started" | "in_progress" | "submitted" | "returned" | "approved";
+
+/** Rule: a "needed" set is not started until the student has saved a draft on at least one item. */
+export function correctionsProgressState(
+  summary: CorrectionsSummary | null,
+  startedItems: number
+): CorrectionsProgressState {
+  if (!summary) return "no_attempt";
+  if (summary.state === "needed") return startedItems > 0 ? "in_progress" : "not_started";
+  return summary.state;
+}
+
+export const PROGRESS_LABEL: Record<CorrectionsProgressState, string> = {
+  no_attempt: "No attempt yet",
+  none: "Nothing to correct",
+  not_started: "Not started",
+  in_progress: "In progress",
+  submitted: "Awaiting approval",
+  returned: "Returned",
+  approved: "Approved",
+};
+
+/** Order the summary bar reads in: finished first, then what still needs the student. */
+export const PROGRESS_ORDER: CorrectionsProgressState[] = [
+  "approved",
+  "submitted",
+  "returned",
+  "in_progress",
+  "not_started",
+  "none",
+  "no_attempt",
+];
+
+export function tallyProgress(
+  states: CorrectionsProgressState[]
+): Record<CorrectionsProgressState, number> {
+  const t = Object.fromEntries(PROGRESS_ORDER.map((s) => [s, 0])) as Record<
+    CorrectionsProgressState,
+    number
+  >;
+  for (const s of states) t[s]++;
+  return t;
+}

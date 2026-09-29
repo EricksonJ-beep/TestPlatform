@@ -3,7 +3,10 @@ import Link from "next/link";
 import { BarChart3, ClipboardCheck, MessageSquareText } from "lucide-react";
 import { requireTeacher } from "@/lib/authz";
 import { listTeacherAssignments } from "@/lib/queries/assignments";
-import { countCorrectionsAwaiting } from "@/lib/queries/corrections";
+import {
+  countCorrectionsAwaiting,
+  countCorrectionsAwaitingByAssignment,
+} from "@/lib/queries/corrections";
 import { countPendingByAssignment } from "@/lib/queries/results";
 import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
@@ -20,10 +23,11 @@ const STATUS = {
 /** Results per assignment, plus the manual grading queue. */
 export default async function ResultsPage() {
   const session = await requireTeacher();
-  const [assignments, pending, corrections] = await Promise.all([
+  const [assignments, pending, corrections, awaitingBy] = await Promise.all([
     listTeacherAssignments(session.userId),
     countPendingByAssignment(session.userId),
     countCorrectionsAwaiting(session.userId),
+    countCorrectionsAwaitingByAssignment(session.userId),
   ]);
   const totalPending = [...pending.values()].reduce((a, b) => a + b, 0);
   return (
@@ -64,6 +68,7 @@ export default async function ResultsPage() {
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {assignments.map((a) => {
             const n = pending.get(a.id) ?? 0;
+            const awaiting = awaitingBy.get(a.id) ?? 0;
             return (
               <li key={a.id}>
                 <Link
@@ -82,6 +87,12 @@ export default async function ResultsPage() {
                     </span>
                     {n > 0 ? (
                       <span className="font-medium text-warning-foreground">{n} to grade</span>
+                    ) : null}
+                    {awaiting > 0 ? (
+                      <span className="font-medium text-brand-deep">
+                        {awaiting} {awaiting === 1 ? "correction set" : "correction sets"} to
+                        approve
+                      </span>
                     ) : null}
                   </p>
                 </Link>

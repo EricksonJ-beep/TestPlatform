@@ -8,8 +8,11 @@ import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import type { CorrectionStatus, QuestionType } from "@/db/types";
 import {
+  correctionsProgressState,
   correctionsSummary,
   questionsNeedingCorrection,
+  tallyProgress,
+  type CorrectionsProgressState,
   type CorrectionsSummary,
 } from "@/lib/corrections";
 import { answerToText, correctAnswerText, gradeResponse, type Answer } from "@/lib/grading";
@@ -511,4 +514,94 @@ export async function latestFinishedAttemptId(
     .orderBy(desc(schema.attempts.number))
     .limit(1);
   return row?.id ?? null;
+}
+
+// ---------------------------------------------------------------------------
+// Class progress on one assignment (Jon, Sept 29 2026)
+// ---------------------------------------------------------------------------
+
+export type CorrectionsProgressRow = {
+  studentId: string;
+  firstName: string;
+  lastName: string;
+  attemptId: string | null;
+  attemptNumber: number | null;
+  state: CorrectionsProgressState;
+  needed: number;
+  /** Items with any saved correction (draft or better). */
+  started: number;
+  /** Submitted or approved. */
+  done: number;
+  approved: number;
+  returned: number;
+  reviewerNote: string | null;
+};
+
+export type CorrectionsProgress = {
+  rows: CorrectionsProgressRow[];
+  totals: Record<CorrectionsProgressState, number>;
+};
+
+/**
+ * Every enrolled student's corrections on their latest finished attempt:
+ * how many items need one, how many are drafted, submitted, approved, or
+ * returned, and a single state for the summary bar. Works the same for
+ * formatives and summatives; only the scope rule differs.
+ */
+export async function getCorrectionsProgress(assignmentId: string): Promise<CorrectionsProgress> {
+  const asg = await db.query.assignments.findFirst({
+    columns: { classId: true },
+    where: eq(schema.assignments.id, assignmentId),
+  });
+  if (!asg) return { rows: [], totals: tallyProgress([]) };
+  const roster = await db
+    .select({
+      studentId: schema.users.id,
+      firstName: schema.users.firstName,
+      lastName: schema.users.lastName,
+    })
+    .from(schema.enrollments)
+    .innerJoin(schema.users, eq(schema.enrollments.studentId, schema.users.id))
+    .where(eq(schema.enrollments.classId, asg.classId))
+    .orderBy(asc(schema.users.lastName), asc(schema.users.firstName));
+  const rows: CorrectionsProgressRow[] = [];
+  for (const s of roster) {
+    const attemptId = await latestFinishedAttemptId(assignmentId, s.studentId);
+    const summary = attemptId ? await getCorrectionsSummary(attemptId) : null;
+    const started = attemptId
+      ? await db.$count(schema.corrections, eq(schema.corrections.attemptId, attemptId))
+      : 0;
+    rows.push({
+      ...s,
+      attemptId,
+      attemptNumber: summary?.attemptNumber ?? null,
+      state: correctionsProgressState(summary, started),
+      needed: summary?.needed ?? 0,
+      started: Math.min(started, summary?.needed ?? 0),
+      done: summary?.done ?? 0,
+      approved: summary?.approved ?? 0,
+      returned: summary?.returned ?? 0,
+      reviewerNote: summary?.reviewerNote ?? null,
+    });
+  }
+  return { rows, totals: tallyProgress(rows.map((r) => r.state)) };
+}
+
+/** Sets awaiting approval per assignment, for the results cards. */
+export async function countCorrectionsAwaitingByAssignment(
+  teacherId: string
+): Promise<Map<string, number>> {
+  const rows = await db
+    .select({
+      assignmentId: schema.attempts.assignmentId,
+      n: sql<number>`count(distinct ${schema.attempts.id})::int`,
+    })
+    .from(schema.corrections)
+    .innerJoin(schema.attempts, eq(schema.corrections.attemptId, schema.attempts.id))
+    .innerJoin(schema.assignments, eq(schema.attempts.assignmentId, schema.assignments.id))
+    .where(
+      and(eq(schema.assignments.ownerId, teacherId), eq(schema.corrections.status, "submitted"))
+    )
+    .groupBy(schema.attempts.assignmentId);
+  return new Map(rows.map((r) => [r.assignmentId, r.n]));
 }

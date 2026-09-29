@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   correctionIssues,
+  correctionsProgressState,
+  tallyProgress,
   correctionsClear,
   correctionsSummary,
   isVerbatimCopy,
@@ -176,5 +178,27 @@ describe("correctionsSummary", () => {
     expect(approved).toMatchObject({ state: "approved", approved: 3 });
     expect(correctionsClear(approved)).toBe(true);
     expect(correctionsClear(correctionsSummary(needed, []))).toBe(false);
+  });
+});
+
+describe("correctionsProgressState", () => {
+  const base = { needed: 3, done: 0, remaining: 3, approved: 0, returned: 0 };
+  it("maps a set to the class-progress state", () => {
+    expect(correctionsProgressState(null, 0)).toBe("no_attempt");
+    expect(correctionsProgressState({ ...base, state: "none", needed: 0 }, 0)).toBe("none");
+    expect(correctionsProgressState({ ...base, state: "needed" }, 0)).toBe("not_started");
+    expect(correctionsProgressState({ ...base, state: "needed" }, 2)).toBe("in_progress");
+    expect(correctionsProgressState({ ...base, state: "submitted", done: 3 }, 3)).toBe("submitted");
+    expect(correctionsProgressState({ ...base, state: "returned", returned: 1 }, 3)).toBe(
+      "returned"
+    );
+    expect(correctionsProgressState({ ...base, state: "approved", approved: 3 }, 3)).toBe(
+      "approved"
+    );
+    expect(tallyProgress(["approved", "approved", "not_started"])).toMatchObject({
+      approved: 2,
+      not_started: 1,
+      submitted: 0,
+    });
   });
 });
