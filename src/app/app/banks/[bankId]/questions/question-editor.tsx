@@ -209,14 +209,17 @@ export function QuestionEditor({
   const preview = useMemo(() => stem.trim(), [stem]);
 
   return (
-    <form onSubmit={onSubmit} className={cn("flex flex-col gap-5", compact ? "" : "max-w-4xl")}>
+    <form
+      onSubmit={onSubmit}
+      className={cn("@container flex flex-col gap-5", compact ? "" : "max-w-4xl")}
+    >
       {isEdit && question?.isArchived ? (
         <p className="rounded-md bg-warning-soft px-3 py-2 text-sm text-warning-foreground">
           This is an archived version. Saving is disabled; edit the current version instead.
         </p>
       ) : null}
 
-      <div className="grid gap-3 sm:grid-cols-[12rem_1fr]">
+      <div className="grid gap-3 @lg:grid-cols-[12rem_1fr]">
         <div className="grid gap-1.5">
           <Label htmlFor="qe-type">Type</Label>
           <select
@@ -364,7 +367,7 @@ export function QuestionEditor({
                     <div
                       className={
                         type === "matching"
-                          ? "grid gap-2 sm:grid-cols-[1fr_auto_1fr]"
+                          ? "grid gap-2 @lg:grid-cols-[1fr_auto_1fr]"
                           : "grid gap-1"
                       }
                     >
@@ -503,7 +506,7 @@ export function QuestionEditor({
       {type === "numeric" ? (
         <fieldset className="grid gap-2">
           <legend className="text-sm font-medium">Numeric answer</legend>
-          <div className="grid gap-2 sm:grid-cols-[10rem_1fr_1fr_8rem]">
+          <div className="grid gap-2 @lg:grid-cols-[10rem_1fr_1fr_8rem]">
             <select
               value={numeric.mode}
               onChange={(e) =>
@@ -585,7 +588,7 @@ export function QuestionEditor({
         </fieldset>
       ) : null}
 
-      <div className="grid gap-3 sm:grid-cols-4">
+      <div className="grid gap-3 @lg:grid-cols-4">
         <div className="grid gap-1.5">
           <Label htmlFor="qe-points">Points</Label>
           <Input
@@ -639,7 +642,7 @@ export function QuestionEditor({
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 @lg:grid-cols-3">
         <div className="grid gap-1.5">
           <Label htmlFor="qe-unit">Unit</Label>
           <select
@@ -712,7 +715,7 @@ export function QuestionEditor({
         />
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 @lg:grid-cols-2">
         <div className="grid gap-1.5">
           <MediaField
             name="mediaUrl"

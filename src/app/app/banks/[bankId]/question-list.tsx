@@ -308,7 +308,10 @@ export function QuestionList({
       </div>
 
       <Sheet open={editing !== null} onOpenChange={(o) => !o && setEditing(null)}>
-        <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-2xl">
+        <SheetContent
+          side="right"
+          className="overflow-x-hidden overflow-y-auto data-[side=right]:w-full data-[side=right]:sm:w-[min(52rem,94vw)] data-[side=right]:sm:max-w-none"
+        >
           <SheetHeader>
             <SheetTitle>Edit question</SheetTitle>
             <SheetDescription>
