@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef } from "react";
-import { ChevronDown, LogOut } from "lucide-react";
+import Link from "next/link";
+import { ChevronDown, KeyRound, LogOut } from "lucide-react";
 import { cn } from "cn";
 import {
   DropdownMenu,
@@ -24,12 +25,14 @@ export function AccountMenu({
   email,
   logout,
   compact = false,
+  passwordHref,
 }: {
   firstName: string;
   lastName: string;
   email: string | null;
   logout: () => Promise<void>;
   compact?: boolean;
+  passwordHref?: string;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
   return (
@@ -63,6 +66,12 @@ export function AccountMenu({
             </DropdownMenuLabel>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
+          {passwordHref ? (
+            <DropdownMenuItem nativeButton={false} render={<Link href={passwordHref} />}>
+              <KeyRound aria-hidden />
+              Change password
+            </DropdownMenuItem>
+          ) : null}
           <DropdownMenuItem onClick={() => formRef.current?.requestSubmit()}>
             <LogOut aria-hidden />
             Log out

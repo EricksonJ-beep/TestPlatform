@@ -45,16 +45,18 @@ export default async function SettingsPage() {
             </Card>
           </Link>
         ))}
-        <Card className="h-full">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <KeyRound className="size-4 text-brand-deep" aria-hidden />
-              Password
-            </CardTitle>
-            <CardDescription>Change your password. Arrives in Ticket 1.18.</CardDescription>
-          </CardHeader>
-          <CardContent />
-        </Card>
+        <Link href="/app/settings/password" className="outline-none focus-visible:ring-3">
+          <Card className="h-full transition-colors hover:border-brand/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <KeyRound className="size-4 text-brand-deep" aria-hidden />
+                Password
+              </CardTitle>
+              <CardDescription>Change the password you log in with.</CardDescription>
+            </CardHeader>
+            <CardContent />
+          </Card>
+        </Link>
       </div>
     </div>
   );

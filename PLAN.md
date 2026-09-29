@@ -297,7 +297,7 @@ Key idea, again: **questions are independent records; assessments point at them.
 Repo, Next.js + Tailwind + shadcn scaffold, Neon project + Drizzle schema/migrations, server-side authorization layer with tests, Auth.js email/password for teacher + student, design tokens, dashboard shell.
 *Outcome:* both teachers can log in; a student account can be created.
 
-**Phase 1 — Working builder + students take tests (the goal)**
+**Phase 1 — Working builder + students take tests (the goal)** — *built, Sept 22–29, 2026 (tickets 1.1–1.18); the classroom checkpoint in PHASE1.md is Jon's to run.*
 - Courses/units/banks; learning-target tagging
 - Author MC, T/F, short answer, fill-in-blank, multiple select, numeric (all grading modes + units), with images
 - **Shared stimulus** objects in the builder and test view

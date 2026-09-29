@@ -1,10 +1,32 @@
 # Bloom
 
 Standards-aligned assessments for Cadott High School, with a corrections-and-retake
-learning cycle. Spec: [PLAN.md](PLAN.md). Phase 0 tickets: [PHASE0.md](PHASE0.md).
+learning cycle. Spec: [PLAN.md](PLAN.md). Tickets: [PHASE0.md](PHASE0.md) (done),
+[PHASE1.md](PHASE1.md) (built; the classroom checkpoint at the end is Jon's to run).
+Live: <https://bloom-iota-six.vercel.app> (pushes to `main` deploy).
 
 **Stack:** Next.js 16 (App Router) · TypeScript · Tailwind v4 + shadcn/ui · Neon Postgres +
-Drizzle · Auth.js v5 (email + password, bcrypt) · Vercel. Cloudflare R2 arrives in Phase 1.
+Drizzle · Auth.js v5 (email or username + password, bcrypt) · Cloudflare R2 · Vercel ·
+Anthropic API (Word/PDF import).
+
+## What Phase 1 built
+
+- Courses, units, learning targets, pools; question banks with a CSV importer (Appendix A) and
+  an AI-assisted Word/PDF importer (`ANTHROPIC_API_KEY`), both landing in a preview you confirm.
+- Question editor for every type in the spec, shared stimuli, media on R2.
+- Assessment builder (sections of fixed questions or pool draws), assign to a class with a
+  window, access code, time limit, attempt policy, and accommodations per enrollment.
+- Students: log in (email or class join code), take a test one question at a time with autosave
+  and a server-side clock, do corrections, retake (formative: same test; summative: targeted
+  by learning target with new pool questions), practice sets and relearning activities that
+  gate the retake, and see every attempt under My results.
+- Teachers: results with a mastery heat grid, class averages, item analysis, corrections
+  progress, manual grading and overrides, Regrade, CSV export; the live tier board and the
+  relearning monitor; practice and worksheet registry (Apps Script webhook); sharing banks and
+  assessments with a colleague at view / copy / co-edit.
+
+Environment variables are listed in `.env.example`. `docs/authz-sweep.md` lists every server
+action and route with its guard (`node scripts/authz-sweep.mjs` regenerates it).
 
 ## Local setup
 

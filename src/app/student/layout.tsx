@@ -19,6 +19,7 @@ export default async function StudentLayout({ children }: LayoutProps<"/student"
             lastName={session.lastName}
             email={session.email ?? session.username ?? null}
             logout={logoutAction}
+            passwordHref="/student/password"
           />
         </div>
       </header>

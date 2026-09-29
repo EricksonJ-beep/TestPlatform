@@ -1,13 +1,18 @@
 import Link from "next/link";
-import { BarChart3, ClipboardList, Plus } from "lucide-react";
+import { ClipboardList, Plus } from "lucide-react";
 import { requireStudent } from "@/lib/authz";
 import { listStudentAssignments } from "@/lib/queries/assignments";
 import { listStudentClasses } from "@/lib/queries/classes";
 import { getStudentPractice } from "@/lib/queries/practice";
+import { listStudentResults } from "@/lib/queries/student-results";
+import { eq } from "drizzle-orm";
+import { db, schema } from "@/db";
+import { KeyRound } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AssignmentCard } from "./assignment-card";
 import { PracticeTab } from "./practice-tab";
+import { ResultsTab } from "./results-tab";
 
 export default async function StudentHome() {
   const session = await requireStudent();
@@ -15,7 +20,14 @@ export default async function StudentHome() {
     listStudentClasses(session.userId),
     listStudentAssignments(session.userId),
   ]);
-  const practice = await getStudentPractice(session.userId, assignments);
+  const [practice, results, me] = await Promise.all([
+    getStudentPractice(session.userId, assignments),
+    listStudentResults(session.userId, assignments),
+    db.query.users.findFirst({
+      columns: { mustChangePassword: true },
+      where: eq(schema.users.id, session.userId),
+    }),
+  ]);
   // Things needing action: open assignments not started, in progress, or waiting on corrections.
   const attention = assignments.filter(
     (a) =>
@@ -65,6 +77,21 @@ export default async function StudentHome() {
         ) : null}
       </div>
 
+      {me?.mustChangePassword ? (
+        <Link
+          href="/student/password"
+          className="flex items-center gap-3 rounded-lg border border-warning/50 bg-warning-soft px-4 py-3 text-sm text-warning-foreground hover:border-warning"
+          data-password-nudge
+        >
+          <KeyRound className="size-4 shrink-0" aria-hidden />
+          <span className="flex-1">
+            You&apos;re still using the temporary password your teacher gave you. Pick your own so
+            nobody else can log in as you.
+          </span>
+          <span className="font-medium">Change it →</span>
+        </Link>
+      ) : null}
+
       <Tabs defaultValue="assignments">
         <TabsList className="w-full justify-start sm:w-auto">
           <TabsTrigger value="assignments">Assignments</TabsTrigger>
@@ -95,13 +122,7 @@ export default async function StudentHome() {
         </TabsContent>
 
         <TabsContent value="results">
-          <div className="rounded-lg border border-border bg-card">
-            <EmptyState
-              icon={BarChart3}
-              title="No results yet"
-              description="After you finish something, every attempt lands here. Your highest score always counts."
-            />
-          </div>
+          <ResultsTab results={results} />
         </TabsContent>
       </Tabs>
     </div>
