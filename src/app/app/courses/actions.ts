@@ -403,3 +403,46 @@ async function assertUniquePoolName(courseId: string, poolName: string, exceptId
     });
   }
 }
+
+// ---------------------------------------------------------------------------
+// Delete a course
+// ---------------------------------------------------------------------------
+
+/**
+ * Delete a course for good, with its units, learning targets, and pools.
+ * Rule: refused while a class, bank, assessment, stimulus, practice set,
+ * activity, or worksheet still points at it, so nothing loses its home by
+ * accident; move or delete those first.
+ */
+export const deleteCourse = withAuthz(async (courseId: string) => {
+  await requireOwner({ type: "course", id: courseId });
+  const [used] = await db
+    .select({
+      classes: sql<number>`(select count(*)::int from ${schema.classes} c where c.course_id = ${courseId})`,
+      banks: sql<number>`(select count(*)::int from ${schema.questionBanks} b where b.course_id = ${courseId})`,
+      assessments: sql<number>`(select count(*)::int from ${schema.assessments} a where a.course_id = ${courseId})`,
+      stimuli: sql<number>`(select count(*)::int from ${schema.stimuli} s where s.course_id = ${courseId})`,
+      practice: sql<number>`(select count(*)::int from ${schema.practiceSets} p where p.course_id = ${courseId}) + (select count(*)::int from ${schema.relearningActivities} r where r.course_id = ${courseId}) + (select count(*)::int from ${schema.worksheets} w where w.course_id = ${courseId})`,
+    })
+    .from(schema.courses)
+    .where(eq(schema.courses.id, courseId));
+  const inUse: string[] = [];
+  if (used.classes) inUse.push(`${used.classes} ${used.classes === 1 ? "class" : "classes"}`);
+  if (used.banks) inUse.push(`${used.banks} ${used.banks === 1 ? "bank" : "banks"}`);
+  if (used.assessments)
+    inUse.push(`${used.assessments} ${used.assessments === 1 ? "assessment" : "assessments"}`);
+  if (used.stimuli)
+    inUse.push(`${used.stimuli} shared ${used.stimuli === 1 ? "stimulus" : "stimuli"}`);
+  if (used.practice)
+    inUse.push(`${used.practice} practice ${used.practice === 1 ? "item" : "items"}`);
+  if (inUse.length)
+    throw new ActionError(
+      `This course still has ${inUse.join(", ")}. Move or delete those first.`,
+      409
+    );
+  await db.delete(schema.courses).where(eq(schema.courses.id, courseId));
+  const jar = await cookies();
+  if (jar.get(CURRENT_COURSE_COOKIE)?.value === courseId) jar.delete(CURRENT_COURSE_COOKIE);
+  revalidateCourse(courseId);
+  return { ok: true };
+});

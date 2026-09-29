@@ -30,6 +30,7 @@ import { db, schema } from "@/db";
 import { getCurrentCourse } from "@/lib/current-course";
 import {
   createCourse,
+  deleteCourse,
   createPool,
   createTarget,
   createUnit,
@@ -269,5 +270,33 @@ describe("current course cookie", () => {
 
     await ok(setCurrentCourse(null));
     expect(state.jar.has("bloom.course")).toBe(false);
+  });
+});
+
+describe("deleting a course", () => {
+  it("owner deletes an unused course with its units, targets, and pools; a course with a class or bank is refused; others get 403", async () => {
+    asUser(ids.teacherA, "teacher");
+    const { courseId } = await ok(createCourse(fd({ name: "Scratch course" })));
+    await ok(createUnit(courseId, fd({ name: "Unit 1" })));
+    await ok(createTarget(courseId, fd({ code: "LT1", title: "Scratch target" })));
+    asUser(ids.teacherB, "teacher");
+    await expect(deleteCourse(courseId)).resolves.toMatchObject({ ok: false, status: 403 });
+    asUser(ids.teacherA, "teacher");
+    const [cls] = await db
+      .insert(schema.classes)
+      .values({ ownerId: ids.teacherA, courseId, name: "P9" })
+      .returning();
+    const refused = await deleteCourse(courseId);
+    expect(refused).toMatchObject({ ok: false, status: 409 });
+    if (!refused.ok) expect(refused.error).toMatch(/1 class/);
+    await db.delete(schema.classes).where(eq(schema.classes.id, cls.id));
+    await expect(deleteCourse(courseId)).resolves.toMatchObject({ ok: true });
+    expect(
+      await db.query.courses.findFirst({ where: eq(schema.courses.id, courseId) })
+    ).toBeUndefined();
+    expect(
+      await db.$count(schema.learningTargets, eq(schema.learningTargets.courseId, courseId))
+    ).toBe(0);
+    expect(await db.$count(schema.units, eq(schema.units.courseId, courseId))).toBe(0);
   });
 });
