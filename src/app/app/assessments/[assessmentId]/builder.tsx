@@ -20,6 +20,7 @@ import {
 } from "../actions";
 import { TYPE_STYLE } from "../type-badge";
 import { BankPane, type BuilderPool } from "./bank-pane";
+import { DownloadMenu } from "./download-menu";
 import { SectionCard } from "./section-card";
 import { SettingsSheet } from "./settings-sheet";
 
@@ -96,6 +97,7 @@ export function Builder({
             <Eye data-icon="inline-start" aria-hidden />
             Preview as student
           </Button>
+          <DownloadMenu assessmentId={detail.id} />
           {canEdit ? <SettingsSheet detail={detail} /> : null}
           {access === "owner" ? (
             <ShareDialog resource={{ type: "assessment", id: detail.id }} shares={shares} />
