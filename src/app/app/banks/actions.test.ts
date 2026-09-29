@@ -36,6 +36,7 @@ import {
   commitQuestionImport,
   createBank,
   previewQuestionImport,
+  deleteBank,
   setBankArchived,
   updateBank,
 } from "./actions";
@@ -307,5 +308,41 @@ describe("shared stimulus rows (Biology part of the template)", () => {
     expect(
       (await db.query.stimuli.findMany({ where: eq(schema.stimuli.courseId, bio.id) })).length
     ).toBe(refs.size);
+  });
+});
+
+describe("deleting a bank", () => {
+  it("owner deletes an empty bank; a bank whose questions are on a test is archived instead; others get 403", async () => {
+    asUser(ids.owner);
+    const { bankId } = (
+      (await createBank(fd({ name: "Scratch", courseId: ids.course }))) as {
+        ok: true;
+        data: { bankId: string };
+      }
+    ).data;
+    asUser(ids.coeditor);
+    await expect(deleteBank(bankId)).resolves.toMatchObject({ ok: false, status: 403 });
+    asUser(ids.owner);
+    await expect(deleteBank(bankId)).resolves.toMatchObject({ ok: true });
+    expect(
+      await db.query.questionBanks.findFirst({ where: eq(schema.questionBanks.id, bankId) })
+    ).toBeUndefined();
+
+    // The imported bank has a question on an assessment: refused with 409.
+    const q = (await db.query.questions.findFirst({
+      where: eq(schema.questions.bankId, ids.bank),
+    }))!;
+    const [assessment] = await db
+      .insert(schema.assessments)
+      .values({ ownerId: ids.owner, courseId: ids.course, type: "formative", title: "Uses it" })
+      .returning();
+    const [section] = await db
+      .insert(schema.assessmentSections)
+      .values({ assessmentId: assessment.id, title: "S", sortOrder: 0 })
+      .returning();
+    await db
+      .insert(schema.assessmentQuestions)
+      .values({ sectionId: section.id, questionId: q.id, sortOrder: 0 });
+    await expect(deleteBank(ids.bank)).resolves.toMatchObject({ ok: false, status: 409 });
   });
 });

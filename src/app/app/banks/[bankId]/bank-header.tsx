@@ -2,13 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Archive, ArchiveRestore, Pencil } from "lucide-react";
+import { Archive, ArchiveRestore, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FieldError, useAction } from "@/components/use-action";
 import type { BankDetail } from "@/lib/queries/banks";
-import { setBankArchived, updateBank } from "../actions";
+import { deleteBank, setBankArchived, updateBank } from "../actions";
 
 const ACCESS_LABEL = {
   owner: "You own this",
@@ -32,6 +32,7 @@ export function BankHeader({
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const { run, pending, error, fieldErrors, reset } = useAction();
   const canEdit = access === "owner" || access === "co_edit";
 
@@ -141,6 +142,33 @@ export function BankHeader({
             )}
             {bank.isArchived ? "Restore bank" : "Archive bank"}
           </Button>
+          {access === "owner" ? (
+            confirmDelete ? (
+              <span className="inline-flex items-center gap-1">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  disabled={pending}
+                  onClick={() => run(deleteBank(bank.id), () => router.push("/app/banks"))}
+                >
+                  Delete for good
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setConfirmDelete(false)}>
+                  Keep
+                </Button>
+              </span>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                aria-label="Delete bank"
+                title="Delete this bank. Refused while its questions are on a test, a practice set, or a student's attempt."
+                onClick={() => setConfirmDelete(true)}
+              >
+                <Trash2 aria-hidden />
+              </Button>
+            )
+          ) : null}
         </>
       ) : null}
       {action}

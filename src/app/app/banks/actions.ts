@@ -1,6 +1,6 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db, schema } from "@/db";
@@ -211,4 +211,36 @@ export const parseDocumentImport = withAuthz(async (bankId: string, input: unkno
     fileName: parsed.data.fileName,
   });
   return { headers, records, notes: result.notes, usage: result.usage };
+});
+
+/**
+ * Delete a bank for good. Owner only. Rule: refused while any of its questions
+ * sits on an assessment, a practice set, or a student's served attempt; those
+ * banks are archived instead, so grading and retakes keep their questions.
+ */
+export const deleteBank = withAuthz(async (bankId: string) => {
+  const access = await requireShared({ type: "question_bank", id: bankId }, "co_edit");
+  if (access.access !== "owner") throw new ActionError("Only the owner can delete a bank.", 403);
+  const [used] = await db
+    .select({
+      onAssessments: sql<number>`(select count(*)::int from ${schema.assessmentQuestions} aq inner join ${schema.questions} q on q.id = aq.question_id where q.bank_id = ${bankId})`,
+      onPractice: sql<number>`(select count(*)::int from ${schema.practiceSetQuestions} pq inner join ${schema.questions} q on q.id = pq.question_id where q.bank_id = ${bankId})`,
+      served: sql<number>`(select count(*)::int from ${schema.attempts} a, jsonb_array_elements(a.question_set) e where (e->>'questionId')::uuid in (select id from ${schema.questions} q where q.bank_id = ${bankId}))`,
+      practiced: sql<number>`(select count(*)::int from ${schema.practiceAttempts} a, jsonb_array_elements(a.question_set) e where (e->>'questionId')::uuid in (select id from ${schema.questions} q where q.bank_id = ${bankId}))`,
+    })
+    .from(schema.questionBanks)
+    .where(eq(schema.questionBanks.id, bankId));
+  if (used.onAssessments || used.onPractice || used.served || used.practiced)
+    throw new ActionError(
+      "Questions in this bank are on a test, a practice set, or a student's attempt. Archive it instead.",
+      409
+    );
+  await db
+    .delete(schema.shares)
+    .where(
+      and(eq(schema.shares.resourceType, "question_bank"), eq(schema.shares.resourceId, bankId))
+    );
+  await db.delete(schema.questionBanks).where(eq(schema.questionBanks.id, bankId));
+  revalidateBank(bankId);
+  return { ok: true };
 });
