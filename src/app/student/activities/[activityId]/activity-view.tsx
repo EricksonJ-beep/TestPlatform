@@ -108,6 +108,8 @@ export function ActivityView({ view }: { view: StudentActivityView }) {
         />
       ) : view.kind === "link" && view.url ? (
         <LinkActivity url={view.url} done={done.completed} saving={saving} onFinish={finish} />
+      ) : view.kind === "worksheet" ? (
+        <WorksheetActivity url={view.url} done={done.completed} />
       ) : view.kind === "guided_notes" ? (
         <GuidedNotesActivity
           prompts={view.prompts ?? []}
@@ -400,6 +402,38 @@ function LinkActivity({
           </Button>
         </div>
       ) : null}
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Worksheet: completes from the worksheet's own final submit (Ticket 1.14)
+// ---------------------------------------------------------------------------
+
+function WorksheetActivity({ url, done }: { url: string | null; done: boolean }) {
+  if (!url)
+    return (
+      <p className="rounded-lg border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
+        Your teacher hasn&apos;t added this worksheet&apos;s link yet. Use the link from Google
+        Classroom; your submit still counts here.
+      </p>
+    );
+  return (
+    <section className="flex flex-col gap-3 rounded-lg border border-border bg-card px-4 py-4 text-sm">
+      <Button
+        size="lg"
+        variant={done ? "outline" : "default"}
+        nativeButton={false}
+        className="self-start"
+        render={<a href={url} target="_blank" rel="noreferrer" />}
+      >
+        <ExternalLink data-icon="inline-start" aria-hidden />
+        Open the worksheet
+      </Button>
+      <p className="text-muted-foreground">
+        Sign in there with your Cadott Google account. When you press its final Submit, this page
+        updates on its own.
+      </p>
     </section>
   );
 }

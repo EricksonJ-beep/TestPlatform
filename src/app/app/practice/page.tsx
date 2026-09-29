@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
-import { Layers } from "lucide-react";
+import Link from "next/link";
+import { FileSpreadsheet, Layers } from "lucide-react";
 import { requireTeacher } from "@/lib/authz";
 import { getCurrentCourse } from "@/lib/current-course";
 import { groupByCourse } from "@/lib/group-by-course";
 import { listPracticeContent } from "@/lib/queries/practice";
 import { EmptyState } from "@/components/empty-state";
+import { Button } from "@/components/ui/button";
 import { ContentList } from "./content-list";
 import { NewActivityDialog, NewPracticeSetDialog } from "./new-content-dialogs";
 
@@ -32,6 +34,14 @@ export default async function PracticePage() {
             need one activity and one practice set per target before a retake.
           </p>
         </div>
+        <Button
+          variant="outline"
+          nativeButton={false}
+          render={<Link href="/app/practice/worksheets" />}
+        >
+          <FileSpreadsheet data-icon="inline-start" aria-hidden />
+          Worksheets
+        </Button>
         <NewActivityDialog courses={courses} defaultCourseId={defaultCourseId} />
         <NewPracticeSetDialog courses={courses} defaultCourseId={defaultCourseId} />
       </div>

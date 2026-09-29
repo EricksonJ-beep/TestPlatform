@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BookOpen, FileText, Layers, Link2, PlayCircle } from "lucide-react";
+import { BookOpen, ExternalLink, FileText, Layers, Link2, PlayCircle } from "lucide-react";
 import { cn } from "cn";
 import { KIND_LABEL, STATE_LABEL, type PracticeItemState } from "@/lib/practice-rules";
 import type { StudentActivity, StudentPracticeSet } from "@/lib/queries/practice";
@@ -98,9 +98,13 @@ export function PracticeSetCard({
           <Pill state={s.state} />
         </div>
         <p className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground tabular">
-          <span>
-            Practice set · {s.questions} {s.questions === 1 ? "question" : "questions"}
-          </span>
+          {s.isWorksheet ? (
+            <span>Worksheet · completes when you submit it</span>
+          ) : (
+            <span>
+              Practice set · {s.questions} {s.questions === 1 ? "question" : "questions"}
+            </span>
+          )}
           {s.bestPercent !== null ? <span>· best {Math.round(s.bestPercent)}%</span> : null}
           {s.attempts > 0 ? (
             <span>
@@ -116,16 +120,32 @@ export function PracticeSetCard({
         ) : null}
         {error ? <p className="mt-1 text-xs text-error-foreground">{error}</p> : null}
       </div>
-      <Button
-        size={compact ? "sm" : "lg"}
-        variant={s.state === "done" ? "outline" : "default"}
-        disabled={pending}
-        onClick={() =>
-          run(startPractice(s.id), ({ attemptId }) => router.push(`/student/practice/${attemptId}`))
-        }
-      >
-        {pending ? "Opening…" : label}
-      </Button>
+      {s.isWorksheet && !s.worksheetUrl ? (
+        <span className="text-xs text-muted-foreground">Link coming from your teacher</span>
+      ) : s.worksheetUrl ? (
+        <Button
+          size={compact ? "sm" : "lg"}
+          variant={s.state === "done" ? "outline" : "default"}
+          nativeButton={false}
+          render={<a href={s.worksheetUrl} target="_blank" rel="noreferrer" />}
+        >
+          <ExternalLink data-icon="inline-start" aria-hidden />
+          Open worksheet
+        </Button>
+      ) : (
+        <Button
+          size={compact ? "sm" : "lg"}
+          variant={s.state === "done" ? "outline" : "default"}
+          disabled={pending}
+          onClick={() =>
+            run(startPractice(s.id), ({ attemptId }) =>
+              router.push(`/student/practice/${attemptId}`)
+            )
+          }
+        >
+          {pending ? "Opening…" : label}
+        </Button>
+      )}
     </li>
   );
 }

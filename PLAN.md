@@ -428,6 +428,7 @@ function bloomNotify_(payload) {
       payload: JSON.stringify(Object.assign({
         scriptId:  ScriptApp.getScriptId(),
         worksheet: PAGE_TITLE,
+        url:       ScriptApp.getService().getUrl(),
         email:     Session.getActiveUser().getEmail(),
         at:        new Date().toISOString()
       }, payload))

@@ -14,6 +14,7 @@
 import { and, desc, eq, inArray, isNotNull, ne } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { gateOpen } from "@/lib/retakes";
+import { creditsTarget } from "@/lib/worksheet-rules";
 
 export type GateRow = {
   learningTargetId: string;
@@ -202,6 +203,7 @@ async function activitiesByTarget(
     .select({
       activityId: schema.activityCompletions.activityId,
       teacherVerified: schema.activityCompletions.teacherVerified,
+      evidence: schema.activityCompletions.evidence,
     })
     .from(schema.activityCompletions)
     .where(eq(schema.activityCompletions.studentId, studentId));
@@ -222,7 +224,11 @@ async function activitiesByTarget(
       targetId,
       pool.some((c) => {
         const d = doneBy.get(c.activityId);
-        return !!d && (!c.requiresVerification || d.teacherVerified);
+        return (
+          !!d &&
+          (!c.requiresVerification || d.teacherVerified) &&
+          creditsTarget(d.evidence?.creditedTargetIds, targetId)
+        );
       })
     );
   }
@@ -265,7 +271,10 @@ async function practiceByTarget(
       )
     );
   const done = await db
-    .select({ practiceSetId: schema.practiceAttempts.practiceSetId })
+    .select({
+      practiceSetId: schema.practiceAttempts.practiceSetId,
+      answers: schema.practiceAttempts.answers,
+    })
     .from(schema.practiceAttempts)
     .where(
       and(
@@ -273,13 +282,23 @@ async function practiceByTarget(
         isNotNull(schema.practiceAttempts.completedAt)
       )
     );
-  const doneSet = new Set(done.map((d) => d.practiceSetId));
+  // Worksheet-backed attempts carry the targets their submit credited; ordinary attempts credit every target.
+  const creditedBy = new Map<string, unknown[]>();
+  for (const d of done)
+    (creditedBy.get(d.practiceSetId) ?? creditedBy.set(d.practiceSetId, []).get(d.practiceSetId)!).push(
+      (d.answers as { _worksheet?: { creditedTargetIds?: unknown } })._worksheet?.creditedTargetIds
+    );
   for (const targetId of targetIds) {
     const pinned = pins.filter((p) => p.learningTargetId === targetId).map((p) => p.practiceSetId!);
     const candidates = pinned.length
       ? pinned
       : tagged.filter((t) => t.learningTargetId === targetId).map((t) => t.practiceSetId);
-    out.set(targetId, candidates.length === 0 ? true : candidates.some((id) => doneSet.has(id)));
+    out.set(
+      targetId,
+      candidates.length === 0
+        ? true
+        : candidates.some((id) => (creditedBy.get(id) ?? []).some((c) => creditsTarget(c, targetId)))
+    );
   }
   return out;
 }

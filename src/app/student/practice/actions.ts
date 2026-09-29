@@ -1,7 +1,9 @@
 "use server";
 
+import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { db, schema } from "@/db";
 import {
   ActionError,
   requireContentAccess,
@@ -39,6 +41,12 @@ function revalidate() {
 export const startPractice = withAuthz(async (practiceSetId: string) => {
   const access = await requireContentAccess({ type: "practice_set", id: practiceSetId });
   if (access.as !== "student") throw new ActionError("Students only.", 403);
+  const set = await db.query.practiceSets.findFirst({
+    columns: { worksheetId: true },
+    where: eq(schema.practiceSets.id, practiceSetId),
+  });
+  if (set?.worksheetId)
+    throw new ActionError("Open the worksheet itself; it completes when you submit it.", 409);
   try {
     const r = await startPracticeAttempt(practiceSetId, access.userId);
     revalidate();

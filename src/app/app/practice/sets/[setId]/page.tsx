@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { isAuthzError, requireContentAccess } from "@/lib/authz";
 import { listBanksForCourse, listPoolsForBuilder } from "@/lib/queries/assessments";
@@ -22,6 +22,7 @@ export default async function PracticeSetPage({ params }: PageProps<"/app/practi
   if (access.as !== "teacher") notFound();
   const detail = await getPracticeSetDetail(setId);
   if (!detail) notFound();
+  if (detail.worksheetId) redirect(`/app/practice/worksheets/${detail.worksheetId}`);
   const [targets, pools, banks] = await Promise.all([
     detail.courseId ? listTargets(detail.courseId) : Promise.resolve([]),
     detail.courseId ? listPoolsForBuilder(detail.courseId) : Promise.resolve([]),

@@ -192,6 +192,7 @@ export type PracticeSetDetail = {
   courseName: string | null;
   isPublished: boolean;
   sortOrder: number;
+  worksheetId: string | null;
   pool: { id: string; name: string; size: number } | null;
   drawCount: number | null;
   targets: TargetRef[];
@@ -209,6 +210,7 @@ export async function getPracticeSetDetail(setId: string): Promise<PracticeSetDe
       courseName: schema.courses.name,
       isPublished: schema.practiceSets.isPublished,
       sortOrder: schema.practiceSets.sortOrder,
+      worksheetId: schema.practiceSets.worksheetId,
       poolId: schema.practiceSets.poolId,
       poolName: schema.questionPools.name,
       drawCount: schema.practiceSets.drawCount,
@@ -312,6 +314,7 @@ export type ActivityDetail = {
   id: string;
   title: string;
   kind: ActivityKind;
+  worksheetId: string | null;
   content: string | null;
   url: string | null;
   prompts: { id: string; prompt: string }[] | null;
@@ -330,6 +333,7 @@ export async function getActivityDetail(activityId: string): Promise<ActivityDet
       id: schema.relearningActivities.id,
       title: schema.relearningActivities.title,
       kind: schema.relearningActivities.kind,
+      worksheetId: schema.relearningActivities.worksheetId,
       content: schema.relearningActivities.content,
       url: schema.relearningActivities.url,
       prompts: schema.relearningActivities.prompts,
@@ -430,6 +434,9 @@ export type StudentPracticeSet = {
   id: string;
   title: string;
   sortOrder: number;
+  /** True for an Apps Script worksheet: students open its link instead of the runner. */
+  isWorksheet: boolean;
+  worksheetUrl: string | null;
   description: string | null;
   courseName: string | null;
   targets: TargetRef[];
@@ -498,6 +505,8 @@ export async function getStudentPractice(
       id: schema.practiceSets.id,
       title: schema.practiceSets.title,
       sortOrder: schema.practiceSets.sortOrder,
+      worksheetId: schema.practiceSets.worksheetId,
+      worksheetUrl: schema.worksheets.studentUrl,
       description: schema.practiceSets.description,
       courseName: schema.courses.name,
       questions: setQuestionCount,
@@ -512,6 +521,7 @@ export async function getStudentPractice(
     })
     .from(schema.practiceSets)
     .leftJoin(schema.courses, eq(schema.practiceSets.courseId, schema.courses.id))
+    .leftJoin(schema.worksheets, eq(schema.practiceSets.worksheetId, schema.worksheets.id))
     .where(
       and(
         inArray(schema.practiceSets.courseId, courseIds),
@@ -556,10 +566,11 @@ export async function getStudentPractice(
       actRows.map((r) => r.id)
     ),
   ]);
-  const sets: StudentPracticeSet[] = setRows.map((r) => {
+  const sets: StudentPracticeSet[] = setRows.map(({ worksheetId, ...r }) => {
     const best = r.bestPercent === null ? null : Number(r.bestPercent);
     return {
       ...r,
+      isWorksheet: !!worksheetId,
       bestPercent: best,
       lastCompletedAt: r.lastCompletedAt ? new Date(r.lastCompletedAt) : null,
       targets: setTargets.get(r.id) ?? [],

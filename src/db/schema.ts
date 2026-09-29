@@ -899,6 +899,8 @@ export type CompletionEvidence = {
   confirmed?: boolean;
   answers?: Record<string, string>;
   worksheetEventId?: string;
+  /** Worksheet section → target map: only these targets are credited (absent = all). */
+  creditedTargetIds?: string[];
 };
 
 export const activityCompletions = pgTable(
