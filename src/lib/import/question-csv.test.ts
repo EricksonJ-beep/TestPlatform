@@ -175,8 +175,13 @@ describe("per-type rules", () => {
       );
     expect(n({ correct: "9.8" }).gradingConfig).toEqual({ mode: "exact", unit: null, answer: 9.8 });
     expect(
-      n({ correct: "9.8", tolerance: "0.2", tolerance_mode: "abs", unit: "m/s^2" }).gradingConfig
+      n({ correct: "9.8", tolerance: "0.2", tolerance_mode: "abs", unit_2: "m/s^2" }).gradingConfig
     ).toEqual({ mode: "tolerance", unit: "m/s^2", answer: 9.8, tolerance: 0.2 });
+    // The measurement unit is the second `unit` column; the first is the course unit and never leaks in.
+    expect(n({ correct: "9.8", unit: "Unit 1" }).gradingConfig).toMatchObject({ unit: null });
+    expect(n({ correct: "9.8", unit: "Unit 1", unit_2: "Unit 1" }).gradingConfig).toMatchObject({
+      unit: null,
+    });
     expect(n({ correct: "100", tolerance: "5", tolerance_mode: "percent" }).gradingConfig).toEqual({
       mode: "percent_tolerance",
       unit: null,

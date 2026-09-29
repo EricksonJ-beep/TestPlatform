@@ -28,6 +28,11 @@ describe("parseCsvRecords", () => {
     expect(headers).toEqual(["first_name", "last_name", "email"]);
     expect(records).toEqual([{ first_name: "Maya", last_name: "Rivera", email: "m@x.org" }]);
   });
+  it("numbers repeated headers so both unit columns of Appendix A survive", () => {
+    const { headers, records } = parseCsvRecords("unit,type,unit\nUnit 1,numeric,cm");
+    expect(headers).toEqual(["unit", "type", "unit_2"]);
+    expect(records).toEqual([{ unit: "Unit 1", type: "numeric", unit_2: "cm" }]);
+  });
 });
 
 describe("toCsv", () => {

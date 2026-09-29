@@ -31,7 +31,7 @@ import {
   highestScoresRows,
   listGradingQueue,
 } from "@/lib/queries/results";
-import { clearManualScore, setManualScore } from "./actions";
+import { clearManualScore, regradeAssignment, setManualScore } from "./actions";
 
 const gradable = <T extends { questionId: string }>(i: T) => ({ ...i, id: i.questionId });
 
@@ -360,5 +360,49 @@ describe("manual grading and overrides", () => {
     // essay1 was graded 4/5 (partial), essay2 5/5.
     expect(by.get(ids.essay1)).toMatchObject({ answered: 1, correct: 0 });
     expect(by.get(ids.essay2)).toMatchObject({ answered: 1, correct: 1 });
+  });
+});
+
+describe("regrade", () => {
+  it("re-runs auto grading with the current key, keeps manual scores, and is owner-only", async () => {
+    asUser(ids.other, "teacher");
+    await fails(regradeAssignment(ids.assignment), 403);
+    asUser(ids.s1, "student");
+    await fails(regradeAssignment(ids.assignment), 403);
+
+    // The key changes: Maya's "wrong" MC option becomes the right one.
+    await db
+      .update(schema.questionOptions)
+      .set({ isCorrect: true })
+      .where(eq(schema.questionOptions.id, ids.mcWrong));
+    await db
+      .update(schema.questionOptions)
+      .set({ isCorrect: false })
+      .where(eq(schema.questionOptions.id, ids.mcRight));
+    const before = (await db.query.attempts.findFirst({
+      where: eq(schema.attempts.id, ids.attempt),
+    }))!;
+    asUser(ids.teacher, "teacher");
+    const r = await regradeAssignment(ids.assignment);
+    expect(r).toMatchObject({ ok: true, data: { regraded: 1 } });
+    const after = (await db.query.attempts.findFirst({
+      where: eq(schema.attempts.id, ids.attempt),
+    }))!;
+    const mc = (await db.query.responses.findFirst({
+      where: and(
+        eq(schema.responses.attemptId, ids.attempt),
+        eq(schema.responses.questionId, ids.mc)
+      ),
+    }))!;
+    expect(mc.isCorrect).toBe(true);
+    expect(mc.autoScore).toBeGreaterThan(0);
+    expect(after.score).toBe((before.score ?? 0) + (mc.autoScore ?? 0));
+    const essay1 = (await db.query.responses.findFirst({
+      where: and(
+        eq(schema.responses.attemptId, ids.attempt),
+        eq(schema.responses.questionId, ids.essay1)
+      ),
+    }))!;
+    expect(essay1.manualScore).toBe(4); // manual grading survives a regrade
   });
 });

@@ -165,12 +165,34 @@ describe("numeric", () => {
     for (const t of ["15 m/s", "15m/s", "15", "15 M/S", "15 m / s"])
       expect(gradeResponse(n, { kind: "text", text: t })).toMatchObject({ isCorrect: true });
     expect(gradeResponse(n, { kind: "text", text: "15 km/h" })).toMatchObject({ isCorrect: false });
+    // No unit on the key: a typed unit is ignored rather than costing the point (Jon, Sept 29 2026).
     expect(
       gradeResponse(q("numeric", { gradingConfig: { mode: "exact", answer: 15 } }), {
         kind: "text",
         text: "15 m/s",
       })
-    ).toMatchObject({ isCorrect: false });
+    ).toMatchObject({ isCorrect: true });
+  });
+  it("spelled-out units, degree signs, cubic units, and a trailing period all match", () => {
+    const s = q("numeric", {
+      gradingConfig: { mode: "tolerance", answer: 604800, tolerance: 800, unit: "s" },
+    });
+    for (const t of ["604800 Seconds", "604,800s", "604800 sec", "604800."])
+      expect(gradeResponse(s, { kind: "text", text: t })).toMatchObject({ isCorrect: true });
+    expect(gradeResponse(s, { kind: "text", text: "604800 minutes" })).toMatchObject({
+      isCorrect: false,
+    });
+    const v = q("numeric", {
+      gradingConfig: { mode: "tolerance", answer: 64.4, tolerance: 0.5, unit: "cm³" },
+    });
+    for (const t of ["64.45cm^3", "64 cm3", "64.4 cubic centimeters", "64.4 cc"])
+      expect(gradeResponse(v, { kind: "text", text: t })).toMatchObject({ isCorrect: true });
+    const c = q("numeric", {
+      gradingConfig: { mode: "tolerance", answer: 67, tolerance: 0.2, unit: "°C" },
+    });
+    for (const t of ["67 °C", "66.85 C", "67 degrees C", "67 celsius"])
+      expect(gradeResponse(c, { kind: "text", text: t })).toMatchObject({ isCorrect: true });
+    expect(parseNumericInput("8700.")).toEqual({ value: 8700, unit: "" });
   });
   it("exact, ± tolerance, % tolerance, range", () => {
     expect(

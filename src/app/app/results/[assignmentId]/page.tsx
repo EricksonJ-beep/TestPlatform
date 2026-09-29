@@ -7,6 +7,7 @@ import { getAssignmentRow } from "@/lib/queries/assignments";
 import { getGradebook, getItemAnalysis, getMasteryGrid } from "@/lib/queries/results";
 import { LocalTime } from "@/components/local-time";
 import { HardQuestions, MasteryHeatmap } from "./mastery-grid";
+import { RegradeButton } from "./regrade-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -71,6 +72,10 @@ export default async function AssignmentResultsPage({
             Grade {pending}
           </Button>
         ) : null}
+        <RegradeButton
+          assignmentId={assignmentId}
+          attempts={rows.reduce((n, r) => n + r.attempts.length, 0)}
+        />
         <Button
           variant="outline"
           nativeButton={false}

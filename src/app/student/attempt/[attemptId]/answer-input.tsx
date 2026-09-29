@@ -114,16 +114,27 @@ export function AnswerInput({
   if (q.type === "numeric") {
     const text = answer?.kind === "text" ? answer.text : "";
     return (
-      <div className="flex items-center gap-2">
-        <Input
-          aria-label="Your answer"
-          inputMode="decimal"
-          className="h-12 w-56 text-lg"
-          value={text}
-          placeholder="Enter a number"
-          onChange={(e) => onChange({ kind: "text", text: e.target.value })}
-        />
-        {q.unit ? <span className="text-sm text-muted-foreground">{q.unit}</span> : null}
+      <div className="grid gap-1.5">
+        <div className="flex items-center gap-2">
+          <Input
+            aria-label="Your answer"
+            inputMode="decimal"
+            className="h-12 w-56 text-lg"
+            value={text}
+            placeholder="Enter a number"
+            onChange={(e) => onChange({ kind: "text", text: e.target.value })}
+          />
+          {q.unit ? (
+            <span className="text-lg font-medium" data-unit>
+              {q.unit}
+            </span>
+          ) : null}
+        </div>
+        {q.unit ? (
+          <p className="text-xs text-muted-foreground">
+            Type just the number. The unit is already there.
+          </p>
+        ) : null}
       </div>
     );
   }

@@ -56,7 +56,14 @@ export function parseCsvRecords(text: string): {
 } {
   const rows = parseCsv(text);
   if (rows.length === 0) return { headers: [], records: [] };
-  const headers = rows[0].map((h) => h.trim().toLowerCase().replace(/\s+/g, "_"));
+  // A repeated header (Appendix A has `unit` twice) becomes unit, unit_2, … instead of overwriting.
+  const seen = new Map<string, number>();
+  const headers = rows[0].map((h) => {
+    const base = h.trim().toLowerCase().replace(/\s+/g, "_");
+    const n = (seen.get(base) ?? 0) + 1;
+    seen.set(base, n);
+    return n === 1 ? base : `${base}_${n}`;
+  });
   const records = rows.slice(1).map((r) => {
     const rec: Record<string, string> = {};
     headers.forEach((h, i) => {

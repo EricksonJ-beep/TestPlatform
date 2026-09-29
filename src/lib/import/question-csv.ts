@@ -242,7 +242,11 @@ export function parseQuestionRecord(raw: RawRecord, line: number): ParsedRow {
       if (!mode) error("tolerance_mode must be exact, abs, percent, or range.", "tolerance_mode");
       const tol = blank(raw.tolerance);
       const tolNum = tol === null ? null : Number(tol);
-      const unit = blank(raw.unit);
+      // Appendix A has two `unit` columns: the course unit first, the measurement unit second
+      // (parsed as unit_2). A file with one `unit` column carries only the course unit; a
+      // measurement unit that merely repeats the course unit is not a unit.
+      const unit2 = "unit_2" in raw ? blank(raw.unit_2) : null;
+      const unit = unit2 && unit2 !== blank(raw.unit) ? unit2 : null;
       const cfg: Record<string, unknown> = { mode: mode ?? "exact", unit };
       if (mode === "range") {
         const m = (correct ?? "").match(/^\s*(-?[\d.]+)\s*-\s*(-?[\d.]+)\s*$/);

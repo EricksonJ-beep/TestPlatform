@@ -1,11 +1,17 @@
 "use server";
 
-import { and, eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db, schema } from "@/db";
 import { finalizeAttempt } from "@/lib/attempts";
-import { ActionError, type AttemptAccess, requireAttemptAccess, withAuthz } from "@/lib/authz";
+import {
+  ActionError,
+  type AttemptAccess,
+  requireAttemptAccess,
+  requireOwner,
+  withAuthz,
+} from "@/lib/authz";
 
 function revalidate(assignmentId: string, attemptId: string) {
   revalidatePath("/app");
@@ -106,4 +112,22 @@ export const clearManualScore = withAuthz(async (attemptId: string, questionId: 
     totalPossible: score.totalPossible,
     pendingManual: score.pendingManual,
   };
+});
+
+/**
+ * Re-run auto grading on every finished attempt, keeping manual scores and
+ * overrides, then recompute finals, tiers, and gates. For after a grader or
+ * answer-key fix (Sept 29, 2026: units were being counted wrong).
+ */
+export const regradeAssignment = withAuthz(async (assignmentId: string) => {
+  await requireOwner({ type: "assignment", id: assignmentId });
+  const attempts = await db
+    .select({ id: schema.attempts.id, submittedAt: schema.attempts.submittedAt })
+    .from(schema.attempts)
+    .where(
+      and(eq(schema.attempts.assignmentId, assignmentId), ne(schema.attempts.status, "in_progress"))
+    );
+  for (const a of attempts) await finalizeAttempt(a.id, a.submittedAt ?? new Date());
+  revalidate(assignmentId, "");
+  return { regraded: attempts.length };
 });

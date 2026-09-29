@@ -105,9 +105,74 @@ export type NumericConfig = {
   unit?: string | null;
 };
 
-/** Squash spaces, superscripts, and case so "m/s", "m / s", and "M/S" compare equal. */
+/** Spelled-out and abbreviated unit names students type, mapped to the symbol a key would use. */
+const UNIT_ALIASES: Record<string, string> = {
+  seconds: "s",
+  second: "s",
+  secs: "s",
+  sec: "s",
+  minutes: "min",
+  minute: "min",
+  mins: "min",
+  hours: "h",
+  hour: "h",
+  hrs: "h",
+  hr: "h",
+  meters: "m",
+  meter: "m",
+  metres: "m",
+  metre: "m",
+  centimeters: "cm",
+  centimeter: "cm",
+  centimetres: "cm",
+  centimetre: "cm",
+  millimeters: "mm",
+  millimeter: "mm",
+  millimetres: "mm",
+  millimetre: "mm",
+  kilometers: "km",
+  kilometer: "km",
+  kilometres: "km",
+  kilometre: "km",
+  grams: "g",
+  gram: "g",
+  kilograms: "kg",
+  kilogram: "kg",
+  milligrams: "mg",
+  milligram: "mg",
+  liters: "l",
+  liter: "l",
+  litres: "l",
+  litre: "l",
+  milliliters: "ml",
+  milliliter: "ml",
+  cubiccentimeters: "cm3",
+  cubiccentimeter: "cm3",
+  cc: "cm3",
+  celsius: "c",
+  degreescelsius: "c",
+  degreesc: "c",
+  degc: "c",
+  kelvin: "k",
+  newtons: "n",
+  newton: "n",
+  joules: "j",
+  joule: "j",
+  percent: "%",
+};
+
+/** Squash spaces, superscripts, degree signs, and case, and map "Seconds" to "s", so "m/s", "m / s", "M/S", and "meters/second" compare equal. */
 const normUnit = (u: string) =>
-  u.replace(/\s+/g, "").replace(/\^/g, "").replace(/²/g, "2").replace(/³/g, "3").toLowerCase();
+  u
+    .replace(/\s+/g, "")
+    .replace(/\^/g, "")
+    .replace(/²/g, "2")
+    .replace(/³/g, "3")
+    .replace(/°/g, "")
+    .toLowerCase()
+    .split("/")
+    .map((part) => UNIT_ALIASES[part] ?? part)
+    .join("/");
 
 /**
  * Parse "15", "15 m/s", "15m/s", "1,500", "-2.5e3", "3/4". Returns the number and
@@ -116,7 +181,7 @@ const normUnit = (u: string) =>
 export function parseNumericInput(raw: string): { value: number; unit: string } | null {
   const s = raw.trim().replace(/,/g, "").replace(/^\+/, "");
   // Fractions first, so "3/4" is a value rather than 3 with the unit "/4".
-  const m = s.match(/^(-?\d+\/\d+|-?\d*\.?\d+(?:e[+-]?\d+)?)\s*(.*)$/i);
+  const m = s.match(/^(-?\d+\/\d+|-?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?)\s*(.*)$/i);
   if (!m) return null;
   let value: number;
   if (m[1].includes("/")) {
@@ -134,11 +199,10 @@ export function gradeNumeric(q: GradableQuestion, a: Answer): GradeResult {
   if (!raw.trim()) return wrong(q, "No answer.");
   const parsed = parseNumericInput(raw);
   if (!parsed) return wrong(q, "Couldn't read a number.");
-  if (parsed.unit) {
-    // With a unit set, the unit may be given or omitted but must not be a different one.
-    if (!cfg.unit || normUnit(parsed.unit) !== normUnit(cfg.unit))
-      return wrong(q, cfg.unit ? `Expected the unit ${cfg.unit}.` : "No unit expected.");
-  }
+  // Rule (Jon, Sept 29 2026): a typed unit never costs the point on its own. With a unit on the
+  // key it may be given or omitted but must not be a different one; with none, it is ignored.
+  if (parsed.unit && cfg.unit && normUnit(parsed.unit) !== normUnit(cfg.unit))
+    return wrong(q, `Expected the unit ${cfg.unit}.`);
   const x = parsed.value;
   const mode = cfg.mode ?? "exact";
   let ok = false;
