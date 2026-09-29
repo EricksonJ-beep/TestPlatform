@@ -8,6 +8,14 @@ import { ActionError, requireShared, requireTeacher, withAuthz } from "@/lib/aut
 import { ownsCourse, rememberCourse } from "@/lib/current-course";
 import { missingHeaders, parseQuestionRecords, type RawRecord } from "@/lib/import/question-csv";
 import { commitImport, planImport } from "@/lib/import/question-import";
+import {
+  DOCUMENT_TYPES,
+  extractQuestions,
+  isAiConfigured,
+  MAX_DOCUMENT_BYTES,
+} from "@/lib/ai/extract-questions";
+import { extractedToRecords } from "@/lib/ai/to-records";
+import { listTargets } from "@/lib/queries/courses";
 
 const bankSchema = z.object({
   name: z.string().trim().min(1, "Give the bank a name.").max(120),
@@ -121,3 +129,86 @@ export const commitQuestionImport = withAuthz(
     return result;
   }
 );
+
+// ---------------------------------------------------------------------------
+// Word / PDF import (Ticket 1.17)
+// ---------------------------------------------------------------------------
+
+const documentSchema = z.object({
+  fileName: z.string().trim().min(1).max(200),
+  contentType: z.string(),
+  base64: z.string().min(1),
+});
+
+/** Per-teacher cap on model calls: enough for a planning period, not a runaway script. */
+const AI_CALLS_PER_HOUR = 20;
+const aiCalls = new Map<string, number[]>();
+function checkRateLimit(teacherId: string, now = Date.now()) {
+  const recent = (aiCalls.get(teacherId) ?? []).filter((t) => now - t < 3_600_000);
+  if (recent.length >= AI_CALLS_PER_HOUR)
+    throw new ActionError(
+      `You've used ${AI_CALLS_PER_HOUR} document imports this hour; try again a little later.`,
+      429
+    );
+  recent.push(now);
+  aiCalls.set(teacherId, recent);
+}
+
+/**
+ * Turn a past test (.pdf, .docx, .txt) into Appendix A rows with Claude's
+ * help, for the same preview-and-confirm wizard as a CSV. Nothing is written
+ * here; the teacher reviews every row. Owner or co_edit on the bank.
+ */
+export const parseDocumentImport = withAuthz(async (bankId: string, input: unknown) => {
+  const access = await requireShared({ type: "question_bank", id: bankId }, "co_edit");
+  const parsed = documentSchema.safeParse(input);
+  if (!parsed.success) throw new ActionError("Couldn't read that upload.", 400);
+  const kind = DOCUMENT_TYPES[parsed.data.contentType as keyof typeof DOCUMENT_TYPES];
+  if (!kind) throw new ActionError("Upload a .pdf, .docx, or .txt file.", 400);
+  if (parsed.data.base64.length > MAX_DOCUMENT_BYTES * 1.4)
+    throw new ActionError("That file is over 10 MB.", 400);
+  if (!isAiConfigured())
+    throw new ActionError(
+      "Document import isn't set up on this server yet (ANTHROPIC_API_KEY).",
+      503
+    );
+  const bank = await db.query.questionBanks.findFirst({
+    columns: { courseId: true },
+    where: eq(schema.questionBanks.id, bankId),
+  });
+  const course = bank?.courseId
+    ? await db.query.courses.findFirst({
+        columns: { name: true },
+        where: eq(schema.courses.id, bank.courseId),
+      })
+    : null;
+  if (!bank?.courseId || !course)
+    throw new ActionError("Give this bank a course before importing.", 400);
+  checkRateLimit(access.userId);
+  const bytes = Buffer.from(parsed.data.base64, "base64");
+  if (bytes.length === 0 || bytes.length > MAX_DOCUMENT_BYTES)
+    throw new ActionError("That file is empty or over 10 MB.", 400);
+  const targets = (await listTargets(bank.courseId)).map((t) => ({ code: t.code, title: t.title }));
+  let result;
+  try {
+    result = await extractQuestions({
+      fileName: parsed.data.fileName,
+      kind,
+      bytes,
+      courseName: course.name,
+      targets,
+      teacherId: access.userId,
+    });
+  } catch (err) {
+    throw new ActionError(
+      err instanceof Error ? err.message : "The document couldn't be read.",
+      502
+    );
+  }
+  const { headers, records } = extractedToRecords(result.questions, {
+    courseName: course.name,
+    targets,
+    fileName: parsed.data.fileName,
+  });
+  return { headers, records, notes: result.notes, usage: result.usage };
+});

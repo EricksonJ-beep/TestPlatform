@@ -1063,6 +1063,25 @@ export const assignmentPins = pgTable(
 );
 
 // ---------------------------------------------------------------------------
+// AI usage (Ticket 1.17): one row per model call, so spend is visible
+// ---------------------------------------------------------------------------
+
+export const aiUsage = pgTable(
+  "ai_usage",
+  {
+    id: id(),
+    teacherId: uuid("teacher_id").references(() => users.id, { onDelete: "set null" }),
+    purpose: text("purpose").notNull(),
+    model: text("model").notNull(),
+    inputTokens: integer("input_tokens").default(0).notNull(),
+    outputTokens: integer("output_tokens").default(0).notNull(),
+    fileName: text("file_name"),
+    ...timestamps,
+  },
+  (t) => [index("ai_usage_teacher_idx").on(t.teacherId)]
+);
+
+// ---------------------------------------------------------------------------
 // Sharing
 // ---------------------------------------------------------------------------
 

@@ -26,6 +26,7 @@ import type { ImportPlan, ImportResult } from "@/lib/import/question-import";
 import { TYPE_LABEL } from "@/lib/question-types";
 import type { QuestionType } from "@/db/types";
 import { commitQuestionImport, previewQuestionImport } from "../../actions";
+import { AiImportPanel } from "./ai-import-panel";
 
 type Step =
   | { name: "upload" }
@@ -37,11 +38,13 @@ export function ImportWizard({
   bankName,
   courseName,
   storageConfigured,
+  aiConfigured = false,
 }: {
   bankId: string;
   bankName: string;
   courseName: string | null;
   storageConfigured: boolean;
+  aiConfigured?: boolean;
 }) {
   const [step, setStep] = useState<Step>({ name: "upload" });
   const [headers, setHeaders] = useState<string[]>([]);
@@ -53,6 +56,7 @@ export function ImportWizard({
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
   const [mediaReport, setMediaReport] = useState<MediaUploadReport | null>(null);
   const [mediaProgress, setMediaProgress] = useState<string | null>(null);
+  const [aiNotes, setAiNotes] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
   const preview = (h: string[], r: RawRecord[]) => {
@@ -231,6 +235,19 @@ export function ImportWizard({
             {storageConfigured ? "" : " Uploads are off until the R2_* variables are set."}
           </p>
         </div>
+        <AiImportPanel
+          bankId={bankId}
+          configured={aiConfigured}
+          disabled={pending}
+          onParsed={(h, r, name, notes) => {
+            setFileName(name);
+            setHeaders(h);
+            setRecords(r);
+            setSkipped(new Set());
+            setAiNotes(notes);
+            preview(h, r);
+          }}
+        />
         {mediaProgress ? <p className="text-sm text-muted-foreground">{mediaProgress}</p> : null}
         {pending ? <p className="text-sm text-muted-foreground">Checking {fileName}…</p> : null}
         {error ? (
@@ -263,6 +280,16 @@ export function ImportWizard({
 
   return (
     <div className="flex flex-col gap-4">
+      {aiNotes ? (
+        <p
+          role="status"
+          className="rounded-lg border border-brand/40 bg-brand-soft/40 px-4 py-3 text-sm"
+          data-ai-notes
+        >
+          <span className="font-medium">From the reader: </span>
+          {aiNotes}
+        </p>
+      ) : null}
       <div className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-lg border border-border bg-card px-4 py-3 text-sm">
         <span className="font-medium">{fileName}</span>
         <span className="tabular">{plan.rows.length} rows</span>

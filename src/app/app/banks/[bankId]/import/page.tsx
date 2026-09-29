@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { isAuthzError, requireShared } from "@/lib/authz";
 import { getBank } from "@/lib/queries/banks";
+import { isAiConfigured } from "@/lib/ai/extract-questions";
 import { isStorageConfigured } from "@/lib/storage";
 import { ImportWizard } from "./import-wizard";
 
@@ -31,8 +32,8 @@ export default async function ImportPage({ params }: PageProps<"/app/banks/[bank
         </Link>
         <h1 className="mt-2 text-2xl">Import questions</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          One question per row, in the template&apos;s column order. Nothing is written until you
-          confirm the preview.
+          A CSV in the template&apos;s column order, or a past test as Word or PDF read by Claude.
+          Nothing is written until you confirm the preview.
         </p>
       </div>
       <ImportWizard
@@ -40,6 +41,7 @@ export default async function ImportPage({ params }: PageProps<"/app/banks/[bank
         bankName={bank.name}
         courseName={bank.courseName}
         storageConfigured={isStorageConfigured()}
+        aiConfigured={isAiConfigured()}
       />
     </div>
   );
