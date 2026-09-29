@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { richTextToPlain } from "@/lib/richtext";
-import { HARD_QUESTION_MAX, HEAT_LABEL, heatBand, type HeatBand } from "@/lib/mastery";
+import {
+  classAverages,
+  HARD_QUESTION_MAX,
+  HEAT_LABEL,
+  heatBand,
+  type HeatBand,
+} from "@/lib/mastery";
 import type { ItemStat, MasteryGrid } from "@/lib/queries/results";
 
 /** Cell colors per band; dark text on the pale fills, white on the strong ones. */
@@ -14,6 +20,10 @@ const HEAT_CLASS: Record<HeatBand, string> = {
 /** Students down the side, one column per learning target, heat-coded by best percent. */
 export function MasteryHeatmap({ grid }: { grid: MasteryGrid }) {
   const { targets, rows } = grid;
+  const avg = classAverages(
+    targets.map((t) => t.id),
+    rows
+  );
   return (
     <section className="flex flex-col gap-3" aria-labelledby="mastery-heading">
       <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
@@ -87,6 +97,49 @@ export function MasteryHeatmap({ grid }: { grid: MasteryGrid }) {
               </tr>
             ))}
           </tbody>
+          {rows.length > 0 ? (
+            <tfoot>
+              <tr className="border-t-2 border-border bg-muted/40" data-class-average>
+                <th scope="row" className="px-3 py-2 text-left font-medium whitespace-nowrap">
+                  Class average
+                  {avg.overall ? (
+                    <span className="block text-xs font-normal text-muted-foreground tabular">
+                      {avg.overall.students} {avg.overall.students === 1 ? "student" : "students"}{" "}
+                      with a score
+                    </span>
+                  ) : null}
+                </th>
+                {targets.map((t) => {
+                  const a = avg.byTarget[t.id];
+                  if (!a)
+                    return (
+                      <td key={t.id} className="px-2 py-2 text-center text-muted-foreground">
+                        —
+                      </td>
+                    );
+                  const band = heatBand(a.average);
+                  return (
+                    <td key={t.id} className="p-1">
+                      <span
+                        className={`block rounded-md py-1 text-center font-semibold tabular ${HEAT_CLASS[band]}`}
+                        data-band={band}
+                        title={`${a.students} ${a.students === 1 ? "student" : "students"}`}
+                      >
+                        {Math.round(a.average)}%
+                      </span>
+                    </td>
+                  );
+                })}
+                <td className="px-3 py-2 text-right font-semibold tabular" data-class-overall>
+                  {avg.overall ? (
+                    `${Math.round(avg.overall.average)}%`
+                  ) : (
+                    <span className="font-normal text-muted-foreground">—</span>
+                  )}
+                </td>
+              </tr>
+            </tfoot>
+          ) : null}
         </table>
       </div>
     </section>

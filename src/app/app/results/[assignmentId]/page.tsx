@@ -6,6 +6,7 @@ import { isAuthzError, requireOwner } from "@/lib/authz";
 import { getAssignmentRow } from "@/lib/queries/assignments";
 import { getGradebook, getItemAnalysis, getMasteryGrid } from "@/lib/queries/results";
 import { LocalTime } from "@/components/local-time";
+import { classAverages } from "@/lib/mastery";
 import { HardQuestions, MasteryHeatmap } from "./mastery-grid";
 import { RegradeButton } from "./regrade-button";
 import { Badge } from "@/components/ui/badge";
@@ -43,6 +44,10 @@ export default async function AssignmentResultsPage({
   ]);
   const pending = rows.reduce((n, r) => n + r.attempts.reduce((m, t) => m + t.pendingManual, 0), 0);
   const summative = a.assessmentType === "summative";
+  const classAverage = classAverages(
+    grid.targets.map((t) => t.id),
+    grid.rows
+  ).overall;
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-5">
@@ -61,6 +66,7 @@ export default async function AssignmentResultsPage({
             {pending > 0
               ? ` · ${pending} ${pending === 1 ? "response" : "responses"} to grade`
               : ""}
+            {classAverage ? ` · class average ${Math.round(classAverage.average)}%` : ""}
           </p>
         </div>
         {pending > 0 ? (
