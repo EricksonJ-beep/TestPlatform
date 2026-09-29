@@ -754,6 +754,9 @@ export const assignmentFinalScores = pgTable(
     percent: doublePrecision("percent").notNull(),
     /** 1, 2, or 3 (§3.11); null for non-summatives. */
     tier: integer("tier"),
+    /** The tier before the last change, and when it changed (the "moved up today" marker, §3.11). */
+    previousTier: integer("previous_tier"),
+    tierChangedAt: timestamp("tier_changed_at", { withTimezone: true }),
     targetsBelowThreshold: integer("targets_below_threshold").default(0).notNull(),
     computedAt: timestamp("computed_at", { withTimezone: true }).defaultNow().notNull(),
     ...timestamps,

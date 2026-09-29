@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, Download } from "lucide-react";
+import { ChevronLeft, Download, LayoutGrid } from "lucide-react";
 import { isAuthzError, requireOwner } from "@/lib/authz";
 import { getAssignmentRow } from "@/lib/queries/assignments";
 import { getCorrectionsProgress } from "@/lib/queries/corrections";
@@ -79,6 +79,15 @@ export default async function AssignmentResultsPage({
             render={<Link href="/app/results/grading" />}
           >
             Grade {pending}
+          </Button>
+        ) : null}
+        {summative ? (
+          <Button
+            nativeButton={false}
+            render={<Link href={`/app/results/${assignmentId}/tiers`} />}
+          >
+            <LayoutGrid data-icon="inline-start" aria-hidden />
+            Tier board
           </Button>
         ) : null}
         <RegradeButton

@@ -2,6 +2,8 @@ import Link from "next/link";
 import { BarChart3 } from "lucide-react";
 import { requireTeacher } from "@/lib/authz";
 import { getDashboardCounts, getRecentResults } from "@/lib/queries/dashboard";
+import { getClassGlance } from "@/lib/queries/tiers";
+import { ClassGlance } from "@/components/app/class-glance";
 import { MetricCard } from "@/components/app/metric-card";
 import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
@@ -21,9 +23,10 @@ const TYPE_LABEL = {
 
 export default async function DashboardPage() {
   const session = await requireTeacher();
-  const [counts, recent] = await Promise.all([
+  const [counts, recent, glance] = await Promise.all([
     getDashboardCounts(session.userId),
     getRecentResults(session.userId),
+    getClassGlance(session.userId),
   ]);
   const attention = counts.needsGrading + counts.correctionsAwaiting;
 
@@ -63,6 +66,8 @@ export default async function DashboardPage() {
         />
         <MetricCard label="Classes" value={counts.classes} hint="This term" href="/app/classes" />
       </div>
+
+      <ClassGlance rows={glance} />
 
       <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
         <Card>

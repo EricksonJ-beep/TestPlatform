@@ -26,6 +26,7 @@ import { listStudentAssignments } from "@/lib/queries/assignments";
 import { listFinalScores } from "@/lib/queries/attempts";
 import { getRetakeStatus } from "@/lib/queries/retakes";
 import { getGradebook } from "@/lib/queries/results";
+import { getRelearningMonitor, getTierBoard } from "@/lib/queries/tiers";
 import { saveAnswer, setRetakeOptIn, startAttempt, submitAttempt } from "./actions";
 import { saveCorrection, submitCorrections } from "./corrections/actions";
 
@@ -210,6 +211,24 @@ describe("PLAN.md §4 worked example", () => {
     expect(card.state).toBe("corrections_needed");
     expect(card.corrections).toMatchObject({ needed: 3 });
     await fails(startAttempt(ids.assignment, null), 403);
+
+    // Tier board: Tier 2 with LT4 required, corrections not started; nobody moved yet.
+    asUser(ids.teacher, "teacher");
+    const board = (await getTierBoard(ids.assignment))!;
+    expect(board.counts).toEqual({ 1: 0, 2: 1, 3: 0 });
+    expect(board.cards[0]).toMatchObject({
+      tier: 2,
+      stage: "corrections_not_started",
+      movedUpToday: false,
+      required: [{ code: "LT4", percent: 70 }],
+      readiness: { [ids.lt[3]]: "not_ready", [ids.lt[0]]: "proficient" },
+    });
+    expect(board.unscored).toEqual([]);
+    expect(board.mostMissed).toMatchObject({ code: "LT4", below: 1 });
+    const monitor = (await getRelearningMonitor(ids.assignment, ids.student))!;
+    expect(monitor.targets.find((t) => t.code === "LT4")!.line).toBe(
+      "LT4: corrections ✗ (0 of 3) · activity ✓ · practice ✓ · retake locked"
+    );
   });
 
   it("corrections on the three missed LT4 items open the LT4 gate; the card says Retake required", async () => {
@@ -235,6 +254,15 @@ describe("PLAN.md §4 worked example", () => {
     expect(status.plan).toMatchObject({ selected: [ids.lt[3]], canStart: true });
     const [card] = await listStudentAssignments(ids.student);
     expect(card.state).toBe("retake_required");
+
+    asUser(ids.teacher, "teacher");
+    const board = (await getTierBoard(ids.assignment))!;
+    expect(board.cards[0]).toMatchObject({ tier: 2, stage: "retake_ready" });
+    const monitor = (await getRelearningMonitor(ids.assignment, ids.student))!;
+    expect(monitor.targets.find((t) => t.code === "LT4")!.line).toBe(
+      "LT4: corrections ✓ (3 of 3 approved) · activity ✓ · practice ✓ · retake unlocked"
+    );
+    expect(monitor.stage).toBe("retake_ready");
   });
 
   it("opting into a proficient target adds it to the scope; required targets and outsiders are refused", async () => {
@@ -313,6 +341,29 @@ describe("PLAN.md §4 worked example", () => {
     const gb = await getGradebook(ids.assignment);
     expect(gb[0].attempts[1]).toMatchObject({ number: 2, scopeCodes: ["LT4"] });
     expect(gb[0].final).toMatchObject({ totalEarned: 39, tier: 1 });
+
+    // Done when: the board lifts the student to Tier 1 on the next read, marked "moved up today".
+    asUser(ids.teacher, "teacher");
+    const board = (await getTierBoard(ids.assignment))!;
+    expect(board.counts).toEqual({ 1: 1, 2: 0, 3: 0 });
+    expect(board.cards[0]).toMatchObject({
+      tier: 1,
+      movedUpToday: true,
+      movedUpThisWeek: true,
+      stage: "retake_done",
+      required: [],
+    });
+    expect(board.movedUpThisWeek).toBe(1);
+    expect(board.mostMissed).toBeNull();
+    expect(finalRow.previousTier).toBe(2);
+    const monitor = (await getRelearningMonitor(ids.assignment, ids.student))!;
+    expect(monitor.targets.find((t) => t.code === "LT4")).toMatchObject({
+      attempt1Percent: 70,
+      percent: 90,
+      retaken: true,
+      state: "retaken",
+    });
+    expect(monitor.attempts).toHaveLength(2);
   });
 
   it("a student with every target proficient gets Retake available and must pick a target to start", async () => {

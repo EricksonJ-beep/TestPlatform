@@ -281,14 +281,26 @@ export async function recomputeFinalScore(assignmentId: string, studentId: strin
     threshold: asg.retakeThreshold,
     tier2Max: asg.tier2Max,
   });
+  const existing = await db.query.assignmentFinalScores.findFirst({
+    columns: { tier: true, previousTier: true, tierChangedAt: true },
+    where: and(
+      eq(schema.assignmentFinalScores.assignmentId, assignmentId),
+      eq(schema.assignmentFinalScores.studentId, studentId)
+    ),
+  });
+  const now = new Date();
+  // A tier change is remembered (PLAN.md §3.11 "moved up today"); a recompute that keeps the tier keeps the history.
+  const tierChanged = !!existing && existing.tier !== null && existing.tier !== final.tier;
   const values = {
     perTarget: final.perTarget,
     totalEarned: final.totalEarned,
     totalPossible: final.totalPossible,
     percent: final.percent,
     tier: final.tier,
+    previousTier: tierChanged ? existing!.tier : (existing?.previousTier ?? null),
+    tierChangedAt: tierChanged ? now : (existing?.tierChangedAt ?? null),
     targetsBelowThreshold: final.targetsBelowThreshold.length,
-    computedAt: new Date(),
+    computedAt: now,
   };
   await db
     .insert(schema.assignmentFinalScores)

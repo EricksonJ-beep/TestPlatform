@@ -85,6 +85,13 @@
       "when": 1790634763550,
       "tag": "0011_practice_sort_order",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1790695783175,
+      "tag": "0012_tier_moves",
+      "breakpoints": true
     }
   ]
 }
