@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AlertTriangle, Copy, Eye, Plus, Send, Trash2, Undo2 } from "lucide-react";
 import type { AssessmentDetail } from "@/lib/queries/assessments";
+import type { ShareRow } from "@/lib/queries/shares";
+import { ShareDialog } from "@/components/app/share-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,6 +35,7 @@ export function Builder({
   pools,
   banks,
   totalPoints,
+  shares = [],
 }: {
   detail: AssessmentDetail;
   access: "owner" | "view" | "copy" | "co_edit";
@@ -40,6 +43,7 @@ export function Builder({
   pools: BuilderPool[];
   banks: { id: string; name: string }[];
   totalPoints: number;
+  shares?: ShareRow[];
 }) {
   const router = useRouter();
   const canEdit = access === "owner" || access === "co_edit";
@@ -93,18 +97,28 @@ export function Builder({
             Preview as student
           </Button>
           {canEdit ? <SettingsSheet detail={detail} /> : null}
-          <Button
-            variant="outline"
-            disabled={pending}
-            onClick={() =>
-              run(duplicateAssessment(detail.id), ({ assessmentId }) =>
-                router.push(`/app/assessments/${assessmentId}`)
-              )
-            }
-          >
-            <Copy data-icon="inline-start" aria-hidden />
-            Duplicate
-          </Button>
+          {access === "owner" ? (
+            <ShareDialog resource={{ type: "assessment", id: detail.id }} shares={shares} />
+          ) : null}
+          {access === "owner" ? (
+            <Button
+              variant="outline"
+              disabled={pending}
+              onClick={() =>
+                run(duplicateAssessment(detail.id), ({ assessmentId }) =>
+                  router.push(`/app/assessments/${assessmentId}`)
+                )
+              }
+            >
+              <Copy data-icon="inline-start" aria-hidden />
+              Duplicate
+            </Button>
+          ) : access !== "view" ? (
+            <Button variant="outline" nativeButton={false} render={<Link href="/app/shared" />}>
+              <Copy data-icon="inline-start" aria-hidden />
+              Copy to my assessments
+            </Button>
+          ) : null}
           {canEdit ? (
             detail.isPublished ? (
               <Button

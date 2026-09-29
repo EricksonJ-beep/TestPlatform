@@ -5,9 +5,11 @@ import { ChevronLeft, Eye, FileUp, Library, Plus } from "lucide-react";
 import { isAuthzError, requireShared } from "@/lib/authz";
 import { getBank, listBankQuestions, listBankTags, listMoveTargets } from "@/lib/queries/banks";
 import { getCourseDetail, listCourses } from "@/lib/queries/courses";
+import { listShares } from "@/lib/queries/shares";
 import { listStimulusOptions, stimulusLabel } from "@/lib/queries/stimuli";
 import { isStorageConfigured } from "@/lib/storage";
 import { EmptyState } from "@/components/empty-state";
+import { ShareDialog } from "@/components/app/share-dialog";
 import { Button } from "@/components/ui/button";
 import { BankHeader } from "./bank-header";
 import { Filters } from "./filters";
@@ -40,14 +42,18 @@ export default async function BankPage({ params, searchParams }: PageProps<"/app
     tag: str("tag"),
     archived: archivedView,
   };
-  const [questions, tags, course, courses, moveTargets, stimulusOptions] = await Promise.all([
-    listBankQuestions(bank.id, filters),
-    listBankTags(bank.id),
-    bank.courseId ? getCourseDetail(bank.courseId) : Promise.resolve(null),
-    access.access === "owner" ? listCourses(access.userId) : Promise.resolve([]),
-    canEdit ? listMoveTargets(access.userId, bank.courseId, bank.id) : Promise.resolve([]),
-    bank.courseId ? listStimulusOptions(bank.courseId) : Promise.resolve([]),
-  ]);
+  const [questions, tags, course, courses, moveTargets, stimulusOptions, shares] =
+    await Promise.all([
+      listBankQuestions(bank.id, filters),
+      listBankTags(bank.id),
+      bank.courseId ? getCourseDetail(bank.courseId) : Promise.resolve(null),
+      access.access === "owner" ? listCourses(access.userId) : Promise.resolve([]),
+      canEdit ? listMoveTargets(access.userId, bank.courseId, bank.id) : Promise.resolve([]),
+      bank.courseId ? listStimulusOptions(bank.courseId) : Promise.resolve([]),
+      access.access === "owner"
+        ? listShares({ type: "question_bank", id: bank.id })
+        : Promise.resolve([]),
+    ]);
   const stimuli = stimulusOptions.map((s) => ({ id: s.id, label: stimulusLabel(s) }));
   const targets = (course?.targets ?? []).map((t) => ({ id: t.id, code: t.code, title: t.title }));
   const units = (course?.units ?? []).map((u) => ({ id: u.id, name: u.name }));
@@ -78,6 +84,9 @@ export default async function BankPage({ params, searchParams }: PageProps<"/app
           action={
             canEdit ? (
               <>
+                {access.access === "owner" ? (
+                  <ShareDialog resource={{ type: "question_bank", id: bank.id }} shares={shares} />
+                ) : null}
                 <Button
                   variant="outline"
                   nativeButton={false}

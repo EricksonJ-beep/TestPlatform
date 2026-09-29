@@ -11,6 +11,7 @@ import {
   loadBuilderSections,
 } from "@/lib/queries/assessments";
 import { listTargets } from "@/lib/queries/courses";
+import { listShares } from "@/lib/queries/shares";
 import { Builder } from "./builder";
 
 export const metadata: Metadata = { title: "Assessment builder" };
@@ -28,11 +29,14 @@ export default async function AssessmentPage({
   }
   const detail = await getAssessmentDetail(assessmentId);
   if (!detail) notFound();
-  const [targets, pools, banks, builderSections] = await Promise.all([
+  const [targets, pools, banks, builderSections, shares] = await Promise.all([
     detail.courseId ? listTargets(detail.courseId) : Promise.resolve([]),
     detail.courseId ? listPoolsForBuilder(detail.courseId) : Promise.resolve([]),
     detail.courseId ? listBanksForCourse(access.userId, detail.courseId) : Promise.resolve([]),
     loadBuilderSections(assessmentId),
+    access.access === "owner"
+      ? listShares({ type: "assessment", id: assessmentId })
+      : Promise.resolve([]),
   ]);
 
   return (
@@ -50,6 +54,7 @@ export default async function AssessmentPage({
         pools={pools}
         banks={banks}
         totalPoints={nominalPoints(builderSections)}
+        shares={shares}
       />
     </div>
   );
