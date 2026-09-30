@@ -31,7 +31,7 @@ import {
   highestScoresRows,
   listGradingQueue,
 } from "@/lib/queries/results";
-import { clearManualScore, regradeAssignment, setManualScore } from "./actions";
+import { clearManualScore, deleteAttempt, regradeAssignment, setManualScore } from "./actions";
 
 const gradable = <T extends { questionId: string }>(i: T) => ({ ...i, id: i.questionId });
 
@@ -404,5 +404,82 @@ describe("regrade", () => {
       ),
     }))!;
     expect(essay1.manualScore).toBe(4); // manual grading survives a regrade
+  });
+});
+
+describe("delete attempt", () => {
+  it("only the owning teacher may delete; students and other teachers get 403, unknown ids 404", async () => {
+    const { attemptId } = await createAttempt({ assignmentId: ids.assignment, studentId: ids.s1 });
+    asUser(ids.other, "teacher");
+    await fails(deleteAttempt(attemptId), 403);
+    asUser(ids.s1, "student");
+    await fails(deleteAttempt(attemptId), 403);
+    asUser(ids.teacher, "teacher");
+    await fails(deleteAttempt("00000000-0000-0000-0000-000000000000"), 404);
+    expect(
+      await db.query.attempts.findFirst({ where: eq(schema.attempts.id, attemptId) })
+    ).toBeTruthy();
+    await ok(deleteAttempt(attemptId));
+  });
+
+  it("deleting an accidental in-progress attempt removes it and its answers; the finished attempt still counts", async () => {
+    // Maya starts attempt 2 by accident and types one answer.
+    const { attemptId, number } = await createAttempt({
+      assignmentId: ids.assignment,
+      studentId: ids.s1,
+    });
+    expect(number).toBe(2);
+    await db.insert(schema.responses).values({
+      attemptId,
+      questionId: ids.fill,
+      answer: { kind: "text", text: "oops" },
+    });
+    asUser(ids.teacher, "teacher");
+    const r = await ok(deleteAttempt(attemptId));
+    expect(r).toEqual({ assignmentId: ids.assignment, number: 2 });
+    expect(
+      await db.query.attempts.findFirst({ where: eq(schema.attempts.id, attemptId) })
+    ).toBeUndefined();
+    expect(
+      await db.select().from(schema.responses).where(eq(schema.responses.attemptId, attemptId))
+    ).toHaveLength(0);
+    const book = await getGradebook(ids.assignment);
+    const maya = book.find((s) => s.studentId === ids.s1)!;
+    expect(maya.attempts.map((a) => a.number)).toEqual([1]);
+    expect(maya.final).toBeTruthy();
+    // The next start is attempt 2 again, not 3.
+    const again = await createAttempt({ assignmentId: ids.assignment, studentId: ids.s1 });
+    expect(again.number).toBe(2);
+    await ok(deleteAttempt(again.attemptId));
+  });
+
+  it("deleting a middle attempt closes the numbering gap", async () => {
+    const a2 = await createAttempt({ assignmentId: ids.assignment, studentId: ids.s1 });
+    const a3 = await createAttempt({ assignmentId: ids.assignment, studentId: ids.s1 });
+    expect([a2.number, a3.number]).toEqual([2, 3]);
+    asUser(ids.teacher, "teacher");
+    await ok(deleteAttempt(a2.attemptId));
+    const moved = (await db.query.attempts.findFirst({
+      where: eq(schema.attempts.id, a3.attemptId),
+    }))!;
+    expect(moved.number).toBe(2);
+    await ok(deleteAttempt(a3.attemptId));
+  });
+
+  it("deleting the only finished attempt clears the final score and the gradebook shows not started", async () => {
+    asUser(ids.teacher, "teacher");
+    await ok(deleteAttempt(ids.attempt));
+    const finals = await db
+      .select()
+      .from(schema.assignmentFinalScores)
+      .where(eq(schema.assignmentFinalScores.studentId, ids.s1));
+    expect(finals).toHaveLength(0);
+    const book = await getGradebook(ids.assignment);
+    const maya = book.find((s) => s.studentId === ids.s1)!;
+    expect(maya.attempts).toHaveLength(0);
+    expect(maya.final).toBeNull();
+    expect(await listGradingQueue(ids.teacher)).toHaveLength(0);
+    const rows = await highestScoresRows(ids.assignment);
+    expect(rows.find((r) => r.lastName === "Rivera")).toMatchObject({ score: null, attempts: 0 });
   });
 });

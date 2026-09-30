@@ -7,6 +7,7 @@ import { getAttemptReview } from "@/lib/queries/results";
 import { LocalTime } from "@/components/local-time";
 import { TargetChip } from "@/components/targets/target-chip";
 import { Badge } from "@/components/ui/badge";
+import { DeleteAttemptButton } from "../../[assignmentId]/delete-attempt-button";
 import { ReviewItemCard } from "./review-item";
 
 export const metadata: Metadata = { title: "Attempt review" };
@@ -78,6 +79,15 @@ export default async function AttemptReviewPage({
             ))}
           </ul>
         ) : null}
+        <div className="mt-3">
+          <DeleteAttemptButton
+            attemptId={attempt.id}
+            number={attempt.number}
+            inProgress={attempt.status === "in_progress"}
+            afterHref={`/app/results/${assignment.id}`}
+            variant="button"
+          />
+        </div>
       </div>
 
       {attempt.status === "in_progress" ? (
