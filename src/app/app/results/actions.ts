@@ -4,7 +4,7 @@ import { and, eq, gt, ne, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db, schema } from "@/db";
-import { finalizeAttempt } from "@/lib/attempts";
+import { deleteAttempt as removeAttempt, finalizeAttempt } from "@/lib/attempts";
 import {
   ActionError,
   type AttemptAccess,
@@ -210,4 +210,21 @@ export const revokeAttemptUnlock = withAuthz(async (assignmentId: string, studen
   revalidatePath(`/student/assignments/${assignmentId}`);
   revalidatePath("/student");
   return { ok: true };
+});
+
+/**
+ * Delete one attempt outright: a student started the test again by accident,
+ * or a run needs wiping so they can retake cleanly. Responses and corrections
+ * go with it; later attempts renumber; the final score and gates recompute.
+ * Owner of the assignment only. Not undoable, so the UI confirms first.
+ */
+export const deleteAttempt = withAuthz(async (attemptId: string) => {
+  const access = await requireAttemptAccess(attemptId);
+  if (access.as !== "teacher") throw new ActionError("Teachers only.", 403);
+  const { assignmentId, number } = await removeAttempt(attemptId);
+  revalidate(assignmentId, attemptId);
+  revalidatePath(`/app/results/${assignmentId}/tiers`);
+  revalidatePath(`/app/results/${assignmentId}/students/${access.attempt.studentId}`);
+  revalidatePath("/app/results/corrections");
+  return { assignmentId, number };
 });

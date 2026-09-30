@@ -5,7 +5,7 @@
  * a student-facing action directly (PHASE1.md: "every score is written by
  * server code").
  */
-import { and, eq, inArray, ne } from "drizzle-orm";
+import { and, asc, eq, gt, inArray, ne } from "drizzle-orm";
 import { db, schema } from "@/db";
 import type { ServedQuestion } from "@/db/types";
 import { buildQuestionSet } from "@/lib/assessments/serve";
@@ -244,12 +244,21 @@ export async function recomputeFinalScore(assignmentId: string, studentId: strin
       )
     );
   if (attempts.length === 0) {
+    // Nothing finished: no final score, and no retake gates (they hang off attempt 1).
     await db
       .delete(schema.assignmentFinalScores)
       .where(
         and(
           eq(schema.assignmentFinalScores.assignmentId, assignmentId),
           eq(schema.assignmentFinalScores.studentId, studentId)
+        )
+      );
+    await db
+      .delete(schema.retakeGates)
+      .where(
+        and(
+          eq(schema.retakeGates.assignmentId, assignmentId),
+          eq(schema.retakeGates.studentId, studentId)
         )
       );
     return;
@@ -310,4 +319,46 @@ export async function recomputeFinalScore(assignmentId: string, studentId: strin
       set: values,
     });
   await recomputeGates(assignmentId, studentId);
+}
+
+/**
+ * Remove one attempt entirely (a student started the test again by accident,
+ * or a run needs wiping). Responses, per-target scores, and corrections go
+ * with it by cascade; later attempts move down a number so "attempt 1" keeps
+ * meaning the first one; the final score and retake gates recompute from what
+ * is left. Callers pass the teacher guard first.
+ */
+export async function deleteAttempt(
+  attemptId: string
+): Promise<{ assignmentId: string; studentId: string; number: number }> {
+  const attempt = await db.query.attempts.findFirst({
+    columns: { id: true, assignmentId: true, studentId: true, number: true },
+    where: eq(schema.attempts.id, attemptId),
+  });
+  if (!attempt) throw new Error("attempt not found");
+  await db.delete(schema.attempts).where(eq(schema.attempts.id, attemptId));
+  const later = await db
+    .select({ id: schema.attempts.id, number: schema.attempts.number })
+    .from(schema.attempts)
+    .where(
+      and(
+        eq(schema.attempts.assignmentId, attempt.assignmentId),
+        eq(schema.attempts.studentId, attempt.studentId),
+        gt(schema.attempts.number, attempt.number)
+      )
+    )
+    .orderBy(asc(schema.attempts.number));
+  // Ascending order: each move lands on the number just freed, so the unique index never trips.
+  for (const a of later) {
+    await db
+      .update(schema.attempts)
+      .set({ number: a.number - 1 })
+      .where(eq(schema.attempts.id, a.id));
+  }
+  await recomputeFinalScore(attempt.assignmentId, attempt.studentId);
+  return {
+    assignmentId: attempt.assignmentId,
+    studentId: attempt.studentId,
+    number: attempt.number,
+  };
 }
