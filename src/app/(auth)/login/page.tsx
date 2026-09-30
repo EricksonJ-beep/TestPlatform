@@ -10,7 +10,11 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   return (
     <div className="rounded-lg border border-border bg-card p-6 shadow-xs">
       <h1 className="text-xl">Log in</h1>
-      <p className="mt-1 text-sm text-muted-foreground">Use your school email and password.</p>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Students: log in with your username, not your email. It&apos;s your first name, a dot, then
+        your last name, all lowercase (like <span className="font-mono">jane.smith</span>).
+        Teachers: use your email.
+      </p>
       <LoginForm next={next} />
       <p className="mt-6 text-center text-xs leading-relaxed text-muted-foreground">
         Forgot your password? Ask your teacher to reset it.

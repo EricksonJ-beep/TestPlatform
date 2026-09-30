@@ -14,7 +14,7 @@ import { safeNext } from "@/lib/routes";
 export type AuthFormState = { error?: string; fieldErrors?: Record<string, string> } | null;
 
 const loginSchema = z.object({
-  email: z.string().trim().min(1, "Enter your email or username.").max(200),
+  email: z.string().trim().min(1, "Enter your username (teachers: your email).").max(200),
   password: z.string().min(1, "Enter your password."),
   next: z.string().optional(),
 });
@@ -32,7 +32,7 @@ export const loginAction = publicAction(
     if (!user) {
       return {
         error: email.includes("@")
-          ? "We don't have an account for that email. Students: use your class join code. Teachers: create an account below."
+          ? "We don't have an account for that email. Students: log in with your username instead, which is your first name, a dot, then your last name, all lowercase (like jane.smith). If you never joined, use your class code. Teachers: create an account below."
           : "We don't have an account with that username. Check the spelling, or join your class with its code.",
       };
     }

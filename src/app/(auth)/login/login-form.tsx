@@ -14,18 +14,24 @@ export function LoginForm({ next }: { next?: string }) {
     <form action={action} className="mt-5 grid gap-4" noValidate>
       {next ? <input type="hidden" name="next" value={next} /> : null}
       <div className="grid gap-1.5">
-        <Label htmlFor="email">Email or username</Label>
+        <Label htmlFor="email">Username (teachers: email)</Label>
         <Input
           id="email"
           name="email"
           type="text"
           autoComplete="username"
           autoCapitalize="none"
-          placeholder="you@cadott.k12.wi.us or first.last"
+          placeholder="first.last"
           required
           aria-invalid={fe.email ? true : undefined}
         />
-        {fe.email ? <p className="text-xs text-error-foreground">{fe.email}</p> : null}
+        {fe.email ? (
+          <p className="text-xs text-error-foreground">{fe.email}</p>
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            Students: first name, dot, last name, all lowercase. No @ sign.
+          </p>
+        )}
       </div>
       <div className="grid gap-1.5">
         <Label htmlFor="password">Password</Label>
