@@ -64,7 +64,9 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
     submittedRef.current = true;
     setSubmitting(true);
     const r = await submitAttempt(attempt.id);
-    if (r.ok || r.status === 409) router.push(`/student/assignments/${assignment.id}`);
+    // 404: the teacher deleted this attempt underneath us; the assignment page explains the state.
+    if (r.ok || r.status === 409 || r.status === 404)
+      router.push(`/student/assignments/${assignment.id}`);
     else {
       submittedRef.current = false;
       setSubmitting(false);
@@ -100,6 +102,7 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
         } else {
           setSaveState("error");
           setSaveError(r.error);
+          if (r.status === 404) router.push(`/student/assignments/${assignment.id}`);
           if (r.status === 409 && /Time is up/.test(r.error)) {
             setTimeUp(true);
             void doSubmit();
@@ -107,7 +110,7 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
         }
       });
     },
-    [attempt.id, doSubmit]
+    [attempt.id, assignment.id, doSubmit, router]
   );
   const onChange = (questionId: string, answer: Answer, debounce: boolean) => {
     setAnswers((prev) => ({ ...prev, [questionId]: answer }));

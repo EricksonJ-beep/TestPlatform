@@ -10,6 +10,7 @@ import { LocalTime } from "@/components/local-time";
 import { classAverages } from "@/lib/mastery";
 import { CorrectionsProgressSection } from "./corrections-progress";
 import { HardQuestions, MasteryHeatmap } from "./mastery-grid";
+import { DeleteAttemptButton } from "./delete-attempt-button";
 import { RegradeButton } from "./regrade-button";
 import { UnlockButton } from "./unlock-button";
 import { Badge } from "@/components/ui/badge";
@@ -175,6 +176,11 @@ export default async function AssignmentResultsPage({
                                 Review
                               </Link>
                             ) : null}
+                            <DeleteAttemptButton
+                              attemptId={t.id}
+                              number={t.number}
+                              inProgress={t.status === "in_progress"}
+                            />
                           </li>
                         );
                       })}
