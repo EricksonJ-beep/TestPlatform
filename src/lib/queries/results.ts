@@ -37,6 +37,8 @@ export type GradebookRow = {
   attempts: GradebookAttempt[];
   /** Highest attempt number the teacher has unlocked for this student (0 = none). */
   unlockedThrough: number;
+  /** When the student asked for their next attempt; null when there is no pending request. */
+  requestedAt: Date | null;
   /** The attempt whose total counts (formative/practice); null for summatives (per target) or none. */
   bestAttemptId: string | null;
   final: {
@@ -59,7 +61,8 @@ export async function getGradebook(assignmentId: string): Promise<GradebookRow[]
       studentId: schema.users.id,
       firstName: schema.users.firstName,
       lastName: schema.users.lastName,
-      unlockedThrough: sql<number>`(select coalesce(max(u.attempt_number), 0)::int from ${schema.attemptUnlocks} u where u.assignment_id = ${assignmentId} and u.student_id = ${schema.users.id})`,
+      unlockedThrough: sql<number>`(select coalesce(max(u.attempt_number), 0)::int from ${schema.attemptUnlocks} u where u.assignment_id = ${assignmentId} and u.student_id = ${schema.users.id} and u.granted_at is not null)`,
+      requestedAt: sql<Date | null>`(select max(u.requested_at) from ${schema.attemptUnlocks} u where u.assignment_id = ${assignmentId} and u.student_id = ${schema.users.id} and u.granted_at is null)`,
     })
     .from(schema.enrollments)
     .innerJoin(schema.users, eq(schema.enrollments.studentId, schema.users.id))
@@ -141,6 +144,7 @@ export async function getGradebook(assignmentId: string): Promise<GradebookRow[]
     const f = finalBy.get(s.studentId);
     return {
       ...s,
+      requestedAt: s.requestedAt ? new Date(s.requestedAt) : null,
       attempts: mine,
       bestAttemptId: best?.id ?? null,
       final: f
@@ -214,7 +218,8 @@ export async function getMasteryGrid(assignmentId: string): Promise<MasteryGrid>
       studentId: schema.users.id,
       firstName: schema.users.firstName,
       lastName: schema.users.lastName,
-      unlockedThrough: sql<number>`(select coalesce(max(u.attempt_number), 0)::int from ${schema.attemptUnlocks} u where u.assignment_id = ${assignmentId} and u.student_id = ${schema.users.id})`,
+      unlockedThrough: sql<number>`(select coalesce(max(u.attempt_number), 0)::int from ${schema.attemptUnlocks} u where u.assignment_id = ${assignmentId} and u.student_id = ${schema.users.id} and u.granted_at is not null)`,
+      requestedAt: sql<Date | null>`(select max(u.requested_at) from ${schema.attemptUnlocks} u where u.assignment_id = ${assignmentId} and u.student_id = ${schema.users.id} and u.granted_at is null)`,
     })
     .from(schema.enrollments)
     .innerJoin(schema.users, eq(schema.enrollments.studentId, schema.users.id))

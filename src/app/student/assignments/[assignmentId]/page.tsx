@@ -9,6 +9,7 @@ import { LocalTime } from "@/components/local-time";
 import { TargetChip } from "@/components/targets/target-chip";
 import { Button } from "@/components/ui/button";
 import { RetakePicker } from "../../retake-picker";
+import { RequestRetakeButton } from "./request-retake-button";
 import { StartForm } from "./start-form";
 
 export const metadata: Metadata = { title: "Assignment" };
@@ -138,17 +139,25 @@ export default async function StudentAssignmentPage({
           {a.state === "awaiting_unlock" ? " Your teacher also has to unlock it." : ""}
         </p>
       ) : a.state === "awaiting_unlock" ? (
-        <p
-          className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3 text-sm"
+        <div
+          className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm"
           data-unlock-gate
         >
-          <Lock className="size-4 text-muted-foreground" aria-hidden />
-          Your teacher opens each retake. Attempt {a.attemptsUsed + 1} unlocks when they say so,
-          usually in class.
-          {c && c.state !== "none" && c.state !== "approved"
-            ? " Corrections are optional on this quiz, but they're good practice."
-            : ""}
-        </p>
+          <span className="mr-auto inline-flex items-center gap-2">
+            <Lock className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+            <span>
+              {a.retakeRequested
+                ? `Your request for attempt ${a.attemptsUsed + 1} is in. Your teacher will approve it, usually in class.`
+                : `Your teacher opens each retake. Ask for attempt ${a.attemptsUsed + 1} here, or in class.`}
+              {c && c.state !== "none" && c.state !== "approved"
+                ? " Corrections are optional on this quiz, but they're good practice."
+                : ""}
+            </span>
+          </span>
+          {a.retakeRequested ? null : (
+            <RequestRetakeButton assignmentId={a.id} attemptNumber={a.attemptsUsed + 1} />
+          )}
+        </div>
       ) : canStart ? (
         <StartForm
           assignmentId={a.id}

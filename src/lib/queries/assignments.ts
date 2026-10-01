@@ -145,6 +145,8 @@ export type StudentAssignment = {
   nextAttemptAt: Date | null;
   /** Every attempt after the first waits for the teacher's unlock; corrections are optional then. */
   retakesNeedUnlock: boolean;
+  /** The student has asked for the next attempt and the teacher hasn't answered yet. */
+  retakeRequested: boolean;
   status: AssignmentStatus;
   attemptsUsed: number;
   inProgressAttemptId: string | null;
@@ -188,7 +190,8 @@ export async function listStudentAssignments(
       retakeWaitHours: schema.assignments.retakeWaitHours,
       retakesNeedUnlock: schema.assignments.retakesNeedUnlock,
       lastSubmittedAt: sql<Date | null>`(select max(a.submitted_at) from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status <> 'in_progress')`,
-      unlockedThrough: sql<number>`(select coalesce(max(u.attempt_number), 0)::int from ${schema.attemptUnlocks} u where u.assignment_id = ${schema.assignments.id} and u.student_id = ${studentId})`,
+      unlockedThrough: sql<number>`(select coalesce(max(u.attempt_number), 0)::int from ${schema.attemptUnlocks} u where u.assignment_id = ${schema.assignments.id} and u.student_id = ${studentId} and u.granted_at is not null)`,
+      requestedThrough: sql<number>`(select coalesce(max(u.attempt_number), 0)::int from ${schema.attemptUnlocks} u where u.assignment_id = ${schema.assignments.id} and u.student_id = ${studentId} and u.granted_at is null)`,
       attemptsUsed: sql<number>`(select count(*)::int from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId})`,
       inProgressAttemptId: sql<
         string | null
@@ -229,6 +232,7 @@ export async function listStudentAssignments(
         lastSubmittedAt,
         latestAttemptId: _latest,
         unlockedThrough,
+        requestedThrough,
         ...r
       }): StudentAssignment => {
         const status = assignmentStatus(r, now);
@@ -264,6 +268,7 @@ export async function listStudentAssignments(
           retake,
           bestPercent: r.bestPercent === null ? null : Number(r.bestPercent),
           nextAttemptAt: next && next > now ? next : null,
+          retakeRequested: r.retakesNeedUnlock && requestedThrough === r.attemptsUsed + 1,
         };
       }
     )

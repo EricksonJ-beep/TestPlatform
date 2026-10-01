@@ -3,8 +3,9 @@ CREATE TABLE "attempt_unlocks" (
 	"assignment_id" uuid NOT NULL,
 	"student_id" uuid NOT NULL,
 	"attempt_number" integer NOT NULL,
+	"requested_at" timestamp with time zone,
 	"granted_by" uuid,
-	"granted_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"granted_at" timestamp with time zone,
 	CONSTRAINT "attempt_unlocks_number_min" CHECK ("attempt_unlocks"."attempt_number" >= 2)
 );
 --> statement-breakpoint

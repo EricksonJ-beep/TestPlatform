@@ -58,6 +58,9 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
       case "retake_available":
         return { label: "Start retake", primary: a.state === "retake_required" };
       case "awaiting_unlock":
+        return a.retakeRequested
+          ? { label: "View", primary: false }
+          : { label: "Request retake", primary: true };
       case "done":
       case "closed":
         return { label: "View", primary: false };
@@ -119,7 +122,9 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
           {a.state === "awaiting_unlock" ? (
             <span className="inline-flex items-center gap-1" data-unlock-hint>
               <Lock className="size-3.5" aria-hidden />
-              Your teacher unlocks attempt {a.attemptsUsed + 1}
+              {a.retakeRequested
+                ? `Attempt ${a.attemptsUsed + 1} requested`
+                : `Your teacher unlocks attempt ${a.attemptsUsed + 1}`}
             </span>
           ) : null}
           {a.bestPercent !== null && a.resultsReleased ? (

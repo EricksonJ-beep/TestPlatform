@@ -1,5 +1,5 @@
 {
-  "id": "22c958ac-839d-449c-93e9-c5539f819a98",
+  "id": "8c496b32-9ea6-416f-87a4-8e163050a377",
   "prevId": "9a3d5db8-3065-48b0-baed-f8317e4f8f2f",
   "version": "7",
   "dialect": "postgresql",
@@ -1457,6 +1457,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "requested_at": {
+          "name": "requested_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
         "granted_by": {
           "name": "granted_by",
           "type": "uuid",
@@ -1467,8 +1473,7 @@
           "name": "granted_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
+          "notNull": false
         }
       },
       "indexes": {

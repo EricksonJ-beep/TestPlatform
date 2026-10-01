@@ -687,7 +687,9 @@ export const attempts = pgTable(
 /**
  * A teacher's permission for one student to start one more attempt on an
  * assignment that has `retakes_need_unlock` on. One row per attempt number;
- * attempt 1 never needs one. Written only by the owning teacher's action.
+ * attempt 1 never needs one. A student may open the row as a request
+ * (`requested_at` set, `granted_at` null); only the owning teacher's action
+ * grants it (`granted_at` set). An ungranted row never unlocks anything.
  */
 export const attemptUnlocks = pgTable(
   "attempt_unlocks",
@@ -701,8 +703,11 @@ export const attemptUnlocks = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     /** The attempt number this unlock permits (2 or more). */
     attemptNumber: integer("attempt_number").notNull(),
+    /** When the student asked for this attempt; null when the teacher unlocked it unasked. */
+    requestedAt: timestamp("requested_at", { withTimezone: true }),
     grantedBy: uuid("granted_by").references(() => users.id, { onDelete: "set null" }),
-    grantedAt: timestamp("granted_at", { withTimezone: true }).defaultNow().notNull(),
+    /** Null = requested, not yet approved. */
+    grantedAt: timestamp("granted_at", { withTimezone: true }),
   },
   (t) => [
     uniqueIndex("attempt_unlocks_assignment_student_number_unique").on(

@@ -193,6 +193,7 @@ export default async function AssignmentResultsPage({
                           studentId={s.studentId}
                           nextAttempt={next}
                           unlocked={s.unlockedThrough >= next}
+                          requestedAt={s.requestedAt}
                         />
                       </div>
                     );

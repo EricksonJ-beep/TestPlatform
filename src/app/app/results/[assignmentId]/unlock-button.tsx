@@ -1,6 +1,7 @@
 "use client";
 
-import { LockOpen } from "lucide-react";
+import { Hand, LockOpen } from "lucide-react";
+import { LocalTime } from "@/components/local-time";
 import { Button } from "@/components/ui/button";
 import { useAction } from "@/components/use-action";
 import { revokeAttemptUnlock, unlockNextAttempt } from "../actions";
@@ -14,6 +15,7 @@ export function UnlockButton({
   studentId,
   nextAttempt,
   unlocked,
+  requestedAt = null,
 }: {
   assignmentId: string;
   studentId: string;
@@ -21,6 +23,8 @@ export function UnlockButton({
   nextAttempt: number;
   /** The teacher already unlocked `nextAttempt`. */
   unlocked: boolean;
+  /** When the student asked for `nextAttempt`; null when they haven't. */
+  requestedAt?: Date | null;
 }) {
   const { run, pending, error } = useAction();
   return (
@@ -38,6 +42,29 @@ export function UnlockButton({
             onClick={() => run(revokeAttemptUnlock(assignmentId, studentId))}
           >
             Take back
+          </Button>
+        </>
+      ) : requestedAt ? (
+        <>
+          <span className="inline-flex items-center gap-1 text-xs text-warning-foreground">
+            <Hand className="size-3.5" aria-hidden />
+            Asked for attempt {nextAttempt} <LocalTime date={requestedAt} />
+          </span>
+          <Button
+            size="sm"
+            variant="default"
+            disabled={pending}
+            onClick={() => run(unlockNextAttempt(assignmentId, studentId))}
+          >
+            {pending ? "Approving…" : "Approve"}
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            disabled={pending}
+            onClick={() => run(revokeAttemptUnlock(assignmentId, studentId))}
+          >
+            Decline
           </Button>
         </>
       ) : (

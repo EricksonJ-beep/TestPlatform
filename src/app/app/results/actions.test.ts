@@ -31,6 +31,8 @@ import {
   highestScoresRows,
   listGradingQueue,
 } from "@/lib/queries/results";
+import { getDashboardCounts, listRetakeRequests } from "@/lib/queries/dashboard";
+import { requestRetake } from "@/app/student/actions";
 import {
   clearManualScore,
   regradeAssignment,
@@ -435,9 +437,48 @@ describe("teacher unlocks (retakes need my OK)", () => {
     await ok(revokeAttemptUnlock(ids.assignment, ids.s1));
     rows = await getGradebook(ids.assignment);
     expect(rows.find((r) => r.studentId === ids.s1)?.unlockedThrough).toBe(0);
+  });
+
+  it("a student's request queues on the dashboard until the teacher approves or declines it", async () => {
+    asUser(ids.s2, "student");
+    await fails(requestRetake(ids.assignment), 409); // Ava hasn't taken it yet
+    asUser(ids.s1, "student");
+    expect(await ok(requestRetake(ids.assignment))).toEqual({ attemptNumber: 2 });
+    expect(await ok(requestRetake(ids.assignment))).toEqual({ attemptNumber: 2 }); // idempotent
+    // A request unlocks nothing on its own.
+    let row = (await getGradebook(ids.assignment)).find((r) => r.studentId === ids.s1)!;
+    expect(row.unlockedThrough).toBe(0);
+    expect(row.requestedAt).toBeInstanceOf(Date);
+    expect((await getDashboardCounts(ids.teacher)).retakeRequests).toBe(1);
+    expect((await getDashboardCounts(ids.other)).retakeRequests).toBe(0);
+    const [req] = await listRetakeRequests(ids.teacher);
+    expect(req).toMatchObject({
+      assignmentId: ids.assignment,
+      studentId: ids.s1,
+      lastName: "Rivera",
+      title: "Unit 1 test",
+      className: "P1",
+      attemptNumber: 2,
+    });
+    expect(await listRetakeRequests(ids.other)).toHaveLength(0);
+    // Decline clears it; a fresh request then approved becomes the unlock.
+    asUser(ids.teacher, "teacher");
+    await ok(revokeAttemptUnlock(ids.assignment, ids.s1));
+    expect(await listRetakeRequests(ids.teacher)).toHaveLength(0);
+    asUser(ids.s1, "student");
+    await ok(requestRetake(ids.assignment));
+    asUser(ids.teacher, "teacher");
+    expect(await ok(unlockNextAttempt(ids.assignment, ids.s1))).toEqual({ attemptNumber: 2 });
+    row = (await getGradebook(ids.assignment)).find((r) => r.studentId === ids.s1)!;
+    expect(row.unlockedThrough).toBe(2);
+    expect(row.requestedAt).toBeNull();
+    expect((await getDashboardCounts(ids.teacher)).retakeRequests).toBe(0);
+    // With the setting off, there is nothing to request.
     await db
       .update(schema.assignments)
       .set({ retakesNeedUnlock: false })
       .where(eq(schema.assignments.id, ids.assignment));
+    asUser(ids.s1, "student");
+    await fails(requestRetake(ids.assignment), 409);
   });
 });
