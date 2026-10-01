@@ -49,6 +49,8 @@ export type RosterRow = {
   email: string | null;
   username: string | null;
   lastLoginAt: Date | null;
+  /** Latest logged milestone (login, attempt, practice…); falls back to the login time. */
+  lastSeenAt: Date | null;
   mustChangePassword: boolean;
   enrolledAt: Date;
   extraTimePercent: number;
@@ -75,7 +77,7 @@ export async function getClassDetail(classId: string) {
     .limit(1);
   if (!cls) return null;
 
-  const roster: RosterRow[] = await db
+  const rosterRows = await db
     .select({
       enrollmentId: schema.enrollments.id,
       studentId: schema.users.id,
@@ -84,6 +86,7 @@ export async function getClassDetail(classId: string) {
       email: schema.users.email,
       username: schema.users.username,
       lastLoginAt: schema.users.lastLoginAt,
+      lastSeenAt: sql<Date | null>`greatest((select max(l.created_at) from ${schema.activityLog} l where l.user_id = ${schema.users.id}), ${schema.users.lastLoginAt})`,
       mustChangePassword: schema.users.mustChangePassword,
       enrolledAt: schema.enrollments.createdAt,
       extraTimePercent: schema.enrollments.extraTimePercent,
@@ -93,6 +96,11 @@ export async function getClassDetail(classId: string) {
     .innerJoin(schema.users, eq(schema.enrollments.studentId, schema.users.id))
     .where(eq(schema.enrollments.classId, classId))
     .orderBy(asc(schema.users.lastName), asc(schema.users.firstName));
+  // The greatest() subquery comes back as text from the driver; make it a Date like its neighbours.
+  const roster: RosterRow[] = rosterRows.map((r) => ({
+    ...r,
+    lastSeenAt: r.lastSeenAt ? new Date(r.lastSeenAt) : null,
+  }));
 
   const pending = await db
     .select({

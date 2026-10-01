@@ -11,6 +11,7 @@ import {
   requireAttemptAccess,
   withAuthz,
 } from "@/lib/authz";
+import { logActivity } from "@/lib/activity-log";
 import { correctionIssues, ISSUE_TEXT, type CorrectionIssue } from "@/lib/corrections";
 import { recomputeGates } from "@/lib/gates";
 import { getCorrectionScope, getCorrectionsSummary } from "@/lib/queries/corrections";
@@ -142,6 +143,12 @@ export const submitCorrections = withAuthz(async (attemptId: string) => {
   if (open === 0) throw new ActionError("These corrections are already submitted.", 409);
   const now = new Date();
   const approveNow = scope.assignment.reviewMode === "auto";
+  await logActivity({
+    userId: scope.attempt.studentId,
+    kind: "corrections_submitted",
+    assignmentId: scope.assignment.id,
+    detail: { approved: approveNow },
+  });
   await db
     .update(schema.corrections)
     .set({

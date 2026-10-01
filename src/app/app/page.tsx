@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { BarChart3 } from "lucide-react";
 import { requireTeacher } from "@/lib/authz";
+import { listRecentActivity } from "@/lib/activity-log";
 import { getDashboardCounts, getRecentResults, listRetakeRequests } from "@/lib/queries/dashboard";
 import { getClassGlance } from "@/lib/queries/tiers";
 import { ClassGlance } from "@/components/app/class-glance";
+import { ActivityFeed } from "@/components/app/activity-feed";
 import { MetricCard } from "@/components/app/metric-card";
 import { RetakeRequests } from "@/components/app/retake-requests";
 import { EmptyState } from "@/components/empty-state";
@@ -23,11 +25,12 @@ const TYPE_LABEL = {
 
 export default async function DashboardPage() {
   const session = await requireTeacher();
-  const [counts, recent, glance, requests] = await Promise.all([
+  const [counts, recent, glance, requests, activity] = await Promise.all([
     getDashboardCounts(session.userId),
     getRecentResults(session.userId),
     getClassGlance(session.userId),
     listRetakeRequests(session.userId),
+    listRecentActivity(session.userId, { hours: 24, limit: 25 }),
   ]);
   const attention = counts.needsGrading + counts.correctionsAwaiting + counts.retakeRequests;
 
@@ -71,6 +74,20 @@ export default async function DashboardPage() {
       <RetakeRequests rows={requests} />
 
       <ClassGlance rows={glance} />
+
+      <Card data-recent-activity>
+        <CardHeader>
+          <CardTitle>Recent activity</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            What your students did in the last 24 hours. Each class page has the full log.
+          </p>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="[&_section]:rounded-none [&_section]:border-0">
+            <ActivityFeed rows={activity} emptyText="Nothing logged in the last 24 hours." />
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

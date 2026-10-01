@@ -10,6 +10,7 @@ import {
   requirePracticeAttemptAccess,
   withAuthz,
 } from "@/lib/authz";
+import { logActivity } from "@/lib/activity-log";
 import { answerPracticeQuestion, completeActivity, startPracticeAttempt } from "@/lib/practice";
 
 const answerSchema = z
@@ -68,7 +69,18 @@ export const answerPractice = withAuthz(
     if (!parsed.success) throw new ActionError("Couldn't read that answer.", 400);
     try {
       const r = await answerPracticeQuestion(attemptId, questionId, parsed.data);
-      if (r.completed) revalidate();
+      if (r.completed) {
+        const set = await db.query.practiceSets.findFirst({
+          columns: { title: true },
+          where: eq(schema.practiceSets.id, access.attempt.practiceSetId),
+        });
+        await logActivity({
+          userId: access.userId,
+          kind: "practice_completed",
+          detail: { title: set?.title },
+        });
+        revalidate();
+      }
       return r;
     } catch (err) {
       if (err instanceof Error && err.message === "not on attempt")
@@ -86,6 +98,15 @@ export const finishActivity = withAuthz(async (activityId: string, rawEvidence: 
   if (!parsed.success) throw new ActionError("Couldn't read that.", 400);
   const r = await completeActivity(activityId, access.userId, parsed.data);
   if (!r.ok) throw new ActionError(r.reason, 400);
+  const activity = await db.query.relearningActivities.findFirst({
+    columns: { title: true },
+    where: eq(schema.relearningActivities.id, activityId),
+  });
+  await logActivity({
+    userId: access.userId,
+    kind: "activity_completed",
+    detail: { title: activity?.title },
+  });
   revalidate();
   return {
     completed: true,

@@ -722,6 +722,31 @@ export const attemptUnlocks = pgTable(
   ]
 );
 
+/**
+ * Student milestones (Jon, Oct 1 2026): login, attempt started/submitted,
+ * corrections, practice and activities done, retake requests, class joins.
+ * Written only by server code, never by a client; read by the teacher's
+ * class Activity page, the dashboard, and the roster's "last seen".
+ */
+export const activityLog = pgTable(
+  "activity_log",
+  {
+    id: id(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    kind: text("kind").notNull(),
+    assignmentId: uuid("assignment_id").references(() => assignments.id, { onDelete: "set null" }),
+    /** Small, kind-specific facts: attempt number, percent, a title. */
+    detail: jsonb("detail").$type<Record<string, unknown>>().default({}).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    index("activity_log_user_time_idx").on(t.userId, t.createdAt),
+    index("activity_log_time_idx").on(t.createdAt),
+  ]
+);
+
 export const responses = pgTable(
   "responses",
   {

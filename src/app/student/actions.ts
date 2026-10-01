@@ -4,6 +4,7 @@ import { and, eq, isNotNull, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db, schema } from "@/db";
+import { logActivity } from "@/lib/activity-log";
 import { canStartAttempt, startReasonText } from "@/lib/assignments";
 import { createAttempt, finalizeAttempt } from "@/lib/attempts";
 import { correctionsClear } from "@/lib/corrections";
@@ -160,6 +161,12 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
       throw new ActionError("This test has no questions yet. Tell your teacher.", 409);
     throw err;
   }
+  await logActivity({
+    userId: access.userId,
+    kind: "attempt_started",
+    assignmentId,
+    detail: { attemptNumber: created.number },
+  });
   revalidate(assignmentId);
   return { attemptId: created.attemptId, resumed: false };
 });
@@ -209,6 +216,12 @@ export const requestRetake = withAuthz(async (assignmentId: string) => {
       requestedAt: new Date(),
     })
     .onConflictDoNothing();
+  await logActivity({
+    userId: access.userId,
+    kind: "retake_requested",
+    assignmentId,
+    detail: { attemptNumber: next },
+  });
   revalidate(assignmentId);
   revalidatePath("/app");
   return { attemptNumber: next };
@@ -313,7 +326,7 @@ export const submitAttempt = withAuthz(async (attemptId: string) => {
   const access = await requireAttemptAccess(attemptId);
   assertOwnStudentRow(access, access.attempt);
   const attempt = await db.query.attempts.findFirst({
-    columns: { status: true, dueAt: true, assignmentId: true },
+    columns: { status: true, dueAt: true, assignmentId: true, number: true },
     where: eq(schema.attempts.id, attemptId),
   });
   if (!attempt) throw new ActionError("Not found.", 404);
@@ -321,6 +334,15 @@ export const submitAttempt = withAuthz(async (attemptId: string) => {
   const now = new Date();
   const submittedAt = attempt.dueAt && attempt.dueAt < now ? attempt.dueAt : now;
   const score = await finalizeAttempt(attemptId, submittedAt);
+  await logActivity({
+    userId: access.userId,
+    kind: "attempt_submitted",
+    assignmentId: attempt.assignmentId,
+    detail: {
+      attemptNumber: attempt.number,
+      percent: score.pendingManual > 0 ? null : score.percent,
+    },
+  });
   const asg = await db.query.assignments.findFirst({
     columns: { resultsReleased: true },
     where: eq(schema.assignments.id, attempt.assignmentId),
