@@ -2,7 +2,7 @@
  * Class and roster reads. Callers must have passed requireTeacher() /
  * requireOwner() first; these functions scope by the ids they are given.
  */
-import { and, asc, count, desc, eq, isNull } from "drizzle-orm";
+import { and, asc, count, desc, eq, isNull, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 
 export type ClassSummary = {
@@ -13,8 +13,10 @@ export type ClassSummary = {
   courseName: string | null;
   students: number;
   createdAt: Date;
+  sortOrder: number;
 };
 
+/** The teacher's own order first (Jon, Oct 1 2026); untouched classes fall back to period, then name. */
 export async function listClasses(teacherId: string): Promise<ClassSummary[]> {
   return db
     .select({
@@ -25,13 +27,18 @@ export async function listClasses(teacherId: string): Promise<ClassSummary[]> {
       courseName: schema.courses.name,
       students: count(schema.enrollments.id),
       createdAt: schema.classes.createdAt,
+      sortOrder: schema.classes.sortOrder,
     })
     .from(schema.classes)
     .leftJoin(schema.courses, eq(schema.classes.courseId, schema.courses.id))
     .leftJoin(schema.enrollments, eq(schema.enrollments.classId, schema.classes.id))
     .where(eq(schema.classes.ownerId, teacherId))
     .groupBy(schema.classes.id, schema.courses.name)
-    .orderBy(desc(schema.classes.createdAt));
+    .orderBy(
+      asc(schema.classes.sortOrder),
+      sql`nullif(regexp_replace(coalesce(${schema.classes.period}, ''), '\D', '', 'g'), '')::int nulls last`,
+      asc(schema.classes.name)
+    );
 }
 
 export type RosterRow = {
