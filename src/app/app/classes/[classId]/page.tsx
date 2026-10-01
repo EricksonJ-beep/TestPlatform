@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import { Activity, ChevronLeft } from "lucide-react";
 import { isAuthzError, requireOwner } from "@/lib/authz";
 import { getClassDetail } from "@/lib/queries/classes";
+import { Button } from "@/components/ui/button";
 import { AddStudentDialog } from "./add-student-dialog";
 import { DeleteClassButton } from "./delete-class-button";
 import { ImportCsvDialog } from "./import-csv-dialog";
@@ -46,6 +47,14 @@ export default async function ClassPage({ params }: PageProps<"/app/classes/[cla
               </span>
             </p>
           </div>
+          <Button
+            variant="outline"
+            nativeButton={false}
+            render={<Link href={`/app/classes/${cls.id}/activity`} />}
+          >
+            <Activity data-icon="inline-start" aria-hidden />
+            Activity
+          </Button>
           <ImportCsvDialog classId={cls.id} />
           <AddStudentDialog classId={cls.id} />
           <DeleteClassButton classId={cls.id} students={cls.roster.length} />

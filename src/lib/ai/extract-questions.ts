@@ -78,7 +78,9 @@ function systemPrompt(courseName: string, targets: { code: string; title: string
   return `You extract assessment questions from a teacher's past test so they can be imported into a question bank. The course is "${courseName}". Its learning targets:
 ${targetList}
 
-Read the whole document. Return every question you can find, in document order, using the answer key when one is present anywhere in the document (an answer key page, bold or underlined choices, asterisks, "Answer:" lines). If a question's key cannot be found, still return the question with an empty "correct" and say so in notes.
+Read the whole document. Return every question you can find, in document order, using the answer key when one is present anywhere in the document (an answer key page, bold or underlined choices, asterisks, "Answer:" lines). Quiz exports from a learning platform (CVTC, Schoology, Canvas) mark the key visually: the correct choice has a filled, dark radio button or circle while the other choices have empty circles; a point value like "0.5 points" sits by each question number and is that question's points. If a question's key cannot be found, still return the question with an empty "correct" and say so in notes.
+
+Picture questions: when a question is only a photo or diagram with an arrow and a label such as "Name this layer" or "Name the structure", use that label as the stem and say in notes which question numbers need their picture attached by hand (the picture itself cannot travel through this import).
 
 Rules:
 - type: multiple_choice for one correct choice; multiple_select when the question says "select all"; true_false; fill_blank for a blank with a short factual answer; short_answer for a sentence-length answer; extended_response for essays; numeric for a calculated number; matching for paired lists; ordering for sequences.

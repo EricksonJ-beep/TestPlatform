@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { authConfig } from "@/auth.config";
 import { db, schema } from "@/db";
+import { logActivity } from "@/lib/activity-log";
 import { findUserByIdentifier } from "@/lib/join";
 import { verifyPassword } from "@/lib/password";
 
@@ -33,6 +34,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           .update(schema.users)
           .set({ lastLoginAt: new Date() })
           .where(eq(schema.users.id, user.id));
+        if (user.role === "student") await logActivity({ userId: user.id, kind: "login" });
 
         // Only these fields ever leave this function; password_hash stays here.
         return {

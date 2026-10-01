@@ -6,6 +6,7 @@ import { z } from "zod";
 import { signIn } from "@/auth";
 import { db, schema } from "@/db";
 import { ActionError, publicAction, withAuthz, requireStudent } from "@/lib/authz";
+import { logActivity } from "@/lib/activity-log";
 import { normalizeJoinCode, uniqueUsername } from "@/lib/join";
 import { hashPassword, passwordPolicy } from "@/lib/password";
 
@@ -152,6 +153,7 @@ export const joinClass = publicAction(
       })
       .returning({ id: schema.users.id });
     await db.insert(schema.enrollments).values({ classId: cls.id, studentId: user.id });
+    await logActivity({ userId: user.id, kind: "class_joined", detail: { className: cls.name } });
     if (rosterId) {
       await db
         .update(schema.rosterNames)
@@ -196,6 +198,11 @@ export const joinAnotherClass = withAuthz(async (code: string) => {
   });
   if (already) return { classId: cls.id, className: cls.name, alreadyEnrolled: true };
   await db.insert(schema.enrollments).values({ classId: cls.id, studentId: session.userId });
+  await logActivity({
+    userId: session.userId,
+    kind: "class_joined",
+    detail: { className: cls.name },
+  });
   // Claim a matching pending name if there is one, so the teacher's list stays tidy.
   const match = await db.query.rosterNames.findFirst({
     where: and(

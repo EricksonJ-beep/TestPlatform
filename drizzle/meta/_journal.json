@@ -113,6 +113,13 @@
       "when": 1790823804112,
       "tag": "0015_class_sort_order",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1790858018388,
+      "tag": "0016_activity_log",
+      "breakpoints": true
     }
   ]
 }

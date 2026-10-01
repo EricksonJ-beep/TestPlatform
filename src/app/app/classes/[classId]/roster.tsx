@@ -93,7 +93,7 @@ export function Roster({ classId, roster }: { classId: string; roster: RosterRow
             <TableRow>
               <TableHead>Student</TableHead>
               <TableHead>Login</TableHead>
-              <TableHead className="hidden sm:table-cell">Last login</TableHead>
+              <TableHead className="hidden sm:table-cell">Last seen</TableHead>
               <TableHead className="hidden md:table-cell">Status</TableHead>
               <TableHead className="hidden lg:table-cell">Accommodations</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -119,7 +119,7 @@ export function Roster({ classId, roster }: { classId: string; roster: RosterRow
                   ) : null}
                 </TableCell>
                 <TableCell className="hidden text-muted-foreground sm:table-cell">
-                  {formatDate(row.lastLoginAt)}
+                  {formatDate(row.lastSeenAt ?? row.lastLoginAt)}
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
                   {row.mustChangePassword ? (
