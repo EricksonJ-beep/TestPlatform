@@ -32,6 +32,7 @@ import {
   createPracticeSet,
   setActivityPublished,
   setPracticeSetPublished,
+  swapContent,
   updateActivity,
   updatePracticeSet,
   verifyCompletion,
@@ -529,5 +530,36 @@ describe("Ticket 1.13: practice sets and relearning activities as retake gates",
     }))!;
     const seen = new Set(a1.questionSet.map((q) => q.questionId));
     expect(a2.questionSet.some((q) => seen.has(q.questionId))).toBe(false);
+  });
+});
+
+describe("practice page order (Jon, Oct 1 2026)", () => {
+  it("swapContent flips two visible neighbours; another teacher is refused", async () => {
+    asUser(ids.teacher, "teacher");
+    const before = await listPracticeContent(ids.teacher);
+    const all = [...before.sets, ...before.activities].sort(
+      (a, b) => a.sortOrder - b.sortOrder || a.title.localeCompare(b.title)
+    );
+    expect(all.length).toBeGreaterThan(1);
+    // Every target carries its unit (null when the target has none) for the accordion.
+    for (const item of all) for (const t of item.targets) expect(t).toHaveProperty("unit");
+    const [first, second] = all;
+    const ref = (i: (typeof all)[number]) => ({
+      type:
+        i.kind === "practice_set" ? ("practice_set" as const) : ("relearning_activity" as const),
+      id: i.id,
+    });
+    await ok(swapContent(ref(first), ref(second)));
+    const after = await listPracticeContent(ids.teacher);
+    const again = [...after.sets, ...after.activities].sort(
+      (a, b) => a.sortOrder - b.sortOrder || a.title.localeCompare(b.title)
+    );
+    expect(again[0].id).toBe(second.id);
+    expect(again[1].id).toBe(first.id);
+    asUser(ids.teacherB, "teacher");
+    await expect(swapContent(ref(first), ref(second))).resolves.toMatchObject({
+      ok: false,
+      status: 403,
+    });
   });
 });

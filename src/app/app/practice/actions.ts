@@ -525,6 +525,67 @@ export const moveContent = withAuthz(
   }
 );
 
+/**
+ * Swap two items' places in the teacher's sequence (Jon, Oct 1 2026: the
+ * practice page groups by unit, so "move up" must swap with the neighbour the
+ * teacher can see, not the next item in the global order). Both must be the
+ * caller's.
+ */
+export const swapContent = withAuthz(
+  async (
+    a: { type: "practice_set" | "relearning_activity"; id: string },
+    b: { type: "practice_set" | "relearning_activity"; id: string }
+  ) => {
+    const session = await requireTeacher();
+    const [accessA, accessB] = await Promise.all([
+      requireContentAccess(a),
+      requireContentAccess(b),
+    ]);
+    if (accessA.as !== "teacher" || accessB.as !== "teacher")
+      throw new ActionError("Teachers only.", 403);
+    // Renumber the whole sequence in the order the page shows it (sort order, then title),
+    // so ties never swallow a swap, then exchange the two positions.
+    const sets = await db
+      .select({
+        id: schema.practiceSets.id,
+        title: schema.practiceSets.title,
+        sortOrder: schema.practiceSets.sortOrder,
+      })
+      .from(schema.practiceSets)
+      .where(eq(schema.practiceSets.ownerId, session.userId));
+    const acts = await db
+      .select({
+        id: schema.relearningActivities.id,
+        title: schema.relearningActivities.title,
+        sortOrder: schema.relearningActivities.sortOrder,
+      })
+      .from(schema.relearningActivities)
+      .where(eq(schema.relearningActivities.ownerId, session.userId));
+    const all = [
+      ...sets.map((s) => ({ ...s, type: SET })),
+      ...acts.map((x) => ({ ...x, type: ACT })),
+    ].sort((x, y) => x.sortOrder - y.sortOrder || x.title.localeCompare(y.title));
+    const i = all.findIndex((x) => x.id === a.id && x.type === a.type);
+    const j = all.findIndex((x) => x.id === b.id && x.type === b.type);
+    if (i === -1 || j === -1) throw new ActionError("Not found.", 404);
+    [all[i], all[j]] = [all[j], all[i]];
+    for (const [k, x] of all.entries()) {
+      if (x.type === SET)
+        await db
+          .update(schema.practiceSets)
+          .set({ sortOrder: k })
+          .where(eq(schema.practiceSets.id, x.id));
+      else
+        await db
+          .update(schema.relearningActivities)
+          .set({ sortOrder: k })
+          .where(eq(schema.relearningActivities.id, x.id));
+    }
+    revalidate();
+    return { ok: true };
+  }
+);
+
 // ---------------------------------------------------------------------------
 // Picker search (read-only, but a server action so it is guarded)
 // ---------------------------------------------------------------------------

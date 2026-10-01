@@ -3,11 +3,11 @@ import Link from "next/link";
 import { FileSpreadsheet, Layers } from "lucide-react";
 import { requireTeacher } from "@/lib/authz";
 import { getCurrentCourse } from "@/lib/current-course";
-import { groupByCourse } from "@/lib/group-by-course";
+import { groupPractice } from "@/lib/practice-groups";
 import { listPracticeContent } from "@/lib/queries/practice";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
-import { ContentList } from "./content-list";
+import { PracticeAccordion } from "./practice-accordion";
 import { NewActivityDialog, NewPracticeSetDialog } from "./new-content-dialogs";
 
 export const metadata: Metadata = { title: "Practice sets" };
@@ -69,17 +69,7 @@ export default async function PracticePage() {
           />
         </div>
       ) : (
-        groupByCourse(items).map((g) => (
-          <section key={g.course} className="flex flex-col gap-3" aria-label={g.course}>
-            <h2 className="text-lg">
-              {g.course}{" "}
-              <span className="text-sm font-normal text-muted-foreground tabular">
-                · {g.items.length} {g.items.length === 1 ? "item" : "items"}
-              </span>
-            </h2>
-            <ContentList items={g.items} />
-          </section>
-        ))
+        <PracticeAccordion groups={groupPractice(items)} />
       )}
     </div>
   );
