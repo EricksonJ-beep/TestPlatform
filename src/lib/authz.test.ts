@@ -170,6 +170,21 @@ describe("ownership", () => {
     await rejects(authz.requireOwner({ type: "question_bank", id: ids.bankA }), 403);
   });
 
+  it("an id that is not a UUID is 404 everywhere, never a database error", async () => {
+    asUser(ids.teacherA, "teacher");
+    for (const bad of ["blocked.png", "", "not-a-uuid", "../etc/passwd"]) {
+      await rejects(authz.requireOwner({ type: "assignment", id: bad }), 404);
+      await rejects(authz.requireShared({ type: "question_bank", id: bad }, "view"), 404);
+      await rejects(authz.requireAssignmentAccess(bad), 404);
+      await rejects(authz.requireAttemptAccess(bad), 404);
+      await rejects(authz.requireContentAccess({ type: "practice_set", id: bad }), 404);
+      await rejects(authz.requirePracticeAttemptAccess(bad), 404);
+    }
+    asUser(ids.student1, "student");
+    await rejects(authz.requireEnrolled("blocked.png"), 404);
+    expect(authz.isUuid(MISSING)).toBe(true);
+    expect(authz.isUuid("BLOCKED.PNG")).toBe(false);
+  });
   it("a missing resource is 404, not a silent pass", async () => {
     asUser(ids.teacherA, "teacher");
     await rejects(authz.requireOwner({ type: "question_bank", id: MISSING }), 404);
