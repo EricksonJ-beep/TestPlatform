@@ -79,24 +79,23 @@ export function AssignmentsTable({
             const st = STATUS[a.status];
             return (
               <TableRow key={a.id} data-assignment={a.id}>
-                <TableCell className="font-medium">
+                <TableCell className="font-medium whitespace-normal">
                   {a.assessmentTitle}
                   <span className="block text-xs font-normal text-muted-foreground">
                     {a.assessmentType}
                   </span>
                 </TableCell>
-                <TableCell>{a.className}</TableCell>
+                <TableCell className="whitespace-normal">{a.className}</TableCell>
                 <TableCell>
                   <Badge className={st.className}>{st.label}</Badge>
                 </TableCell>
-                <TableCell className="hidden text-muted-foreground md:table-cell">
+                <TableCell className="hidden whitespace-normal text-muted-foreground md:table-cell">
                   {!a.opensAt && !a.closesAt ? (
                     "Always open"
                   ) : (
-                    <span className="tabular">
-                      {a.opensAt ? <LocalTime date={a.opensAt} /> : "Now"}
-                      {" → "}
-                      {a.closesAt ? <LocalTime date={a.closesAt} /> : "no close"}
+                    <span className="grid text-xs tabular">
+                      <span>{a.opensAt ? <LocalTime date={a.opensAt} /> : "Now"}</span>
+                      <span>→ {a.closesAt ? <LocalTime date={a.closesAt} /> : "no close"}</span>
                     </span>
                   )}
                 </TableCell>
@@ -124,11 +123,12 @@ export function AssignmentsTable({
                     {a.retakesNeedUnlock ? <span>Retakes need your OK</span> : null}
                   </span>
                 </TableCell>
-                <TableCell className="hidden text-muted-foreground tabular sm:table-cell">
-                  {a.started}/{a.enrolled} started · {a.submitted} done
+                <TableCell className="hidden text-xs whitespace-normal text-muted-foreground tabular sm:table-cell">
+                  {a.started}/{a.enrolled} started
+                  <span className="block">{a.submitted} done</span>
                 </TableCell>
-                <TableCell className="text-right">
-                  <div className="inline-flex items-center gap-0.5">
+                <TableCell className="text-right whitespace-normal">
+                  <div className="flex flex-wrap items-center justify-end gap-1">
                     <AssignmentDialog assessments={assessments} classes={classes} existing={a} />
                     {a.assessmentType === "summative" ? (
                       <Button
