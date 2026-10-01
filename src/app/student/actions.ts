@@ -76,10 +76,20 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
       accessCode: true,
       attemptsAllowed: true,
       retakeWaitHours: true,
+      retakesNeedUnlock: true,
     },
     where: eq(schema.assignments.id, assignmentId),
   });
   if (!assignment) throw new ActionError("Not found.", 404);
+  const [unlock] = await db
+    .select({ through: sql<number>`coalesce(max(${schema.attemptUnlocks.attemptNumber}), 0)::int` })
+    .from(schema.attemptUnlocks)
+    .where(
+      and(
+        eq(schema.attemptUnlocks.assignmentId, assignmentId),
+        eq(schema.attemptUnlocks.studentId, access.userId)
+      )
+    );
   const [last] = await db
     .select({ submittedAt: sql<Date | null>`max(${schema.attempts.submittedAt})` })
     .from(schema.attempts)
@@ -102,6 +112,7 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
     assignment,
     attemptsUsed: used,
     lastSubmittedAt,
+    unlockedThrough: unlock?.through ?? 0,
     accessCode,
     now,
   });
@@ -118,7 +129,10 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
     );
   }
   // Rule (PLAN.md §4): no retake until corrections on the last attempt are done (and approved, in that mode).
-  const lastAttemptId = await latestFinishedAttemptId(assignmentId, access.userId);
+  // Exception (Jon, Oct 1 2026): when retakes need the teacher's unlock, that unlock is the only gate.
+  const lastAttemptId = assignment.retakesNeedUnlock
+    ? null
+    : await latestFinishedAttemptId(assignmentId, access.userId);
   const corrections = lastAttemptId ? await getCorrectionsSummary(lastAttemptId) : null;
   if (corrections && !correctionsClear(corrections)) {
     throw new ActionError(

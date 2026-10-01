@@ -121,6 +121,7 @@ export function AssignmentsTable({
                     </span>
                     <span>{a.retakeThreshold}% threshold</span>
                     {a.retakeWaitHours ? <span>{a.retakeWaitHours} h between attempts</span> : null}
+                    {a.retakesNeedUnlock ? <span>Retakes need your OK</span> : null}
                   </span>
                 </TableCell>
                 <TableCell className="hidden text-muted-foreground tabular sm:table-cell">

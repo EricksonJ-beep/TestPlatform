@@ -86,13 +86,15 @@ export type CycleState =
   | "relearning"
   | "retake_required"
   | "retake_available"
+  | "awaiting_unlock"
   | "done";
 
 /**
  * Rule (PLAN.md §5 screen 2): corrections come first; then, for summatives,
  * the relearning checklist, then Retake required / available; formatives go
  * straight to Retake available while attempts remain and the score is not
- * perfect. Done otherwise.
+ * perfect. Done otherwise. When the retake is otherwise ready but the teacher
+ * has not unlocked it (`needsUnlock`), the card waits on the teacher instead.
  */
 export function cycleState(input: {
   type: "practice" | "formative" | "summative";
@@ -101,7 +103,16 @@ export function cycleState(input: {
   attemptsAllowed: number | null;
   bestPercent: number | null;
   plan: RetakePlan | null;
+  /** The assignment needs a teacher unlock for the next attempt and none has been given. */
+  needsUnlock?: boolean;
 }): CycleState {
+  const state = readyState(input);
+  if (input.needsUnlock && (state === "retake_required" || state === "retake_available"))
+    return "awaiting_unlock";
+  return state;
+}
+
+function readyState(input: Parameters<typeof cycleState>[0]): CycleState {
   if (input.corrections === "needed") return "corrections_needed";
   if (input.corrections === "returned") return "corrections_returned";
   if (input.corrections === "submitted") return "corrections_submitted";

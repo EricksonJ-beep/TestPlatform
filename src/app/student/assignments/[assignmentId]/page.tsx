@@ -32,7 +32,9 @@ export default async function StudentAssignmentPage({
   const attemptsLeft =
     a.attemptsAllowed === null ? null : Math.max(0, a.attemptsAllowed - a.attemptsUsed);
   const c = a.corrections;
-  const correctionsBlock = !!c && c.state !== "approved" && c.state !== "none";
+  // With teacher unlocks on, corrections are optional and never block (Jon, Oct 1 2026).
+  const correctionsBlock =
+    !a.retakesNeedUnlock && !!c && c.state !== "approved" && c.state !== "none";
   const retaking = a.state === "retake_required" || a.state === "retake_available";
   const canStart =
     a.status === "open" &&
@@ -133,6 +135,19 @@ export default async function StudentAssignmentPage({
         <p className="rounded-lg border border-border bg-card px-4 py-3 text-sm">
           Your next attempt opens <LocalTime date={a.nextAttemptAt} />. Your teacher set a{" "}
           {a.retakeWaitHours}-hour wait between attempts.
+          {a.state === "awaiting_unlock" ? " Your teacher also has to unlock it." : ""}
+        </p>
+      ) : a.state === "awaiting_unlock" ? (
+        <p
+          className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3 text-sm"
+          data-unlock-gate
+        >
+          <Lock className="size-4 text-muted-foreground" aria-hidden />
+          Your teacher opens each retake. Attempt {a.attemptsUsed + 1} unlocks when they say so,
+          usually in class.
+          {c && c.state !== "none" && c.state !== "approved"
+            ? " Corrections are optional on this quiz, but they're good practice."
+            : ""}
         </p>
       ) : canStart ? (
         <StartForm

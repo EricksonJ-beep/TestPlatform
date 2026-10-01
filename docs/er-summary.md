@@ -90,9 +90,11 @@ Generated from `drizzle/meta/0001_snapshot.json` (Ticket 0.4). Every table also 
 
 ## Delivery
 
-- **assignments** — assessment_id uuid, class_id uuid, owner_id uuid, opens_at timestamptz?, closes_at timestamptz?, access_code text?, time_limit_minutes integer?, attempts_allowed integer?, review_mode review_mode ='auto', retake_threshold integer =80, optional_retakes boolean =true, tier2_max integer =2, results_released boolean =true
+- **assignments** — assessment_id uuid, class_id uuid, owner_id uuid, opens_at timestamptz?, closes_at timestamptz?, access_code text?, time_limit_minutes integer?, attempts_allowed integer?, review_mode review_mode ='auto', retake_threshold integer =80, optional_retakes boolean =true, tier2_max integer =2, results_released boolean =true, retake_wait_hours integer =0, retakes_need_unlock boolean =false
   - FKs: assessment_id→assessments.id (cascade); class_id→classes.id (cascade); owner_id→users.id (cascade)
   - checks: assignments_threshold_range
+- **attempt_unlocks** — assignment_id uuid, student_id uuid, attempt_number integer (≥2), granted_by uuid?, granted_at timestamptz
+  - unique: assignment_id+student_id+attempt_number
 - **attempts** — assignment_id uuid, student_id uuid, number integer, scope jsonb?, question_set jsonb, status attempt_status ='in_progress', score double precision?, max_score double precision?, percent double precision?, started_at timestamptz, submitted_at timestamptz?, graded_at timestamptz?, due_at timestamptz?, tab_switches integer =0
   - FKs: assignment_id→assignments.id (cascade); student_id→users.id (cascade)
   - unique: assignment_id+student_id+number

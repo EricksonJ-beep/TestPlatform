@@ -63,6 +63,7 @@ const settingsSchema = z.object({
     .refine((n) => Number.isInteger(n) && n >= 1 && n <= 20, "Tier 2 max is 1–20."),
   resultsReleased: bool,
   retakeWaitHours: optInt(0, 24 * 30, "Wait is 0–720 hours."),
+  retakesNeedUnlock: bool,
 });
 
 function parseWindow(d: z.infer<typeof settingsSchema>) {
@@ -90,6 +91,7 @@ function settingsFrom(d: z.infer<typeof settingsSchema>) {
     tier2Max: d.tier2Max,
     resultsReleased: d.resultsReleased,
     retakeWaitHours: d.retakeWaitHours ?? 0,
+    retakesNeedUnlock: d.retakesNeedUnlock,
   };
 }
 

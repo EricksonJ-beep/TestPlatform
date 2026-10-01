@@ -31,7 +31,13 @@ import {
   highestScoresRows,
   listGradingQueue,
 } from "@/lib/queries/results";
-import { clearManualScore, regradeAssignment, setManualScore } from "./actions";
+import {
+  clearManualScore,
+  regradeAssignment,
+  revokeAttemptUnlock,
+  setManualScore,
+  unlockNextAttempt,
+} from "./actions";
 
 const gradable = <T extends { questionId: string }>(i: T) => ({ ...i, id: i.questionId });
 
@@ -404,5 +410,34 @@ describe("regrade", () => {
       ),
     }))!;
     expect(essay1.manualScore).toBe(4); // manual grading survives a regrade
+  });
+});
+
+describe("teacher unlocks (retakes need my OK)", () => {
+  it("unlocks the next attempt for one student, shows in the gradebook, and can be taken back", async () => {
+    await db
+      .update(schema.assignments)
+      .set({ retakesNeedUnlock: true })
+      .where(eq(schema.assignments.id, ids.assignment));
+    asUser(ids.other, "teacher");
+    await fails(unlockNextAttempt(ids.assignment, ids.s1), 403);
+    asUser(ids.s1, "student");
+    await fails(unlockNextAttempt(ids.assignment, ids.s1), 403);
+    asUser(ids.teacher, "teacher");
+    // Ava has no attempt yet: the first never needs an unlock.
+    await fails(unlockNextAttempt(ids.assignment, ids.s2), 409);
+    // Maya finished attempt 1: unlock opens attempt 2, twice is harmless.
+    expect(await ok(unlockNextAttempt(ids.assignment, ids.s1))).toEqual({ attemptNumber: 2 });
+    expect(await ok(unlockNextAttempt(ids.assignment, ids.s1))).toEqual({ attemptNumber: 2 });
+    let rows = await getGradebook(ids.assignment);
+    expect(rows.find((r) => r.studentId === ids.s1)?.unlockedThrough).toBe(2);
+    expect(rows.find((r) => r.studentId === ids.s2)?.unlockedThrough).toBe(0);
+    await ok(revokeAttemptUnlock(ids.assignment, ids.s1));
+    rows = await getGradebook(ids.assignment);
+    expect(rows.find((r) => r.studentId === ids.s1)?.unlockedThrough).toBe(0);
+    await db
+      .update(schema.assignments)
+      .set({ retakesNeedUnlock: false })
+      .where(eq(schema.assignments.id, ids.assignment));
   });
 });

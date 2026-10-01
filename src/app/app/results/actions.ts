@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq, ne } from "drizzle-orm";
+import { and, eq, gt, ne, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db, schema } from "@/db";
@@ -130,4 +130,74 @@ export const regradeAssignment = withAuthz(async (assignmentId: string) => {
   for (const a of attempts) await finalizeAttempt(a.id, a.submittedAt ?? new Date());
   revalidate(assignmentId, "");
   return { regraded: attempts.length };
+});
+
+// ---------------------------------------------------------------------------
+// Teacher unlocks (Jon, Oct 1 2026): with `retakes_need_unlock` on, each attempt
+// after the first waits for one of these.
+// ---------------------------------------------------------------------------
+
+// Rule: only for a student enrolled in the assignment's class (the caller has passed requireOwner).
+async function enrolledStudent(assignmentId: string, studentId: string) {
+  const asg = await db.query.assignments.findFirst({
+    columns: { classId: true, attemptsAllowed: true },
+    where: eq(schema.assignments.id, assignmentId),
+  });
+  if (!asg) throw new ActionError("Not found.", 404);
+  const enrolled = await db.query.enrollments.findFirst({
+    columns: { id: true },
+    where: and(
+      eq(schema.enrollments.classId, asg.classId),
+      eq(schema.enrollments.studentId, studentId)
+    ),
+  });
+  if (!enrolled) throw new ActionError("That student isn't in this class.", 404);
+  const [counts] = await db
+    .select({
+      used: sql<number>`count(*)::int`,
+      open: sql<number>`count(*) filter (where ${schema.attempts.status} = 'in_progress')::int`,
+    })
+    .from(schema.attempts)
+    .where(
+      and(eq(schema.attempts.assignmentId, assignmentId), eq(schema.attempts.studentId, studentId))
+    );
+  return { asg, used: counts?.used ?? 0, open: counts?.open ?? 0 };
+}
+
+/** Let one student start their next attempt (used + 1). Idempotent. */
+export const unlockNextAttempt = withAuthz(async (assignmentId: string, studentId: string) => {
+  const session = await requireOwner({ type: "assignment", id: assignmentId });
+  const { asg, used, open } = await enrolledStudent(assignmentId, studentId);
+  if (used === 0) throw new ActionError("The first attempt never needs an unlock.", 409);
+  if (open > 0) throw new ActionError("They're in the middle of an attempt.", 409);
+  const next = used + 1;
+  if (asg.attemptsAllowed !== null && next > asg.attemptsAllowed)
+    throw new ActionError("They've used every attempt.", 409);
+  await db
+    .insert(schema.attemptUnlocks)
+    .values({ assignmentId, studentId, attemptNumber: next, grantedBy: session.userId })
+    .onConflictDoNothing();
+  revalidatePath(`/app/results/${assignmentId}`);
+  revalidatePath(`/student/assignments/${assignmentId}`);
+  revalidatePath("/student");
+  return { attemptNumber: next };
+});
+
+/** Take back an unlock the student hasn't used yet. */
+export const revokeAttemptUnlock = withAuthz(async (assignmentId: string, studentId: string) => {
+  await requireOwner({ type: "assignment", id: assignmentId });
+  const { used } = await enrolledStudent(assignmentId, studentId);
+  await db
+    .delete(schema.attemptUnlocks)
+    .where(
+      and(
+        eq(schema.attemptUnlocks.assignmentId, assignmentId),
+        eq(schema.attemptUnlocks.studentId, studentId),
+        gt(schema.attemptUnlocks.attemptNumber, used)
+      )
+    );
+  revalidatePath(`/app/results/${assignmentId}`);
+  revalidatePath(`/student/assignments/${assignmentId}`);
+  revalidatePath("/student");
+  return { ok: true };
 });

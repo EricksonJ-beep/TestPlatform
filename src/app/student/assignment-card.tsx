@@ -24,6 +24,7 @@ const PILL: Record<StudentAssignment["state"], { label: string; className: strin
   relearning: { label: "Relearning in progress", className: "bg-brand-soft text-brand-deep" },
   retake_required: { label: "Retake required", className: "bg-coral-soft text-[#B93E27]" },
   retake_available: { label: "Retake available", className: "bg-brand-soft text-brand-deep" },
+  awaiting_unlock: { label: "Waiting for teacher", className: "bg-muted text-muted-foreground" },
   done: { label: "Done for now", className: "bg-success-soft text-success-foreground" },
   closed: { label: "Closed", className: "bg-muted text-muted-foreground" },
 };
@@ -56,6 +57,7 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
       case "retake_required":
       case "retake_available":
         return { label: "Start retake", primary: a.state === "retake_required" };
+      case "awaiting_unlock":
       case "done":
       case "closed":
         return { label: "View", primary: false };
@@ -112,6 +114,12 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
           {a.nextAttemptAt ? (
             <span>
               Next attempt <LocalTime date={a.nextAttemptAt} />
+            </span>
+          ) : null}
+          {a.state === "awaiting_unlock" ? (
+            <span className="inline-flex items-center gap-1" data-unlock-hint>
+              <Lock className="size-3.5" aria-hidden />
+              Your teacher unlocks attempt {a.attemptsUsed + 1}
             </span>
           ) : null}
           {a.bestPercent !== null && a.resultsReleased ? (
