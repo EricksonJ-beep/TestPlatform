@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
@@ -88,12 +89,15 @@ export function ClassGrid({ classes }: { classes: ClassSummary[] }) {
             Sort by
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
-            <DropdownMenuLabel>Order the cards by</DropdownMenuLabel>
-            {(Object.keys(SORTS) as SortKey[]).map((k) => (
-              <DropdownMenuItem key={k} onClick={() => commit([...order].sort(SORTS[k].cmp))}>
-                {SORTS[k].label}
-              </DropdownMenuItem>
-            ))}
+            {/* Labels must live inside a group or the menu throws on open. */}
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>Order the cards by</DropdownMenuLabel>
+              {(Object.keys(SORTS) as SortKey[]).map((k) => (
+                <DropdownMenuItem key={k} onClick={() => commit([...order].sort(SORTS[k].cmp))}>
+                  {SORTS[k].label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
         {error ? <span className="text-error-foreground">{error}</span> : null}

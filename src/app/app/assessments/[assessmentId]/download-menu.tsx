@@ -54,10 +54,12 @@ export function DownloadMenu({ assessmentId }: { assessmentId: string }) {
           </DropdownMenuGroup>
         ))}
         <DropdownMenuSeparator />
-        <DropdownMenuLabel className="font-normal text-muted-foreground">
+        {/* A plain note, not a menu label: Base UI requires labels to sit inside a group, and a
+            label here crashed the menu the moment it opened (Jon, Oct 1 2026). */}
+        <p className="px-2 py-1.5 text-xs font-normal text-muted-foreground">
           Versions draw different pool questions and shuffle matching choices. Name, date, and
           period lines are on the sheet.
-        </DropdownMenuLabel>
+        </p>
       </DropdownMenuContent>
     </DropdownMenu>
   );
