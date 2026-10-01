@@ -105,10 +105,11 @@ created through the Vercel Neon integration, so its `DATABASE_URL` is managed th
 1. Create a Neon project `bloom` and copy the **pooled** connection string.
 2. Import the GitHub repo into Vercel. Set `DATABASE_URL`, `AUTH_SECRET`, `AUTH_URL` (the
    production URL), and `TEACHER_INVITE_CODE`.
-3. Run migrations against Neon once from your machine, then seed if wanted:
+3. Migrations run on every Vercel build (`scripts/migrate-on-build.mjs` before `next build`,
+   skipped when `DATABASE_URL` is unset), so a deploy carries its own schema changes. Seed once
+   from your machine if wanted:
 
    ```bash
-   DATABASE_URL="<neon url>" npm run db:migrate
    DATABASE_URL="<neon url>" npm run db:seed
    ```
 
