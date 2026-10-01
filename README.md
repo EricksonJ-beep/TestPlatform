@@ -78,6 +78,16 @@ importer keeps file names as warnings.
 | `npm run db:studio`   | Drizzle Studio                                                       |
 | `npm test`            | Vitest: authorization rules, class actions, CSV (in-memory Postgres) |
 | `npm run lint`        | ESLint, including the `bloom/require-authz` rule                     |
+
+### Importing a Google Form quiz
+
+Google will not export a Form, so the answer key has to leave from inside Google. Open the
+Form → ⋮ → Script editor, paste `scripts/google-form-to-bloom-csv.gs`, set `CONFIG` (course,
+unit, learning target, pool), and run `exportFormToBloomCsv`. It writes an Appendix A CSV
+next to the Form in Drive; upload that in the bank's Import wizard (or run
+`scripts/import-csv.ts`). Multiple choice, checkbox, dropdown, true/false, short answer, and
+paragraph items carry over with points and correct answers; the execution log lists anything
+that needs a hand edit (short-answer keys, image items, unmarked answers).
 | `npm run typecheck`   | `next typegen` + `tsc --noEmit`                                      |
 | `npm run format`      | Prettier (Markdown is excluded on purpose)                           |
 
