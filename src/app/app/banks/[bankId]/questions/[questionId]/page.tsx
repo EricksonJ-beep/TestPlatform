@@ -16,8 +16,13 @@ export const metadata: Metadata = { title: "Edit question" };
 
 export default async function Page({
   params,
+  searchParams,
 }: PageProps<"/app/banks/[bankId]/questions/[questionId]">) {
   const { bankId, questionId } = await params;
+  // Where to return after editing (Jon, Oct 1 2026: "Edit question" from a results page kept
+  // landing on the bank). Same-site /app paths only.
+  const rawBack = (await searchParams).back;
+  const back = typeof rawBack === "string" && /^\/app(\/|$)/.test(rawBack) ? rawBack : null;
   try {
     await requireShared({ type: "question_bank", id: bankId }, "co_edit");
   } catch (err) {
@@ -36,10 +41,11 @@ export default async function Page({
     <div className="mx-auto flex max-w-6xl flex-col gap-5">
       <div>
         <Link
-          href={`/app/banks/${bank.id}`}
+          href={back ?? `/app/banks/${bank.id}`}
           className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
-          <ChevronLeft className="size-4" aria-hidden /> {bank.name}
+          <ChevronLeft className="size-4" aria-hidden />{" "}
+          {back ? (back.startsWith("/app/results") ? "Back to results" : "Back") : bank.name}
         </Link>
         <h1 className="mt-2 text-2xl">Edit question</h1>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -52,6 +58,7 @@ export default async function Page({
       <div className="grid gap-4 lg:grid-cols-[1fr_18rem]">
         <div className="rounded-lg border border-border bg-card p-5">
           <EditQuestionPage
+            backHref={back ?? undefined}
             bankId={bank.id}
             question={question}
             targets={(course?.targets ?? []).map((t) => ({

@@ -110,7 +110,7 @@ export default async function AssignmentResultsPage({
       {corrections ? (
         <CorrectionsProgressSection progress={corrections} reviewMode={a.reviewMode} />
       ) : null}
-      <HardQuestions items={items} />
+      <HardQuestions items={items} assignmentId={assignmentId} />
 
       <h2 className="text-lg">Attempts</h2>
       <div className="rounded-lg border border-border bg-card">
