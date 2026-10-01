@@ -15,13 +15,19 @@ export function NewQuestionPage(props: Omit<EditorProps, "onSaved" | "onCancel" 
   );
 }
 
-export function EditQuestionPage(props: Omit<EditorProps, "onSaved" | "onCancel">) {
+export function EditQuestionPage({
+  backHref,
+  ...props
+}: Omit<EditorProps, "onSaved" | "onCancel"> & {
+  /** Where Save and Cancel return to when the editor was opened from elsewhere (a results page). */
+  backHref?: string;
+}) {
   const router = useRouter();
   return (
     <QuestionEditor
       {...props}
-      onSaved={(id) => router.push(`/app/banks/${props.bankId}/questions/${id}`)}
-      onCancel={() => router.push(`/app/banks/${props.bankId}`)}
+      onSaved={(id) => router.push(backHref ?? `/app/banks/${props.bankId}/questions/${id}`)}
+      onCancel={() => router.push(backHref ?? `/app/banks/${props.bankId}`)}
     />
   );
 }

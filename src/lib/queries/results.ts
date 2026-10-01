@@ -5,7 +5,7 @@
 import { and, asc, desc, eq, inArray, isNull, ne, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import type { QuestionType } from "@/db/types";
-import type { Answer, GradableOption } from "@/lib/grading";
+import { answerToText, correctAnswerText, type Answer, type GradableOption } from "@/lib/grading";
 import type { StimulusInfo } from "@/lib/stimulus-groups";
 
 export type GradebookAttempt = {
@@ -774,4 +774,170 @@ export async function highestScoresRows(assignmentId: string): Promise<ExportRow
     )
     .where(eq(schema.enrollments.classId, asg.classId))
     .orderBy(asc(schema.users.lastName), asc(schema.users.firstName), desc(schema.users.email));
+}
+
+// ---------------------------------------------------------------------------
+// Review with the class (Jon, Oct 1 2026): each question with what students picked
+// ---------------------------------------------------------------------------
+
+export type ClassReviewOption = {
+  id: string;
+  content: string;
+  isCorrect: boolean;
+  /** Finished attempts that chose this option. */
+  picked: number;
+};
+
+export type ClassReviewAnswer = {
+  text: string;
+  count: number;
+  /** null when it is still waiting on manual grading or mixed. */
+  correct: boolean | null;
+};
+
+export type ClassReviewItem = ItemStat & {
+  explanation: string | null;
+  mediaUrl: string | null;
+  /** Choice types: every option, with how many picked it. */
+  options: ClassReviewOption[];
+  /** Other types: the most common answers, most frequent first (up to 6). */
+  answers: ClassReviewAnswer[];
+  /** The key, as text, when the type has one. */
+  keyText: string | null;
+  /** Served but left blank. */
+  blank: number;
+};
+
+/**
+ * Item analysis with the distribution of answers: which choice each student
+ * picked, or the most common typed answers. Finished attempts only; the order
+ * is the order served.
+ */
+export async function getClassReview(assignmentId: string): Promise<ClassReviewItem[]> {
+  const stats = await getItemAnalysis(assignmentId);
+  if (stats.length === 0) return [];
+  const questionIds = stats.map((s) => s.questionId);
+  const attempts = await db
+    .select({ id: schema.attempts.id, questionSet: schema.attempts.questionSet })
+    .from(schema.attempts)
+    .where(
+      and(eq(schema.attempts.assignmentId, assignmentId), ne(schema.attempts.status, "in_progress"))
+    );
+  const attemptIds = attempts.map((a) => a.id);
+  const [responses, questions, options] = await Promise.all([
+    db
+      .select({
+        attemptId: schema.responses.attemptId,
+        questionId: schema.responses.questionId,
+        answer: schema.responses.answer,
+        isCorrect: schema.responses.isCorrect,
+        autoScore: schema.responses.autoScore,
+        manualScore: schema.responses.manualScore,
+      })
+      .from(schema.responses)
+      .where(inArray(schema.responses.attemptId, attemptIds)),
+    db
+      .select({
+        id: schema.questions.id,
+        points: schema.questions.points,
+        grading: schema.questions.grading,
+        gradingConfig: schema.questions.gradingConfig,
+        explanation: schema.questions.explanation,
+        mediaUrl: schema.questions.mediaUrl,
+      })
+      .from(schema.questions)
+      .where(inArray(schema.questions.id, questionIds)),
+    db
+      .select({
+        id: schema.questionOptions.id,
+        questionId: schema.questionOptions.questionId,
+        content: schema.questionOptions.content,
+        isCorrect: schema.questionOptions.isCorrect,
+        matchText: schema.questionOptions.matchText,
+        correctPosition: schema.questionOptions.correctPosition,
+      })
+      .from(schema.questionOptions)
+      .where(inArray(schema.questionOptions.questionId, questionIds))
+      .orderBy(asc(schema.questionOptions.sortOrder)),
+  ]);
+  const qBy = new Map(questions.map((q) => [q.id, q]));
+  const optionsBy = new Map<string, GradableOption[]>();
+  for (const o of options)
+    (optionsBy.get(o.questionId) ?? optionsBy.set(o.questionId, []).get(o.questionId)!).push(o);
+  const responseBy = new Map(responses.map((r) => [`${r.attemptId}:${r.questionId}`, r]));
+
+  return stats.map((stat): ClassReviewItem => {
+    const q = qBy.get(stat.questionId);
+    const opts = optionsBy.get(stat.questionId) ?? [];
+    const gradable = q
+      ? {
+          id: stat.questionId,
+          type: stat.type,
+          points: q.points,
+          grading: q.grading,
+          gradingConfig: q.gradingConfig,
+          options: opts,
+        }
+      : null;
+    const picked = new Map<string, number>();
+    const texts = new Map<string, { text: string; count: number; right: number; wrong: number }>();
+    let blank = 0;
+    for (const a of attempts) {
+      if (!a.questionSet.some((i) => i.questionId === stat.questionId)) continue;
+      const r = responseBy.get(`${a.id}:${stat.questionId}`);
+      const answer = (r?.answer as Answer | null) ?? null;
+      if (!answer) {
+        blank++;
+        continue;
+      }
+      if (answer.kind === "choice") {
+        if (!answer.optionId) blank++;
+        else picked.set(answer.optionId, (picked.get(answer.optionId) ?? 0) + 1);
+      } else if (answer.kind === "multi") {
+        if (answer.optionIds.length === 0) blank++;
+        for (const id of answer.optionIds) picked.set(id, (picked.get(id) ?? 0) + 1);
+      } else if (gradable) {
+        const text = answerToText(gradable, answer).trim();
+        if (!text || text === "—") {
+          blank++;
+          continue;
+        }
+        const key = text.toLowerCase();
+        const t = texts.get(key) ?? { text, count: 0, right: 0, wrong: 0 };
+        t.count++;
+        if (r?.isCorrect === true) t.right++;
+        else if (r?.isCorrect === false) t.wrong++;
+        texts.set(key, t);
+      }
+    }
+    const isChoice =
+      stat.type === "multiple_choice" ||
+      stat.type === "multiple_select" ||
+      stat.type === "true_false";
+    return {
+      ...stat,
+      explanation: q?.explanation ?? null,
+      mediaUrl: q?.mediaUrl ?? null,
+      options: isChoice
+        ? opts.map((o) => ({
+            id: o.id,
+            content: o.content,
+            isCorrect: o.isCorrect,
+            picked: picked.get(o.id) ?? 0,
+          }))
+        : [],
+      answers: isChoice
+        ? []
+        : [...texts.values()]
+            .sort((x, y) => y.count - x.count)
+            .slice(0, 6)
+            .map((t) => ({
+              text: t.text,
+              count: t.count,
+              correct: t.right && !t.wrong ? true : t.wrong && !t.right ? false : null,
+            })),
+      keyText: gradable ? correctAnswerText(gradable) : null,
+      blank,
+    };
+  });
 }
