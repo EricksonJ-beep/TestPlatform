@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { KeyRound, UserMinus, Users } from "lucide-react";
+import { Eye, KeyRound, UserMinus, Users } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { RosterRow } from "@/lib/queries/classes";
-import { removeStudent, resetStudentPassword } from "../actions";
+import { removeStudent, resetStudentPassword, startViewAs } from "../actions";
 import { AccommodationsDialog } from "./accommodations-dialog";
 import { PasswordReveal } from "./password-reveal";
 
@@ -133,6 +133,21 @@ export function Roster({ classId, roster }: { classId: string; roster: RosterRow
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="inline-flex gap-1">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={pending}
+                      title="Open Bloom exactly as this student sees it (read-only)"
+                      onClick={() =>
+                        start(async () => {
+                          const r = await startViewAs(classId, row.studentId);
+                          if (r && !r.ok) setError(r.error);
+                        })
+                      }
+                    >
+                      <Eye data-icon="inline-start" aria-hidden />
+                      View as
+                    </Button>
                     <Button
                       size="sm"
                       variant="outline"

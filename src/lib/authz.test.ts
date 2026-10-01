@@ -273,6 +273,20 @@ describe("wrappers", () => {
     asUser(ids.student1, "student");
     await expect(action(ids.attemptS1)).resolves.toEqual({ ok: true, data: "secret" });
   });
+  it("withAuthz refuses every action while a teacher is viewing as a student", async () => {
+    state.session = {
+      userId: ids.student1,
+      role: "student",
+      email: null,
+      firstName: "S",
+      lastName: "One",
+      viewingAs: { teacherId: ids.teacherA, teacherName: "Teacher A" },
+    };
+    const action = authz.withAuthz(async () => "changed");
+    await expect(action()).resolves.toMatchObject({ ok: false, status: 403 });
+    asUser(ids.student1, "student");
+    await expect(action()).resolves.toEqual({ ok: true, data: "changed" });
+  });
 
   it("withAuthzRoute returns a 403 response for a student reading another student's attempt", async () => {
     asUser(ids.student2, "student");

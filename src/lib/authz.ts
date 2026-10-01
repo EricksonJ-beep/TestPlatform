@@ -319,6 +319,13 @@ export function withAuthz<A extends unknown[], T>(
 ): (...args: A) => Promise<ActionResult<T>> {
   return async (...args: A) => {
     try {
+      // Rule: "view as student" is read-only; no action runs under a borrowed identity.
+      if ((await getCurrentSession())?.viewingAs) {
+        throw new ActionError(
+          "You're viewing as a student, so nothing can be changed. Switch back to your teacher view first.",
+          403
+        );
+      }
       return { ok: true, data: await fn(...args) };
     } catch (err) {
       if (isAuthzError(err)) return { ok: false, status: err.status, error: err.message };
