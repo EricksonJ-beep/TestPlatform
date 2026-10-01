@@ -18,7 +18,13 @@ import {
 import type { StudentAssignment } from "@/lib/queries/assignments";
 import { sanitizedQuestions, type StudentQuestion } from "@/lib/queries/attempts";
 
-export type TargetRef = { id: string; code: string; title: string };
+export type TargetRef = {
+  id: string;
+  code: string;
+  title: string;
+  /** The unit the target sits in, for grouping the practice page (Jon, Oct 1 2026); only the teacher listing fills it. */
+  unit?: { id: string; name: string; sortOrder: number } | null;
+};
 
 // ---------------------------------------------------------------------------
 // Teacher
@@ -70,12 +76,16 @@ async function targetsFor(
             code: schema.learningTargets.code,
             title: schema.learningTargets.title,
             sortOrder: schema.learningTargets.sortOrder,
+            unitId: schema.units.id,
+            unitName: schema.units.name,
+            unitSort: schema.units.sortOrder,
           })
           .from(schema.practiceSetTargets)
           .innerJoin(
             schema.learningTargets,
             eq(schema.practiceSetTargets.learningTargetId, schema.learningTargets.id)
           )
+          .leftJoin(schema.units, eq(schema.learningTargets.unitId, schema.units.id))
           .where(inArray(schema.practiceSetTargets.practiceSetId, ids))
       : await db
           .select({
@@ -84,12 +94,16 @@ async function targetsFor(
             code: schema.learningTargets.code,
             title: schema.learningTargets.title,
             sortOrder: schema.learningTargets.sortOrder,
+            unitId: schema.units.id,
+            unitName: schema.units.name,
+            unitSort: schema.units.sortOrder,
           })
           .from(schema.activityTargets)
           .innerJoin(
             schema.learningTargets,
             eq(schema.activityTargets.learningTargetId, schema.learningTargets.id)
           )
+          .leftJoin(schema.units, eq(schema.learningTargets.unitId, schema.units.id))
           .where(inArray(schema.activityTargets.activityId, ids));
   rows.sort((a, b) => a.sortOrder - b.sortOrder || a.code.localeCompare(b.code));
   for (const r of rows)
@@ -97,6 +111,10 @@ async function targetsFor(
       id: r.id,
       code: r.code,
       title: r.title,
+      unit:
+        r.unitId && r.unitName !== null
+          ? { id: r.unitId, name: r.unitName, sortOrder: r.unitSort ?? 0 }
+          : null,
     });
   return out;
 }

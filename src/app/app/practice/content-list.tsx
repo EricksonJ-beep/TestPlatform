@@ -7,7 +7,7 @@ import type { ActivitySummary, PracticeSetSummary } from "@/lib/queries/practice
 import { TargetChip } from "@/components/targets/target-chip";
 import { Button } from "@/components/ui/button";
 import { useAction } from "@/components/use-action";
-import { moveContent } from "./actions";
+import { swapContent } from "./actions";
 
 export type ContentItem = PracticeSetSummary | ActivitySummary;
 
@@ -20,11 +20,23 @@ const ICON = {
   worksheet: FileText,
 } as const;
 
-/** One list per course: practice sets and activities in the teacher's sequence, with move buttons. */
-export function ContentList({ items }: { items: ContentItem[] }) {
+const refOf = (item: ContentItem) => ({
+  type: item.kind === "practice_set" ? ("practice_set" as const) : ("relearning_activity" as const),
+  id: item.id,
+});
+
+/** One list per unit: practice sets and activities in the teacher's sequence, with move buttons that swap visible neighbours. */
+export function ContentList({
+  items,
+  bare = false,
+}: {
+  items: ContentItem[];
+  /** Inside an accordion row: no outer border of its own. */
+  bare?: boolean;
+}) {
   const { run, pending, error } = useAction();
   return (
-    <div className="rounded-lg border border-border bg-card">
+    <div className={bare ? "" : "rounded-lg border border-border bg-card"}>
       {error ? (
         <p
           role="alert"
@@ -40,10 +52,7 @@ export function ContentList({ items }: { items: ContentItem[] }) {
           const href = isSet
             ? `/app/practice/sets/${item.id}`
             : `/app/practice/activities/${item.id}`;
-          const ref = {
-            type: isSet ? ("practice_set" as const) : ("relearning_activity" as const),
-            id: item.id,
-          };
+          const ref = refOf(item);
           return (
             <li
               key={`${item.kind}:${item.id}`}
@@ -99,7 +108,7 @@ export function ContentList({ items }: { items: ContentItem[] }) {
                   variant="ghost"
                   aria-label="Move up"
                   disabled={pending || i === 0}
-                  onClick={() => run(moveContent(ref, "up"))}
+                  onClick={() => run(swapContent(ref, refOf(items[i - 1])))}
                 >
                   <ArrowUp aria-hidden />
                 </Button>
@@ -108,7 +117,7 @@ export function ContentList({ items }: { items: ContentItem[] }) {
                   variant="ghost"
                   aria-label="Move down"
                   disabled={pending || i === items.length - 1}
-                  onClick={() => run(moveContent(ref, "down"))}
+                  onClick={() => run(swapContent(ref, refOf(items[i + 1])))}
                 >
                   <ArrowDown aria-hidden />
                 </Button>
