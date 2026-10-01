@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import type { UserRole } from "@/db/types";
+import { readViewAsCookie, resolveViewAs } from "@/lib/view-as";
 
 /** The identity every authorization check works from. Never includes secrets. */
 export type Session = {
@@ -10,13 +11,19 @@ export type Session = {
   username?: string | null;
   firstName: string;
   lastName: string;
+  /** Set when a teacher is viewing as this student (read-only); names the real teacher. */
+  viewingAs?: { teacherId: string; teacherName: string };
 };
 
-/** Reads the Auth.js JWT session. Tests mock this module to inject a session. */
+/**
+ * Reads the Auth.js JWT session, then swaps in the student a teacher is
+ * "viewing as" when the cookie names one they may view. Tests mock this module
+ * to inject a session.
+ */
 export async function getCurrentSession(): Promise<Session | null> {
   const s = await auth();
   if (!s?.user?.id) return null;
-  return {
+  const real: Session = {
     userId: s.user.id,
     role: s.user.role,
     email: s.user.email ?? null,
@@ -24,4 +31,6 @@ export async function getCurrentSession(): Promise<Session | null> {
     firstName: s.user.firstName,
     lastName: s.user.lastName,
   };
+  const viewAs = await readViewAsCookie();
+  return viewAs ? resolveViewAs(real, viewAs.studentId) : real;
 }

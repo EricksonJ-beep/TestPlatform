@@ -3,12 +3,19 @@ import { requireStudent } from "@/lib/authz";
 import { logoutAction } from "@/app/(auth)/actions";
 import { Wordmark } from "@/components/brand/wordmark";
 import { AccountMenu } from "@/components/app/account-menu";
+import { ViewAsBanner } from "./view-as-banner";
 
 /** Student shell: wordmark + name on top, content centered below. Chromebook-friendly widths. */
 export default async function StudentLayout({ children }: LayoutProps<"/student">) {
   const session = await requireStudent();
   return (
     <div className="flex min-h-full flex-col">
+      {session.viewingAs ? (
+        <ViewAsBanner
+          studentName={`${session.firstName} ${session.lastName}`}
+          teacherName={session.viewingAs.teacherName}
+        />
+      ) : null}
       <header className="sticky top-0 z-10 flex h-14 items-center border-b border-border bg-card px-4 md:px-6">
         <Link href="/student" className="rounded-md outline-none focus-visible:ring-2">
           <Wordmark />

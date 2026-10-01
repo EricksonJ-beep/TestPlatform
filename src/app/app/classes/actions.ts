@@ -2,9 +2,11 @@
 
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db, schema } from "@/db";
-import { ActionError, requireOwner, requireTeacher, withAuthz } from "@/lib/authz";
+import { ActionError, publicAction, requireOwner, requireTeacher, withAuthz } from "@/lib/authz";
+import { clearViewAsCookie, readViewAsCookie, setViewAsCookie } from "@/lib/view-as";
 import { parseCsvRecords } from "@/lib/csv";
 import { rotateJoinCode } from "@/lib/join";
 import { parseRosterNames } from "@/lib/roster";
@@ -428,3 +430,22 @@ function fieldErrors(error: z.ZodError): Record<string, string[]> {
 function firstMessage(error: z.ZodError): string {
   return error.issues[0]?.message ?? "Invalid row.";
 }
+
+// ---------------------------------------------------------------------------
+// View as student (Jon, Oct 1 2026): see a student's pages exactly as they do, read-only
+// ---------------------------------------------------------------------------
+
+/** Rule: the class owner only, for a student enrolled in that class. Lands on the student home. */
+export const startViewAs = withAuthz(async (classId: string, studentId: string) => {
+  await requireOwner({ type: "class", id: classId });
+  await assertStudentInClass(classId, studentId);
+  await setViewAsCookie(studentId, classId);
+  redirect("/student");
+});
+
+/** Public by design: it only clears the viewer's own cookie, then returns to the class page. */
+export const stopViewAs = publicAction(async () => {
+  const current = await readViewAsCookie();
+  await clearViewAsCookie();
+  redirect(current ? `/app/classes/${current.classId}` : "/app/classes");
+});
