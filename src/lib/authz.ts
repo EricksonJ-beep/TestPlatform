@@ -112,7 +112,19 @@ const ownerTables = {
 } satisfies Record<OwnedResourceType, unknown>;
 
 /** undefined = row does not exist; null = row exists but has no owner. */
+// Rule: an id that is not a UUID can never match a row, so it is a 404 before it reaches the
+// database (Oct 1 2026: a crawler asked for /student/corrections/blocked.png and Postgres
+// answered with a 500 instead).
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+export function isUuid(id: unknown): id is string {
+  return typeof id === "string" && UUID.test(id);
+}
+function assertId(id: unknown): void {
+  if (!isUuid(id)) throw notFound();
+}
+
 async function ownerOf(ref: ResourceRef): Promise<string | null | undefined> {
+  if (!isUuid(ref.id)) return undefined;
   // All tables in the map share the `id` / `ownerId` column shape, so one query serves them all.
   const table = ownerTables[ref.type] as typeof schema.classes;
   const rows = await db
@@ -173,6 +185,7 @@ export async function requireShared(
 // Rule: a student sees a class (its assignments and practice) only while enrolled in it.
 export async function requireEnrolled(classId: string): Promise<Session> {
   const session = await requireStudent();
+  assertId(classId);
   const enrollment = await db.query.enrollments.findFirst({
     columns: { id: true },
     where: and(
@@ -189,6 +202,7 @@ export type AssignmentAccess = Session & { as: "teacher" | "student"; classId: s
 // Rule: an assignment is visible to the teacher who owns it and to students enrolled in its class; nobody else.
 export async function requireAssignmentAccess(assignmentId: string): Promise<AssignmentAccess> {
   const session = await requireSession();
+  assertId(assignmentId);
   const assignment = await db.query.assignments.findFirst({
     columns: { ownerId: true, classId: true },
     where: eq(schema.assignments.id, assignmentId),
@@ -218,6 +232,7 @@ export type AttemptAccess = Session & {
 // Rule: an attempt and its responses/corrections belong to one student; only that student, or the teacher who owns the assignment, may touch it.
 export async function requireAttemptAccess(attemptId: string): Promise<AttemptAccess> {
   const session = await requireSession();
+  assertId(attemptId);
   const attempt = await db.query.attempts.findFirst({
     columns: { id: true, studentId: true, assignmentId: true },
     where: eq(schema.attempts.id, attemptId),
@@ -242,6 +257,7 @@ export type ContentAccess = Session & { as: "teacher" | "student"; courseId: str
 // Rule: practice sets and relearning activities are edited by their owner and used by students on the content's course (via a class or an assignment), and only once published.
 export async function requireContentAccess(ref: ContentRef): Promise<ContentAccess> {
   const session = await requireSession();
+  assertId(ref.id);
   const table = ref.type === "practice_set" ? schema.practiceSets : schema.relearningActivities;
   const [row] = await db
     .select({ ownerId: table.ownerId, courseId: table.courseId, isPublished: table.isPublished })
@@ -375,6 +391,7 @@ export async function requirePracticeAttemptAccess(
   attemptId: string
 ): Promise<PracticeAttemptAccess> {
   const session = await requireSession();
+  assertId(attemptId);
   const [row] = await db
     .select({
       id: schema.practiceAttempts.id,
