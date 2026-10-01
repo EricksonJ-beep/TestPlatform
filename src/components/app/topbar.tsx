@@ -17,7 +17,7 @@ export function AppTopbar({ session }: { session: Session }) {
           className="w-full bg-transparent text-foreground outline-none placeholder:text-muted-foreground"
         />
       </label>
-      <div className="ml-auto sm:ml-0">
+      <div className="ml-auto">
         <AccountMenu
           firstName={session.firstName}
           lastName={session.lastName}
