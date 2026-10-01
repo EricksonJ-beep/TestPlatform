@@ -35,6 +35,8 @@ export type GradebookRow = {
   firstName: string;
   lastName: string;
   attempts: GradebookAttempt[];
+  /** Highest attempt number the teacher has unlocked for this student (0 = none). */
+  unlockedThrough: number;
   /** The attempt whose total counts (formative/practice); null for summatives (per target) or none. */
   bestAttemptId: string | null;
   final: {
@@ -57,6 +59,7 @@ export async function getGradebook(assignmentId: string): Promise<GradebookRow[]
       studentId: schema.users.id,
       firstName: schema.users.firstName,
       lastName: schema.users.lastName,
+      unlockedThrough: sql<number>`(select coalesce(max(u.attempt_number), 0)::int from ${schema.attemptUnlocks} u where u.assignment_id = ${assignmentId} and u.student_id = ${schema.users.id})`,
     })
     .from(schema.enrollments)
     .innerJoin(schema.users, eq(schema.enrollments.studentId, schema.users.id))
@@ -211,6 +214,7 @@ export async function getMasteryGrid(assignmentId: string): Promise<MasteryGrid>
       studentId: schema.users.id,
       firstName: schema.users.firstName,
       lastName: schema.users.lastName,
+      unlockedThrough: sql<number>`(select coalesce(max(u.attempt_number), 0)::int from ${schema.attemptUnlocks} u where u.assignment_id = ${assignmentId} and u.student_id = ${schema.users.id})`,
     })
     .from(schema.enrollments)
     .innerJoin(schema.users, eq(schema.enrollments.studentId, schema.users.id))
@@ -240,7 +244,10 @@ export async function getMasteryGrid(assignmentId: string): Promise<MasteryGrid>
       })
       .from(schema.attempts)
       .where(
-        and(eq(schema.attempts.assignmentId, assignmentId), ne(schema.attempts.status, "in_progress"))
+        and(
+          eq(schema.attempts.assignmentId, assignmentId),
+          ne(schema.attempts.status, "in_progress")
+        )
       );
     const bestBy = new Map<string, (typeof attempts)[number]>();
     for (const a of attempts) {

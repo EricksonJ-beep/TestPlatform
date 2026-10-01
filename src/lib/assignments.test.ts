@@ -6,6 +6,7 @@ import {
   codesMatch,
   defaultAttempts,
   generateAccessCode,
+  needsUnlock,
   nextAttemptAt,
   parseLocalDateTime,
   startReasonText,
@@ -97,6 +98,33 @@ describe("canStartAttempt", () => {
     ).toEqual({ ok: true });
     expect(nextAttemptAt(24, submitted)).toEqual(at("2026-09-23T00:00:00Z"));
     expect(nextAttemptAt(0, submitted)).toBeNull();
+  });
+  it("with teacher unlocks on, every attempt after the first waits for its unlock", () => {
+    const gated = { ...open, retakesNeedUnlock: true };
+    expect(canStartAttempt({ assignment: gated, attemptsUsed: 0, now })).toEqual({ ok: true });
+    const locked = canStartAttempt({ assignment: gated, attemptsUsed: 1, now });
+    expect(locked).toMatchObject({ ok: false, reason: "needs_unlock" });
+    expect(startReasonText(locked as Exclude<typeof locked, { ok: true }>)).toMatch(/unlock/);
+    expect(
+      canStartAttempt({ assignment: gated, attemptsUsed: 1, unlockedThrough: 2, now })
+    ).toEqual({ ok: true });
+    // An unlock for attempt 2 does not carry over to attempt 3.
+    expect(
+      canStartAttempt({ assignment: gated, attemptsUsed: 2, unlockedThrough: 2, now })
+    ).toMatchObject({ reason: "needs_unlock" });
+    // The wait still applies on top of the unlock, and is reported first.
+    expect(
+      canStartAttempt({
+        assignment: { ...gated, retakeWaitHours: 24 },
+        attemptsUsed: 1,
+        unlockedThrough: 2,
+        lastSubmittedAt: at("2026-09-22T00:00:00Z"),
+        now,
+      })
+    ).toMatchObject({ reason: "wait" });
+    expect(needsUnlock(0, 0)).toBe(false);
+    expect(needsUnlock(1, 0)).toBe(true);
+    expect(needsUnlock(1, 2)).toBe(false);
   });
   it("stops at the attempt limit; null is unlimited", () => {
     expect(canStartAttempt({ assignment: open, attemptsUsed: 3, now })).toMatchObject({

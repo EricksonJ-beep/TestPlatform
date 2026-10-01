@@ -19,14 +19,23 @@ export type StartCheck =
   | { ok: true }
   | {
       ok: false;
-      reason: "not_open" | "closed" | "code_required" | "code_wrong" | "no_attempts_left" | "wait";
+      reason:
+        | "not_open"
+        | "closed"
+        | "code_required"
+        | "code_wrong"
+        | "no_attempts_left"
+        | "wait"
+        | "needs_unlock";
       /** For "wait": when the next attempt opens. */
       availableAt?: Date;
     };
 
 /**
  * Rule: a student may start an attempt only inside the window, with the access
- * code when one is set, and while attempts remain (null = unlimited).
+ * code when one is set, while attempts remain (null = unlimited), after any
+ * waiting period, and, when the assignment says retakes need the teacher's OK,
+ * once the teacher has unlocked that attempt number (attempt 1 never needs one).
  */
 export function canStartAttempt(input: {
   assignment: WindowLike & {
@@ -34,10 +43,14 @@ export function canStartAttempt(input: {
     attemptsAllowed: number | null;
     /** Hours to wait after a submission before the next attempt (0 or undefined = none). */
     retakeWaitHours?: number;
+    /** Every attempt after the first needs a teacher unlock (Jon, Oct 1 2026). */
+    retakesNeedUnlock?: boolean;
   };
   attemptsUsed: number;
   /** When the student's most recent finished attempt was submitted. */
   lastSubmittedAt?: Date | null;
+  /** Highest attempt number the teacher has unlocked for this student (0 = none). */
+  unlockedThrough?: number;
   accessCode?: string | null;
   now?: Date;
 }): StartCheck {
@@ -59,7 +72,15 @@ export function canStartAttempt(input: {
     const availableAt = new Date(input.lastSubmittedAt.getTime() + wait * 3_600_000);
     if (now < availableAt) return { ok: false, reason: "wait", availableAt };
   }
+  if (assignment.retakesNeedUnlock && needsUnlock(attemptsUsed, input.unlockedThrough ?? 0)) {
+    return { ok: false, reason: "needs_unlock" };
+  }
   return { ok: true };
+}
+
+/** The next attempt (used + 1) needs an unlock unless it is the first or the teacher already unlocked it. */
+export function needsUnlock(attemptsUsed: number, unlockedThrough: number): boolean {
+  return attemptsUsed > 0 && unlockedThrough < attemptsUsed + 1;
 }
 
 /** Human text for a refused start, including when a waiting period ends. */
@@ -90,6 +111,7 @@ export const START_REASON_TEXT: Record<Exclude<StartCheck, { ok: true }>["reason
   code_wrong: "That access code isn't right.",
   no_attempts_left: "You've used every attempt.",
   wait: "You have to wait before your next attempt.",
+  needs_unlock: "Your teacher opens each retake. Ask them to unlock your next attempt.",
 };
 
 /** Codes are compared case-insensitively, ignoring spaces and dashes. */

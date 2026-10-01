@@ -624,6 +624,8 @@ export const assignments = pgTable(
     resultsReleased: boolean("results_released").default(true).notNull(),
     /** Hours a student must wait after submitting before the next attempt; 0 = none. */
     retakeWaitHours: integer("retake_wait_hours").default(0).notNull(),
+    /** Jon, Oct 1 2026: each retake waits for the teacher's per-student unlock (`attempt_unlocks`); corrections become optional. */
+    retakesNeedUnlock: boolean("retakes_need_unlock").default(false).notNull(),
     ...timestamps,
   },
   (t) => [
@@ -679,6 +681,37 @@ export const attempts = pgTable(
     ),
     index("attempts_student_idx").on(t.studentId),
     index("attempts_assignment_idx").on(t.assignmentId),
+  ]
+);
+
+/**
+ * A teacher's permission for one student to start one more attempt on an
+ * assignment that has `retakes_need_unlock` on. One row per attempt number;
+ * attempt 1 never needs one. Written only by the owning teacher's action.
+ */
+export const attemptUnlocks = pgTable(
+  "attempt_unlocks",
+  {
+    id: id(),
+    assignmentId: uuid("assignment_id")
+      .notNull()
+      .references(() => assignments.id, { onDelete: "cascade" }),
+    studentId: uuid("student_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    /** The attempt number this unlock permits (2 or more). */
+    attemptNumber: integer("attempt_number").notNull(),
+    grantedBy: uuid("granted_by").references(() => users.id, { onDelete: "set null" }),
+    grantedAt: timestamp("granted_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    uniqueIndex("attempt_unlocks_assignment_student_number_unique").on(
+      t.assignmentId,
+      t.studentId,
+      t.attemptNumber
+    ),
+    index("attempt_unlocks_student_idx").on(t.studentId),
+    check("attempt_unlocks_number_min", sql`${t.attemptNumber} >= 2`),
   ]
 );
 

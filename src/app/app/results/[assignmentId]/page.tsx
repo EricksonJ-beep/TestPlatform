@@ -11,6 +11,7 @@ import { classAverages } from "@/lib/mastery";
 import { CorrectionsProgressSection } from "./corrections-progress";
 import { HardQuestions, MasteryHeatmap } from "./mastery-grid";
 import { RegradeButton } from "./regrade-button";
+import { UnlockButton } from "./unlock-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -179,6 +180,23 @@ export default async function AssignmentResultsPage({
                       })}
                     </ul>
                   )}
+                  {(() => {
+                    // "Retakes need my OK": offer the next attempt's unlock once a finished attempt exists.
+                    if (!a.retakesNeedUnlock || s.attempts.length === 0) return null;
+                    if (s.attempts.some((t) => t.status === "in_progress")) return null;
+                    const next = s.attempts.length + 1;
+                    if (a.attemptsAllowed !== null && next > a.attemptsAllowed) return null;
+                    return (
+                      <div className="mt-1.5">
+                        <UnlockButton
+                          assignmentId={assignmentId}
+                          studentId={s.studentId}
+                          nextAttempt={next}
+                          unlocked={s.unlockedThrough >= next}
+                        />
+                      </div>
+                    );
+                  })()}
                 </TableCell>
                 <TableCell className="hidden align-top text-sm text-muted-foreground md:table-cell">
                   {(() => {

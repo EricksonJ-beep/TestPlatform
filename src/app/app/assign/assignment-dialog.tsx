@@ -349,6 +349,13 @@ export function AssignmentDialog({
               <FieldError errors={fieldErrors} name="retakeWaitHours" />
             </div>
             <Toggle
+              key={`u-${assessmentId}`}
+              name="retakesNeedUnlock"
+              label="Retakes need my OK"
+              help="Each student's next attempt stays locked until you unlock it on the results page. Corrections become optional on this assignment."
+              defaultChecked={existing?.retakesNeedUnlock ?? false}
+            />
+            <Toggle
               key={`o-${assessmentId}`}
               name="optionalRetakes"
               label="Allow optional retakes"

@@ -4,7 +4,12 @@
  */
 import { and, asc, desc, eq, inArray, or, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
-import { assignmentStatus, nextAttemptAt, type AssignmentStatus } from "@/lib/assignments";
+import {
+  assignmentStatus,
+  needsUnlock,
+  nextAttemptAt,
+  type AssignmentStatus,
+} from "@/lib/assignments";
 import { getCorrectionsSummary, type CorrectionsSetSummary } from "@/lib/queries/corrections";
 import { getRetakeStatus, type RetakeStatus } from "@/lib/queries/retakes";
 import { cycleState, type CycleState } from "@/lib/retakes";
@@ -27,6 +32,7 @@ export type AssignmentRow = {
   tier2Max: number;
   resultsReleased: boolean;
   retakeWaitHours: number;
+  retakesNeedUnlock: boolean;
   createdAt: Date;
   enrolled: number;
   started: number;
@@ -52,6 +58,7 @@ const baseSelect = {
   tier2Max: schema.assignments.tier2Max,
   resultsReleased: schema.assignments.resultsReleased,
   retakeWaitHours: schema.assignments.retakeWaitHours,
+  retakesNeedUnlock: schema.assignments.retakesNeedUnlock,
   createdAt: schema.assignments.createdAt,
   enrolled: sql<number>`(select count(*)::int from ${schema.enrollments} e where e.class_id = ${schema.assignments.classId})`,
   started: sql<number>`(select count(distinct a.student_id)::int from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id})`,
@@ -136,6 +143,8 @@ export type StudentAssignment = {
   retakeWaitHours: number;
   /** When the wait rule lets the student start again; null when they may start now. */
   nextAttemptAt: Date | null;
+  /** Every attempt after the first waits for the teacher's unlock; corrections are optional then. */
+  retakesNeedUnlock: boolean;
   status: AssignmentStatus;
   attemptsUsed: number;
   inProgressAttemptId: string | null;
@@ -177,7 +186,9 @@ export async function listStudentAssignments(
       accessCode: schema.assignments.accessCode,
       resultsReleased: schema.assignments.resultsReleased,
       retakeWaitHours: schema.assignments.retakeWaitHours,
+      retakesNeedUnlock: schema.assignments.retakesNeedUnlock,
       lastSubmittedAt: sql<Date | null>`(select max(a.submitted_at) from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status <> 'in_progress')`,
+      unlockedThrough: sql<number>`(select coalesce(max(u.attempt_number), 0)::int from ${schema.attemptUnlocks} u where u.assignment_id = ${schema.assignments.id} and u.student_id = ${studentId})`,
       attemptsUsed: sql<number>`(select count(*)::int from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId})`,
       inProgressAttemptId: sql<
         string | null
@@ -212,39 +223,49 @@ export async function listStudentAssignments(
   );
 
   return rows
-    .map(({ accessCode, lastSubmittedAt, latestAttemptId: _latest, ...r }): StudentAssignment => {
-      const status = assignmentStatus(r, now);
-      const next = nextAttemptAt(
-        r.retakeWaitHours,
-        lastSubmittedAt ? new Date(lastSubmittedAt) : null
-      );
-      const corrections = summaries.get(r.id) ?? null;
-      const retake = retakes.get(r.id) ?? null;
-      const bestPercent = r.bestPercent === null ? null : Number(r.bestPercent);
-      let state: StudentCardState;
-      if (status === "scheduled") state = "upcoming";
-      else if (status === "closed") state = "closed";
-      else if (r.inProgressAttemptId) state = "in_progress";
-      else if (r.attemptsUsed > 0)
-        state = cycleState({
-          type: r.type,
-          corrections: corrections?.state ?? "none",
-          attemptsUsed: r.attemptsUsed,
-          attemptsAllowed: r.attemptsAllowed,
-          bestPercent,
-          plan: retake?.plan ?? null,
-        });
-      else state = "not_started";
-      return {
-        ...r,
-        needsCode: !!accessCode,
-        status,
-        state,
-        corrections,
-        retake,
-        bestPercent: r.bestPercent === null ? null : Number(r.bestPercent),
-        nextAttemptAt: next && next > now ? next : null,
-      };
-    })
+    .map(
+      ({
+        accessCode,
+        lastSubmittedAt,
+        latestAttemptId: _latest,
+        unlockedThrough,
+        ...r
+      }): StudentAssignment => {
+        const status = assignmentStatus(r, now);
+        const next = nextAttemptAt(
+          r.retakeWaitHours,
+          lastSubmittedAt ? new Date(lastSubmittedAt) : null
+        );
+        const corrections = summaries.get(r.id) ?? null;
+        const retake = retakes.get(r.id) ?? null;
+        const bestPercent = r.bestPercent === null ? null : Number(r.bestPercent);
+        let state: StudentCardState;
+        if (status === "scheduled") state = "upcoming";
+        else if (status === "closed") state = "closed";
+        else if (r.inProgressAttemptId) state = "in_progress";
+        else if (r.attemptsUsed > 0)
+          state = cycleState({
+            type: r.type,
+            // Rule (Jon, Oct 1 2026): with teacher unlocks on, corrections never gate the retake.
+            corrections: r.retakesNeedUnlock ? "none" : (corrections?.state ?? "none"),
+            attemptsUsed: r.attemptsUsed,
+            attemptsAllowed: r.attemptsAllowed,
+            bestPercent,
+            plan: retake?.plan ?? null,
+            needsUnlock: r.retakesNeedUnlock && needsUnlock(r.attemptsUsed, unlockedThrough),
+          });
+        else state = "not_started";
+        return {
+          ...r,
+          needsCode: !!accessCode,
+          status,
+          state,
+          corrections,
+          retake,
+          bestPercent: r.bestPercent === null ? null : Number(r.bestPercent),
+          nextAttemptAt: next && next > now ? next : null,
+        };
+      }
+    )
     .filter((r) => r.state !== "closed" || r.attemptsUsed > 0);
 }

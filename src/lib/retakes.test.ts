@@ -168,4 +168,38 @@ describe("cycleState", () => {
       })
     ).toBe("done");
   });
+  it("waits on the teacher when the retake is ready but not unlocked", () => {
+    const formative = { ...base, type: "formative" as const, attemptsAllowed: 3, plan: null };
+    expect(cycleState({ ...formative, corrections: "none", needsUnlock: true })).toBe(
+      "awaiting_unlock"
+    );
+    expect(cycleState({ ...formative, corrections: "none", needsUnlock: false })).toBe(
+      "retake_available"
+    );
+    // Done (perfect score, no attempts left) and corrections states are not overridden.
+    expect(
+      cycleState({ ...formative, corrections: "none", bestPercent: 100, needsUnlock: true })
+    ).toBe("done");
+    expect(cycleState({ ...formative, corrections: "needed", needsUnlock: true })).toBe(
+      "corrections_needed"
+    );
+    expect(
+      cycleState({
+        ...base,
+        type: "summative",
+        corrections: "approved",
+        plan: plan({}),
+        needsUnlock: true,
+      })
+    ).toBe("awaiting_unlock");
+    expect(
+      cycleState({
+        ...base,
+        type: "summative",
+        corrections: "approved",
+        plan: plan({ locked: ["lt4"], canStart: false, blocker: "gates" }),
+        needsUnlock: true,
+      })
+    ).toBe("relearning");
+  });
 });
