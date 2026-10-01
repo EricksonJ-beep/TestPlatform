@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { and, asc, eq, isNull, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -448,4 +448,30 @@ export const stopViewAs = publicAction(async () => {
   const current = await readViewAsCookie();
   await clearViewAsCookie();
   redirect(current ? `/app/classes/${current.classId}` : "/app/classes");
+});
+
+/**
+ * Save the teacher's own order for the Classes page (Jon, Oct 1 2026): the ids
+ * in the order they should appear. Rule: every id must be a class the caller
+ * owns; classes left out keep their place after the listed ones.
+ */
+export const reorderClasses = withAuthz(async (orderedIds: string[]) => {
+  const session = await requireTeacher();
+  const ids = Array.from(new Set((orderedIds ?? []).map(String)));
+  if (ids.length === 0) throw new ActionError("Nothing to reorder.", 400);
+  const mine = await db
+    .select({ id: schema.classes.id })
+    .from(schema.classes)
+    .where(eq(schema.classes.ownerId, session.userId))
+    .orderBy(asc(schema.classes.sortOrder), asc(schema.classes.name));
+  const owned = new Set(mine.map((c) => c.id));
+  if (!ids.every((id) => owned.has(id)))
+    throw new ActionError("Only your own classes can be reordered.", 403);
+  const listed = new Set(ids);
+  const final = [...ids, ...mine.map((c) => c.id).filter((id) => !listed.has(id))];
+  for (const [i, id] of final.entries())
+    await db.update(schema.classes).set({ sortOrder: i }).where(eq(schema.classes.id, id));
+  revalidatePath("/app/classes");
+  revalidatePath("/app");
+  return { ok: true };
 });

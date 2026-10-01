@@ -25,8 +25,10 @@ import {
   deleteClass,
   importStudentsCsv,
   removeStudent,
+  reorderClasses,
   resetStudentPassword,
 } from "./actions";
+import { listClasses } from "@/lib/queries/classes";
 
 const ids = { teacherA: "", teacherB: "", classA: "", maya: "" };
 
@@ -256,5 +258,35 @@ describe("delete", () => {
     expect(await db.$count(schema.assignments, eq(schema.assignments.id, asg.id))).toBe(0);
     // Maya's account survives.
     expect(await db.query.users.findFirst({ where: eq(schema.users.id, ids.maya) })).toBeDefined();
+  });
+});
+
+describe("class order", () => {
+  it("the teacher's drag order is saved and listed first; another teacher cannot reorder it", async () => {
+    asUser(ids.teacherA, "teacher");
+    const made = [];
+    for (const name of ["Zoology · 6th Hour", "Anatomy · 5th Hour", "Biology · 3rd Hour"]) {
+      const r = await createClass(fd({ name, period: name.match(/(\d)/)![1] }));
+      if (!r.ok) throw new Error(r.error);
+      made.push(r.data.classId);
+    }
+    const [zoo, anat, bio] = made;
+    // Untouched (all sort_order 0): period order wins.
+    let names = (await listClasses(ids.teacherA)).map((c) => c.name);
+    expect(names.indexOf("Biology · 3rd Hour")).toBeLessThan(names.indexOf("Anatomy · 5th Hour"));
+    expect(names.indexOf("Anatomy · 5th Hour")).toBeLessThan(names.indexOf("Zoology · 6th Hour"));
+    // A drag puts Zoology first, then Biology, then Anatomy.
+    const r = await reorderClasses([zoo, bio, anat]);
+    expect(r).toMatchObject({ ok: true });
+    names = (await listClasses(ids.teacherA)).map((c) => c.name);
+    expect(names.slice(0, 3)).toEqual([
+      "Zoology · 6th Hour",
+      "Biology · 3rd Hour",
+      "Anatomy · 5th Hour",
+    ]);
+    asUser(ids.teacherB, "teacher");
+    await expect(reorderClasses([anat, zoo])).resolves.toMatchObject({ ok: false, status: 403 });
+    asUser(ids.teacherA, "teacher");
+    await expect(reorderClasses([])).resolves.toMatchObject({ ok: false, status: 400 });
   });
 });
