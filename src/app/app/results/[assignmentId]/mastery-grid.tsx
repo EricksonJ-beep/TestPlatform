@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Presentation } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { richTextToPlain } from "@/lib/richtext";
 import {
   classAverages,
@@ -147,18 +149,36 @@ export function MasteryHeatmap({ grid }: { grid: MasteryGrid }) {
 }
 
 /** Questions the class got right half the time or less: bad item, or a real gap. */
-export function HardQuestions({ items }: { items: ItemStat[] }) {
+export function HardQuestions({
+  items,
+  assignmentId,
+}: {
+  items: ItemStat[];
+  assignmentId?: string;
+}) {
   const hard = items.filter((i) => i.rate !== null && i.rate <= HARD_QUESTION_MAX);
+  const back = assignmentId ? `?back=${encodeURIComponent(`/app/results/${assignmentId}`)}` : "";
   return (
     <section className="flex flex-col gap-3" aria-labelledby="hard-heading">
-      <div>
-        <h2 id="hard-heading" className="text-lg">
-          Questions under 50% correct
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Across every submitted attempt. Worth a look: is it a poor question, or something to
-          reteach?
-        </p>
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="mr-auto">
+          <h2 id="hard-heading" className="text-lg">
+            Questions under 50% correct
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Across every submitted attempt. Worth a look: is it a poor question, or something to
+            reteach?
+          </p>
+        </div>
+        {assignmentId && items.length > 0 ? (
+          <Button
+            nativeButton={false}
+            render={<Link href={`/app/results/${assignmentId}/review`} />}
+          >
+            <Presentation data-icon="inline-start" aria-hidden />
+            Review with the class
+          </Button>
+        ) : null}
       </div>
       {hard.length === 0 ? (
         <p className="rounded-lg border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
@@ -177,7 +197,7 @@ export function HardQuestions({ items }: { items: ItemStat[] }) {
                   {q.targetCode ? `${q.targetCode} · ` : ""}
                   {q.correct} of {q.answered} correct · {q.type.replace(/_/g, " ")} ·{" "}
                   <Link
-                    href={`/app/banks/${q.bankId}/questions/${q.questionId}`}
+                    href={`/app/banks/${q.bankId}/questions/${q.questionId}${back}`}
                     className="font-medium text-brand-deep hover:underline"
                   >
                     Edit question

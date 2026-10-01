@@ -25,6 +25,7 @@ import { answerToText, correctAnswerText } from "@/lib/grading";
 import {
   countPendingByAssignment,
   getAttemptReview,
+  getClassReview,
   getGradebook,
   getItemAnalysis,
   getMasteryGrid,
@@ -558,5 +559,50 @@ describe("delete attempt", () => {
     expect(await listGradingQueue(ids.teacher)).toHaveLength(0);
     const rows = await highestScoresRows(ids.assignment);
     expect(rows.find((r) => r.lastName === "Rivera")).toMatchObject({ score: null, attempts: 0 });
+  });
+});
+
+describe("review with the class", () => {
+  it("counts what the class picked per option and groups typed answers", async () => {
+    // Fresh attempts for both students: Maya picks the wrong option, Ava the right one; both type the fill-in.
+    const maya = await createAttempt({ assignmentId: ids.assignment, studentId: ids.s1 });
+    const ava = await createAttempt({ assignmentId: ids.assignment, studentId: ids.s2 });
+    await db.insert(schema.responses).values([
+      {
+        attemptId: maya.attemptId,
+        questionId: ids.mc,
+        answer: { kind: "choice", optionId: ids.mcWrong },
+      },
+      { attemptId: maya.attemptId, questionId: ids.fill, answer: { kind: "text", text: "Ribose" } },
+      {
+        attemptId: ava.attemptId,
+        questionId: ids.mc,
+        answer: { kind: "choice", optionId: ids.mcRight },
+      },
+      {
+        attemptId: ava.attemptId,
+        questionId: ids.fill,
+        answer: { kind: "text", text: "deoxyribose" },
+      },
+    ]);
+    await finalizeAttempt(maya.attemptId);
+    await finalizeAttempt(ava.attemptId);
+    const review = await getClassReview(ids.assignment);
+    const mc = review.find((r) => r.questionId === ids.mc)!;
+    // (An earlier regrade test swapped which option is keyed correct, so check by id.)
+    expect(mc.options.find((o) => o.id === ids.mcRight)?.picked).toBe(1);
+    expect(mc.options.find((o) => o.id === ids.mcWrong)?.picked).toBe(1);
+    expect(mc.options).toHaveLength(2);
+    expect(mc.blank).toBe(0);
+    const fill = review.find((r) => r.questionId === ids.fill)!;
+    expect(fill.options).toEqual([]);
+    expect(fill.answers).toEqual([
+      { text: "Ribose", count: 1, correct: true },
+      { text: "deoxyribose", count: 1, correct: false },
+    ]);
+    expect(fill.keyText).toMatch(/ribose/i);
+    const essay = review.find((r) => r.questionId === ids.essay1)!;
+    expect(essay.blank).toBe(2); // nobody wrote anything
+    expect(review.map((r) => r.questionId)).toEqual([ids.mc, ids.essay1, ids.essay2, ids.fill]);
   });
 });
