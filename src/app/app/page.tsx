@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { BarChart3 } from "lucide-react";
 import { requireTeacher } from "@/lib/authz";
-import { getDashboardCounts, getRecentResults } from "@/lib/queries/dashboard";
+import { getDashboardCounts, getRecentResults, listRetakeRequests } from "@/lib/queries/dashboard";
 import { getClassGlance } from "@/lib/queries/tiers";
 import { ClassGlance } from "@/components/app/class-glance";
 import { MetricCard } from "@/components/app/metric-card";
+import { RetakeRequests } from "@/components/app/retake-requests";
 import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,12 +24,13 @@ const TYPE_LABEL = {
 
 export default async function DashboardPage() {
   const session = await requireTeacher();
-  const [counts, recent, glance] = await Promise.all([
+  const [counts, recent, glance, requests] = await Promise.all([
     getDashboardCounts(session.userId),
     getRecentResults(session.userId),
     getClassGlance(session.userId),
+    listRetakeRequests(session.userId),
   ]);
-  const attention = counts.needsGrading + counts.correctionsAwaiting;
+  const attention = counts.needsGrading + counts.correctionsAwaiting + counts.retakeRequests;
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6">
@@ -66,6 +68,8 @@ export default async function DashboardPage() {
         />
         <MetricCard label="Classes" value={counts.classes} hint="This term" href="/app/classes" />
       </div>
+
+      <RetakeRequests rows={requests} />
 
       <ClassGlance rows={glance} />
 

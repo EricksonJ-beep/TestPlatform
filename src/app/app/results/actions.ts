@@ -164,7 +164,7 @@ async function enrolledStudent(assignmentId: string, studentId: string) {
   return { asg, used: counts?.used ?? 0, open: counts?.open ?? 0 };
 }
 
-/** Let one student start their next attempt (used + 1). Idempotent. */
+/** Let one student start their next attempt (used + 1); also approves a pending request. Idempotent. */
 export const unlockNextAttempt = withAuthz(async (assignmentId: string, studentId: string) => {
   const session = await requireOwner({ type: "assignment", id: assignmentId });
   const { asg, used, open } = await enrolledStudent(assignmentId, studentId);
@@ -173,17 +173,26 @@ export const unlockNextAttempt = withAuthz(async (assignmentId: string, studentI
   const next = used + 1;
   if (asg.attemptsAllowed !== null && next > asg.attemptsAllowed)
     throw new ActionError("They've used every attempt.", 409);
+  const grantedAt = new Date();
   await db
     .insert(schema.attemptUnlocks)
-    .values({ assignmentId, studentId, attemptNumber: next, grantedBy: session.userId })
-    .onConflictDoNothing();
+    .values({ assignmentId, studentId, attemptNumber: next, grantedBy: session.userId, grantedAt })
+    .onConflictDoUpdate({
+      target: [
+        schema.attemptUnlocks.assignmentId,
+        schema.attemptUnlocks.studentId,
+        schema.attemptUnlocks.attemptNumber,
+      ],
+      set: { grantedBy: session.userId, grantedAt },
+    });
+  revalidatePath("/app");
   revalidatePath(`/app/results/${assignmentId}`);
   revalidatePath(`/student/assignments/${assignmentId}`);
   revalidatePath("/student");
   return { attemptNumber: next };
 });
 
-/** Take back an unlock the student hasn't used yet. */
+/** Take back an unlock the student hasn't used yet, or decline a pending request. */
 export const revokeAttemptUnlock = withAuthz(async (assignmentId: string, studentId: string) => {
   await requireOwner({ type: "assignment", id: assignmentId });
   const { used } = await enrolledStudent(assignmentId, studentId);
@@ -196,6 +205,7 @@ export const revokeAttemptUnlock = withAuthz(async (assignmentId: string, studen
         gt(schema.attemptUnlocks.attemptNumber, used)
       )
     );
+  revalidatePath("/app");
   revalidatePath(`/app/results/${assignmentId}`);
   revalidatePath(`/student/assignments/${assignmentId}`);
   revalidatePath("/student");

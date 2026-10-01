@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, isNotNull, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db, schema } from "@/db";
@@ -87,7 +87,8 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
     .where(
       and(
         eq(schema.attemptUnlocks.assignmentId, assignmentId),
-        eq(schema.attemptUnlocks.studentId, access.userId)
+        eq(schema.attemptUnlocks.studentId, access.userId),
+        isNotNull(schema.attemptUnlocks.grantedAt)
       )
     );
   const [last] = await db
@@ -161,6 +162,56 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
   }
   revalidate(assignmentId);
   return { attemptId: created.attemptId, resumed: false };
+});
+
+/**
+ * Ask the teacher to unlock the next attempt (Jon, Oct 1 2026). Rules: the
+ * assignment has "Retakes need my OK" on; a finished attempt exists and none is
+ * open; attempts remain. The row is a request until the teacher grants it.
+ */
+export const requestRetake = withAuthz(async (assignmentId: string) => {
+  const access = await requireAssignmentAccess(assignmentId);
+  if (access.as !== "student") throw new ActionError("Students only.", 403);
+  const assignment = await db.query.assignments.findFirst({
+    columns: { attemptsAllowed: true, retakesNeedUnlock: true, closesAt: true },
+    where: eq(schema.assignments.id, assignmentId),
+  });
+  if (!assignment) throw new ActionError("Not found.", 404);
+  if (!assignment.retakesNeedUnlock)
+    throw new ActionError("This assignment doesn't need a request.", 409);
+  if (assignment.closesAt && assignment.closesAt <= new Date())
+    throw new ActionError("This assignment has closed.", 403);
+  const [counts] = await db
+    .select({
+      used: sql<number>`count(*)::int`,
+      open: sql<number>`count(*) filter (where ${schema.attempts.status} = 'in_progress')::int`,
+    })
+    .from(schema.attempts)
+    .where(
+      and(
+        eq(schema.attempts.assignmentId, assignmentId),
+        eq(schema.attempts.studentId, access.userId)
+      )
+    );
+  const used = counts?.used ?? 0;
+  if (used === 0) throw new ActionError("Take the quiz once first.", 409);
+  if ((counts?.open ?? 0) > 0) throw new ActionError("Finish the attempt you're on first.", 409);
+  const next = used + 1;
+  if (assignment.attemptsAllowed !== null && next > assignment.attemptsAllowed)
+    throw new ActionError("You've used every attempt.", 409);
+  // Idempotent: a second request, or a request after the teacher already unlocked, changes nothing.
+  await db
+    .insert(schema.attemptUnlocks)
+    .values({
+      assignmentId,
+      studentId: access.userId,
+      attemptNumber: next,
+      requestedAt: new Date(),
+    })
+    .onConflictDoNothing();
+  revalidate(assignmentId);
+  revalidatePath("/app");
+  return { attemptNumber: next };
 });
 
 /** Opt in to (or out of) retaking a target that is already proficient (PLAN.md §4). */
