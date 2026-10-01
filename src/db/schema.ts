@@ -168,6 +168,8 @@ export const classes = pgTable(
     /** Short code students enter to join (PLAN.md: posted in Google Classroom); null = none yet. */
     joinCode: text("join_code"),
     joinOpen: boolean("join_open").default(true).notNull(),
+    /** Teacher's own order on the Classes page (Jon, Oct 1 2026); ties fall back to period, then name. */
+    sortOrder: integer("sort_order").default(0).notNull(),
     ...timestamps,
   },
   (t) => [

@@ -106,6 +106,13 @@
       "when": 1790819366691,
       "tag": "0014_attempt_unlocks",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1790823804112,
+      "tag": "0015_class_sort_order",
+      "breakpoints": true
     }
   ]
 }
