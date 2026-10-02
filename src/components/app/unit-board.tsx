@@ -20,35 +20,49 @@ export type BoardCard = Shelved & { name: string; node: ReactNode };
 type Props = {
   courses: CourseShelves<BoardCard>[];
   noun: string;
+  /** Course tab to open first (the teacher's current course); falls back to the first course. */
+  activeCourseId: string | null;
   place: (
     id: string,
     unitId: string | null,
     orderedIds: string[]
   ) => Promise<ActionResult<unknown>>;
+  /** Remembers the picked course tab so the next visit (and the other page) opens on it. */
+  pickCourse: (courseId: string | null) => Promise<ActionResult<unknown>>;
 };
 
+const courseKey = (id: string | null) => id ?? "none";
+
 /**
- * Course → unit shelves with drag-and-drop (Jon, Oct 2 2026: "organize the
- * banks into units like Google Classroom, and drag the assessments around").
- * Drop a card on another card to slot in front of it, or on a unit header
- * to put it at the end of that unit. Keyboard: ← → nudge within the shelf,
- * and a "Move to" menu lists the course's units.
+ * One course at a time (tabs), then unit shelves with drag-and-drop (Jon,
+ * Oct 2 2026: "organize the banks into units like Google Classroom… I don't
+ * want to scroll a bunch for each class"). Units with cards are open shelves;
+ * empty units collapse into one strip of chips that still take a drop; cards
+ * with no unit sit last under "No unit yet". Drop a card on another card to
+ * slot in front of it, or on a unit header / chip to put it at the end of that
+ * unit. Keyboard: ← → nudge within the shelf, and a "Move to" menu lists the
+ * course's units.
  */
-export function UnitBoard({ courses: initial, noun, place }: Props) {
+export function UnitBoard({ courses: initial, noun, activeCourseId, place, pickCourse }: Props) {
   const [courses, setCourses] = useState(initial);
+  const [active, setActive] = useState<string>(() => {
+    const wanted = courses.find((c) => c.courseId === activeCourseId);
+    return courseKey((wanted ?? courses[0])?.courseId ?? null);
+  });
   const [dragging, setDragging] = useState<string | null>(null);
   const [over, setOver] = useState<string | null>(null);
   const { run, pending, error } = useAction();
 
-  function apply(
-    courseIndex: number,
-    moved: string,
-    result: { unitId: string | null; orderedIds: string[] }
-  ) {
+  const ci = Math.max(
+    0,
+    courses.findIndex((c) => courseKey(c.courseId) === active)
+  );
+  const course = courses[ci];
+
+  function apply(moved: string, result: { unitId: string | null; orderedIds: string[] }) {
     const next = courses.map((c, i) => {
-      if (i !== courseIndex) return c;
-      const all = c.shelves.flatMap((s) => s.items);
-      const card = all.find((x) => x.id === moved)!;
+      if (i !== ci) return c;
+      const card = c.shelves.flatMap((s) => s.items).find((x) => x.id === moved)!;
       return {
         ...c,
         shelves: c.shelves.map((s) => {
@@ -67,10 +81,10 @@ export function UnitBoard({ courses: initial, noun, place }: Props) {
     run(place(moved, result.unitId, result.orderedIds));
   }
 
-  function drop(courseIndex: number, target: { cardId: string } | { unitId: string | null }) {
-    if (!dragging) return;
-    const result = placeCard(courses[courseIndex].shelves, dragging, target);
-    if (result) apply(courseIndex, dragging, result);
+  function drop(target: { cardId: string } | { unitId: string | null }) {
+    if (!dragging || !course) return;
+    const result = placeCard(course.shelves, dragging, target);
+    if (result) apply(dragging, result);
     setDragging(null);
     setOver(null);
   }
@@ -88,161 +102,217 @@ export function UnitBoard({ courses: initial, noun, place }: Props) {
     },
   });
 
+  if (!course) return null;
+  const filled = course.shelves.filter((s) => s.items.length > 0 && s.unitId !== null);
+  const empty = course.shelves.filter((s) => s.items.length === 0 && s.unitId !== null);
+  const loose = course.shelves.find((s) => s.unitId === null);
+  const canDropOn = (shelf: { items: { id: string }[] }) =>
+    dragging !== null && !shelf.items.some((i) => i.id === dragging);
+
+  const shelfHeader = (shelf: (typeof course.shelves)[number]) => {
+    const key = `${courseKey(course.courseId)}:${courseKey(shelf.unitId)}`;
+    return (
+      <h3
+        {...dragProps(key, () => drop({ unitId: shelf.unitId }))}
+        className={cn(
+          "flex items-center gap-2 rounded-md border border-transparent px-2 py-1 text-sm font-medium text-muted-foreground transition-colors",
+          over === key && canDropOn(shelf) && "border-brand/50 bg-brand-soft text-brand-deep"
+        )}
+      >
+        {shelf.name}
+        <span className="font-normal tabular">· {shelf.items.length}</span>
+      </h3>
+    );
+  };
+
+  const cardList = (shelf: (typeof course.shelves)[number]) => (
+    <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {shelf.items.map((card, i) => (
+        <li
+          key={card.id}
+          draggable
+          onDragStart={(e) => {
+            setDragging(card.id);
+            e.dataTransfer.effectAllowed = "move";
+            e.dataTransfer.setData("text/plain", card.id);
+          }}
+          onDragEnd={() => {
+            setDragging(null);
+            setOver(null);
+          }}
+          {...dragProps(card.id, () => drop({ cardId: card.id }))}
+          className={cn(
+            "group relative rounded-lg transition-opacity",
+            dragging === card.id && "opacity-40",
+            over === card.id && dragging !== card.id && "ring-3 ring-brand/40"
+          )}
+          data-shelf-card={card.id}
+        >
+          {card.node}
+          <span
+            className="absolute top-3 left-2 cursor-grab text-muted-foreground/60 group-hover:text-muted-foreground active:cursor-grabbing"
+            title="Drag to rearrange"
+            aria-hidden
+          >
+            <GripVertical className="size-5" />
+          </span>
+          <span className="absolute right-2 bottom-2 hidden items-center gap-0.5 group-focus-within:inline-flex group-hover:inline-flex">
+            <button
+              type="button"
+              className="rounded px-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30"
+              disabled={pending || i === 0}
+              aria-label={`Move ${card.name} earlier`}
+              onClick={() => {
+                const ids = nudgeCard(shelf, card.id, -1);
+                if (ids) apply(card.id, { unitId: shelf.unitId, orderedIds: ids });
+              }}
+            >
+              ←
+            </button>
+            <button
+              type="button"
+              className="rounded px-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30"
+              disabled={pending || i === shelf.items.length - 1}
+              aria-label={`Move ${card.name} later`}
+              onClick={() => {
+                const ids = nudgeCard(shelf, card.id, 1);
+                if (ids) apply(card.id, { unitId: shelf.unitId, orderedIds: ids });
+              }}
+            >
+              →
+            </button>
+            {course.shelves.length > 1 ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  className="rounded px-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+                  aria-label={`Move ${card.name} to another unit`}
+                  disabled={pending}
+                >
+                  <FolderInput className="size-3.5" aria-hidden />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel>Move to</DropdownMenuLabel>
+                    {course.shelves
+                      .filter((s) => s.unitId !== shelf.unitId)
+                      .map((s) => (
+                        <DropdownMenuItem
+                          key={courseKey(s.unitId)}
+                          onClick={() => {
+                            const r = placeCard(course.shelves, card.id, { unitId: s.unitId });
+                            if (r) apply(card.id, r);
+                          }}
+                        >
+                          {s.name}
+                        </DropdownMenuItem>
+                      ))}
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : null}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-5">
+      {courses.length > 1 ? (
+        <div
+          role="tablist"
+          aria-label="Course"
+          className="flex flex-wrap gap-1 border-b border-border"
+          data-course-tabs
+        >
+          {courses.map((c) => {
+            const total = c.shelves.reduce((n, s) => n + s.items.length, 0);
+            const key = courseKey(c.courseId);
+            const isActive = key === active;
+            return (
+              <button
+                key={key}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                data-course-tab={key}
+                className={cn(
+                  "-mb-px rounded-t-md border-b-2 px-3 py-2 text-sm transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                  isActive
+                    ? "border-brand font-medium text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                )}
+                onClick={() => {
+                  setActive(key);
+                  setDragging(null);
+                  setOver(null);
+                  void pickCourse(c.courseId);
+                }}
+              >
+                {c.course}
+                <span className="ml-1.5 text-xs font-normal text-muted-foreground tabular">
+                  {total}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+
       <p className="text-sm text-muted-foreground">
-        Drag a card onto a unit header or in front of another card to organize it.
+        Drag a card onto a unit, or in front of another card, to organize it.
         {error ? <span className="ml-2 text-error-foreground">{error}</span> : null}
       </p>
-      {courses.map((course, ci) => {
-        const total = course.shelves.reduce((n, s) => n + s.items.length, 0);
-        return (
-          <section
-            key={course.courseId ?? "none"}
-            className="flex flex-col gap-4"
-            aria-label={course.course}
+
+      <section
+        key={courseKey(course.courseId)}
+        className="flex flex-col gap-4"
+        aria-label={course.course}
+      >
+        {filled.length === 0 && (!loose || loose.items.length === 0) ? (
+          <p className="rounded-lg border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">
+            No {noun}s in {course.course} yet.
+          </p>
+        ) : null}
+        {filled.map((shelf) => (
+          <div
+            key={courseKey(shelf.unitId)}
+            className="flex flex-col gap-2"
+            data-unit-shelf={shelf.unitId}
           >
-            <h2 className="text-lg">
-              {course.course}{" "}
-              <span className="text-sm font-normal text-muted-foreground tabular">
-                · {total} {total === 1 ? noun : `${noun}s`}
-              </span>
-            </h2>
-            {course.shelves.map((shelf) => {
-              const shelfKey = `${course.courseId}:${shelf.unitId ?? "none"}`;
-              const canDropHere = dragging !== null && !shelf.items.some((i) => i.id === dragging);
+            {shelfHeader(shelf)}
+            {cardList(shelf)}
+          </div>
+        ))}
+        {empty.length > 0 ? (
+          <div className="flex flex-wrap items-center gap-2 px-2 text-xs text-muted-foreground">
+            <span className="font-medium">Empty units:</span>
+            {empty.map((shelf) => {
+              const key = `${courseKey(course.courseId)}:${courseKey(shelf.unitId)}`;
               return (
-                <div
-                  key={shelfKey}
-                  className="flex flex-col gap-2"
-                  data-unit-shelf={shelf.unitId ?? ""}
-                >
-                  <h3
-                    {...dragProps(shelfKey, () => drop(ci, { unitId: shelf.unitId }))}
-                    className={cn(
-                      "flex items-center gap-2 rounded-md border border-transparent px-2 py-1 text-sm font-medium text-muted-foreground transition-colors",
-                      over === shelfKey &&
-                        canDropHere &&
-                        "border-brand/50 bg-brand-soft text-brand-deep"
-                    )}
-                  >
-                    {shelf.name}
-                    {shelf.items.length ? (
-                      <span className="font-normal tabular">· {shelf.items.length}</span>
-                    ) : null}
-                  </h3>
-                  {shelf.items.length === 0 ? (
-                    <div
-                      {...dragProps(`${shelfKey}:empty`, () => drop(ci, { unitId: shelf.unitId }))}
-                      className={cn(
-                        "rounded-lg border border-dashed border-border px-4 py-3 text-xs text-muted-foreground",
-                        over === `${shelfKey}:empty` &&
-                          canDropHere &&
-                          "border-brand/60 bg-brand-soft"
-                      )}
-                    >
-                      Nothing here yet. Drop {/^[aeiou]/i.test(noun) ? "an" : "a"} {noun} here.
-                    </div>
-                  ) : (
-                    <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                      {shelf.items.map((card, i) => (
-                        <li
-                          key={card.id}
-                          draggable
-                          onDragStart={(e) => {
-                            setDragging(card.id);
-                            e.dataTransfer.effectAllowed = "move";
-                            e.dataTransfer.setData("text/plain", card.id);
-                          }}
-                          onDragEnd={() => {
-                            setDragging(null);
-                            setOver(null);
-                          }}
-                          {...dragProps(card.id, () => drop(ci, { cardId: card.id }))}
-                          className={cn(
-                            "group relative rounded-lg transition-opacity",
-                            dragging === card.id && "opacity-40",
-                            over === card.id && dragging !== card.id && "ring-3 ring-brand/40"
-                          )}
-                          data-shelf-card={card.id}
-                        >
-                          {card.node}
-                          <span
-                            className="absolute top-3 left-2 cursor-grab text-muted-foreground/60 group-hover:text-muted-foreground active:cursor-grabbing"
-                            title="Drag to rearrange"
-                            aria-hidden
-                          >
-                            <GripVertical className="size-5" />
-                          </span>
-                          <span className="absolute right-2 bottom-2 hidden items-center gap-0.5 group-focus-within:inline-flex group-hover:inline-flex">
-                            <button
-                              type="button"
-                              className="rounded px-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30"
-                              disabled={pending || i === 0}
-                              aria-label={`Move ${card.name} earlier`}
-                              onClick={() => {
-                                const ids = nudgeCard(shelf, card.id, -1);
-                                if (ids)
-                                  apply(ci, card.id, { unitId: shelf.unitId, orderedIds: ids });
-                              }}
-                            >
-                              ←
-                            </button>
-                            <button
-                              type="button"
-                              className="rounded px-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30"
-                              disabled={pending || i === shelf.items.length - 1}
-                              aria-label={`Move ${card.name} later`}
-                              onClick={() => {
-                                const ids = nudgeCard(shelf, card.id, 1);
-                                if (ids)
-                                  apply(ci, card.id, { unitId: shelf.unitId, orderedIds: ids });
-                              }}
-                            >
-                              →
-                            </button>
-                            {course.shelves.length > 1 ? (
-                              <DropdownMenu>
-                                <DropdownMenuTrigger
-                                  className="rounded px-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
-                                  aria-label={`Move ${card.name} to another unit`}
-                                  disabled={pending}
-                                >
-                                  <FolderInput className="size-3.5" aria-hidden />
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuGroup>
-                                    <DropdownMenuLabel>Move to</DropdownMenuLabel>
-                                    {course.shelves
-                                      .filter((s) => s.unitId !== shelf.unitId)
-                                      .map((s) => (
-                                        <DropdownMenuItem
-                                          key={s.unitId ?? "none"}
-                                          onClick={() => {
-                                            const r = placeCard(course.shelves, card.id, {
-                                              unitId: s.unitId,
-                                            });
-                                            if (r) apply(ci, card.id, r);
-                                          }}
-                                        >
-                                          {s.name}
-                                        </DropdownMenuItem>
-                                      ))}
-                                  </DropdownMenuGroup>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            ) : null}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
+                <span
+                  key={key}
+                  {...dragProps(key, () => drop({ unitId: shelf.unitId }))}
+                  data-unit-chip={shelf.unitId}
+                  className={cn(
+                    "rounded-full border border-dashed border-border px-2.5 py-1 transition-colors",
+                    dragging && "border-brand/40",
+                    over === key && dragging && "border-brand bg-brand-soft text-brand-deep"
                   )}
-                </div>
+                >
+                  {shelf.name}
+                </span>
               );
             })}
-          </section>
-        );
-      })}
+          </div>
+        ) : null}
+        {loose && loose.items.length > 0 ? (
+          <div className="flex flex-col gap-2" data-unit-shelf="">
+            {shelfHeader(loose)}
+            {cardList(loose)}
+          </div>
+        ) : null}
+      </section>
     </div>
   );
 }

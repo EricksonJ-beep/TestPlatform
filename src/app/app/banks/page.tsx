@@ -9,6 +9,7 @@ import { groupByUnit } from "@/lib/unit-shelves";
 import { EmptyState } from "@/components/empty-state";
 import { UnitBoard } from "@/components/app/unit-board";
 import { placeBank } from "./actions";
+import { setCurrentCourse } from "../courses/actions";
 import { NewBankDialog } from "./new-bank-dialog";
 
 export const metadata: Metadata = { title: "Question banks" };
@@ -90,7 +91,13 @@ export default async function BanksPage({ searchParams }: PageProps<"/app/banks"
           />
         </div>
       ) : (
-        <UnitBoard courses={shelves} noun="bank" place={placeBank} />
+        <UnitBoard
+          courses={shelves}
+          noun="bank"
+          activeCourseId={current?.id ?? null}
+          place={placeBank}
+          pickCourse={setCurrentCourse}
+        />
       )}
     </div>
   );
