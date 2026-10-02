@@ -14,6 +14,8 @@ export type AssessmentSummary = {
   type: "practice" | "formative" | "summative";
   courseId: string | null;
   courseName: string | null;
+  unitId: string | null;
+  sortOrder: number;
   isPublished: boolean;
   sections: number;
   assignments: number;
@@ -28,6 +30,8 @@ export async function listAssessments(teacherId: string): Promise<AssessmentSumm
       type: schema.assessments.type,
       courseId: schema.assessments.courseId,
       courseName: schema.courses.name,
+      unitId: schema.assessments.unitId,
+      sortOrder: schema.assessments.sortOrder,
       isPublished: schema.assessments.isPublished,
       sections: sql<number>`(select count(*)::int from ${schema.assessmentSections} s where s.assessment_id = ${schema.assessments.id})`,
       assignments: sql<number>`(select count(*)::int from ${schema.assignments} a where a.assessment_id = ${schema.assessments.id})`,
@@ -36,7 +40,7 @@ export async function listAssessments(teacherId: string): Promise<AssessmentSumm
     .from(schema.assessments)
     .leftJoin(schema.courses, eq(schema.assessments.courseId, schema.courses.id))
     .where(eq(schema.assessments.ownerId, teacherId))
-    .orderBy(desc(schema.assessments.updatedAt));
+    .orderBy(asc(schema.assessments.sortOrder), desc(schema.assessments.updatedAt));
 }
 
 export type SectionItem =

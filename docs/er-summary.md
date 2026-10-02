@@ -48,7 +48,7 @@ Generated from `drizzle/meta/0001_snapshot.json` (Ticket 0.4). Every table also 
 
 - **media_assets** — owner_id uuid, kind media_kind, storage_key text, url text, mime_type text?, size_bytes integer?, width integer?, height integer?, duration_seconds integer?, alt_text text?
   - FKs: owner_id→users.id (cascade)
-- **question_banks** — owner_id uuid, course_id uuid?, name text, description text?
+- **question_banks** — owner_id uuid, course_id uuid?, unit_id uuid?, sort_order integer =0, name text, description text?
   - FKs: owner_id→users.id (cascade); course_id→courses.id (set null)
 - **stimuli** — owner_id uuid, course_id uuid?, kind stimulus_kind, title text?, ref text?, content text?, media_asset_id uuid?, media_url text?
   - FKs: owner_id→users.id (cascade); course_id→courses.id (set null); media_asset_id→media_assets.id (set null)
@@ -79,7 +79,7 @@ Generated from `drizzle/meta/0001_snapshot.json` (Ticket 0.4). Every table also 
 
 ## Assessments
 
-- **assessments** — owner_id uuid, course_id uuid?, type assessment_type, title text, instructions text?, attempt_limit integer?, review_mode review_mode ='auto', retake_threshold integer =80, optional_retakes boolean =true, randomize_questions boolean =false, randomize_options boolean =false, one_at_a_time boolean =false, allow_backtrack boolean =true, show_results_immediately boolean =true, is_published boolean =false
+- **assessments** — owner_id uuid, course_id uuid?, unit_id uuid?, sort_order integer =0, type assessment_type, title text, instructions text?, attempt_limit integer?, review_mode review_mode ='auto', retake_threshold integer =80, optional_retakes boolean =true, randomize_questions boolean =false, randomize_options boolean =false, one_at_a_time boolean =false, allow_backtrack boolean =true, show_results_immediately boolean =true, is_published boolean =false
   - FKs: owner_id→users.id (cascade); course_id→courses.id (set null)
   - checks: assessments_threshold_range
 - **assessment_sections** — assessment_id uuid, title text, instructions text?, sort_order integer =0, learning_target_id uuid?

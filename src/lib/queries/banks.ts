@@ -8,7 +8,10 @@ export type BankSummary = {
   id: string;
   name: string;
   description: string | null;
+  courseId: string | null;
   courseName: string | null;
+  unitId: string | null;
+  sortOrder: number;
   questions: number;
   sharedWith: number;
   createdAt: Date;
@@ -25,7 +28,10 @@ export async function listMyBanks(
       id: schema.questionBanks.id,
       name: schema.questionBanks.name,
       description: schema.questionBanks.description,
+      courseId: schema.questionBanks.courseId,
       courseName: schema.courses.name,
+      unitId: schema.questionBanks.unitId,
+      sortOrder: schema.questionBanks.sortOrder,
       questions: count(schema.questions.id),
       createdAt: schema.questionBanks.createdAt,
       isArchived: schema.questionBanks.isArchived,
@@ -48,7 +54,7 @@ export async function listMyBanks(
           )
     )
     .groupBy(schema.questionBanks.id, schema.courses.name)
-    .orderBy(desc(schema.questionBanks.createdAt));
+    .orderBy(asc(schema.questionBanks.sortOrder), desc(schema.questionBanks.createdAt));
 
   const shares = await db
     .select({ resourceId: schema.shares.resourceId, n: count() })
