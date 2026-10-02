@@ -113,7 +113,9 @@ created through the Vercel Neon integration, so its `DATABASE_URL` is managed th
    DATABASE_URL="<neon url>" npm run db:seed
    ```
 
-4. Deploy. Confirm `/api/health` returns `{"ok":true,"db":"neon"}` and log in on the live URL.
+4. Quizzes can also ship in the repo as content packs (`content/packs/<name>/`, see
+   `docs/decisions.md`); the build applies new ones after migrations.
+5. Deploy. Confirm `/api/health` returns `{"ok":true,"db":"neon"}` and log in on the live URL.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the working agreement and
 [docs/decisions.md](docs/decisions.md) for the decisions log.

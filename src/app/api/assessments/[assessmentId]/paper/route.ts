@@ -45,8 +45,8 @@ function jpgSize(b: Uint8Array): { width: number; height: number } | null {
   return null;
 }
 
-/** Fetch the images a paper needs: R2 objects through the storage client, anything else over HTTP. */
-async function loadImages(urls: string[]): Promise<Map<string, ImageBytes>> {
+/** Fetch the images a paper needs: R2 objects through the storage client, anything else over HTTP (site-relative paths resolve against this deployment). */
+async function loadImages(urls: string[], origin: string): Promise<Map<string, ImageBytes>> {
   const out = new Map<string, ImageBytes>();
   for (const url of [...new Set(urls)].slice(0, MAX_IMAGES)) {
     try {
@@ -54,8 +54,8 @@ async function loadImages(urls: string[]): Promise<Map<string, ImageBytes>> {
       if (isMediaProxyUrl(url)) {
         const obj = await getObjectStream(url.slice("/api/media/".length));
         if (obj) bytes = await readAll(obj.body);
-      } else if (/^https?:\/\//.test(url)) {
-        const r = await fetch(url);
+      } else if (/^https?:\/\//.test(url) || url.startsWith("/")) {
+        const r = await fetch(new URL(url, origin));
         if (r.ok) bytes = new Uint8Array(await r.arrayBuffer());
       }
       if (!bytes) continue;
@@ -115,7 +115,7 @@ export const GET = withAuthzRoute<{ params: Promise<{ assessmentId: string }> }>
     const urls = doc.blocks
       .flatMap((b) => (b.kind === "question" || b.kind === "stimulus" ? [b.imageUrl] : []))
       .filter((u): u is string => !!u);
-    const images = await loadImages(urls);
+    const images = await loadImages(urls, new URL(req.url).origin);
     const lookup = (u: string) => images.get(u);
     const fileName = paperFileName(detail.title, version, format, includeKey);
     const body = format === "docx" ? await renderDocx(doc, lookup) : await renderPdf(doc, lookup);

@@ -1,0 +1,19 @@
+{
+  "name": "anatomy-u2-lab-quiz-integumentary",
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Anatomy and Physiology",
+  "bank": "AP · Unit 2 Lab Quiz: Integumentary",
+  "assessment": {
+    "title": "Lab Quiz: Integumentary System",
+    "type": "formative",
+    "instructions": "Ten questions on the skin lab. Your best attempt counts."
+  },
+  "assign": [
+    {
+      "class": "Anatomy · 5th Hour",
+      "attemptsAllowed": 3,
+      "retakeWaitHours": 24,
+      "retakesNeedUnlock": true
+    }
+  ]
+}

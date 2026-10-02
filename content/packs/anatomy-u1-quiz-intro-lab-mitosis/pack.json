@@ -1,0 +1,12 @@
+{
+  "name": "anatomy-u1-quiz-intro-lab-mitosis",
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Anatomy and Physiology",
+  "bank": "AP · Unit 1 Quiz: Intro Lab Mitosis",
+  "assessment": {
+    "title": "Unit 1 Quiz: Intro Lab Mitosis",
+    "type": "formative",
+    "instructions": "Ten questions on cell parts and the phases of mitosis. Your best attempt counts."
+  },
+  "assign": []
+}

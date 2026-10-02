@@ -95,7 +95,8 @@ export type ParsedRow = {
 };
 
 /** Absolute http(s) URLs, or media the app serves itself (/api/media/…). */
-const ABSOLUTE_URL = /^(https?:\/\/|\/api\/media\/)/i;
+/** A link Bloom can show as-is: a full URL, a media-proxy path, or a picture shipped in the repo under public/quiz-images/. */
+const ABSOLUTE_URL = /^(https?:\/\/|\/api\/media\/|\/quiz-images\/)/i;
 
 function blank(v: string | undefined): string | null {
   const s = (v ?? "").trim();
