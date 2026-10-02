@@ -9,6 +9,7 @@ import {
   KIND_LABEL,
   KIND_RULE,
 } from "@/lib/practice-rules";
+import { HOSTED_ACTIVITY_PAGES } from "@/lib/hosted-activities";
 import type { ActivityDetail } from "@/lib/queries/practice";
 import { LocalTime } from "@/components/local-time";
 import { MediaField } from "@/components/media/media-field";
@@ -155,21 +156,7 @@ export function ActivityEditor({
           </>
         ) : null}
         {kind === "interactive" ? (
-          <div className="grid gap-1.5">
-            <Label htmlFor="act-url">Page address</Label>
-            <Input
-              id="act-url"
-              name="url"
-              defaultValue={detail.url ?? ""}
-              placeholder="/activities/skin-model-labeling.html"
-              required
-            />
-            <p className="text-xs text-muted-foreground">
-              A page Bloom hosts under /activities/, or a full https link. The page tells Bloom when
-              the student finishes (a postMessage with source &ldquo;bloom-practice&rdquo;).
-            </p>
-            <FieldError errors={save.fieldErrors} name="url" />
-          </div>
+          <InteractivePageField defaultUrl={detail.url} errors={save.fieldErrors} />
         ) : null}
         {kind === "reading" ? (
           <div className="grid gap-1.5">
@@ -346,6 +333,54 @@ export function ActivityEditor({
           </ul>
         )}
       </section>
+    </div>
+  );
+}
+
+/** Pick one of the pages Bloom hosts, or enter a full https link; no typing of paths needed. */
+function InteractivePageField({
+  defaultUrl,
+  errors,
+}: {
+  defaultUrl: string | null;
+  errors: Record<string, string[]>;
+}) {
+  const hosted = HOSTED_ACTIVITY_PAGES.some((p) => p.path === defaultUrl);
+  const [choice, setChoice] = useState(
+    defaultUrl ? (hosted ? defaultUrl : "other") : (HOSTED_ACTIVITY_PAGES[0]?.path ?? "other")
+  );
+  return (
+    <div className="grid gap-1.5">
+      <Label htmlFor="act-page">Page</Label>
+      <select
+        id="act-page"
+        value={choice}
+        onChange={(e) => setChoice(e.target.value)}
+        className="h-9 rounded-md border border-input bg-background px-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+      >
+        {HOSTED_ACTIVITY_PAGES.map((p) => (
+          <option key={p.path} value={p.path}>
+            {p.title}
+          </option>
+        ))}
+        <option value="other">A page at another address…</option>
+      </select>
+      {choice === "other" ? (
+        <Input
+          id="act-url"
+          name="url"
+          type="url"
+          defaultValue={hosted ? "" : (defaultUrl ?? "")}
+          placeholder="https://…"
+          required
+        />
+      ) : (
+        <input type="hidden" name="url" value={choice} />
+      )}
+      <p className="text-xs text-muted-foreground">
+        Pages Bloom hosts are listed by name. The page tells Bloom when the student finishes.
+      </p>
+      <FieldError errors={errors} name="url" />
     </div>
   );
 }
