@@ -89,3 +89,34 @@ export function matchesQuery(item: PracticeItem, query: string): boolean {
     item.targets.some((t) => t.code.toLowerCase().includes(q) || t.title.toLowerCase().includes(q))
   );
 }
+
+export type UnitBucket<T> = { id: string; name: string; items: T[] };
+
+/**
+ * Student side (Jon, Oct 2 2026): bucket a course's published practice by
+ * unit, like Google Classroom topics, in unit order; items whose target has
+ * no unit go last under "Other practice". Order within a unit is kept.
+ */
+export function groupByUnit<
+  T extends { targets: { unit?: { id: string; name: string; sortOrder: number } | null }[] },
+>(items: T[]): UnitBucket<T>[] {
+  const buckets = new Map<string, UnitBucket<T> & { sortOrder: number }>();
+  for (const item of items) {
+    const unit = item.targets[0]?.unit ?? null;
+    const key = unit?.id ?? "none";
+    const b =
+      buckets.get(key) ??
+      buckets
+        .set(key, {
+          id: key,
+          name: unit?.name ?? "Other practice",
+          items: [],
+          sortOrder: unit?.sortOrder ?? Number.MAX_SAFE_INTEGER,
+        })
+        .get(key)!;
+    b.items.push(item);
+  }
+  return [...buckets.values()]
+    .sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name))
+    .map(({ sortOrder: _s, ...b }) => b);
+}

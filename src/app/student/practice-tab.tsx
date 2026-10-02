@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Check, Layers, Lock, X } from "lucide-react";
 import { cn } from "cn";
+import { groupByUnit } from "@/lib/practice-groups";
 import type { NeededTarget, StudentPractice } from "@/lib/queries/practice";
 import { EmptyState } from "@/components/empty-state";
 import { TargetChip } from "@/components/targets/target-chip";
@@ -54,20 +55,39 @@ export function PracticeTab({ practice }: { practice: StudentPractice }) {
           />
         </div>
       ) : (
-        [...byCourse].map(([course, list]) => (
-          <section key={course} className="flex flex-col gap-2" aria-label={course}>
-            <h2 className="text-sm font-medium text-muted-foreground">{course} · always open</h2>
-            <ul className="flex flex-col gap-2">
-              {list.map((it) =>
-                it.kind === "activity" ? (
-                  <ActivityCard key={`a:${it.item.id}`} a={it.item} />
-                ) : (
-                  <PracticeSetCard key={`s:${it.item.id}`} s={it.item} />
-                )
-              )}
-            </ul>
-          </section>
-        ))
+        [...byCourse].map(([course, list]) => {
+          const units = groupByUnit(list.map((it) => ({ ...it, targets: it.item.targets })));
+          return (
+            <section key={course} className="flex flex-col gap-3" aria-label={course}>
+              <h2 className="text-sm font-medium text-muted-foreground">{course} · always open</h2>
+              {/* One header per unit, like Google Classroom topics (Jon, Oct 2 2026). */}
+              {units.map((u) => (
+                <section
+                  key={u.id}
+                  className="flex flex-col gap-2"
+                  aria-label={u.name}
+                  data-unit-group={u.id}
+                >
+                  <h3 className="flex items-center gap-2 border-b border-border pb-1 text-base font-medium">
+                    {u.name}
+                    <span className="text-xs font-normal text-muted-foreground tabular">
+                      · {u.items.length} {u.items.length === 1 ? "item" : "items"}
+                    </span>
+                  </h3>
+                  <ul className="flex flex-col gap-2">
+                    {u.items.map((it) =>
+                      it.kind === "activity" ? (
+                        <ActivityCard key={`a:${it.item.id}`} a={it.item} />
+                      ) : (
+                        <PracticeSetCard key={`s:${it.item.id}`} s={it.item} />
+                      )
+                    )}
+                  </ul>
+                </section>
+              ))}
+            </section>
+          );
+        })
       )}
     </div>
   );
