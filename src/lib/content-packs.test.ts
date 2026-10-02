@@ -121,7 +121,7 @@ describe("content packs", () => {
     if (formB.status === "applied")
       expect(formB.summary).toMatchObject({ questions: 32, assignedTo: [], errors: [] });
     const psBank = (await db.query.questionBanks.findFirst({
-      where: eq(schema.questionBanks.name, "PS · Unit 1 Test (Form B)"),
+      where: eq(schema.questionBanks.name, "PS · Unit 1 · Retake"),
     }))!;
     const psQs = await db
       .select()
@@ -146,7 +146,7 @@ describe("content packs", () => {
       );
     }
     const formBAssessment = (await db.query.assessments.findFirst({
-      where: eq(schema.assessments.title, "Physical Science · Unit 1 Test (Form B)"),
+      where: eq(schema.assessments.title, "Physical Science · Unit 1 Retake Test"),
     }))!;
     expect(formBAssessment).toMatchObject({
       type: "summative",
@@ -159,6 +159,40 @@ describe("content packs", () => {
     expect(
       await db.select().from(schema.questions).where(eq(schema.questions.bankId, bank.id))
     ).toHaveLength(10);
+  });
+  it("renames a bank or assessment still carrying a former name from the pack file", async () => {
+    const bank = (await db.query.questionBanks.findFirst({
+      where: eq(schema.questionBanks.name, "PS · Unit 1 · Retake"),
+    }))!;
+    await db
+      .update(schema.questionBanks)
+      .set({ name: "PS · Unit 1 Test (Form B)" })
+      .where(eq(schema.questionBanks.id, bank.id));
+    const a = (await db.query.assessments.findFirst({
+      where: eq(schema.assessments.title, "Physical Science · Unit 1 Retake Test"),
+    }))!;
+    await db
+      .update(schema.assessments)
+      .set({ title: "Physical Science · Unit 1 Test (Form B)" })
+      .where(eq(schema.assessments.id, a.id));
+    const out = await applyAllPacks();
+    const formB = out.find((o) => o.name === "ps-u1-test-form-b")!;
+    expect(formB.status).toBe("already_applied");
+    if (formB.status === "already_applied") expect(formB.renamed).toHaveLength(2);
+    expect(
+      (await db.query.questionBanks.findFirst({ where: eq(schema.questionBanks.id, bank.id) }))!
+        .name
+    ).toBe("PS · Unit 1 · Retake");
+    expect(
+      (await db.query.assessments.findFirst({ where: eq(schema.assessments.id, a.id) }))!.title
+    ).toBe("Physical Science · Unit 1 Retake Test");
+    // Names already current: nothing to rename, nothing re-imported.
+    const again = await applyAllPacks();
+    const b = again.find((o) => o.name === "ps-u1-test-form-b")!;
+    if (b.status === "already_applied") expect(b.renamed).toEqual([]);
+    expect(
+      await db.select().from(schema.questions).where(eq(schema.questions.bankId, bank.id))
+    ).toHaveLength(32);
   });
   it("skips a pack whose teacher is missing and leaves it unapplied for next time", async () => {
     const out = await applyAllPacks("/nonexistent");
