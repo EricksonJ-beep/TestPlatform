@@ -95,6 +95,7 @@ Generated from `drizzle/meta/0001_snapshot.json` (Ticket 0.4). Every table also 
   - checks: assignments_threshold_range
 - **activity_log** — user_id uuid, kind text, assignment_id uuid?, detail jsonb ={}, created_at timestamptz
   - index: user_id+created_at, created_at
+- **content_packs** — name text (pk), applied_at timestamptz, summary jsonb ={}
 - **attempt_unlocks** — assignment_id uuid, student_id uuid, attempt_number integer (≥2), requested_at timestamptz?, granted_by uuid?, granted_at timestamptz? (null = requested, not yet approved)
   - unique: assignment_id+student_id+attempt_number
 - **attempts** — assignment_id uuid, student_id uuid, number integer, scope jsonb?, question_set jsonb, status attempt_status ='in_progress', score double precision?, max_score double precision?, percent double precision?, started_at timestamptz, submitted_at timestamptz?, graded_at timestamptz?, due_at timestamptz?, tab_switches integer =0

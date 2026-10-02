@@ -127,6 +127,13 @@
       "when": 1790945296036,
       "tag": "0017_interactive_activity",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1790959182928,
+      "tag": "0018_content_packs",
+      "breakpoints": true
     }
   ]
 }

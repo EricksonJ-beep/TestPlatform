@@ -749,6 +749,17 @@ export const activityLog = pgTable(
   ]
 );
 
+/**
+ * Content packs (Jon, Oct 2 2026): quizzes shipped in the repo under
+ * content/packs/ and applied once by scripts/apply-packs.ts right after the
+ * deploy's migrations. One row per pack name once it has been applied.
+ */
+export const contentPacks = pgTable("content_packs", {
+  name: text("name").primaryKey(),
+  appliedAt: timestamp("applied_at", { withTimezone: true }).defaultNow().notNull(),
+  summary: jsonb("summary").$type<Record<string, unknown>>().default({}).notNull(),
+});
+
 export const responses = pgTable(
   "responses",
   {
