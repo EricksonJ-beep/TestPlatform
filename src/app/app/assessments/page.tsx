@@ -9,6 +9,7 @@ import { groupByUnit } from "@/lib/unit-shelves";
 import { EmptyState } from "@/components/empty-state";
 import { UnitBoard } from "@/components/app/unit-board";
 import { placeAssessment } from "./actions";
+import { setCurrentCourse } from "../courses/actions";
 import { NewAssessmentDialog } from "./new-assessment-dialog";
 import { TYPE_STYLE } from "./type-badge";
 
@@ -80,7 +81,13 @@ export default async function AssessmentsPage() {
           />
         </div>
       ) : (
-        <UnitBoard courses={shelves} noun="assessment" place={placeAssessment} />
+        <UnitBoard
+          courses={shelves}
+          noun="assessment"
+          activeCourseId={current?.id ?? null}
+          place={placeAssessment}
+          pickCourse={setCurrentCourse}
+        />
       )}
     </div>
   );
