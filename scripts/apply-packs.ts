@@ -10,7 +10,10 @@ async function main() {
   for (const o of outcomes) {
     if (o.status === "applied")
       console.log(`[packs] applied ${o.name}: ${JSON.stringify(o.summary)}`);
-    else if (o.status === "already_applied") console.log(`[packs] ${o.name}: already applied`);
+    else if (o.status === "already_applied")
+      console.log(
+        `[packs] ${o.name}: already applied${o.renamed.length ? `; renamed ${o.renamed.join(", ")}` : ""}`
+      );
     else console.log(`[packs] ${o.name}: skipped (${o.reason})`);
   }
   if (outcomes.length === 0) console.log("[packs] no packs found");

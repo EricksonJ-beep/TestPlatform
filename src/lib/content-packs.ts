@@ -22,8 +22,12 @@ export type PackDefinition = {
   teacherEmail: string;
   course: string;
   bank: string;
+  /** Earlier names this pack's bank went by; a bank still using one is renamed to `bank` on deploy. */
+  formerBankNames?: string[];
   assessment?: {
     title: string;
+    /** Earlier titles; an assessment still using one is renamed to `title` on deploy. */
+    formerTitles?: string[];
     type: "practice" | "formative" | "summative";
     instructions?: string;
   };
@@ -37,7 +41,7 @@ export type PackDefinition = {
 
 export type PackOutcome =
   | { name: string; status: "applied"; summary: Record<string, unknown> }
-  | { name: string; status: "already_applied" }
+  | { name: string; status: "already_applied"; renamed: string[] }
   | { name: string; status: "skipped"; reason: string };
 
 const key = (s: string) => s.trim().toLowerCase();
@@ -56,21 +60,86 @@ export function listPacks(root = join(process.cwd(), "content", "packs")): PackD
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
+/**
+ * The pack file is the source of truth for names. If the teacher's bank (or
+ * assessment) still carries one of the former names listed in the pack, rename
+ * it to the current one. Runs on every deploy, applied pack or not, and does
+ * nothing once the names match (or if the teacher already has one by the new name).
+ */
+async function syncNames(def: PackDefinition, teacherId: string): Promise<string[]> {
+  const renamed: string[] = [];
+  const former = (def.formerBankNames ?? []).map(key).filter((n) => n !== key(def.bank));
+  if (former.length) {
+    const current = await db.query.questionBanks.findFirst({
+      columns: { id: true },
+      where: and(
+        eq(schema.questionBanks.ownerId, teacherId),
+        sql`lower(${schema.questionBanks.name}) = ${key(def.bank)}`
+      ),
+    });
+    const old = current
+      ? null
+      : await db.query.questionBanks.findFirst({
+          columns: { id: true, name: true },
+          where: and(
+            eq(schema.questionBanks.ownerId, teacherId),
+            sql`lower(${schema.questionBanks.name}) in ${former}`
+          ),
+        });
+    if (old) {
+      await db
+        .update(schema.questionBanks)
+        .set({ name: def.bank })
+        .where(eq(schema.questionBanks.id, old.id));
+      renamed.push(`bank "${old.name}" → "${def.bank}"`);
+    }
+  }
+  const a = def.assessment;
+  const formerTitles = (a?.formerTitles ?? []).map(key).filter((t) => a && t !== key(a.title));
+  if (a && formerTitles.length) {
+    const current = await db.query.assessments.findFirst({
+      columns: { id: true },
+      where: and(
+        eq(schema.assessments.ownerId, teacherId),
+        sql`lower(${schema.assessments.title}) = ${key(a.title)}`
+      ),
+    });
+    const old = current
+      ? null
+      : await db.query.assessments.findFirst({
+          columns: { id: true, title: true },
+          where: and(
+            eq(schema.assessments.ownerId, teacherId),
+            sql`lower(${schema.assessments.title}) in ${formerTitles}`
+          ),
+        });
+    if (old) {
+      await db
+        .update(schema.assessments)
+        .set({ title: a.title })
+        .where(eq(schema.assessments.id, old.id));
+      renamed.push(`assessment "${old.title}" → "${a.title}"`);
+    }
+  }
+  return renamed;
+}
+
 export async function applyPack(
   def: PackDefinition,
   root = join(process.cwd(), "content", "packs")
 ): Promise<PackOutcome> {
-  const done = await db.query.contentPacks.findFirst({
-    where: eq(schema.contentPacks.name, def.name),
-  });
-  if (done) return { name: def.name, status: "already_applied" };
-
   const teacher = await db.query.users.findFirst({
     columns: { id: true },
     where: sql`lower(${schema.users.email}) = ${key(def.teacherEmail)}`,
   });
   if (!teacher)
     return { name: def.name, status: "skipped", reason: `no teacher ${def.teacherEmail}` };
+
+  const renamed = await syncNames(def, teacher.id);
+  const done = await db.query.contentPacks.findFirst({
+    where: eq(schema.contentPacks.name, def.name),
+  });
+  if (done) return { name: def.name, status: "already_applied", renamed };
   const course = await db.query.courses.findFirst({
     columns: { id: true, name: true },
     where: and(
