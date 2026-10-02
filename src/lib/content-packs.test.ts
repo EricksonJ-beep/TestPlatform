@@ -17,6 +17,7 @@ import { db, schema } from "@/db";
 import { applyAllPacks, listPacks } from "./content-packs";
 
 const ids = { teacher: "", course: "", cls: "" };
+let ps: { id: string };
 
 beforeAll(async () => {
   const [t] = await db
@@ -38,6 +39,16 @@ beforeAll(async () => {
     { courseId: course.id, code: "U1", title: "Unit 1" },
     { courseId: course.id, code: "U2", title: "Unit 2" },
   ]);
+  // Jon's Physical Science A course has per-unit codes U1.LT1 … U1.LT4 (scripts/courses/physical-science.ts).
+  [ps] = await db
+    .insert(schema.courses)
+    .values({ ownerId: t.id, name: "Physical Science A" })
+    .returning();
+  await db
+    .insert(schema.learningTargets)
+    .values(
+      [1, 2, 3, 4].map((n) => ({ courseId: ps.id, code: `U1.LT${n}`, title: `Target ${n}` }))
+    );
   const [cls] = await db
     .insert(schema.classes)
     .values({ ownerId: t.id, courseId: course.id, name: "Anatomy · 5th Hour" })
@@ -50,6 +61,7 @@ describe("content packs", () => {
     const names = listPacks().map((p) => p.name);
     expect(names).toContain("anatomy-u2-lab-quiz-integumentary");
     expect(names).toContain("anatomy-u1-quiz-intro-lab-mitosis");
+    expect(names).toContain("ps-u1-test-form-b");
   });
   it("applies each pack once: bank, questions with repo-hosted pictures, published assessment, assignment", async () => {
     const first = await applyAllPacks();
@@ -103,6 +115,44 @@ describe("content packs", () => {
       .where(eq(schema.questionTargets.learningTargetId, u1.id));
     expect(mitoQs).toHaveLength(10);
     expect(tagged.filter((t) => mitoQs.some((q) => q.id === t.questionId))).toHaveLength(10);
+    // The Physical Science Form B pack: 32 questions on the four U1 targets, a published summative, no assignment.
+    const formB = first.find((o) => o.name === "ps-u1-test-form-b")!;
+    expect(formB.status).toBe("applied");
+    if (formB.status === "applied")
+      expect(formB.summary).toMatchObject({ questions: 32, assignedTo: [], errors: [] });
+    const psBank = (await db.query.questionBanks.findFirst({
+      where: eq(schema.questionBanks.name, "PS · Unit 1 Test (Form B)"),
+    }))!;
+    const psQs = await db
+      .select()
+      .from(schema.questions)
+      .where(eq(schema.questions.bankId, psBank.id));
+    expect(psQs).toHaveLength(32);
+    const psTargets = await db
+      .select()
+      .from(schema.learningTargets)
+      .where(eq(schema.learningTargets.courseId, ps.id));
+    expect(psTargets).toHaveLength(4); // no stray targets created
+    expect(
+      psQs.filter((q) => q.mediaUrl === "/quiz-images/ps-u1-test-form-b/ruler_q12.png")
+    ).toHaveLength(1);
+    const psTagged = await db.select().from(schema.questionTargets);
+    for (const target of psTargets) {
+      const mine = psTagged.filter(
+        (t) => t.learningTargetId === target.id && psQs.some((q) => q.id === t.questionId)
+      );
+      expect(mine).toHaveLength(
+        { "U1.LT1": 9, "U1.LT2": 7, "U1.LT3": 8, "U1.LT4": 8 }[target.code]!
+      );
+    }
+    const formBAssessment = (await db.query.assessments.findFirst({
+      where: eq(schema.assessments.title, "Physical Science · Unit 1 Test (Form B)"),
+    }))!;
+    expect(formBAssessment).toMatchObject({
+      type: "summative",
+      isPublished: true,
+      courseId: ps.id,
+    });
     // Second run: nothing changes.
     const second = await applyAllPacks();
     expect(second.every((o) => o.status === "already_applied")).toBe(true);

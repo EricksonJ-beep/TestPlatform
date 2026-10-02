@@ -1,0 +1,12 @@
+{
+  "name": "ps-u1-test-form-b",
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science A",
+  "bank": "PS · Unit 1 Test (Form B)",
+  "assessment": {
+    "title": "Physical Science · Unit 1 Test (Form B)",
+    "type": "summative",
+    "instructions": "32 questions on Unit 1: lab equipment and the scientific method, accuracy and precision, unit conversions and scientific notation, and classifying matter and density. Show your work on scratch paper for the math questions and round as the question says."
+  },
+  "assign": []
+}
