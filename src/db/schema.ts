@@ -293,6 +293,10 @@ export const questionBanks = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     courseId: uuid("course_id").references(() => courses.id, { onDelete: "set null" }),
+    /** Shelf on the Question banks page (Jon, Oct 2 2026): the course unit this bank sits under; null = "No unit yet". */
+    unitId: uuid("unit_id").references(() => units.id, { onDelete: "set null" }),
+    /** Teacher's own order within the unit shelf. */
+    sortOrder: integer("sort_order").default(0).notNull(),
     name: text("name").notNull(),
     description: text("description"),
     isArchived: boolean("is_archived").default(false).notNull(),
@@ -529,6 +533,10 @@ export const assessments = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     courseId: uuid("course_id").references(() => courses.id, { onDelete: "set null" }),
+    /** Shelf on the Assessments page (Jon, Oct 2 2026): the course unit this sits under; null = "No unit yet". */
+    unitId: uuid("unit_id").references(() => units.id, { onDelete: "set null" }),
+    /** Teacher's own order within the unit shelf. */
+    sortOrder: integer("sort_order").default(0).notNull(),
     type: assessmentType("type").notNull(),
     title: text("title").notNull(),
     instructions: text("instructions"),

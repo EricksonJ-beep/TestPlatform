@@ -4,7 +4,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db, schema } from "@/db";
-import { ActionError, requireShared, requireTeacher, withAuthz } from "@/lib/authz";
+import { ActionError, requireOwner, requireShared, requireTeacher, withAuthz } from "@/lib/authz";
 import { ownsCourse, rememberCourse } from "@/lib/current-course";
 import { missingHeaders, parseQuestionRecords, type RawRecord } from "@/lib/import/question-csv";
 import { commitImport, planImport } from "@/lib/import/question-import";
@@ -16,6 +16,7 @@ import {
 } from "@/lib/ai/extract-questions";
 import { extractedToRecords } from "@/lib/ai/to-records";
 import { listTargets } from "@/lib/queries/courses";
+import { placeOnShelf } from "@/lib/shelf-db";
 
 const bankSchema = z.object({
   name: z.string().trim().min(1, "Give the bank a name.").max(120),
@@ -244,3 +245,18 @@ export const deleteBank = withAuthz(async (bankId: string) => {
   revalidateBank(bankId);
   return { ok: true };
 });
+
+/**
+ * Put a bank on a unit shelf of the Question banks page, in the given order
+ * (Jon, Oct 2 2026: organize banks by unit like Google Classroom, drag to
+ * reorder). `unitId` null = "No unit yet". Owner only; the unit must belong to
+ * the bank's course.
+ */
+export const placeBank = withAuthz(
+  async (bankId: string, unitId: string | null, orderedIds: string[]) => {
+    const session = await requireOwner({ type: "question_bank", id: bankId });
+    await placeOnShelf(schema.questionBanks, session.userId, bankId, unitId, orderedIds ?? []);
+    revalidatePath("/app/banks");
+    return { ok: true };
+  }
+);

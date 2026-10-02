@@ -4,8 +4,9 @@ import { and, asc, eq, inArray, max } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db, schema } from "@/db";
-import { ActionError, requireShared, requireTeacher, withAuthz } from "@/lib/authz";
+import { ActionError, requireOwner, requireShared, requireTeacher, withAuthz } from "@/lib/authz";
 import { ownsCourse, rememberCourse } from "@/lib/current-course";
+import { placeOnShelf } from "@/lib/shelf-db";
 
 const uuid = z.string().uuid();
 function fieldErrors(error: z.ZodError): Record<string, string[]> {
@@ -580,5 +581,19 @@ export const searchBankQuestions = withAuthz(
       stimulusTitle: r.stimulus?.title ?? (r.stimulus ? "Shared stimulus" : null),
       targets: r.targets,
     }));
+  }
+);
+
+/**
+ * Put an assessment on a unit shelf of the Assessments page, in the given order
+ * (Jon, Oct 2 2026). `unitId` null = "No unit yet". Owner only; the unit must
+ * belong to the assessment's course.
+ */
+export const placeAssessment = withAuthz(
+  async (assessmentId: string, unitId: string | null, orderedIds: string[]) => {
+    const session = await requireOwner({ type: "assessment", id: assessmentId });
+    await placeOnShelf(schema.assessments, session.userId, assessmentId, unitId, orderedIds ?? []);
+    revalidatePath("/app/assessments");
+    return { ok: true };
   }
 );

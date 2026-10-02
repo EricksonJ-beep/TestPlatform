@@ -4,6 +4,7 @@
  */
 import { asc, count, countDistinct, eq, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
+import type { UnitRef } from "@/lib/unit-shelves";
 
 export type CourseSummary = {
   id: string;
@@ -54,6 +55,21 @@ export type PoolRow = {
   targetIds: string[];
   drawStimulusGroups: boolean;
 };
+
+/** Every unit of every course the teacher owns, for the unit shelves on the banks and assessments pages. */
+export async function listUnitsForTeacher(teacherId: string): Promise<UnitRef[]> {
+  return db
+    .select({
+      id: schema.units.id,
+      courseId: schema.units.courseId,
+      name: schema.units.name,
+      sortOrder: schema.units.sortOrder,
+    })
+    .from(schema.units)
+    .innerJoin(schema.courses, eq(schema.units.courseId, schema.courses.id))
+    .where(eq(schema.courses.ownerId, teacherId))
+    .orderBy(asc(schema.units.sortOrder), asc(schema.units.name));
+}
 
 export async function getCourseDetail(courseId: string) {
   const course = await db.query.courses.findFirst({ where: eq(schema.courses.id, courseId) });
