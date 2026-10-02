@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, ChevronLeft, ExternalLink } from "lucide-react";
 import { cn } from "cn";
 import {
+  INTERACTIVE_MESSAGE_SOURCE,
   KIND_LABEL,
   KIND_RULE,
   markWatched,
@@ -108,6 +109,13 @@ export function ActivityView({ view }: { view: StudentActivityView }) {
         />
       ) : view.kind === "link" && view.url ? (
         <LinkActivity url={view.url} done={done.completed} saving={saving} onFinish={finish} />
+      ) : view.kind === "interactive" && view.url ? (
+        <InteractiveActivity
+          url={view.url}
+          done={done.completed}
+          result={view.completion?.evidence?.interactive ?? null}
+          onFinish={finish}
+        />
       ) : view.kind === "worksheet" ? (
         <WorksheetActivity url={view.url} done={done.completed} />
       ) : view.kind === "guided_notes" ? (
@@ -136,6 +144,95 @@ function Prose({ text, className }: { text: string; className?: string }) {
         <RichText key={i} text={p} as="p" className="whitespace-pre-wrap" />
       ))}
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Interactive page (Jon, Oct 2 2026): an embedded page such as the skin-model
+// labeling practice; it posts { source: "bloom-practice", type: "complete", … }
+// to its parent when every label is placed, and that message is the evidence.
+// ---------------------------------------------------------------------------
+
+type InteractiveResult = {
+  total: number;
+  firstTry: number;
+  misses: number;
+  seconds: number;
+  missedTerms: string[];
+};
+
+function InteractiveActivity({
+  url,
+  done,
+  result,
+  onFinish,
+}: {
+  url: string;
+  done: boolean;
+  result: InteractiveResult | null;
+  onFinish: (e: Record<string, unknown>) => Promise<boolean>;
+}) {
+  const [last, setLast] = useState<InteractiveResult | null>(result);
+  const reported = useRef(false);
+  useEffect(() => {
+    // Only trust messages from the page we embedded: same origin for /activities/…, else its host.
+    // Computed here, not during render: there is no `window` on the server.
+    let expectedOrigin = window.location.origin;
+    try {
+      expectedOrigin = new URL(url, window.location.href).origin;
+    } catch {
+      /* keep the app's own origin */
+    }
+    function onMessage(e: MessageEvent) {
+      if (e.origin !== expectedOrigin) return;
+      const d = e.data as Record<string, unknown> | null;
+      if (!d || d.source !== INTERACTIVE_MESSAGE_SOURCE || d.type !== "complete") return;
+      if (reported.current) return;
+      reported.current = true;
+      const r: InteractiveResult = {
+        total: Number(d.total) || 0,
+        firstTry: Number(d.firstTry) || 0,
+        misses: Number(d.misses) || 0,
+        seconds: Number(d.seconds) || 0,
+        missedTerms: Array.isArray(d.missedTerms) ? d.missedTerms.map(String) : [],
+      };
+      setLast(r);
+      void onFinish({ interactive: { ...r, activity: d.activity } }).then((ok) => {
+        if (!ok) reported.current = false;
+      });
+    }
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, [url, onFinish]);
+  return (
+    <section className="flex flex-col gap-3" data-interactive-activity>
+      {last ? (
+        <p
+          className="rounded-lg border border-border bg-card px-4 py-3 text-sm"
+          data-interactive-result
+        >
+          {last.firstTry} of {last.total} on the first try, {last.misses}{" "}
+          {last.misses === 1 ? "miss" : "misses"}
+          {last.missedTerms.length ? ` (${last.missedTerms.join(", ")})` : ""}.
+          {done ? " You can keep practicing; this stays complete." : ""}
+        </p>
+      ) : null}
+      <iframe
+        src={url}
+        title="Activity"
+        className="h-[1300px] w-full rounded-lg border border-border bg-white"
+        allow="fullscreen"
+      />
+      <a
+        href={url}
+        target="_blank"
+        rel="noreferrer"
+        className="inline-flex items-center gap-1 self-start text-xs text-muted-foreground hover:text-foreground"
+      >
+        <ExternalLink className="size-3" aria-hidden /> Open in its own tab (completion still counts
+        only here)
+      </a>
+    </section>
   );
 }
 

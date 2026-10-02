@@ -1,7 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowDown, ArrowUp, BookOpen, FileText, Layers, Link2, PlayCircle } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  BookOpen,
+  FileText,
+  Layers,
+  Link2,
+  PlayCircle,
+  Puzzle,
+} from "lucide-react";
 import { KIND_LABEL } from "@/lib/practice-rules";
 import type { ActivitySummary, PracticeSetSummary } from "@/lib/queries/practice";
 import { TargetChip } from "@/components/targets/target-chip";
@@ -17,6 +26,7 @@ const ICON = {
   reading: BookOpen,
   link: Link2,
   guided_notes: FileText,
+  interactive: Puzzle,
   worksheet: FileText,
 } as const;
 

@@ -31,6 +31,16 @@ const evidenceSchema = z.object({
   scrolledToEnd: z.boolean().optional(),
   confirmed: z.boolean().optional(),
   answers: z.record(z.string().max(40), z.string().max(5_000)).optional(),
+  interactive: z
+    .object({
+      activity: z.string().max(200).optional(),
+      total: z.number(),
+      firstTry: z.number().default(0),
+      misses: z.number().default(0),
+      seconds: z.number().default(0),
+      missedTerms: z.array(z.string().max(200)).max(500).default([]),
+    })
+    .optional(),
 });
 
 function revalidate() {

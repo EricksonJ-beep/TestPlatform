@@ -4,7 +4,7 @@ Generated from `drizzle/meta/0001_snapshot.json` (Ticket 0.4). Every table also 
 
 ## Enums
 
-- `activity_kind`: video | reading | link | guided_notes | worksheet
+- `activity_kind (video, reading, link, guided_notes, worksheet, interactive)`: video | reading | link | guided_notes | worksheet
 - `assessment_type`: practice | formative | summative
 - `attempt_status`: in_progress | submitted | graded
 - `bloom_level`: remember | understand | apply | analyze | evaluate | create
