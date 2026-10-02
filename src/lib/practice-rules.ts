@@ -8,7 +8,11 @@
  */
 import type { CompletionEvidence, ServedQuestion } from "@/db/schema";
 
-export type ActivityKind = "video" | "reading" | "link" | "guided_notes" | "worksheet";
+export type ActivityKind =
+  "video" | "reading" | "link" | "guided_notes" | "worksheet" | "interactive";
+
+/** What an interactive page must send (`postMessage`) for Bloom to count it done. */
+export const INTERACTIVE_MESSAGE_SOURCE = "bloom-practice";
 
 export const VIDEO_WATCH_THRESHOLD = 90;
 export const GUIDED_NOTES_MIN_PROMPTS = 2;
@@ -20,6 +24,7 @@ export const KIND_LABEL: Record<ActivityKind, string> = {
   link: "Link",
   guided_notes: "Guided notes",
   worksheet: "Worksheet",
+  interactive: "Interactive page",
 };
 
 /** What a student must do, in their words, per kind. */
@@ -29,6 +34,7 @@ export const KIND_RULE: Record<ActivityKind, string> = {
   link: "Open the link, then mark it finished.",
   guided_notes: "Answer every prompt.",
   worksheet: "Submit the worksheet.",
+  interactive: "Finish the activity on the page; it reports back when everything is placed.",
 };
 
 export type CompletionCheck =
@@ -74,6 +80,31 @@ export function checkActivityCompletion(input: {
     }
     case "worksheet":
       return { ok: false, reason: "Worksheets complete when the worksheet itself is submitted." };
+    case "interactive": {
+      // The embedded page reports { total, firstTry, misses, seconds, missedTerms } when every
+      // label is placed; Bloom keeps those numbers as the evidence and shows them to the teacher.
+      const r = e.interactive;
+      if (!r || typeof r.total !== "number" || r.total < 1)
+        return { ok: false, reason: "Finish the activity on the page first." };
+      const clamp = (n: unknown, max: number) =>
+        Math.max(0, Math.min(max, Math.round(typeof n === "number" && Number.isFinite(n) ? n : 0)));
+      return {
+        ok: true,
+        evidence: {
+          interactive: {
+            activity: typeof r.activity === "string" ? r.activity.slice(0, 80) : undefined,
+            total: clamp(r.total, 1000),
+            firstTry: clamp(r.firstTry, clamp(r.total, 1000)),
+            misses: clamp(r.misses, 100_000),
+            seconds: clamp(r.seconds, 86_400),
+            missedTerms: (Array.isArray(r.missedTerms) ? r.missedTerms : [])
+              .filter((t): t is string => typeof t === "string")
+              .slice(0, 200)
+              .map((t) => t.slice(0, 120)),
+          },
+        },
+      };
+    }
   }
 }
 

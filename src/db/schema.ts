@@ -81,6 +81,8 @@ export const activityKind = pgEnum("activity_kind", [
   "link",
   "guided_notes",
   "worksheet",
+  /** An embedded page (drag-and-drop labeling etc.) that reports completion by postMessage (Jon, Oct 2 2026). */
+  "interactive",
 ]);
 export const worksheetCountsAs = pgEnum("worksheet_counts_as", ["practice", "activity", "both"]);
 export const worksheetEventType = pgEnum("worksheet_event_type", ["submit", "progress"]);
@@ -969,6 +971,15 @@ export type CompletionEvidence = {
   worksheetEventId?: string;
   /** Worksheet section → target map: only these targets are credited (absent = all). */
   creditedTargetIds?: string[];
+  /** What an interactive page reported when the student finished it. */
+  interactive?: {
+    activity?: string;
+    total: number;
+    firstTry: number;
+    misses: number;
+    seconds: number;
+    missedTerms: string[];
+  };
 };
 
 export const activityCompletions = pgTable(

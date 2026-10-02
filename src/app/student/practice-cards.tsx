@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BookOpen, ExternalLink, FileText, Layers, Link2, PlayCircle } from "lucide-react";
+import { BookOpen, ExternalLink, FileText, Layers, Link2, PlayCircle, Puzzle } from "lucide-react";
 import { cn } from "cn";
 import { KIND_LABEL, STATE_LABEL, type PracticeItemState } from "@/lib/practice-rules";
 import type { StudentActivity, StudentPracticeSet } from "@/lib/queries/practice";
@@ -16,6 +16,7 @@ const ICON = {
   reading: BookOpen,
   link: Link2,
   guided_notes: FileText,
+  interactive: Puzzle,
   worksheet: FileText,
 } as const;
 

@@ -154,6 +154,23 @@ export function ActivityEditor({
             </label>
           </>
         ) : null}
+        {kind === "interactive" ? (
+          <div className="grid gap-1.5">
+            <Label htmlFor="act-url">Page address</Label>
+            <Input
+              id="act-url"
+              name="url"
+              defaultValue={detail.url ?? ""}
+              placeholder="/activities/skin-model-labeling.html"
+              required
+            />
+            <p className="text-xs text-muted-foreground">
+              A page Bloom hosts under /activities/, or a full https link. The page tells Bloom when
+              the student finishes (a postMessage with source &ldquo;bloom-practice&rdquo;).
+            </p>
+            <FieldError errors={save.fieldErrors} name="url" />
+          </div>
+        ) : null}
         {kind === "reading" ? (
           <div className="grid gap-1.5">
             <Label htmlFor="act-content">Reading</Label>
@@ -278,7 +295,13 @@ export function ActivityEditor({
                     ? `watched ${c.evidence.watchPercent}%`
                     : kind === "guided_notes" && c.evidence?.answers
                       ? `${Object.keys(c.evidence.answers).length} prompts answered`
-                      : null}
+                      : kind === "interactive" && c.evidence?.interactive
+                        ? `${c.evidence.interactive.firstTry} of ${c.evidence.interactive.total} on the first try · ${c.evidence.interactive.misses} ${c.evidence.interactive.misses === 1 ? "miss" : "misses"} · ${Math.round(c.evidence.interactive.seconds / 60)} min${
+                            c.evidence.interactive.missedTerms.length
+                              ? ` · missed: ${c.evidence.interactive.missedTerms.join(", ")}`
+                              : ""
+                          }`
+                        : null}
                 </span>
                 {kind === "guided_notes" && c.evidence?.answers ? (
                   <details className="basis-full text-xs">

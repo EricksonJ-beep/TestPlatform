@@ -123,7 +123,7 @@ export function NewPracticeSetDialog({
   );
 }
 
-const KINDS = ["video", "reading", "link", "guided_notes"] as const;
+const KINDS = ["video", "reading", "link", "guided_notes", "interactive"] as const;
 
 export function NewActivityDialog({
   courses,
@@ -164,7 +164,8 @@ export function NewActivityDialog({
           <DialogHeader>
             <DialogTitle>New relearning activity</DialogTitle>
             <DialogDescription>
-              Learning, not testing: a video, a reading, a link, or guided notes tagged to a target.
+              Learning, not testing: a video, a reading, a link, guided notes, or an interactive
+              page tagged to a target.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-3">

@@ -55,6 +55,39 @@ describe("checkActivityCompletion", () => {
       })
     ).toEqual({ ok: true, evidence: { answers: { p1: "a", p2: "b" } } });
   });
+  it("interactive pages complete from what the page reported, cleaned up", () => {
+    expect(
+      checkActivityCompletion({ kind: "interactive", evidence: {}, prompts: null })
+    ).toMatchObject({ ok: false, reason: /Finish the activity/ });
+    expect(
+      checkActivityCompletion({
+        kind: "interactive",
+        evidence: {
+          interactive: {
+            activity: "skin-model-labeling",
+            total: 10,
+            firstTry: 12.4,
+            misses: -3,
+            seconds: 95.6,
+            missedTerms: ["Stratum lucidum", 7 as unknown as string],
+          },
+        },
+        prompts: null,
+      })
+    ).toEqual({
+      ok: true,
+      evidence: {
+        interactive: {
+          activity: "skin-model-labeling",
+          total: 10,
+          firstTry: 10,
+          misses: 0,
+          seconds: 96,
+          missedTerms: ["Stratum lucidum"],
+        },
+      },
+    });
+  });
   it("worksheets never complete from the browser", () => {
     expect(
       checkActivityCompletion({ kind: "worksheet", evidence: { confirmed: true }, prompts: null })

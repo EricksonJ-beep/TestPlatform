@@ -313,7 +313,17 @@ export const deletePracticeSet = withAuthz(async (setId: string) => {
 // Relearning activities
 // ---------------------------------------------------------------------------
 
-const KINDS = ["video", "reading", "link", "guided_notes"] as const;
+const KINDS = ["video", "reading", "link", "guided_notes", "interactive"] as const;
+
+/** An interactive page lives on Bloom itself (/activities/…) or at a full https link. */
+const interactiveUrl = z
+  .string()
+  .trim()
+  .max(2000)
+  .refine(
+    (v) => /^\/activities\/[A-Za-z0-9._-]+\.html$/.test(v) || /^https:\/\//i.test(v),
+    "Use a page under /activities/ or a full https link."
+  );
 
 const createActivitySchema = z.object({
   title: z.string().trim().min(1, "Give it a title.").max(160),
@@ -381,7 +391,12 @@ export const updateActivity = withAuthz(async (activityId: string, formData: For
     const u = httpUrl.safeParse(d.url);
     if (!u.success) errors.url = [u.error.issues[0]?.message ?? "Bad link."];
   }
-  if ((kind === "video" || kind === "link") && !d.url) errors.url = ["Add a link first."];
+  if (kind === "interactive" && d.url) {
+    const u = interactiveUrl.safeParse(d.url);
+    if (!u.success) errors.url = [u.error.issues[0]?.message ?? "Bad page address."];
+  }
+  if ((kind === "video" || kind === "link" || kind === "interactive") && !d.url)
+    errors.url = [kind === "interactive" ? "Add the page address first." : "Add a link first."];
   if (kind === "reading" && !d.content) errors.content = ["Write or paste the reading."];
   let prompts: { id: string; prompt: string }[] | null = null;
   if (kind === "guided_notes") {
@@ -408,7 +423,7 @@ export const updateActivity = withAuthz(async (activityId: string, formData: For
     .set({
       title: d.title,
       content: d.content,
-      url: kind === "video" || kind === "link" ? d.url : null,
+      url: kind === "video" || kind === "link" || kind === "interactive" ? d.url : null,
       requiresTeacherVerification: kind === "link" ? d.requiresTeacherVerification : false,
       prompts,
     })
@@ -432,7 +447,7 @@ export const setActivityPublished = withAuthz(async (activityId: string, publish
     });
     if (!a) throw new ActionError("Not found.", 404);
     const ready =
-      a.kind === "video" || a.kind === "link"
+      a.kind === "video" || a.kind === "link" || a.kind === "interactive"
         ? !!a.url
         : a.kind === "reading"
           ? !!a.content
