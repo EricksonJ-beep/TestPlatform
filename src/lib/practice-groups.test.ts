@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { PracticeSetSummary } from "@/lib/queries/practice";
-import { attentionReasons, groupPractice, matchesQuery } from "./practice-groups";
+import { attentionReasons, groupByUnit, groupPractice, matchesQuery } from "./practice-groups";
 
 const unit1 = { id: "u1", name: "Unit 1", sortOrder: 0 };
 const unit2 = { id: "u2", name: "Unit 2", sortOrder: 1 };
@@ -59,5 +59,23 @@ describe("groupPractice", () => {
     expect(matchesQuery(item, "unit 1 pr")).toBe(true);
     expect(matchesQuery(item, "anatomy")).toBe(false);
     expect(matchesQuery(item, "   ")).toBe(true);
+  });
+});
+
+describe("groupByUnit (student practice)", () => {
+  it("buckets by the first target's unit in unit order, with unit-less items last, keeping order within", () => {
+    const u1 = { id: "u1", name: "Unit 1: Intro", sortOrder: 0 };
+    const u2 = { id: "u2", name: "Unit 2: Integumentary", sortOrder: 1 };
+    const items = [
+      { title: "skin model", targets: [{ unit: u2 }] },
+      { title: "mitosis set", targets: [{ unit: u1 }] },
+      { title: "untagged", targets: [] },
+      { title: "skin quiz practice", targets: [{ unit: u2 }, { unit: u1 }] },
+    ];
+    expect(groupByUnit(items).map((b) => [b.name, b.items.map((i) => i.title)])).toEqual([
+      ["Unit 1: Intro", ["mitosis set"]],
+      ["Unit 2: Integumentary", ["skin model", "skin quiz practice"]],
+      ["Other practice", ["untagged"]],
+    ]);
   });
 });
