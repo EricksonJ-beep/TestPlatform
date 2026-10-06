@@ -1,6 +1,6 @@
 # Course focus: one course at a time
 
-_Plan only (Jon, Oct 6 2026). Nothing here is built yet. Decided so far: the unit of focus is a **course** (Biology, Anatomy and Physiology, Physical Science A), not a class period._
+_Plan only (Jon, Oct 6 2026). Nothing here is built yet. Decided with Jon: the unit of focus is a **course** (Biology, Anatomy and Physiology, Physical Science A), not a class period; the switcher lives at the **top of the sidebar**; switching from inside an item lands on the **same section for the new course**; the Dashboard **always shows all courses**._
 
 ## The idea in one line
 
@@ -17,7 +17,7 @@ Like Google Classroom: the Dashboard is the front porch where you see every cour
 
 ## The plan
 
-### 1. One switcher, at the top of the sidebar (recommended)
+### 1. One switcher, at the top of the sidebar (decided)
 
 The teal sidebar gets a course block under the Bloom wordmark: the current course's name with a dropdown of your courses. Picking one sets the current course and the page you are on re-renders for it. It is the same switcher on every page, so you never hunt for it.
 
@@ -73,7 +73,11 @@ Each is one sitting, with a "Done when", in build order.
 
 Order matters a little: 1 first, then 2 and 3 are quick wins you can feel the same day, then 4 through 8.
 
-## Open questions for Jon
+## Decided (Oct 6 2026)
 
-- Should the Dashboard open on the last course you were in, or always on the all-courses view? (Plan assumes all courses.)
-- When you switch courses on a detail page (say, inside one bank), should Bloom stay on that bank or jump to the new course's banks list? (Plan assumes jump to the same section's list for the new course.)
+- **Switcher placement:** top of the sidebar, not per-page tabs, not both.
+- **Switching from inside an item:** go to the same section's list for the new course (inside an Anatomy bank, pick Biology, land on Biology's banks).
+- **Dashboard:** always all courses; each course card is the door into that course.
+- **Unit of focus:** course, not class period. Periods show side by side inside Assign and Results.
+
+Ready to build in the ticket order above when Jon says go.
