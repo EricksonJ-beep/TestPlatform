@@ -16,7 +16,9 @@ import {
   Users,
 } from "lucide-react";
 import { cn } from "cn";
+import type { ActionResult } from "@/lib/authz";
 import { Wordmark } from "@/components/brand/wordmark";
+import { CourseSwitcher, type CourseOption } from "@/components/app/course-switcher";
 
 const NAV = [
   { href: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -58,8 +60,22 @@ function writeCollapsed(value: boolean) {
   listeners.forEach((cb) => cb());
 }
 
-/** Teal left sidebar. Collapses to an icon rail; remembers the choice per browser. */
-export function AppSidebar({ organizationName }: { organizationName?: string | null }) {
+/**
+ * Teal left sidebar. Collapses to an icon rail; remembers the choice per browser.
+ * The course switcher under the wordmark sets the course every scoped section
+ * shows (docs/course-focus-plan.md).
+ */
+export function AppSidebar({
+  organizationName,
+  courses,
+  currentCourse,
+  pickCourse,
+}: {
+  organizationName?: string | null;
+  courses: CourseOption[];
+  currentCourse: CourseOption | null;
+  pickCourse: (courseId: string | null) => Promise<ActionResult<unknown>>;
+}) {
   const pathname = usePathname();
   const collapsed = useSyncExternalStore(subscribe, readCollapsed, () => false);
 
@@ -98,6 +114,14 @@ export function AppSidebar({ organizationName }: { organizationName?: string | n
         </Link>
       </div>
 
+      <div className="mb-1 flex flex-col pb-2">
+        <CourseSwitcher
+          courses={courses}
+          current={currentCourse}
+          collapsed={collapsed}
+          pick={pickCourse}
+        />
+      </div>
       <nav aria-label="Main" className="flex flex-1 flex-col gap-0.5 px-2 pt-1">
         {NAV.map(({ href, label, icon: Icon, ...rest }) => {
           const active = isActive(href, "exact" in rest ? rest.exact : false);

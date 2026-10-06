@@ -62,7 +62,7 @@ Some banks, assessments, and class periods were made before courses existed or w
 
 Each is one sitting, with a "Done when", in build order.
 
-1. **Sidebar switcher.** Course block in the sidebar, dropdown of your courses, sets the current course. Done when switching re-renders the page you are on and the choice survives a reload.
+1. ✅ **Sidebar switcher.** Course block in the sidebar, dropdown of your courses, sets the current course. Done when switching re-renders the page you are on and the choice survives a reload.
 2. **Practice page narrows.** Done when Practice shows only the current course's unit rows and Needs-attention items, and the course heading goes away.
 3. **Banks and Assessments drop their tabs.** Done when both pages use the sidebar switcher and the shelves, drag-and-drop, and empty-unit chips still work.
 4. **Assign and Classes narrow.** Done when Assign lists the current course's assessments and periods and Classes lists its periods, with the "Not in any course" strip on both.
