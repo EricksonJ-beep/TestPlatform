@@ -14,6 +14,7 @@ import {
   watchPercent,
 } from "@/lib/practice-rules";
 import type { StudentActivityView } from "@/lib/queries/practice";
+import { activityFrameHeight } from "@/lib/hosted-activities";
 import { RichText } from "@/components/rich-text";
 import { TargetChip } from "@/components/targets/target-chip";
 import { Button } from "@/components/ui/button";
@@ -220,7 +221,8 @@ function InteractiveActivity({
       <iframe
         src={url}
         title="Activity"
-        className="h-[1300px] w-full rounded-lg border border-border bg-white"
+        className="w-full rounded-lg border border-border bg-white"
+        style={{ height: activityFrameHeight(url) }}
         allow="fullscreen"
       />
       <a
