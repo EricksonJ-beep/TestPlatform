@@ -36,6 +36,29 @@ describe("groupPractice", () => {
       ["No unit", ["C"]],
     ]);
   });
+  it("lists every unit of a course when given them, empty ones included, in unit order", () => {
+    const allUnits = [
+      { id: "u2", courseId: "c", name: "Unit 2", sortOrder: 1 },
+      { id: "u1", courseId: "c", name: "Unit 1", sortOrder: 0 },
+      { id: "u3", courseId: "c", name: "Unit 3", sortOrder: 2 },
+      { id: "other", courseId: "another-course", name: "Unit 9", sortOrder: 0 },
+    ];
+    const [g] = groupPractice(
+      [
+        set({ title: "B", targets: [t("U2.LT1", unit2)] }),
+        set({ title: "C", targets: [t("X", null)] }),
+      ],
+      allUnits
+    );
+    expect(g.units.map((u) => [u.name, u.items.map((i) => i.title), u.sets])).toEqual([
+      ["Unit 1", [], 0],
+      ["Unit 2", ["B"], 1],
+      ["Unit 3", [], 0],
+      ["No unit", ["C"], 1],
+    ]);
+    // A course's units never leak into another course's section.
+    expect(g.units.some((u) => u.name === "Unit 9")).toBe(false);
+  });
   it("drafts, untagged items, and empty sets go to Needs attention instead", () => {
     const [g] = groupPractice([
       set({ title: "draft", isPublished: false }),

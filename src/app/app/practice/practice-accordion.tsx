@@ -65,9 +65,11 @@ export function PracticeAccordion({ groups }: { groups: CourseGroup[] }) {
     .map((g) => ({
       ...g,
       attention: g.attention.filter((i) => matchesQuery(i, query)),
+      // Empty unit rows stay listed (they are where next unit's practice will go);
+      // a search shows only units with a match.
       units: g.units
         .map((u) => ({ ...u, items: u.items.filter((i) => matchesQuery(i, query)) }))
-        .filter((u) => u.items.length > 0),
+        .filter((u) => !searching || u.items.length > 0),
     }))
     .filter((g) => g.attention.length > 0 || g.units.length > 0);
 
@@ -127,6 +129,7 @@ export function PracticeAccordion({ groups }: { groups: CourseGroup[] }) {
                   />
                   <span className="font-medium">{u.name}</span>
                   <span className="ml-auto text-xs text-muted-foreground tabular">
+                    {!u.sets && !u.activities ? "nothing yet" : ""}
                     {u.sets ? `${u.sets} ${u.sets === 1 ? "set" : "sets"}` : ""}
                     {u.sets && u.activities ? " · " : ""}
                     {u.activities
@@ -136,7 +139,14 @@ export function PracticeAccordion({ groups }: { groups: CourseGroup[] }) {
                 </button>
                 {isOpen ? (
                   <div className="border-t border-border">
-                    <ContentList items={u.items} bare />
+                    {u.items.length === 0 ? (
+                      <p className="px-4 py-3 text-sm text-muted-foreground" data-unit-empty>
+                        Nothing here yet. Tag a practice set or activity to a {u.name} target and it
+                        files here.
+                      </p>
+                    ) : (
+                      <ContentList items={u.items} bare />
+                    )}
                   </div>
                 ) : null}
               </div>

@@ -6,6 +6,7 @@
  */
 import { groupByCourse } from "@/lib/group-by-course";
 import type { ActivitySummary, PracticeSetSummary } from "@/lib/queries/practice";
+import type { UnitRef } from "@/lib/unit-shelves";
 
 export type PracticeItem = PracticeSetSummary | ActivitySummary;
 
@@ -42,10 +43,28 @@ export const ATTENTION_TEXT: Record<AttentionReason, string> = {
   no_questions: "no questions",
 };
 
-export function groupPractice(items: PracticeItem[]): CourseGroup[] {
+/**
+ * `allUnits` (Jon, Oct 6 2026: "add Unit 1, 3, 4, 5, 6 … so they are ready to
+ * go"): every unit of each course gets a row, empty ones included, so there is
+ * always a place to look for (and later drop) a unit's practice. Without it,
+ * only units that already hold something are listed.
+ */
+export function groupPractice(items: PracticeItem[], allUnits: UnitRef[] = []): CourseGroup[] {
   return groupByCourse(items).map(({ course, items }) => {
     const attention: PracticeItem[] = [];
     const units = new Map<string, UnitGroup & { sortOrder: number }>();
+    const courseIds = new Set(items.map((i) => i.courseId));
+    for (const u of allUnits) {
+      if (!courseIds.has(u.courseId)) continue;
+      units.set(u.id, {
+        id: u.id,
+        name: u.name,
+        items: [],
+        sets: 0,
+        activities: 0,
+        sortOrder: u.sortOrder,
+      });
+    }
     for (const item of items) {
       if (attentionReasons(item).length) {
         attention.push(item);

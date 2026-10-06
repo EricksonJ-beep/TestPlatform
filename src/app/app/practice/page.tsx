@@ -4,6 +4,7 @@ import { FileSpreadsheet, Layers } from "lucide-react";
 import { requireTeacher } from "@/lib/authz";
 import { getCurrentCourse } from "@/lib/current-course";
 import { groupPractice } from "@/lib/practice-groups";
+import { listUnitsForTeacher } from "@/lib/queries/courses";
 import { listPracticeContent } from "@/lib/queries/practice";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
@@ -15,8 +16,9 @@ export const metadata: Metadata = { title: "Practice sets" };
 /** Teacher screen 4 (PLAN.md §5): build and publish practice sets and relearning activities. */
 export default async function PracticePage() {
   const session = await requireTeacher();
-  const [{ sets, activities }, { courses, current }] = await Promise.all([
+  const [{ sets, activities }, units, { courses, current }] = await Promise.all([
     listPracticeContent(session.userId),
+    listUnitsForTeacher(session.userId),
     getCurrentCourse(session.userId),
   ]);
   const items = [...sets, ...activities].sort(
@@ -69,7 +71,7 @@ export default async function PracticePage() {
           />
         </div>
       ) : (
-        <PracticeAccordion groups={groupPractice(items)} />
+        <PracticeAccordion groups={groupPractice(items, units)} />
       )}
     </div>
   );
