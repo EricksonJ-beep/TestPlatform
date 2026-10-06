@@ -34,8 +34,10 @@ export type AssignableAssessment = {
 };
 export type ClassOption = { id: string; name: string; students: number };
 
+// w-full min-w-0: a select is otherwise as wide as its longest option, and a long
+// assessment title would push the whole form past the dialog's edge (Jon, Oct 6 2026).
 const selectClass =
-  "h-8 rounded-lg border border-input bg-background px-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
+  "h-8 w-full min-w-0 rounded-lg border border-input bg-background px-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
 function Toggle({
   name,
@@ -119,9 +121,11 @@ export function AssignmentDialog({
           </>
         )}
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+      <DialogContent className="max-h-[90vh] overflow-x-hidden overflow-y-auto sm:max-w-lg">
         <form
-          className="flex flex-col gap-4"
+          // min-w-0: the form is a grid item of the dialog; without it, its widest
+          // child (the assessment dropdown) sets its width and the dialog scrolls sideways.
+          className="flex min-w-0 flex-col gap-4"
           onSubmit={(e) => {
             e.preventDefault();
             const fd = new FormData(e.currentTarget);
