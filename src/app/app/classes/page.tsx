@@ -42,7 +42,7 @@ export default async function ClassesPage() {
           />
         </div>
       ) : (
-        <ClassGrid classes={classes} />
+        <ClassGrid key={classes.map((c) => c.id).join(",")} classes={classes} />
       )}
       {orphans.length > 0 ? (
         <section
@@ -53,10 +53,16 @@ export default async function ClassesPage() {
           <h2 className="px-1 text-sm font-medium text-muted-foreground">
             Not in any course <span className="font-normal tabular">· {orphans.length}</span>
             <span className="ml-2 font-normal">
-              Open one and set its course so it shows with that course.
+              {current
+                ? `Put one in ${current.name} and it shows with that course.`
+                : "Open one and set its course so it shows with that course."}
             </span>
           </h2>
-          <ClassGrid classes={orphans} />
+          <ClassGrid
+            key={orphans.map((c) => c.id).join(",")}
+            classes={orphans}
+            adoptInto={current ?? undefined}
+          />
         </section>
       ) : null}
       {elsewhere > 0 ? (

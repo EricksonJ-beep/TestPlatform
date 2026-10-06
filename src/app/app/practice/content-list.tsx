@@ -16,6 +16,7 @@ import type { ActivitySummary, PracticeSetSummary } from "@/lib/queries/practice
 import { TargetChip } from "@/components/targets/target-chip";
 import { Button } from "@/components/ui/button";
 import { useAction } from "@/components/use-action";
+import { AdoptButton } from "@/components/app/adopt-button";
 import { swapContent } from "./actions";
 
 export type ContentItem = PracticeSetSummary | ActivitySummary;
@@ -39,10 +40,13 @@ const refOf = (item: ContentItem) => ({
 export function ContentList({
   items,
   bare = false,
+  adoptInto,
 }: {
   items: ContentItem[];
   /** Inside an accordion row: no outer border of its own. */
   bare?: boolean;
+  /** For the "Not in any course" strip: each row gets a "Put in {course}" button. */
+  adoptInto?: { id: string; name: string };
 }) {
   const { run, pending, error } = useAction();
   return (
@@ -131,6 +135,7 @@ export function ContentList({
                 >
                   <ArrowDown aria-hidden />
                 </Button>
+                {adoptInto ? <AdoptButton item={ref} course={adoptInto} /> : null}
                 <Button
                   size="sm"
                   variant="outline"

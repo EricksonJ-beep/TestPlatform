@@ -94,9 +94,12 @@ export default async function BanksPage({ searchParams }: PageProps<"/app/banks"
         </div>
       ) : board ? (
         <UnitBoard
-          key={board.courseId ?? "none"}
+          // Keyed on its cards: the board keeps drag state locally, so a server change
+          // (a card put in this course, a new card) remounts it with the fresh cards.
+          key={`${board.courseId ?? "none"}:${board.shelves.flatMap((s) => s.items.map((i) => i.id)).join(",")}`}
           course={board}
           orphans={focused ? orphans : []}
+          adoptInto={focused && current ? { type: "question_bank", course: current } : undefined}
           noun="bank"
           place={placeBank}
         />

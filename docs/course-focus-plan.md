@@ -1,6 +1,6 @@
 # Course focus: one course at a time
 
-_Plan only (Jon, Oct 6 2026). Nothing here is built yet. Decided with Jon: the unit of focus is a **course** (Biology, Anatomy and Physiology, Physical Science A), not a class period; the switcher lives at the **top of the sidebar**; switching from inside an item lands on the **same section for the new course**; the Dashboard **always shows all courses**._
+_Built Oct 6 2026, all eight tickets (see ✅ below). Decided with Jon: the unit of focus is a **course** (Biology, Anatomy and Physiology, Physical Science A), not a class period; the switcher lives at the **top of the sidebar**; switching from inside an item lands on the **same section for the new course**; the Dashboard **always shows all courses**._
 
 ## The idea in one line
 
@@ -69,7 +69,7 @@ Each is one sitting, with a "Done when", in build order.
 5. ✅ **Results narrows.** Done when Results, grading, and corrections show the current course with an "n waiting in other courses" line.
 6. ✅ **Dashboard course cards.** Done when each course has a card with counts and attention items, and clicking one focuses that course and opens its practice page.
 7. ✅ **Focus follows links.** Done when opening a bank, assessment, set, activity, assignment, or class from another course switches the sidebar to that course.
-8. 🟡 **Not-in-any-course strip.** (Listing shipped with tickets 2–3; the one-click "Put in {course}" is still to do.) Done when every narrowed list shows its orphaned items and "Put in {course}" moves them.
+8. ✅ **Not-in-any-course strip.** Done when every narrowed list shows its orphaned items and "Put in {course}" moves them.
 
 Order matters a little: 1 first, then 2 and 3 are quick wins you can feel the same day, then 4 through 8.
 
@@ -80,4 +80,4 @@ Order matters a little: 1 first, then 2 and 3 are quick wins you can feel the sa
 - **Dashboard:** always all courses; each course card is the door into that course.
 - **Unit of focus:** course, not class period. Periods show side by side inside Assign and Results.
 
-Ready to build in the ticket order above when Jon says go.
+All eight tickets shipped on Oct 6 2026. "Course in the address bar" and a per-course dashboard remain parked under "Later, not now".

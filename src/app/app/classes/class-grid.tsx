@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAction } from "@/components/use-action";
+import { AdoptButton } from "@/components/app/adopt-button";
 import { reorderClasses } from "./actions";
 
 type SortKey = "period" | "name" | "course" | "newest";
@@ -48,7 +49,14 @@ const SORTS: Record<SortKey, { label: string; cmp: (a: ClassSummary, b: ClassSum
  * Class cards you can drag into your own order (Jon, Oct 1 2026), or sort in one
  * click; either way the order is saved and comes back next time.
  */
-export function ClassGrid({ classes }: { classes: ClassSummary[] }) {
+export function ClassGrid({
+  classes,
+  adoptInto,
+}: {
+  classes: ClassSummary[];
+  /** For the "Not in any course" strip: each card gets a "Put in {course}" button. */
+  adoptInto?: { id: string; name: string };
+}) {
   const [order, setOrder] = useState(classes);
   const [dragging, setDragging] = useState<string | null>(null);
   const [over, setOver] = useState<string | null>(null);
@@ -155,6 +163,11 @@ export function ClassGrid({ classes }: { classes: ClassSummary[] }) {
                 {c.students} {c.students === 1 ? "student" : "students"}
               </p>
             </Link>
+            {adoptInto ? (
+              <div className="mt-2">
+                <AdoptButton item={{ type: "class", id: c.id }} course={adoptInto} />
+              </div>
+            ) : null}
             <span
               className="absolute top-3 left-2 cursor-grab text-muted-foreground/60 group-hover:text-muted-foreground active:cursor-grabbing"
               title="Drag to rearrange"

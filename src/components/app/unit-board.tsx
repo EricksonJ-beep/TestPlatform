@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAction } from "@/components/use-action";
+import { AdoptButton } from "@/components/app/adopt-button";
 
 export type BoardCard = Shelved & { name: string; node: ReactNode };
 
@@ -22,6 +23,8 @@ type Props = {
   course: CourseShelves<BoardCard>;
   /** Cards that belong to no course; listed under the board so they never vanish. */
   orphans?: BoardCard[];
+  /** With this, each orphan gets a "Put in {course}" button (ticket 8). */
+  adoptInto?: { type: "question_bank" | "assessment"; course: { id: string; name: string } };
   noun: string;
   place: (
     id: string,
@@ -43,7 +46,7 @@ const courseKey = (id: string | null) => id ?? "none";
  * unit. Keyboard: ← → nudge within the shelf, and a "Move to" menu lists the
  * course's units.
  */
-export function UnitBoard({ course: initial, orphans = [], noun, place }: Props) {
+export function UnitBoard({ course: initial, orphans = [], adoptInto, noun, place }: Props) {
   const [course, setCourse] = useState(initial);
   const [dragging, setDragging] = useState<string | null>(null);
   const [over, setOver] = useState<string | null>(null);
@@ -267,13 +270,21 @@ export function UnitBoard({ course: initial, orphans = [], noun, place }: Props)
           <h3 className="px-1 text-sm font-medium text-muted-foreground">
             Not in any course <span className="font-normal tabular">· {orphans.length}</span>
             <span className="ml-2 font-normal">
-              Open one and give it a course so it files under its units.
+              {adoptInto
+                ? `Put one in ${adoptInto.course.name} and it files under that course's units.`
+                : "Open one and give it a course so it files under its units."}
             </span>
           </h3>
           <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {orphans.map((card) => (
-              <li key={card.id} className="relative" data-card={card.id}>
+              <li key={card.id} className="relative flex flex-col gap-2" data-card={card.id}>
                 {card.node}
+                {adoptInto ? (
+                  <AdoptButton
+                    item={{ type: adoptInto.type, id: card.id }}
+                    course={adoptInto.course}
+                  />
+                ) : null}
               </li>
             ))}
           </ul>

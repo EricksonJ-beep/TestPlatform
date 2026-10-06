@@ -94,5 +94,7 @@ function FocusedPractice({
 }) {
   if (!current) return <PracticeAccordion groups={groupPractice(items, units)} />;
   const { group, orphans } = focusPractice(items, units, current);
-  return <PracticeAccordion groups={[group]} orphans={orphans} headings={false} />;
+  return (
+    <PracticeAccordion groups={[group]} orphans={orphans} headings={false} adoptInto={current} />
+  );
 }

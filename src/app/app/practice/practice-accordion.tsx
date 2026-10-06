@@ -52,8 +52,11 @@ export function PracticeAccordion({
   groups,
   orphans = [],
   headings = true,
+  adoptInto,
 }: {
   groups: CourseGroup[];
+  /** The course in focus, for "Put in {course}" on the orphan strip. */
+  adoptInto?: { id: string; name: string };
   /** Items that belong to no course; listed apart so they never vanish (course focus). */
   orphans?: PracticeItem[];
   /** Course headings are redundant when the sidebar already names the one course shown. */
@@ -177,10 +180,12 @@ export function PracticeAccordion({
           <p className="border-b border-border px-4 py-2 text-sm font-medium text-muted-foreground">
             Not in any course <span className="font-normal tabular">· {shownOrphans.length}</span>
             <span className="ml-2 font-normal">
-              Open one and give it a course so it files under its units.
+              {adoptInto
+                ? `Put one in ${adoptInto.name} and it files under that course's units.`
+                : "Open one and give it a course so it files under its units."}
             </span>
           </p>
-          <ContentList items={shownOrphans} bare />
+          <ContentList items={shownOrphans} bare adoptInto={adoptInto} />
         </section>
       ) : null}
     </div>

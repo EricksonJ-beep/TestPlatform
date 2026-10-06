@@ -5,8 +5,14 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { z } from "zod";
 import { db, schema } from "@/db";
-import { ActionError, requireOwner, requireTeacher, withAuthz } from "@/lib/authz";
-import { CURRENT_COURSE_COOKIE, rememberCourse } from "@/lib/current-course";
+import {
+  ActionError,
+  requireContentAccess,
+  requireOwner,
+  requireTeacher,
+  withAuthz,
+} from "@/lib/authz";
+import { CURRENT_COURSE_COOKIE, ownsCourse, rememberCourse } from "@/lib/current-course";
 
 const uuid = z.string().uuid();
 const name = (label: string, maxLen = 80) =>
@@ -444,5 +450,89 @@ export const deleteCourse = withAuthz(async (courseId: string) => {
   const jar = await cookies();
   if (jar.get(CURRENT_COURSE_COOKIE)?.value === courseId) jar.delete(CURRENT_COURSE_COOKIE);
   revalidateCourse(courseId);
+  return { ok: true };
+});
+
+export type AdoptableRef = {
+  type: "question_bank" | "assessment" | "practice_set" | "relearning_activity" | "class";
+  id: string;
+};
+
+/**
+ * "Put in {course}" (docs/course-focus-plan.md, ticket 8): give an item that
+ * belongs to no course (or another of the teacher's courses) a course. Owner
+ * only, and the course must be the teacher's. A bank or assessment lands on
+ * the course's "No unit yet" shelf; a practice set or activity drops any
+ * target tag that is not on the new course (an orphan normally has none).
+ */
+export const adoptIntoCourse = withAuthz(async (ref: AdoptableRef, courseId: string) => {
+  uuid.parse(courseId);
+  let teacherId: string;
+  if (ref.type === "practice_set" || ref.type === "relearning_activity") {
+    const access = await requireContentAccess({ type: ref.type, id: ref.id });
+    if (access.as !== "teacher") throw new ActionError("Only the owner can do that.", 403);
+    teacherId = access.userId;
+  } else {
+    teacherId = (await requireOwner(ref)).userId;
+  }
+  if (!(await ownsCourse(teacherId, courseId)))
+    throw new ActionError("That course is not yours.", 403);
+
+  switch (ref.type) {
+    case "question_bank":
+      await db
+        .update(schema.questionBanks)
+        .set({ courseId, unitId: null })
+        .where(eq(schema.questionBanks.id, ref.id));
+      break;
+    case "assessment":
+      await db
+        .update(schema.assessments)
+        .set({ courseId, unitId: null })
+        .where(eq(schema.assessments.id, ref.id));
+      break;
+    case "class":
+      await db.update(schema.classes).set({ courseId }).where(eq(schema.classes.id, ref.id));
+      break;
+    case "practice_set": {
+      await db
+        .update(schema.practiceSets)
+        .set({ courseId })
+        .where(eq(schema.practiceSets.id, ref.id));
+      const offCourse = db
+        .select({ id: schema.learningTargets.id })
+        .from(schema.learningTargets)
+        .where(sql`${schema.learningTargets.courseId} <> ${courseId}`);
+      await db
+        .delete(schema.practiceSetTargets)
+        .where(
+          and(
+            eq(schema.practiceSetTargets.practiceSetId, ref.id),
+            inArray(schema.practiceSetTargets.learningTargetId, offCourse)
+          )
+        );
+      break;
+    }
+    case "relearning_activity": {
+      await db
+        .update(schema.relearningActivities)
+        .set({ courseId })
+        .where(eq(schema.relearningActivities.id, ref.id));
+      const offCourse = db
+        .select({ id: schema.learningTargets.id })
+        .from(schema.learningTargets)
+        .where(sql`${schema.learningTargets.courseId} <> ${courseId}`);
+      await db
+        .delete(schema.activityTargets)
+        .where(
+          and(
+            eq(schema.activityTargets.activityId, ref.id),
+            inArray(schema.activityTargets.learningTargetId, offCourse)
+          )
+        );
+      break;
+    }
+  }
+  revalidatePath("/app", "layout");
   return { ok: true };
 });
