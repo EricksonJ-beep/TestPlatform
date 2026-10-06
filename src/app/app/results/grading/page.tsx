@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CheckCircle2, ChevronLeft } from "lucide-react";
 import { requireTeacher } from "@/lib/authz";
+import { splitByCourse } from "@/lib/course-focus";
+import { getCurrentCourse } from "@/lib/current-course";
 import { answerToText } from "@/lib/grading";
 import { listGradingQueue } from "@/lib/queries/results";
 import { EmptyState } from "@/components/empty-state";
@@ -14,7 +16,13 @@ export const metadata: Metadata = { title: "Grading queue" };
 /** Every short answer and extended response still waiting for a score, oldest first. */
 export default async function GradingQueuePage() {
   const session = await requireTeacher();
-  const items = await listGradingQueue(session.userId);
+  const [allItems, { current }] = await Promise.all([
+    listGradingQueue(session.userId),
+    getCurrentCourse(session.userId),
+  ]);
+  // Course focus: this course's responses (plus any whose assessment has no course).
+  const split = splitByCourse(allItems, current);
+  const items = [...split.mine, ...split.orphans];
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4">
@@ -27,8 +35,15 @@ export default async function GradingQueuePage() {
         </Link>
         <h1 className="mt-2 text-2xl">Grading queue</h1>
         <p className="mt-1 text-sm text-muted-foreground tabular">
-          {items.length} {items.length === 1 ? "response" : "responses"} waiting. Scores update the
-          student&apos;s attempt and final score the moment you save.
+          {items.length} {items.length === 1 ? "response" : "responses"} waiting
+          {current ? ` in ${current.name}` : ""}. Scores update the student&apos;s attempt and final
+          score the moment you save.
+          {split.elsewhere > 0 ? (
+            <span data-elsewhere>
+              {" "}
+              {split.elsewhere} more in other courses; switch course in the sidebar to see them.
+            </span>
+          ) : null}
         </p>
       </div>
       {items.length === 0 ? (

@@ -658,6 +658,7 @@ export type QueueItem = {
   assignmentId: string;
   assignmentTitle: string;
   className: string;
+  courseId: string | null;
   studentName: string;
   attemptNumber: number;
   submittedAt: Date | null;
@@ -678,6 +679,7 @@ export async function listGradingQueue(teacherId: string): Promise<QueueItem[]> 
       assignmentId: schema.assignments.id,
       assignmentTitle: schema.assessments.title,
       className: schema.classes.name,
+      courseId: schema.assessments.courseId,
       firstName: schema.users.firstName,
       lastName: schema.users.lastName,
       attemptNumber: schema.attempts.number,

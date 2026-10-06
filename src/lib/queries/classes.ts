@@ -10,6 +10,7 @@ export type ClassSummary = {
   name: string;
   period: string | null;
   term: string | null;
+  courseId: string | null;
   courseName: string | null;
   students: number;
   createdAt: Date;
@@ -24,6 +25,7 @@ export async function listClasses(teacherId: string): Promise<ClassSummary[]> {
       name: schema.classes.name,
       period: schema.classes.period,
       term: schema.classes.term,
+      courseId: schema.classes.courseId,
       courseName: schema.courses.name,
       students: count(schema.enrollments.id),
       createdAt: schema.classes.createdAt,

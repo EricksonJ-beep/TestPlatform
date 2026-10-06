@@ -354,6 +354,7 @@ export type QueueCard = {
   assignmentId: string;
   assignmentTitle: string;
   className: string;
+  courseId: string | null;
   studentId: string;
   studentName: string;
   submittedAt: Date | null;
@@ -382,6 +383,7 @@ export async function listCorrectionsQueue(teacherId: string): Promise<QueueCard
       assignmentId: schema.assignments.id,
       assignmentTitle: schema.assessments.title,
       className: schema.classes.name,
+      courseId: schema.assessments.courseId,
       stem: schema.questions.stem,
       teacherExplanation: schema.questions.explanation,
     })
@@ -444,6 +446,7 @@ export async function listCorrectionsQueue(teacherId: string): Promise<QueueCard
         assignmentId: r.assignmentId,
         assignmentTitle: r.assignmentTitle,
         className: r.className,
+        courseId: r.courseId,
         studentId: r.studentId,
         studentName: `${r.firstName} ${r.lastName}`,
         submittedAt: r.submittedAt,

@@ -21,6 +21,8 @@ export type AssignmentRow = {
   assessmentType: "practice" | "formative" | "summative";
   classId: string;
   className: string;
+  /** The assessment's course; the Assign and Results pages narrow by it (course focus). */
+  courseId: string | null;
   opensAt: Date | null;
   closesAt: Date | null;
   accessCode: string | null;
@@ -47,6 +49,7 @@ const baseSelect = {
   assessmentType: schema.assessments.type,
   classId: schema.assignments.classId,
   className: schema.classes.name,
+  courseId: schema.assessments.courseId,
   opensAt: schema.assignments.opensAt,
   closesAt: schema.assignments.closesAt,
   accessCode: schema.assignments.accessCode,

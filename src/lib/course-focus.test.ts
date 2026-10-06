@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { courseInitials, sectionListPath } from "./course-focus";
+import { courseInitials, sectionListPath, splitByCourse } from "./course-focus";
 
 describe("sectionListPath", () => {
   it("lands on the section's list from inside an item", () => {
@@ -28,5 +28,24 @@ describe("courseInitials", () => {
     expect(courseInitials("Physical Science A")).toBe("PS");
     expect(courseInitials("Biology")).toBe("Bi");
     expect(courseInitials("Medical Terminology")).toBe("MT");
+  });
+});
+
+describe("splitByCourse", () => {
+  const items = [
+    { id: "a", courseId: "c1" },
+    { id: "b", courseId: "c2" },
+    { id: "c", courseId: null },
+    { id: "d", courseId: "c1" },
+  ];
+  it("keeps the current course's items in order, lists no-course items apart, counts the rest", () => {
+    expect(splitByCourse(items, { id: "c1" })).toEqual({
+      mine: [items[0], items[3]],
+      orphans: [items[2]],
+      elsewhere: 1,
+    });
+  });
+  it("with no current course, everything is mine", () => {
+    expect(splitByCourse(items, null)).toEqual({ mine: items, orphans: [], elsewhere: 0 });
   });
 });

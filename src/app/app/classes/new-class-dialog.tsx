@@ -17,7 +17,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClass } from "./actions";
 
-export function NewClassDialog({ label = "New class" }: { label?: string }) {
+export function NewClassDialog({
+  label = "New class",
+  defaultCourseName,
+}: {
+  label?: string;
+  /** The course in focus, pre-filled so a new class lands in it (course focus). */
+  defaultCourseName?: string | null;
+}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, start] = useTransition();
@@ -65,7 +72,13 @@ export function NewClassDialog({ label = "New class" }: { label?: string }) {
             </div>
             <div className="grid gap-1.5">
               <Label htmlFor="nc-course">Course</Label>
-              <Input id="nc-course" name="courseName" placeholder="Biology" list="course-names" />
+              <Input
+                id="nc-course"
+                name="courseName"
+                placeholder="Biology"
+                list="course-names"
+                defaultValue={defaultCourseName ?? ""}
+              />
               <p className="text-xs text-muted-foreground">
                 Type a course name; it&apos;s created if it doesn&apos;t exist yet.
               </p>

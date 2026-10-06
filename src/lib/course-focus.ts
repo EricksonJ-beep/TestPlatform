@@ -34,3 +34,23 @@ export function courseInitials(name: string): string {
   if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase();
   return name.slice(0, 2).replace(/^./, (c) => c.toUpperCase());
 }
+
+export type CourseSplit<T> = {
+  /** In the current course (or everything, when there is no current course). */
+  mine: T[];
+  /** Belong to no course; pages list these apart so they never vanish. */
+  orphans: T[];
+  /** How many sit in other courses, for an "n in other courses" line. */
+  elsewhere: number;
+};
+
+/** Split a list by the current course. Order within each part is kept. */
+export function splitByCourse<T extends { courseId: string | null }>(
+  items: T[],
+  current: { id: string } | null
+): CourseSplit<T> {
+  if (!current) return { mine: items, orphans: [], elsewhere: 0 };
+  const mine = items.filter((i) => i.courseId === current.id);
+  const orphans = items.filter((i) => i.courseId === null);
+  return { mine, orphans, elsewhere: items.length - mine.length - orphans.length };
+}

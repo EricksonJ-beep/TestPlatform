@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Send } from "lucide-react";
 import { requireTeacher } from "@/lib/authz";
+import { splitByCourse } from "@/lib/course-focus";
+import { getCurrentCourse } from "@/lib/current-course";
 import { listTeacherAssignments, listAssignableAssessments } from "@/lib/queries/assignments";
 import { listClasses } from "@/lib/queries/classes";
 import { EmptyState } from "@/components/empty-state";
@@ -11,12 +13,24 @@ export const metadata: Metadata = { title: "Assign" };
 
 export default async function AssignPage() {
   const session = await requireTeacher();
-  const [assignments, assessments, classes] = await Promise.all([
+  const [allAssignments, allAssessments, allClasses, { current }] = await Promise.all([
     listTeacherAssignments(session.userId),
     listAssignableAssessments(session.userId),
     listClasses(session.userId),
+    getCurrentCourse(session.userId),
   ]);
-  const classOptions = classes.map((c) => ({ id: c.id, name: c.name, students: c.students }));
+  // Course focus (docs/course-focus-plan.md): this course's assignments, assessments, and
+  // class periods; things with no course stay visible too, so nothing can be lost.
+  const split = splitByCourse(allAssignments, current);
+  const assignments = [...split.mine, ...split.orphans];
+  const assessmentSplit = splitByCourse(allAssessments, current);
+  const assessments = [...assessmentSplit.mine, ...assessmentSplit.orphans];
+  const classSplit = splitByCourse(allClasses, current);
+  const classOptions = [...classSplit.mine, ...classSplit.orphans].map((c) => ({
+    id: c.id,
+    name: c.name,
+    students: c.students,
+  }));
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-5">
@@ -35,7 +49,7 @@ export default async function AssignPage() {
         <div className="rounded-lg border border-border bg-card">
           <EmptyState
             icon={Send}
-            title="Nothing assigned yet"
+            title={current ? `Nothing assigned in ${current.name} yet` : "Nothing assigned yet"}
             description={
               assessments.length === 0
                 ? "Publish an assessment first; then it can be assigned here."
@@ -59,6 +73,12 @@ export default async function AssignPage() {
           classes={classOptions}
         />
       )}
+      {split.elsewhere > 0 ? (
+        <p className="text-xs text-muted-foreground" data-elsewhere>
+          {split.elsewhere} {split.elsewhere === 1 ? "assignment" : "assignments"} in other courses.
+          Switch course in the sidebar to see them.
+        </p>
+      ) : null}
     </div>
   );
 }

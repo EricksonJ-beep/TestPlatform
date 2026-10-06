@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BarChart3, ClipboardCheck, MessageSquareText } from "lucide-react";
 import { requireTeacher } from "@/lib/authz";
+import { splitByCourse } from "@/lib/course-focus";
+import { getCurrentCourse } from "@/lib/current-course";
 import { listTeacherAssignments } from "@/lib/queries/assignments";
 import {
   countCorrectionsAwaiting,
@@ -23,13 +25,23 @@ const STATUS = {
 /** Results per assignment, plus the manual grading queue. */
 export default async function ResultsPage() {
   const session = await requireTeacher();
-  const [assignments, pending, corrections, awaitingBy] = await Promise.all([
+  const [allAssignments, pending, correctionsTotal, awaitingBy, { current }] = await Promise.all([
     listTeacherAssignments(session.userId),
     countPendingByAssignment(session.userId),
     countCorrectionsAwaiting(session.userId),
     countCorrectionsAwaitingByAssignment(session.userId),
+    getCurrentCourse(session.userId),
   ]);
-  const totalPending = [...pending.values()].reduce((a, b) => a + b, 0);
+  // Course focus (docs/course-focus-plan.md): this course's assignments (plus any whose
+  // assessment has no course); the queue counts follow, with what waits elsewhere noted.
+  const split = splitByCourse(allAssignments, current);
+  const assignments = [...split.mine, ...split.orphans];
+  const sum = (m: Map<string, number>, rows: { id: string }[]) =>
+    rows.reduce((n, a) => n + (m.get(a.id) ?? 0), 0);
+  const totalPending = sum(pending, assignments);
+  const corrections = sum(awaitingBy, assignments);
+  const pendingElsewhere = [...pending.values()].reduce((a, b) => a + b, 0) - totalPending;
+  const correctionsElsewhere = correctionsTotal - corrections;
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-5">
       <div className="flex flex-wrap items-center gap-3">
@@ -56,16 +68,30 @@ export default async function ResultsPage() {
           Grading queue{totalPending > 0 ? ` · ${totalPending}` : ""}
         </Button>
       </div>
+      {pendingElsewhere > 0 || correctionsElsewhere > 0 ? (
+        <p className="text-xs text-muted-foreground" data-elsewhere>
+          Also waiting in other courses:{" "}
+          {[
+            pendingElsewhere > 0 ? `${pendingElsewhere} to grade` : null,
+            correctionsElsewhere > 0
+              ? `${correctionsElsewhere} ${correctionsElsewhere === 1 ? "correction set" : "correction sets"}`
+              : null,
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+          . Switch course in the sidebar to see them.
+        </p>
+      ) : null}
       {assignments.length === 0 ? (
         <div className="rounded-lg border border-border bg-card">
           <EmptyState
             icon={BarChart3}
-            title="No results yet"
+            title={current ? `No results in ${current.name} yet` : "No results yet"}
             description="Assign an assessment to a class; attempts show up here as students submit."
           />
         </div>
       ) : (
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-results-list>
           {assignments.map((a) => {
             const n = pending.get(a.id) ?? 0;
             const awaiting = awaitingBy.get(a.id) ?? 0;
@@ -101,6 +127,12 @@ export default async function ResultsPage() {
           })}
         </ul>
       )}
+      {split.elsewhere > 0 ? (
+        <p className="text-xs text-muted-foreground" data-elsewhere>
+          {split.elsewhere} {split.elsewhere === 1 ? "assignment" : "assignments"} in other courses.
+          Switch course in the sidebar to see them.
+        </p>
+      ) : null}
     </div>
   );
 }
