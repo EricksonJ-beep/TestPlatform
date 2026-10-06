@@ -14,7 +14,7 @@ vi.mock("@/db", async () => {
 
 import { eq } from "drizzle-orm";
 import { db, schema } from "@/db";
-import { applyAllPacks, listPacks } from "./content-packs";
+import { applyAllPacks, applyPack, listPacks } from "./content-packs";
 
 const ids = { teacher: "", course: "", cls: "" };
 let ps: { id: string };
@@ -53,6 +53,14 @@ beforeAll(async () => {
     .insert(schema.classes)
     .values({ ownerId: t.id, courseId: course.id, name: "Anatomy · 5th Hour" })
     .returning();
+  // A draft Jon started by hand for the osteon page: the pack should finish it, not duplicate it.
+  await db.insert(schema.relearningActivities).values({
+    ownerId: t.id,
+    courseId: course.id,
+    kind: "interactive",
+    title: "Osteon",
+    url: "/activities/osteon-labeling.html",
+  });
   Object.assign(ids, { teacher: t.id, course: course.id, cls: cls.id });
 });
 
@@ -62,6 +70,7 @@ describe("content packs", () => {
     expect(names).toContain("anatomy-u2-lab-quiz-integumentary");
     expect(names).toContain("anatomy-u1-quiz-intro-lab-mitosis");
     expect(names).toContain("ps-u1-test-form-b");
+    expect(names).toContain("anatomy-u2-activity-osteon-labeling");
   });
   it("applies each pack once: bank, questions with repo-hosted pictures, published assessment, assignment", async () => {
     const first = await applyAllPacks();
@@ -153,6 +162,38 @@ describe("content packs", () => {
       isPublished: true,
       courseId: ps.id,
     });
+    // The osteon activity pack: no bank or CSV; it completes the hand-made draft (same page),
+    // renames it, tags U2, and publishes it.
+    const osteon = first.find((o) => o.name === "anatomy-u2-activity-osteon-labeling")!;
+    expect(osteon.status).toBe("applied");
+    if (osteon.status === "applied") {
+      expect(osteon.summary).toMatchObject({
+        activity: { reused: true, targets: 1, published: true },
+        errors: [],
+      });
+      expect(osteon.summary).not.toHaveProperty("bankId");
+    }
+    const acts = await db
+      .select()
+      .from(schema.relearningActivities)
+      .where(eq(schema.relearningActivities.url, "/activities/osteon-labeling.html"));
+    expect(acts).toHaveLength(1);
+    expect(acts[0]).toMatchObject({
+      title: "Osteon (Haversian system): label the structures",
+      kind: "interactive",
+      courseId: ids.course,
+      isPublished: true,
+    });
+    expect(acts[0].content).toMatch(/osteocyte/);
+    const u2 = (await db.query.learningTargets.findFirst({
+      where: eq(schema.learningTargets.code, "U2"),
+    }))!;
+    expect(
+      await db
+        .select()
+        .from(schema.activityTargets)
+        .where(eq(schema.activityTargets.activityId, acts[0].id))
+    ).toEqual([{ activityId: acts[0].id, learningTargetId: u2.id }]);
     // Second run: nothing changes.
     const second = await applyAllPacks();
     expect(second.every((o) => o.status === "already_applied")).toBe(true);
@@ -193,6 +234,43 @@ describe("content packs", () => {
     expect(
       await db.select().from(schema.questions).where(eq(schema.questions.bankId, bank.id))
     ).toHaveLength(32);
+  });
+  it("creates an activity when none exists, and keeps it a draft when no target code matches", async () => {
+    const base = {
+      name: "test-activity-pack",
+      teacherEmail: "EricksonJ@cadott.k12.wi.us",
+      course: "Anatomy and Physiology",
+    };
+    const made = await applyPack({
+      ...base,
+      activity: {
+        title: "Heart model: label the structures",
+        url: "/activities/heart-model-labeling.html",
+        targets: ["U1", "U9"],
+      },
+    });
+    expect(made.status).toBe("applied");
+    if (made.status === "applied") {
+      expect(made.summary).toMatchObject({
+        activity: { reused: false, targets: 1, published: true },
+        errors: ['learning target "U9" not found in the course; not tagged'],
+      });
+    }
+    const heart = (await db.query.relearningActivities.findFirst({
+      where: eq(schema.relearningActivities.url, "/activities/heart-model-labeling.html"),
+    }))!;
+    expect(heart).toMatchObject({ kind: "interactive", isPublished: true, content: null });
+    const draft = await applyPack({
+      ...base,
+      name: "test-activity-pack-no-target",
+      activity: { title: "Untagged page", url: "/activities/untagged.html", targets: ["U9"] },
+    });
+    if (draft.status === "applied")
+      expect(draft.summary).toMatchObject({ activity: { targets: 0, published: false } });
+    const un = (await db.query.relearningActivities.findFirst({
+      where: eq(schema.relearningActivities.url, "/activities/untagged.html"),
+    }))!;
+    expect(un.isPublished).toBe(false);
   });
   it("skips a pack whose teacher is missing and leaves it unapplied for next time", async () => {
     const out = await applyAllPacks("/nonexistent");

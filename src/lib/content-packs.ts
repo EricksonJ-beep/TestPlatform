@@ -8,10 +8,15 @@
  * the bank if missing, import the CSV through the same importer the Import page
  * uses, build a published assessment from the imported questions in CSV order,
  * and assign it to the named classes with the given attempt policy.
+ *
+ * A pack can also ship a relearning activity (Jon, Oct 6 2026: "you can just do
+ * the adding for me"): `activity` names an interactive page Bloom hosts under
+ * public/activities/ (or a video / link), the learning targets it satisfies by
+ * code, and whether it is published. Such a pack needs no bank or CSV.
  */
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, or, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { parseCsvRecords } from "@/lib/csv";
 import { parseQuestionRecords } from "@/lib/import/question-csv";
@@ -21,7 +26,8 @@ export type PackDefinition = {
   name: string;
   teacherEmail: string;
   course: string;
-  bank: string;
+  /** The bank the CSV imports into; absent for an activity-only pack. */
+  bank?: string;
   /** Earlier names this pack's bank went by; a bank still using one is renamed to `bank` on deploy. */
   formerBankNames?: string[];
   assessment?: {
@@ -37,6 +43,19 @@ export type PackDefinition = {
     retakeWaitHours?: number;
     retakesNeedUnlock?: boolean;
   }[];
+  /** A relearning activity to create for the teacher in this course. */
+  activity?: {
+    /** Defaults to "interactive": a page under public/activities/ or a full https link. */
+    kind?: "interactive" | "video" | "link";
+    title: string;
+    url: string;
+    /** Shown to students before they start (the editor's "Instructions for students"). */
+    instructions?: string;
+    /** Learning-target codes in this course, e.g. ["U2"]; unknown codes are reported, not created. */
+    targets: string[];
+    /** Default true; a published activity shows in the student Practice tab. */
+    published?: boolean;
+  };
 };
 
 export type PackOutcome =
@@ -68,13 +87,14 @@ export function listPacks(root = join(process.cwd(), "content", "packs")): PackD
  */
 async function syncNames(def: PackDefinition, teacherId: string): Promise<string[]> {
   const renamed: string[] = [];
-  const former = (def.formerBankNames ?? []).map(key).filter((n) => n !== key(def.bank));
-  if (former.length) {
+  const bankName = def.bank;
+  const former = (def.formerBankNames ?? []).map(key).filter((n) => n !== key(bankName ?? ""));
+  if (bankName && former.length) {
     const current = await db.query.questionBanks.findFirst({
       columns: { id: true },
       where: and(
         eq(schema.questionBanks.ownerId, teacherId),
-        sql`lower(${schema.questionBanks.name}) = ${key(def.bank)}`
+        sql`lower(${schema.questionBanks.name}) = ${key(bankName)}`
       ),
     });
     const old = current
@@ -89,9 +109,9 @@ async function syncNames(def: PackDefinition, teacherId: string): Promise<string
     if (old) {
       await db
         .update(schema.questionBanks)
-        .set({ name: def.bank })
+        .set({ name: bankName })
         .where(eq(schema.questionBanks.id, old.id));
-      renamed.push(`bank "${old.name}" → "${def.bank}"`);
+      renamed.push(`bank "${old.name}" → "${bankName}"`);
     }
   }
   const a = def.assessment;
@@ -149,17 +169,37 @@ export async function applyPack(
   });
   if (!course) return { name: def.name, status: "skipped", reason: `no course "${def.course}"` };
 
+  const summary: Record<string, unknown> = {};
+  const errors: string[] = [];
+  if (def.bank)
+    Object.assign(summary, await applyQuiz(def, def.bank, teacher.id, course.id, root, errors));
+  if (def.activity)
+    summary.activity = await applyActivity(def.activity, teacher.id, course.id, errors);
+  summary.errors = errors;
+  await db.insert(schema.contentPacks).values({ name: def.name, summary });
+  return { name: def.name, status: "applied", summary };
+}
+
+/** The quiz half of a pack: bank, CSV import, published assessment, assignments. */
+async function applyQuiz(
+  def: PackDefinition,
+  bankName: string,
+  teacherId: string,
+  courseId: string,
+  root: string,
+  errors: string[]
+): Promise<Record<string, unknown>> {
   let bank = await db.query.questionBanks.findFirst({
     columns: { id: true },
     where: and(
-      eq(schema.questionBanks.ownerId, teacher.id),
-      sql`lower(${schema.questionBanks.name}) = ${key(def.bank)}`
+      eq(schema.questionBanks.ownerId, teacherId),
+      sql`lower(${schema.questionBanks.name}) = ${key(bankName)}`
     ),
   });
   if (!bank) {
     [bank] = await db
       .insert(schema.questionBanks)
-      .values({ ownerId: teacher.id, courseId: course.id, name: def.bank })
+      .values({ ownerId: teacherId, courseId, name: bankName })
       .returning({ id: schema.questionBanks.id });
   }
 
@@ -168,7 +208,7 @@ export async function applyPack(
   const rows = parseQuestionRecords(records);
   const result = await commitImport(bank.id, rows);
   const questionIds = result.rows.flatMap((r) => (r.questionId ? [r.questionId] : []));
-  const errors = result.rows.filter((r) => r.error).map((r) => `line ${r.line}: ${r.error}`);
+  errors.push(...result.rows.filter((r) => r.error).map((r) => `line ${r.line}: ${r.error}`));
 
   let assessmentId: string | null = null;
   const assignments: string[] = [];
@@ -176,7 +216,7 @@ export async function applyPack(
     const existing = await db.query.assessments.findFirst({
       columns: { id: true },
       where: and(
-        eq(schema.assessments.ownerId, teacher.id),
+        eq(schema.assessments.ownerId, teacherId),
         sql`lower(${schema.assessments.title}) = ${key(def.assessment.title)}`
       ),
     });
@@ -185,8 +225,8 @@ export async function applyPack(
       const [a] = await db
         .insert(schema.assessments)
         .values({
-          ownerId: teacher.id,
-          courseId: course.id,
+          ownerId: teacherId,
+          courseId,
           type: def.assessment.type,
           title: def.assessment.title,
           instructions: def.assessment.instructions ?? null,
@@ -209,7 +249,7 @@ export async function applyPack(
       const cls = await db.query.classes.findFirst({
         columns: { id: true, name: true },
         where: and(
-          eq(schema.classes.ownerId, teacher.id),
+          eq(schema.classes.ownerId, teacherId),
           sql`lower(${schema.classes.name}) = ${key(target.class)}`
         ),
       });
@@ -226,7 +266,7 @@ export async function applyPack(
       });
       if (already) continue;
       await db.insert(schema.assignments).values({
-        ownerId: teacher.id,
+        ownerId: teacherId,
         assessmentId,
         classId: cls.id,
         attemptsAllowed: target.attemptsAllowed === undefined ? 3 : target.attemptsAllowed,
@@ -237,16 +277,96 @@ export async function applyPack(
     }
   }
 
-  const summary = {
+  return {
     bankId: bank.id,
     imported: result.counts,
     questions: questionIds.length,
     assessmentId,
     assignedTo: assignments,
-    errors,
   };
-  await db.insert(schema.contentPacks).values({ name: def.name, summary });
-  return { name: def.name, status: "applied", summary };
+}
+
+/**
+ * The activity half of a pack. Reuses the teacher's activity in this course
+ * that already carries the title or (for a page) the same address, so a draft
+ * made by hand is completed rather than duplicated; otherwise creates it. Tags
+ * every listed target code that exists in the course and publishes when asked.
+ */
+async function applyActivity(
+  act: NonNullable<PackDefinition["activity"]>,
+  teacherId: string,
+  courseId: string,
+  errors: string[]
+): Promise<Record<string, unknown>> {
+  const kind = act.kind ?? "interactive";
+  const published = act.published ?? true;
+  const targets = await db.query.learningTargets.findMany({
+    columns: { id: true, code: true },
+    where: eq(schema.learningTargets.courseId, courseId),
+  });
+  const wanted = act.targets.map(key);
+  const targetIds = targets.filter((t) => wanted.includes(key(t.code))).map((t) => t.id);
+  for (const code of act.targets)
+    if (!targets.some((t) => key(t.code) === key(code)))
+      errors.push(`learning target "${code}" not found in the course; not tagged`);
+  if (published && !targetIds.length) {
+    errors.push("no learning target matched, so the activity stays a draft");
+  }
+  const canPublish = published && targetIds.length > 0;
+
+  const existing = await db.query.relearningActivities.findFirst({
+    columns: { id: true },
+    where: and(
+      eq(schema.relearningActivities.ownerId, teacherId),
+      eq(schema.relearningActivities.courseId, courseId),
+      or(
+        sql`lower(${schema.relearningActivities.title}) = ${key(act.title)}`,
+        and(
+          eq(schema.relearningActivities.kind, kind),
+          eq(schema.relearningActivities.url, act.url)
+        )
+      )
+    ),
+  });
+  let activityId: string;
+  if (existing) {
+    activityId = existing.id;
+    await db
+      .update(schema.relearningActivities)
+      .set({
+        title: act.title,
+        kind,
+        url: act.url,
+        content: act.instructions ?? null,
+        ...(canPublish ? { isPublished: true } : {}),
+      })
+      .where(eq(schema.relearningActivities.id, activityId));
+  } else {
+    const [a] = await db
+      .insert(schema.relearningActivities)
+      .values({
+        ownerId: teacherId,
+        courseId,
+        kind,
+        title: act.title,
+        url: act.url,
+        content: act.instructions ?? null,
+        isPublished: canPublish,
+      })
+      .returning({ id: schema.relearningActivities.id });
+    activityId = a.id;
+  }
+  if (targetIds.length)
+    await db
+      .insert(schema.activityTargets)
+      .values(targetIds.map((learningTargetId) => ({ activityId, learningTargetId })))
+      .onConflictDoNothing();
+  return {
+    activityId,
+    reused: Boolean(existing),
+    targets: targetIds.length,
+    published: canPublish,
+  };
 }
 
 /** Apply every pack that has not been applied yet; never throws for one bad pack. */

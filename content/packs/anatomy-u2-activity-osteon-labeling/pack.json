@@ -1,0 +1,13 @@
+{
+  "name": "anatomy-u2-activity-osteon-labeling",
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Anatomy and Physiology",
+  "activity": {
+    "kind": "interactive",
+    "title": "Osteon (Haversian system): label the structures",
+    "url": "/activities/osteon-labeling.html",
+    "instructions": "Drag each term onto its numbered spot on the osteon. Look closely at #2 and #5: the osteocyte is the purple cell body, and the lacuna is the pale space it sits in.",
+    "targets": ["U2"],
+    "published": true
+  }
+}
