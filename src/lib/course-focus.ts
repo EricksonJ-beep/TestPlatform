@@ -28,9 +28,9 @@ export function sectionListPath(pathname: string): string {
   return `/app/${section}`;
 }
 
-/** Two-letter chip for the collapsed sidebar: "Anatomy and Physiology" → "AP", "Biology" → "Bi". */
+/** Two-letter chip for the collapsed sidebar: "Anatomy and Physiology" → "AP", "Biology A" → "BA", "Biology" → "Bi". */
 export function courseInitials(name: string): string {
-  const words = name.split(/[\s·,-]+/).filter((w) => w && !/^(and|the|of|a|an|&)$/i.test(w));
+  const words = name.split(/[\s·,-]+/).filter((w) => w && !/^(and|the|of|&)$/i.test(w));
   if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase();
   return name.slice(0, 2).replace(/^./, (c) => c.toUpperCase());
 }

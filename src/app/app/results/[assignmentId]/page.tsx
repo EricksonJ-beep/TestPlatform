@@ -15,6 +15,7 @@ import { RegradeButton } from "./regrade-button";
 import { UnlockButton } from "./unlock-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { FollowCourse } from "@/components/app/course-focus";
 import {
   Table,
   TableBody,
@@ -56,6 +57,7 @@ export default async function AssignmentResultsPage({
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-5">
+      <FollowCourse courseId={a.courseId} />
       <div className="flex flex-wrap items-end gap-3">
         <div className="mr-auto">
           <Link

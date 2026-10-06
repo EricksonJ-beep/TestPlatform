@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { BankHeader } from "./bank-header";
 import { Filters } from "./filters";
 import { QuestionList } from "./question-list";
+import { FollowCourse } from "@/components/app/course-focus";
 
 export const metadata: Metadata = { title: "Question bank" };
 
@@ -68,6 +69,7 @@ export default async function BankPage({ params, searchParams }: PageProps<"/app
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-5">
+      <FollowCourse courseId={bank.courseId} />
       <div>
         <Link
           href={access.access === "owner" ? "/app/banks" : "/app/shared"}

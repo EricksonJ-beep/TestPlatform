@@ -27,6 +27,8 @@ describe("courseInitials", () => {
     expect(courseInitials("Anatomy and Physiology")).toBe("AP");
     expect(courseInitials("Physical Science A")).toBe("PS");
     expect(courseInitials("Biology")).toBe("Bi");
+    expect(courseInitials("Biology A")).toBe("BA");
+    expect(courseInitials("Biology B")).toBe("BB");
     expect(courseInitials("Medical Terminology")).toBe("MT");
   });
 });

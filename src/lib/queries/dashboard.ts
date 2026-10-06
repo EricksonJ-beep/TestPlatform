@@ -158,3 +158,36 @@ export async function getRecentResults(teacherId: string, limit = 5): Promise<Re
     averagePercent: r.averagePercent === null ? null : Number(r.averagePercent),
   }));
 }
+
+export type CourseCard = {
+  id: string;
+  name: string;
+  classes: number;
+  openTests: number;
+  /** Published practice sets + published activities. */
+  practice: number;
+  needsGrading: number;
+  correctionsAwaiting: number;
+};
+
+/**
+ * One card per course the teacher owns, for the Dashboard (docs/course-focus-plan.md,
+ * ticket 6): the door into a course, with what is waiting there.
+ */
+export async function listCourseCards(teacherId: string, now = new Date()): Promise<CourseCard[]> {
+  const c = schema.courses;
+  const rows = await db
+    .select({
+      id: c.id,
+      name: c.name,
+      classes: sql<number>`(select count(*)::int from ${schema.classes} k where k.course_id = ${c}.id and k.owner_id = ${teacherId})`,
+      openTests: sql<number>`(select count(*)::int from ${schema.assignments} a join ${schema.assessments} s on s.id = a.assessment_id where s.course_id = ${c}.id and a.owner_id = ${teacherId} and (a.opens_at is null or a.opens_at <= ${now}) and (a.closes_at is null or a.closes_at > ${now}))`,
+      practice: sql<number>`(select count(*)::int from ${schema.practiceSets} p where p.course_id = ${c}.id and p.owner_id = ${teacherId} and p.is_published) + (select count(*)::int from ${schema.relearningActivities} r where r.course_id = ${c}.id and r.owner_id = ${teacherId} and r.is_published)`,
+      needsGrading: sql<number>`(select count(*)::int from ${schema.attempts} t join ${schema.assignments} a on a.id = t.assignment_id join ${schema.assessments} s on s.id = a.assessment_id where s.course_id = ${c}.id and a.owner_id = ${teacherId} and t.status = 'submitted')`,
+      correctionsAwaiting: sql<number>`(select count(distinct cr.attempt_id)::int from ${schema.corrections} cr join ${schema.attempts} t on t.id = cr.attempt_id join ${schema.assignments} a on a.id = t.assignment_id join ${schema.assessments} s on s.id = a.assessment_id where s.course_id = ${c}.id and a.owner_id = ${teacherId} and cr.status = 'submitted')`,
+    })
+    .from(c)
+    .where(eq(c.ownerId, teacherId))
+    .orderBy(asc(c.name));
+  return rows;
+}

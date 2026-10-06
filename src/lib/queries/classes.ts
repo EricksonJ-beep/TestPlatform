@@ -68,6 +68,7 @@ export async function getClassDetail(classId: string) {
       name: schema.classes.name,
       period: schema.classes.period,
       term: schema.classes.term,
+      courseId: schema.classes.courseId,
       courseName: schema.courses.name,
       ownerId: schema.classes.ownerId,
       joinCode: schema.classes.joinCode,

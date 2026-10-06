@@ -8,6 +8,7 @@ import { isAuthzError, requireOwner } from "@/lib/authz";
 import { getAssignmentRow } from "@/lib/queries/assignments";
 import { listPins, listPublishedContent } from "@/lib/queries/practice";
 import { PinsForm } from "./pins-form";
+import { FollowCourse } from "@/components/app/course-focus";
 
 export const metadata: Metadata = { title: "Relearning pins" };
 
@@ -58,6 +59,7 @@ export default async function RelearningPinsPage({
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-5">
+      <FollowCourse courseId={assessment?.courseId} />
       <div>
         <Link
           href="/app/assign"

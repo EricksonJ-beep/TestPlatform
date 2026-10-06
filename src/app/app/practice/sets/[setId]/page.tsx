@@ -7,6 +7,7 @@ import { listBanksForCourse, listPoolsForBuilder } from "@/lib/queries/assessmen
 import { listTargets } from "@/lib/queries/courses";
 import { getPracticeSetDetail } from "@/lib/queries/practice";
 import { SetEditor } from "./set-editor";
+import { FollowCourse } from "@/components/app/course-focus";
 
 export const metadata: Metadata = { title: "Practice set" };
 
@@ -30,6 +31,7 @@ export default async function PracticeSetPage({ params }: PageProps<"/app/practi
   ]);
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-4">
+      <FollowCourse courseId={detail.courseId} />
       <Link
         href="/app/practice"
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"

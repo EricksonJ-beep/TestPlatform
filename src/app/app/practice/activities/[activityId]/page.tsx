@@ -7,6 +7,7 @@ import { listTargets } from "@/lib/queries/courses";
 import { getActivityDetail } from "@/lib/queries/practice";
 import { isStorageConfigured } from "@/lib/storage";
 import { ActivityEditor } from "./activity-editor";
+import { FollowCourse } from "@/components/app/course-focus";
 
 export const metadata: Metadata = { title: "Relearning activity" };
 
@@ -28,6 +29,7 @@ export default async function ActivityPage({
   const targets = detail.courseId ? await listTargets(detail.courseId) : [];
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-4">
+      <FollowCourse courseId={detail.courseId} />
       <Link
         href="/app/practice"
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"

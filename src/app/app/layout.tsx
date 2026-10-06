@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { requireTeacher } from "@/lib/authz";
 import { getCurrentCourse } from "@/lib/current-course";
+import { CourseFocusProvider } from "@/components/app/course-focus";
 import { AppSidebar } from "@/components/app/sidebar";
 import { AppTopbar } from "@/components/app/topbar";
 import { setCurrentCourse } from "./courses/actions";
@@ -20,17 +21,19 @@ export default async function TeacherLayout({ children }: LayoutProps<"/app">) {
   ]);
 
   return (
-    <div className="flex min-h-full">
-      <AppSidebar
-        organizationName={org[0]?.name ?? null}
-        courses={courses}
-        currentCourse={current}
-        pickCourse={setCurrentCourse}
-      />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <AppTopbar session={session} />
-        <main className="flex-1 px-4 py-6 md:px-6">{children}</main>
+    <CourseFocusProvider currentId={current?.id ?? null} pick={setCurrentCourse}>
+      <div className="flex min-h-full">
+        <AppSidebar
+          organizationName={org[0]?.name ?? null}
+          courses={courses}
+          currentCourse={current}
+          pickCourse={setCurrentCourse}
+        />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <AppTopbar session={session} />
+          <main className="flex-1 px-4 py-6 md:px-6">{children}</main>
+        </div>
       </div>
-    </div>
+    </CourseFocusProvider>
   );
 }

@@ -6,6 +6,7 @@ import { isAuthzError, requireOwner } from "@/lib/authz";
 import { listTargets } from "@/lib/queries/courses";
 import { getWorksheetDetail, listLinkableStudents } from "@/lib/queries/worksheets";
 import { WorksheetEditor } from "./worksheet-editor";
+import { FollowCourse } from "@/components/app/course-focus";
 
 export const metadata: Metadata = { title: "Worksheet" };
 
@@ -29,6 +30,7 @@ export default async function WorksheetPage({
   const site = (process.env.AUTH_URL ?? "http://localhost:3000").replace(/\/$/, "");
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-4">
+      <FollowCourse courseId={detail.courseId} />
       <Link
         href="/app/practice/worksheets"
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"

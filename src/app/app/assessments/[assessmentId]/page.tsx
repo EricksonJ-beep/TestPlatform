@@ -13,6 +13,7 @@ import {
 import { listTargets } from "@/lib/queries/courses";
 import { listShares } from "@/lib/queries/shares";
 import { Builder } from "./builder";
+import { FollowCourse } from "@/components/app/course-focus";
 
 export const metadata: Metadata = { title: "Assessment builder" };
 
@@ -41,6 +42,7 @@ export default async function AssessmentPage({
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-4">
+      <FollowCourse courseId={detail.courseId} />
       <Link
         href="/app/assessments"
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"

@@ -11,6 +11,7 @@ import { ImportCsvDialog } from "./import-csv-dialog";
 import { JoinCodeCard } from "./join-code-card";
 import { PendingNames } from "./pending-names";
 import { Roster } from "./roster";
+import { FollowCourse } from "@/components/app/course-focus";
 
 export const metadata: Metadata = { title: "Class" };
 
@@ -27,6 +28,7 @@ export default async function ClassPage({ params }: PageProps<"/app/classes/[cla
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-5">
+      <FollowCourse courseId={cls.courseId} />
       <div>
         <Link
           href="/app/classes"

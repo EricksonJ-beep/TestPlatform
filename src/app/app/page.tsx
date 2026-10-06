@@ -2,15 +2,23 @@ import Link from "next/link";
 import { BarChart3 } from "lucide-react";
 import { requireTeacher } from "@/lib/authz";
 import { listRecentActivity } from "@/lib/activity-log";
-import { getDashboardCounts, getRecentResults, listRetakeRequests } from "@/lib/queries/dashboard";
+import { getCurrentCourse } from "@/lib/current-course";
+import {
+  getDashboardCounts,
+  getRecentResults,
+  listCourseCards,
+  listRetakeRequests,
+} from "@/lib/queries/dashboard";
 import { getClassGlance } from "@/lib/queries/tiers";
 import { ClassGlance } from "@/components/app/class-glance";
+import { CourseCards } from "@/components/app/course-cards";
 import { ActivityFeed } from "@/components/app/activity-feed";
 import { MetricCard } from "@/components/app/metric-card";
 import { RetakeRequests } from "@/components/app/retake-requests";
 import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { setCurrentCourse } from "./courses/actions";
 
 function greeting(now = new Date()): string {
   const h = now.getHours();
@@ -25,12 +33,14 @@ const TYPE_LABEL = {
 
 export default async function DashboardPage() {
   const session = await requireTeacher();
-  const [counts, recent, glance, requests, activity] = await Promise.all([
+  const [counts, recent, glance, requests, activity, courseCards, { current }] = await Promise.all([
     getDashboardCounts(session.userId),
     getRecentResults(session.userId),
     getClassGlance(session.userId),
     listRetakeRequests(session.userId),
     listRecentActivity(session.userId, { hours: 24, limit: 25 }),
+    listCourseCards(session.userId),
+    getCurrentCourse(session.userId),
   ]);
   const attention = counts.needsGrading + counts.correctionsAwaiting + counts.retakeRequests;
 
@@ -70,6 +80,9 @@ export default async function DashboardPage() {
         />
         <MetricCard label="Classes" value={counts.classes} hint="This term" href="/app/classes" />
       </div>
+
+      {/* The Dashboard is the one all-courses view; each card is the door into a course. */}
+      <CourseCards cards={courseCards} currentId={current?.id ?? null} pick={setCurrentCourse} />
 
       <RetakeRequests rows={requests} />
 
