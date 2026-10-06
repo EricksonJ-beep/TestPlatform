@@ -139,3 +139,26 @@ export function groupByUnit<
     .sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name))
     .map(({ sortOrder: _s, ...b }) => b);
 }
+
+/**
+ * Course focus (Jon, Oct 6 2026, docs/course-focus-plan.md): the current
+ * course's group only, present even when the course has no practice yet (every
+ * unit as an empty row), plus the items that belong to no course, which the
+ * page lists apart so they never vanish. Items from other courses are not
+ * shown; switch course to see them.
+ */
+export function focusPractice(
+  items: PracticeItem[],
+  allUnits: UnitRef[],
+  current: { id: string; name: string }
+): { group: CourseGroup; orphans: PracticeItem[] } {
+  const orphans = items.filter((i) => i.courseId === null);
+  const mine = items.filter((i) => i.courseId === current.id);
+  const grouped = groupPractice(mine, allUnits)[0];
+  if (grouped) return { group: grouped, orphans };
+  const units: UnitGroup[] = allUnits
+    .filter((u) => u.courseId === current.id)
+    .sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name))
+    .map((u) => ({ id: u.id, name: u.name, items: [], sets: 0, activities: 0 }));
+  return { group: { course: current.name, total: 0, attention: [], units }, orphans };
+}

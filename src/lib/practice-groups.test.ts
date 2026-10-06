@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { PracticeSetSummary } from "@/lib/queries/practice";
-import { attentionReasons, groupByUnit, groupPractice, matchesQuery } from "./practice-groups";
+import {
+  attentionReasons,
+  focusPractice,
+  groupByUnit,
+  groupPractice,
+  matchesQuery,
+} from "./practice-groups";
 
 const unit1 = { id: "u1", name: "Unit 1", sortOrder: 0 };
 const unit2 = { id: "u2", name: "Unit 2", sortOrder: 1 };
@@ -58,6 +64,29 @@ describe("groupPractice", () => {
     ]);
     // A course's units never leak into another course's section.
     expect(g.units.some((u) => u.name === "Unit 9")).toBe(false);
+  });
+  it("focusPractice keeps the current course, lists no-course items apart, and gives an empty course its unit rows", () => {
+    const allUnits = [
+      { id: "u1", courseId: "c", name: "Unit 1", sortOrder: 0 },
+      { id: "u2", courseId: "c", name: "Unit 2", sortOrder: 1 },
+      { id: "a1", courseId: "anatomy", name: "Unit 1", sortOrder: 0 },
+    ];
+    const items = [
+      set({ title: "mine" }),
+      set({ title: "theirs", courseId: "anatomy", courseName: "Anatomy" }),
+      set({ title: "loose", courseId: null, courseName: null }),
+    ];
+    const ps = focusPractice(items, allUnits, { id: "c", name: "Physical Science A" });
+    expect(ps.group.course).toBe("Physical Science A");
+    expect(ps.group.units.map((u) => [u.name, u.items.map((i) => i.title)])).toEqual([
+      ["Unit 1", ["mine"]],
+      ["Unit 2", []],
+    ]);
+    expect(ps.orphans.map((i) => i.title)).toEqual(["loose"]);
+    const empty = focusPractice(items, allUnits, { id: "bio", name: "Biology" });
+    expect(empty.group).toMatchObject({ course: "Biology", total: 0, attention: [], units: [] });
+    const anatomy = focusPractice([], allUnits, { id: "anatomy", name: "Anatomy" });
+    expect(anatomy.group.units.map((u) => [u.name, u.items.length])).toEqual([["Unit 1", 0]]);
   });
   it("drafts, untagged items, and empty sets go to Needs attention instead", () => {
     const [g] = groupPractice([

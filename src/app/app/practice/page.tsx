@@ -3,7 +3,8 @@ import Link from "next/link";
 import { FileSpreadsheet, Layers } from "lucide-react";
 import { requireTeacher } from "@/lib/authz";
 import { getCurrentCourse } from "@/lib/current-course";
-import { groupPractice } from "@/lib/practice-groups";
+import { focusPractice, groupPractice, type PracticeItem } from "@/lib/practice-groups";
+import type { UnitRef } from "@/lib/unit-shelves";
 import { listUnitsForTeacher } from "@/lib/queries/courses";
 import { listPracticeContent } from "@/lib/queries/practice";
 import { EmptyState } from "@/components/empty-state";
@@ -71,8 +72,27 @@ export default async function PracticePage() {
           />
         </div>
       ) : (
-        <PracticeAccordion groups={groupPractice(items, units)} />
+        <FocusedPractice items={items} units={units} current={current} />
       )}
     </div>
   );
+}
+
+/**
+ * Course focus (docs/course-focus-plan.md): the current course's unit rows,
+ * no course heading (the sidebar names it), and items with no course listed
+ * apart. A teacher with no courses yet sees everything grouped as before.
+ */
+function FocusedPractice({
+  items,
+  units,
+  current,
+}: {
+  items: PracticeItem[];
+  units: UnitRef[];
+  current: { id: string; name: string } | null;
+}) {
+  if (!current) return <PracticeAccordion groups={groupPractice(items, units)} />;
+  const { group, orphans } = focusPractice(items, units, current);
+  return <PracticeAccordion groups={[group]} orphans={orphans} headings={false} />;
 }

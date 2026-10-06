@@ -63,13 +63,13 @@ Some banks, assessments, and class periods were made before courses existed or w
 Each is one sitting, with a "Done when", in build order.
 
 1. ✅ **Sidebar switcher.** Course block in the sidebar, dropdown of your courses, sets the current course. Done when switching re-renders the page you are on and the choice survives a reload.
-2. **Practice page narrows.** Done when Practice shows only the current course's unit rows and Needs-attention items, and the course heading goes away.
-3. **Banks and Assessments drop their tabs.** Done when both pages use the sidebar switcher and the shelves, drag-and-drop, and empty-unit chips still work.
+2. ✅ **Practice page narrows.** Done when Practice shows only the current course's unit rows and Needs-attention items, and the course heading goes away.
+3. ✅ **Banks and Assessments drop their tabs.** Done when both pages use the sidebar switcher and the shelves, drag-and-drop, and empty-unit chips still work.
 4. **Assign and Classes narrow.** Done when Assign lists the current course's assessments and periods and Classes lists its periods, with the "Not in any course" strip on both.
 5. **Results narrows.** Done when Results, grading, and corrections show the current course with an "n waiting in other courses" line.
 6. **Dashboard course cards.** Done when each course has a card with counts and attention items, and clicking one focuses that course and opens its practice page.
 7. **Focus follows links.** Done when opening a bank, assessment, set, activity, assignment, or class from another course switches the sidebar to that course.
-8. **Not-in-any-course strip.** Done when every narrowed list shows its orphaned items and "Put in {course}" moves them.
+8. 🟡 **Not-in-any-course strip.** (Listing shipped with tickets 2–3; the one-click "Put in {course}" is still to do.) Done when every narrowed list shows its orphaned items and "Put in {course}" moves them.
 
 Order matters a little: 1 first, then 2 and 3 are quick wins you can feel the same day, then 4 through 8.
 

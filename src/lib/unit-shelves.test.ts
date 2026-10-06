@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { groupByUnit, nudgeCard, placeCard, NO_UNIT } from "./unit-shelves";
+import { focusShelves, groupByUnit, nudgeCard, placeCard, NO_UNIT } from "./unit-shelves";
 
 const units = [
   { id: "u2", courseId: "c1", name: "Unit 2", sortOrder: 1 },
@@ -85,5 +85,34 @@ describe("nudgeCard", () => {
     expect(nudgeCard(shelf, "a", 1)).toEqual(["b", "a"]);
     expect(nudgeCard(shelf, "a", -1)).toBeNull();
     expect(nudgeCard(shelf, "b", 1)).toBeNull();
+  });
+});
+
+describe("focusShelves (course focus)", () => {
+  const current = { id: "c1", name: "Physical Science A" };
+  it("keeps only the current course's cards, every unit as a shelf, and lists no-course cards apart", () => {
+    const { course, orphans } = focusShelves(
+      [item("a", "u2", 0), item("x", "u9", 0, "c2"), { ...item("o", null, 0), courseId: null }],
+      units,
+      current
+    );
+    expect(course?.course).toBe("Physical Science A");
+    expect(course?.shelves.map((s) => [s.name, s.items.map((i) => i.id)])).toEqual([
+      ["Unit 1", []],
+      ["Unit 2", ["a"]],
+    ]);
+    expect(orphans.map((i) => i.id)).toEqual(["o"]);
+  });
+  it("a course with nothing yet still gets all its units as empty shelves", () => {
+    const { course } = focusShelves([item("x", "u9", 0, "c2")], units, current);
+    expect(course?.shelves.map((s) => [s.name, s.items.length])).toEqual([
+      ["Unit 1", 0],
+      ["Unit 2", 0],
+    ]);
+  });
+  it("a course with no units gets the loose shelf; no current course means no board", () => {
+    const { course } = focusShelves([], [], current);
+    expect(course?.shelves.map((s) => s.name)).toEqual([NO_UNIT]);
+    expect(focusShelves([item("a", "u2", 0)], units, null).course).toBeNull();
   });
 });

@@ -107,3 +107,29 @@ export function nudgeCard<T extends Shelved>(
   [ids[from], ids[to]] = [ids[to], ids[from]];
   return ids;
 }
+
+/**
+ * Course focus (Jon, Oct 6 2026, docs/course-focus-plan.md): the shelves for
+ * the current course only, present even when the course has nothing yet (every
+ * unit as an empty chip, so it is "ready to go"), plus the cards that belong to
+ * no course at all, which the page lists separately so they never vanish.
+ * Cards from other courses are simply not shown; switch course to see them.
+ * With no current course (a teacher without courses) everything is "orphans".
+ */
+export function focusShelves<T extends Shelved>(
+  items: T[],
+  units: UnitRef[],
+  current: { id: string; name: string } | null
+): { course: CourseShelves<T> | null; orphans: T[] } {
+  const orphans = items.filter((i) => i.courseId === null).sort(byOrder);
+  if (!current) return { course: null, orphans };
+  const mine = items.filter((i) => i.courseId === current.id);
+  const grouped = groupByUnit(mine, units).find((c) => c.courseId === current.id);
+  if (grouped) return { course: grouped, orphans };
+  const shelves: UnitShelf<T>[] = units
+    .filter((u) => u.courseId === current.id)
+    .sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name))
+    .map((u) => ({ unitId: u.id, name: u.name, items: [] }));
+  if (shelves.length === 0) shelves.push({ unitId: null, name: NO_UNIT, items: [] });
+  return { course: { courseId: current.id, course: current.name, shelves }, orphans };
+}

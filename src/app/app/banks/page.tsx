@@ -5,11 +5,10 @@ import { requireTeacher } from "@/lib/authz";
 import { getCurrentCourse } from "@/lib/current-course";
 import { listMyBanks } from "@/lib/queries/banks";
 import { listUnitsForTeacher } from "@/lib/queries/courses";
-import { groupByUnit } from "@/lib/unit-shelves";
+import { focusShelves, groupByUnit } from "@/lib/unit-shelves";
 import { EmptyState } from "@/components/empty-state";
 import { UnitBoard } from "@/components/app/unit-board";
 import { placeBank } from "./actions";
-import { setCurrentCourse } from "../courses/actions";
 import { NewBankDialog } from "./new-bank-dialog";
 
 export const metadata: Metadata = { title: "Question banks" };
@@ -24,7 +23,7 @@ export default async function BanksPage({ searchParams }: PageProps<"/app/banks"
     getCurrentCourse(session.userId),
   ]);
   // Cards render here (server) and the board only moves them around.
-  const shelves = groupByUnit(
+  const { course: focused, orphans } = focusShelves(
     banks.map((b) => ({
       ...b,
       node: (
@@ -54,8 +53,11 @@ export default async function BanksPage({ searchParams }: PageProps<"/app/banks"
         </Link>
       ),
     })),
-    units
+    units,
+    current
   );
+  // A teacher with no courses yet: everything sits under "No course", shown as one board.
+  const board = focused ?? groupByUnit(orphans, units)[0] ?? null;
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-5">
@@ -90,15 +92,15 @@ export default async function BanksPage({ searchParams }: PageProps<"/app/banks"
             }
           />
         </div>
-      ) : (
+      ) : board ? (
         <UnitBoard
-          courses={shelves}
+          key={board.courseId ?? "none"}
+          course={board}
+          orphans={focused ? orphans : []}
           noun="bank"
-          activeCourseId={current?.id ?? null}
           place={placeBank}
-          pickCourse={setCurrentCourse}
         />
-      )}
+      ) : null}
     </div>
   );
 }

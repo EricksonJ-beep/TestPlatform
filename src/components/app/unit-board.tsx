@@ -18,71 +18,57 @@ import { useAction } from "@/components/use-action";
 export type BoardCard = Shelved & { name: string; node: ReactNode };
 
 type Props = {
-  courses: CourseShelves<BoardCard>[];
+  /** The current course's shelves (docs/course-focus-plan.md: one course at a time). */
+  course: CourseShelves<BoardCard>;
+  /** Cards that belong to no course; listed under the board so they never vanish. */
+  orphans?: BoardCard[];
   noun: string;
-  /** Course tab to open first (the teacher's current course); falls back to the first course. */
-  activeCourseId: string | null;
   place: (
     id: string,
     unitId: string | null,
     orderedIds: string[]
   ) => Promise<ActionResult<unknown>>;
-  /** Remembers the picked course tab so the next visit (and the other page) opens on it. */
-  pickCourse: (courseId: string | null) => Promise<ActionResult<unknown>>;
 };
 
 const courseKey = (id: string | null) => id ?? "none";
 
 /**
- * One course at a time (tabs), then unit shelves with drag-and-drop (Jon,
- * Oct 2 2026: "organize the banks into units like Google Classroom… I don't
- * want to scroll a bunch for each class"). Units with cards are open shelves;
- * empty units collapse into one strip of chips that still take a drop; cards
- * with no unit sit last under "No unit yet". Drop a card on another card to
- * slot in front of it, or on a unit header / chip to put it at the end of that
+ * The current course's unit shelves with drag-and-drop (Jon, Oct 2 2026:
+ * "organize the banks into units like Google Classroom… I don't want to
+ * scroll a bunch for each class"; Oct 6: the course comes from the sidebar
+ * switcher, so the tabs are gone). Units with cards are open shelves; empty
+ * units collapse into one strip of chips that still take a drop; cards with
+ * no unit sit last under "No unit yet". Drop a card on another card to slot
+ * in front of it, or on a unit header / chip to put it at the end of that
  * unit. Keyboard: ← → nudge within the shelf, and a "Move to" menu lists the
  * course's units.
  */
-export function UnitBoard({ courses: initial, noun, activeCourseId, place, pickCourse }: Props) {
-  const [courses, setCourses] = useState(initial);
-  const [active, setActive] = useState<string>(() => {
-    const wanted = courses.find((c) => c.courseId === activeCourseId);
-    return courseKey((wanted ?? courses[0])?.courseId ?? null);
-  });
+export function UnitBoard({ course: initial, orphans = [], noun, place }: Props) {
+  const [course, setCourse] = useState(initial);
   const [dragging, setDragging] = useState<string | null>(null);
   const [over, setOver] = useState<string | null>(null);
   const { run, pending, error } = useAction();
 
-  const ci = Math.max(
-    0,
-    courses.findIndex((c) => courseKey(c.courseId) === active)
-  );
-  const course = courses[ci];
-
   function apply(moved: string, result: { unitId: string | null; orderedIds: string[] }) {
-    const next = courses.map((c, i) => {
-      if (i !== ci) return c;
-      const card = c.shelves.flatMap((s) => s.items).find((x) => x.id === moved)!;
-      return {
-        ...c,
-        shelves: c.shelves.map((s) => {
-          const kept = s.items.filter((x) => x.id !== moved);
-          if (s.unitId !== result.unitId) return { ...s, items: kept };
-          const byId = new Map(kept.map((x) => [x.id, x]));
-          byId.set(moved, { ...card, unitId: s.unitId });
-          return {
-            ...s,
-            items: result.orderedIds.flatMap((id) => (byId.has(id) ? [byId.get(id)!] : [])),
-          };
-        }),
-      };
+    const card = course.shelves.flatMap((s) => s.items).find((x) => x.id === moved)!;
+    setCourse({
+      ...course,
+      shelves: course.shelves.map((s) => {
+        const kept = s.items.filter((x) => x.id !== moved);
+        if (s.unitId !== result.unitId) return { ...s, items: kept };
+        const byId = new Map(kept.map((x) => [x.id, x]));
+        byId.set(moved, { ...card, unitId: s.unitId });
+        return {
+          ...s,
+          items: result.orderedIds.flatMap((id) => (byId.has(id) ? [byId.get(id)!] : [])),
+        };
+      }),
     });
-    setCourses(next);
     run(place(moved, result.unitId, result.orderedIds));
   }
 
   function drop(target: { cardId: string } | { unitId: string | null }) {
-    if (!dragging || !course) return;
+    if (!dragging) return;
     const result = placeCard(course.shelves, dragging, target);
     if (result) apply(dragging, result);
     setDragging(null);
@@ -102,7 +88,6 @@ export function UnitBoard({ courses: initial, noun, activeCourseId, place, pickC
     },
   });
 
-  if (!course) return null;
   const filled = course.shelves.filter((s) => s.items.length > 0 && s.unitId !== null);
   const empty = course.shelves.filter((s) => s.items.length === 0 && s.unitId !== null);
   const loose = course.shelves.find((s) => s.unitId === null);
@@ -218,47 +203,6 @@ export function UnitBoard({ courses: initial, noun, activeCourseId, place, pickC
 
   return (
     <div className="flex flex-col gap-5">
-      {courses.length > 1 ? (
-        <div
-          role="tablist"
-          aria-label="Course"
-          className="flex flex-wrap gap-1 border-b border-border"
-          data-course-tabs
-        >
-          {courses.map((c) => {
-            const total = c.shelves.reduce((n, s) => n + s.items.length, 0);
-            const key = courseKey(c.courseId);
-            const isActive = key === active;
-            return (
-              <button
-                key={key}
-                type="button"
-                role="tab"
-                aria-selected={isActive}
-                data-course-tab={key}
-                className={cn(
-                  "-mb-px rounded-t-md border-b-2 px-3 py-2 text-sm transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-                  isActive
-                    ? "border-brand font-medium text-foreground"
-                    : "border-transparent text-muted-foreground hover:text-foreground"
-                )}
-                onClick={() => {
-                  setActive(key);
-                  setDragging(null);
-                  setOver(null);
-                  void pickCourse(c.courseId);
-                }}
-              >
-                {c.course}
-                <span className="ml-1.5 text-xs font-normal text-muted-foreground tabular">
-                  {total}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      ) : null}
-
       <p className="text-sm text-muted-foreground">
         Drag a card onto a unit, or in front of another card, to organize it.
         {error ? <span className="ml-2 text-error-foreground">{error}</span> : null}
@@ -313,6 +257,28 @@ export function UnitBoard({ courses: initial, noun, activeCourseId, place, pickC
           </div>
         ) : null}
       </section>
+
+      {orphans.length > 0 ? (
+        <section
+          className="flex flex-col gap-2 rounded-lg border border-dashed border-border p-3"
+          aria-label="Not in any course"
+          data-orphans
+        >
+          <h3 className="px-1 text-sm font-medium text-muted-foreground">
+            Not in any course <span className="font-normal tabular">· {orphans.length}</span>
+            <span className="ml-2 font-normal">
+              Open one and give it a course so it files under its units.
+            </span>
+          </h3>
+          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {orphans.map((card) => (
+              <li key={card.id} className="relative" data-card={card.id}>
+                {card.node}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
     </div>
   );
 }

@@ -48,7 +48,17 @@ function writeOpen(ids: Set<string>) {
  * remembered), with a Needs-attention row first and a search box that opens
  * whatever matches. Jon, Oct 1 2026.
  */
-export function PracticeAccordion({ groups }: { groups: CourseGroup[] }) {
+export function PracticeAccordion({
+  groups,
+  orphans = [],
+  headings = true,
+}: {
+  groups: CourseGroup[];
+  /** Items that belong to no course; listed apart so they never vanish (course focus). */
+  orphans?: PracticeItem[];
+  /** Course headings are redundant when the sidebar already names the one course shown. */
+  headings?: boolean;
+}) {
   const [query, setQuery] = useState("");
   const openRaw = useSyncExternalStore(subscribe, readOpen, () => "");
   const open = new Set(openRaw.split(",").filter(Boolean));
@@ -72,6 +82,7 @@ export function PracticeAccordion({ groups }: { groups: CourseGroup[] }) {
         .filter((u) => !searching || u.items.length > 0),
     }))
     .filter((g) => g.attention.length > 0 || g.units.length > 0);
+  const shownOrphans = orphans.filter((i) => matchesQuery(i, query));
 
   return (
     <div className="flex flex-col gap-5" data-practice-accordion>
@@ -87,20 +98,22 @@ export function PracticeAccordion({ groups }: { groups: CourseGroup[] }) {
         />
       </label>
 
-      {filtered.length === 0 ? (
+      {filtered.length === 0 && shownOrphans.length === 0 ? (
         <p className="rounded-lg border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
-          Nothing matches &ldquo;{query}&rdquo;.
+          {searching ? <>Nothing matches &ldquo;{query}&rdquo;.</> : "Nothing here yet."}
         </p>
       ) : null}
 
       {filtered.map((g) => (
         <section key={g.course} className="flex flex-col gap-2" aria-label={g.course}>
-          <h2 className="text-lg">
-            {g.course}{" "}
-            <span className="text-sm font-normal text-muted-foreground tabular">
-              · {g.total} {g.total === 1 ? "item" : "items"}
-            </span>
-          </h2>
+          {headings ? (
+            <h2 className="text-lg">
+              {g.course}{" "}
+              <span className="text-sm font-normal text-muted-foreground tabular">
+                · {g.total} {g.total === 1 ? "item" : "items"}
+              </span>
+            </h2>
+          ) : null}
 
           {g.attention.length > 0 ? <AttentionRow items={g.attention} /> : null}
 
@@ -154,6 +167,22 @@ export function PracticeAccordion({ groups }: { groups: CourseGroup[] }) {
           })}
         </section>
       ))}
+
+      {shownOrphans.length > 0 ? (
+        <section
+          className="rounded-lg border border-dashed border-border bg-card"
+          aria-label="Not in any course"
+          data-orphans
+        >
+          <p className="border-b border-border px-4 py-2 text-sm font-medium text-muted-foreground">
+            Not in any course <span className="font-normal tabular">· {shownOrphans.length}</span>
+            <span className="ml-2 font-normal">
+              Open one and give it a course so it files under its units.
+            </span>
+          </p>
+          <ContentList items={shownOrphans} bare />
+        </section>
+      ) : null}
     </div>
   );
 }
