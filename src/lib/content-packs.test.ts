@@ -39,16 +39,20 @@ beforeAll(async () => {
     { courseId: course.id, code: "U1", title: "Unit 1" },
     { courseId: course.id, code: "U2", title: "Unit 2" },
   ]);
-  // Jon's Physical Science A course has per-unit codes U1.LT1 … U1.LT4 (scripts/courses/physical-science.ts).
+  // Jon's Physical Science A course has per-unit codes U1.LT1 … U2.LT4 (scripts/courses/physical-science.ts).
   [ps] = await db
     .insert(schema.courses)
     .values({ ownerId: t.id, name: "Physical Science A" })
     .returning();
-  await db
-    .insert(schema.learningTargets)
-    .values(
-      [1, 2, 3, 4].map((n) => ({ courseId: ps.id, code: `U1.LT${n}`, title: `Target ${n}` }))
-    );
+  await db.insert(schema.learningTargets).values(
+    [1, 2].flatMap((u) =>
+      [1, 2, 3, 4].map((n) => ({
+        courseId: ps.id,
+        code: `U${u}.LT${n}`,
+        title: `Unit ${u} target ${n}`,
+      }))
+    )
+  );
   const [cls] = await db
     .insert(schema.classes)
     .values({ ownerId: t.id, courseId: course.id, name: "Anatomy · 5th Hour" })
@@ -70,6 +74,7 @@ describe("content packs", () => {
     expect(names).toContain("anatomy-u2-lab-quiz-integumentary");
     expect(names).toContain("anatomy-u1-quiz-intro-lab-mitosis");
     expect(names).toContain("ps-u1-test-form-b");
+    expect(names).toContain("ps-u2-quiz-7-1-atomic-theory");
     expect(names).toContain("anatomy-u2-activity-osteon-labeling");
   });
   it("applies each pack once: bank, questions with repo-hosted pictures, published assessment, assignment", async () => {
@@ -141,17 +146,18 @@ describe("content packs", () => {
       .select()
       .from(schema.learningTargets)
       .where(eq(schema.learningTargets.courseId, ps.id));
-    expect(psTargets).toHaveLength(4); // no stray targets created
+    expect(psTargets).toHaveLength(8); // no stray targets created
     expect(
       psQs.filter((q) => q.mediaUrl === "/quiz-images/ps-u1-test-form-b/ruler_q12.png")
     ).toHaveLength(1);
     const psTagged = await db.select().from(schema.questionTargets);
+    const countTagged = (qs: { id: string }[], targetId: string) =>
+      psTagged.filter(
+        (t) => t.learningTargetId === targetId && qs.some((q) => q.id === t.questionId)
+      ).length;
     for (const target of psTargets) {
-      const mine = psTagged.filter(
-        (t) => t.learningTargetId === target.id && psQs.some((q) => q.id === t.questionId)
-      );
-      expect(mine).toHaveLength(
-        { "U1.LT1": 9, "U1.LT2": 7, "U1.LT3": 8, "U1.LT4": 8 }[target.code]!
+      expect(countTagged(psQs, target.id)).toBe(
+        { "U1.LT1": 9, "U1.LT2": 7, "U1.LT3": 8, "U1.LT4": 8 }[target.code] ?? 0
       );
     }
     const formBAssessment = (await db.query.assessments.findFirst({
@@ -161,6 +167,40 @@ describe("content packs", () => {
       type: "summative",
       isPublished: true,
       courseId: ps.id,
+    });
+    // The Atomic Structure 7.1 quiz pack (Jon, Oct 7 2026): 12 multiple-choice questions from the
+    // printed Chapter 7 target quiz, 6 each on U2.LT1 and U2.LT2, three of them worth 2 points
+    // (15 points), a published formative, no assignment.
+    const atomic = first.find((o) => o.name === "ps-u2-quiz-7-1-atomic-theory")!;
+    expect(atomic.status).toBe("applied");
+    if (atomic.status === "applied")
+      expect(atomic.summary).toMatchObject({ questions: 12, assignedTo: [], errors: [] });
+    const atomicBank = (await db.query.questionBanks.findFirst({
+      where: eq(schema.questionBanks.name, "PS · Unit 2 · Quiz 7.1: Atomic Theory"),
+    }))!;
+    expect(atomicBank.courseId).toBe(ps.id);
+    const atomicQs = await db
+      .select()
+      .from(schema.questions)
+      .where(eq(schema.questions.bankId, atomicBank.id));
+    expect(atomicQs).toHaveLength(12);
+    expect(atomicQs.every((q) => q.type === "multiple_choice")).toBe(true);
+    expect(atomicQs.reduce((sum, q) => sum + q.points, 0)).toBe(15);
+    expect(atomicQs.filter((q) => q.points === 2)).toHaveLength(3);
+    for (const target of psTargets) {
+      expect(countTagged(atomicQs, target.id)).toBe({ "U2.LT1": 6, "U2.LT2": 6 }[target.code] ?? 0);
+    }
+    const atomicAssessment = (await db.query.assessments.findFirst({
+      where: eq(
+        schema.assessments.title,
+        "Atomic Structure Quiz 7.1: Atomic Theory & Structure of the Atom"
+      ),
+    }))!;
+    expect(atomicAssessment).toMatchObject({
+      type: "formative",
+      isPublished: true,
+      courseId: ps.id,
+      attemptLimit: 3,
     });
     // The osteon activity pack: no bank or CSV; it completes the hand-made draft (same page),
     // renames it, tags U2, and publishes it.
