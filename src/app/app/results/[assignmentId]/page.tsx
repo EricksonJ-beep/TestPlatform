@@ -6,30 +6,17 @@ import { isAuthzError, requireOwner } from "@/lib/authz";
 import { getAssignmentRow } from "@/lib/queries/assignments";
 import { getCorrectionsProgress } from "@/lib/queries/corrections";
 import { getGradebook, getItemAnalysis, getMasteryGrid } from "@/lib/queries/results";
-import { LocalTime } from "@/components/local-time";
 import { classAverages } from "@/lib/mastery";
-import { CorrectionsProgressSection } from "./corrections-progress";
+import { CorrectionsBar, CorrectionsSummary } from "./corrections-progress";
+import { StudentResultsTable } from "./student-table";
 import { HardQuestions, MasteryHeatmap } from "./mastery-grid";
-import { DeleteAttemptButton } from "./delete-attempt-button";
 import { RegradeButton } from "./regrade-button";
-import { UnlockButton } from "./unlock-button";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FollowCourse } from "@/components/app/course-focus";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 
 export const metadata: Metadata = { title: "Results" };
 
-const fmt = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(1));
-
-/** Gradebook: students × attempts, the highest in bold, corrections status, finish time. */
+/** Results for one assignment: heatmap, one row per student (attempts, corrections, counting score), hard questions. */
 export default async function AssignmentResultsPage({
   params,
 }: PageProps<"/app/results/[assignmentId]">) {
@@ -109,147 +96,28 @@ export default async function AssignmentResultsPage({
       </div>
 
       {grid.targets.length > 0 ? <MasteryHeatmap grid={grid} /> : null}
-      {corrections ? (
-        <CorrectionsProgressSection progress={corrections} reviewMode={a.reviewMode} />
-      ) : null}
-      <HardQuestions items={items} assignmentId={assignmentId} />
 
-      <h2 className="text-lg">Attempts</h2>
-      <div className="rounded-lg border border-border bg-card">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Student</TableHead>
-              <TableHead>Attempts</TableHead>
-              <TableHead className="hidden md:table-cell">Corrections</TableHead>
-              <TableHead className="text-right">Counts</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rows.map((s) => (
-              <TableRow key={s.studentId} data-student={s.studentId}>
-                <TableCell className="align-top font-medium">
-                  {s.lastName}, {s.firstName}
-                </TableCell>
-                <TableCell className="align-top">
-                  {s.attempts.length === 0 ? (
-                    <span className="text-muted-foreground">Not started</span>
-                  ) : (
-                    <ul className="flex flex-col gap-1">
-                      {s.attempts.map((t) => {
-                        const best = t.id === s.bestAttemptId;
-                        return (
-                          <li
-                            key={t.id}
-                            className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm"
-                            data-attempt={t.number}
-                          >
-                            <span className={best ? "font-semibold" : ""}>
-                              Attempt {t.number}
-                              {t.scopeCodes ? ` · retake ${t.scopeCodes.join(", ")}` : ""}
-                            </span>
-                            {t.status === "in_progress" ? (
-                              <Badge className="bg-brand-soft text-brand-deep">In progress</Badge>
-                            ) : (
-                              <>
-                                <span className={`tabular ${best ? "font-semibold" : ""}`}>
-                                  {t.score !== null && t.maxScore !== null
-                                    ? `${fmt(t.score)} / ${fmt(t.maxScore)} · ${Math.round(t.percent ?? 0)}%`
-                                    : "—"}
-                                </span>
-                                {t.pendingManual > 0 ? (
-                                  <Badge className="bg-warning-soft text-warning-foreground">
-                                    {t.pendingManual} to grade
-                                  </Badge>
-                                ) : null}
-                                <span className="text-xs text-muted-foreground">
-                                  {t.submittedAt ? <LocalTime date={t.submittedAt} /> : null}
-                                  {t.tabSwitches > 0
-                                    ? ` · ${t.tabSwitches} tab ${t.tabSwitches === 1 ? "switch" : "switches"}`
-                                    : ""}
-                                </span>
-                              </>
-                            )}
-                            {t.status !== "in_progress" ? (
-                              <Link
-                                href={`/app/results/attempts/${t.id}`}
-                                className="text-xs font-medium text-brand-deep hover:underline"
-                              >
-                                Review
-                              </Link>
-                            ) : null}
-                            <DeleteAttemptButton
-                              attemptId={t.id}
-                              number={t.number}
-                              inProgress={t.status === "in_progress"}
-                            />
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
-                  {(() => {
-                    // "Retakes need my OK": offer the next attempt's unlock once a finished attempt exists.
-                    if (!a.retakesNeedUnlock || s.attempts.length === 0) return null;
-                    if (s.attempts.some((t) => t.status === "in_progress")) return null;
-                    const next = s.attempts.length + 1;
-                    if (a.attemptsAllowed !== null && next > a.attemptsAllowed) return null;
-                    return (
-                      <div className="mt-1.5">
-                        <UnlockButton
-                          assignmentId={assignmentId}
-                          studentId={s.studentId}
-                          nextAttempt={next}
-                          unlocked={s.unlockedThrough >= next}
-                          requestedAt={s.requestedAt}
-                        />
-                      </div>
-                    );
-                  })()}
-                </TableCell>
-                <TableCell className="hidden align-top text-sm text-muted-foreground md:table-cell">
-                  {(() => {
-                    const latest = [...s.attempts].reverse().find((t) => t.corrections);
-                    const c = latest?.corrections;
-                    if (!latest || !c) return "—";
-                    const label =
-                      c.state === "submitted"
-                        ? "Awaiting approval"
-                        : c.state === "returned"
-                          ? "Returned"
-                          : c.state === "approved"
-                            ? "Approved"
-                            : "In progress";
-                    return (
-                      <span data-corrections-status>
-                        {label}
-                        <span className="block text-xs">
-                          attempt {latest.number} · {c.approved}/{c.total} approved
-                        </span>
-                      </span>
-                    );
-                  })()}
-                </TableCell>
-                <TableCell className="text-right align-top font-semibold tabular">
-                  {s.final ? (
-                    <>
-                      {fmt(s.final.totalEarned)} / {fmt(s.final.totalPossible)} ·{" "}
-                      {Math.round(s.final.percent)}%
-                      {summative && s.final.tier ? (
-                        <span className="block text-xs font-normal text-muted-foreground">
-                          Tier {s.final.tier} · {s.final.targetsBelowThreshold} below threshold
-                        </span>
-                      ) : null}
-                    </>
-                  ) : (
-                    <span className="text-muted-foreground">—</span>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      <section className="flex flex-col gap-3" aria-labelledby="students-heading">
+        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+          <h2 id="students-heading" className="text-lg">
+            Students
+          </h2>
+          {corrections ? (
+            <CorrectionsSummary progress={corrections} reviewMode={a.reviewMode} />
+          ) : null}
+        </div>
+        {corrections ? <CorrectionsBar progress={corrections} /> : null}
+        <StudentResultsTable
+          assignmentId={assignmentId}
+          rows={rows}
+          corrections={corrections?.rows ?? null}
+          summative={summative}
+          retakesNeedUnlock={a.retakesNeedUnlock}
+          attemptsAllowed={a.attemptsAllowed}
+        />
+      </section>
+
+      <HardQuestions items={items} assignmentId={assignmentId} />
     </div>
   );
 }
