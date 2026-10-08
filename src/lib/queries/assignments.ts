@@ -153,6 +153,8 @@ export type StudentAssignment = {
   status: AssignmentStatus;
   attemptsUsed: number;
   inProgressAttemptId: string | null;
+  /** How far the in-progress attempt is (answers saved out of questions served); null otherwise. */
+  progress: { answered: number; total: number } | null;
   bestPercent: number | null;
   /** Corrections on the latest finished attempt; null when none are needed (or not applicable). */
   corrections: CorrectionsSetSummary | null;
@@ -199,6 +201,8 @@ export async function listStudentAssignments(
       inProgressAttemptId: sql<
         string | null
       >`(select a.id from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status = 'in_progress' order by a.number desc limit 1)`,
+      inProgressAnswered: sql<number>`(select count(*)::int from ${schema.responses} r join ${schema.attempts} a on a.id = r.attempt_id where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status = 'in_progress' and r.answer is not null)`,
+      inProgressTotal: sql<number>`(select coalesce(max(jsonb_array_length(a.question_set)), 0)::int from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status = 'in_progress')`,
       latestAttemptId: sql<
         string | null
       >`(select a.id from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status <> 'in_progress' order by a.number desc limit 1)`,
@@ -234,6 +238,8 @@ export async function listStudentAssignments(
         accessCode,
         lastSubmittedAt,
         latestAttemptId: _latest,
+        inProgressAnswered,
+        inProgressTotal,
         unlockedThrough,
         requestedThrough,
         ...r
@@ -269,6 +275,9 @@ export async function listStudentAssignments(
           state,
           corrections,
           retake,
+          progress: r.inProgressAttemptId
+            ? { answered: Math.min(inProgressAnswered, inProgressTotal), total: inProgressTotal }
+            : null,
           bestPercent: r.bestPercent === null ? null : Number(r.bestPercent),
           nextAttemptAt: next && next > now ? next : null,
           retakeRequested: r.retakesNeedUnlock && requestedThrough === r.attemptsUsed + 1,
