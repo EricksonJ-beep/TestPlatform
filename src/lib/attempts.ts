@@ -22,6 +22,7 @@ import {
 import { recomputeGates } from "@/lib/gates";
 import { loadBuilderSections } from "@/lib/queries/assessments";
 import { loadGradableQuestions } from "@/lib/queries/attempts";
+import { getCorrectionsSummary } from "@/lib/queries/corrections";
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -222,6 +223,7 @@ export async function recomputeFinalScore(assignmentId: string, studentId: strin
       type: schema.assessments.type,
       retakeThreshold: schema.assignments.retakeThreshold,
       tier2Max: schema.assignments.tier2Max,
+      correctionsCap: schema.assignments.correctionsCap,
     })
     .from(schema.assignments)
     .innerJoin(schema.assessments, eq(schema.assignments.assessmentId, schema.assessments.id))
@@ -272,11 +274,21 @@ export async function recomputeFinalScore(assignmentId: string, studentId: strin
         attempts.map((a) => a.id)
       )
     );
+  // Corrections cap (Jon, Oct 8 2026): attempt 1's finished corrections lift its score.
+  const capped = asg.type === "formative" && asg.correctionsCap;
+  const firstNumber = Math.min(...attempts.map((a) => a.number));
+  let firstApproved = false;
+  if (capped) {
+    const first = attempts.find((a) => a.number === firstNumber)!;
+    const summary = await getCorrectionsSummary(first.id);
+    firstApproved = summary?.state === "approved";
+  }
   const summaries: AttemptSummary[] = attempts.map((a) => ({
     attemptId: a.id,
     number: a.number,
     totalEarned: a.score ?? 0,
     totalPossible: a.maxScore ?? 0,
+    correctionsApproved: capped && a.number === firstNumber ? firstApproved : false,
     perTarget: targetRows
       .filter((t) => t.attemptId === a.id)
       .map((t) => ({
@@ -289,6 +301,7 @@ export async function recomputeFinalScore(assignmentId: string, studentId: strin
   const final = computeFinalScore(asg.type, summaries, {
     threshold: asg.retakeThreshold,
     tier2Max: asg.tier2Max,
+    correctionsCap: capped,
   });
   const existing = await db.query.assignmentFinalScores.findFirst({
     columns: { tier: true, previousTier: true, tierChangedAt: true },
@@ -309,6 +322,7 @@ export async function recomputeFinalScore(assignmentId: string, studentId: strin
     previousTier: tierChanged ? existing!.tier : (existing?.previousTier ?? null),
     tierChangedAt: tierChanged ? now : (existing?.tierChangedAt ?? null),
     targetsBelowThreshold: final.targetsBelowThreshold.length,
+    basis: final.basis,
     computedAt: now,
   };
   await db

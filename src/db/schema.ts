@@ -638,6 +638,14 @@ export const assignments = pgTable(
     retakeWaitHours: integer("retake_wait_hours").default(0).notNull(),
     /** Jon, Oct 1 2026: each retake waits for the teacher's per-student unlock (`attempt_unlocks`); corrections become optional. */
     retakesNeedUnlock: boolean("retakes_need_unlock").default(false).notNull(),
+    /**
+     * Jon, Oct 8 2026 (formatives): below the threshold must do corrections and tops out at the
+     * threshold; at or above it, corrections raise the score to 100; a retake's score stands on its
+     * own and the highest counts. Ignored on practice and summatives.
+     */
+    correctionsCap: boolean("corrections_cap").default(true).notNull(),
+    /** Under the cap: days after the first attempt during which a retake may start (0 = no limit). */
+    retakeWindowDays: integer("retake_window_days").default(7).notNull(),
     ...timestamps,
   },
   (t) => [
@@ -818,6 +826,10 @@ export const attemptTargetScores = pgTable(
   ]
 );
 
+/** How the counting score came about (the "why" beside the final on the results page and export). */
+export type FinalBasis =
+  "best_attempt" | "corrections_to_threshold" | "corrections_to_full" | "retake" | "per_target";
+
 export type PerTargetBest = Record<
   string,
   { pointsEarned: number; pointsPossible: number; percent: number; fromAttemptId: string }
@@ -844,6 +856,7 @@ export const assignmentFinalScores = pgTable(
     previousTier: integer("previous_tier"),
     tierChangedAt: timestamp("tier_changed_at", { withTimezone: true }),
     targetsBelowThreshold: integer("targets_below_threshold").default(0).notNull(),
+    basis: text("basis").$type<FinalBasis>(),
     computedAt: timestamp("computed_at", { withTimezone: true }).defaultNow().notNull(),
     ...timestamps,
   },

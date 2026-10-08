@@ -39,6 +39,34 @@ describe("canStartAttempt", () => {
   it("allows inside the window with attempts left", () => {
     expect(canStartAttempt({ assignment: open, attemptsUsed: 2, now })).toEqual({ ok: true });
   });
+  it("retake window (corrections cap): retakes must start within N days of the first attempt", () => {
+    const capped = { ...open, retakeWindowDays: 7 };
+    const first = at("2026-09-14T14:00:00Z"); // 8 days before now
+    expect(
+      canStartAttempt({ assignment: capped, attemptsUsed: 1, firstSubmittedAt: first, now })
+    ).toMatchObject({ reason: "window_closed", closedAt: at("2026-09-21T14:00:00Z") });
+    expect(
+      canStartAttempt({
+        assignment: capped,
+        attemptsUsed: 1,
+        firstSubmittedAt: at("2026-09-16T14:00:00Z"),
+        now,
+      })
+    ).toEqual({ ok: true });
+    // Attempt 1 is never windowed; no window, no limit.
+    expect(canStartAttempt({ assignment: capped, attemptsUsed: 0, now })).toEqual({ ok: true });
+    expect(
+      canStartAttempt({
+        assignment: { ...open, retakeWindowDays: 0 },
+        attemptsUsed: 1,
+        firstSubmittedAt: first,
+        now,
+      })
+    ).toEqual({ ok: true });
+    expect(
+      startReasonText({ ok: false, reason: "window_closed", closedAt: at("2026-09-21T14:00:00Z") })
+    ).toMatch(/Retakes on this quiz closed Sep 21/);
+  });
   it("blocks outside the window", () => {
     expect(
       canStartAttempt({

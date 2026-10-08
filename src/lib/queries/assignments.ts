@@ -4,10 +4,12 @@
  */
 import { and, asc, desc, eq, inArray, or, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
+import type { FinalBasis } from "@/db/schema";
 import {
   assignmentStatus,
   needsUnlock,
   nextAttemptAt,
+  retakeWindowEnd,
   type AssignmentStatus,
 } from "@/lib/assignments";
 import { getCorrectionsSummary, type CorrectionsSetSummary } from "@/lib/queries/corrections";
@@ -35,6 +37,8 @@ export type AssignmentRow = {
   resultsReleased: boolean;
   retakeWaitHours: number;
   retakesNeedUnlock: boolean;
+  correctionsCap: boolean;
+  retakeWindowDays: number;
   createdAt: Date;
   enrolled: number;
   started: number;
@@ -62,6 +66,8 @@ const baseSelect = {
   resultsReleased: schema.assignments.resultsReleased,
   retakeWaitHours: schema.assignments.retakeWaitHours,
   retakesNeedUnlock: schema.assignments.retakesNeedUnlock,
+  correctionsCap: schema.assignments.correctionsCap,
+  retakeWindowDays: schema.assignments.retakeWindowDays,
   createdAt: schema.assignments.createdAt,
   enrolled: sql<number>`(select count(*)::int from ${schema.enrollments} e where e.class_id = ${schema.assignments.classId})`,
   started: sql<number>`(select count(distinct a.student_id)::int from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id})`,
@@ -150,9 +156,22 @@ export type StudentAssignment = {
   retakesNeedUnlock: boolean;
   /** The student has asked for the next attempt and the teacher hasn't answered yet. */
   retakeRequested: boolean;
+  /** Corrections cap (formatives, Jon Oct 8 2026) and the threshold it lifts to. */
+  correctionsCap: boolean;
+  retakeThreshold: number;
+  /** Under the cap: the last moment a retake may start; null before attempt 1 or with no window. */
+  retakeBy: Date | null;
+  /** `retakeBy` has passed (decided server-side so the cards never read the clock while rendering). */
+  retakeWindowClosed: boolean;
+  /** Attempt 1's percent, which the cap reads. */
+  firstPercent: number | null;
+  /** The counting score as the gradebook has it, and how it came about. */
+  final: { percent: number; basis: FinalBasis | null } | null;
   status: AssignmentStatus;
   attemptsUsed: number;
   inProgressAttemptId: string | null;
+  /** How far the in-progress attempt is (answers saved out of questions served); null otherwise. */
+  progress: { answered: number; total: number } | null;
   bestPercent: number | null;
   /** Corrections on the latest finished attempt; null when none are needed (or not applicable). */
   corrections: CorrectionsSetSummary | null;
@@ -192,6 +211,17 @@ export async function listStudentAssignments(
       resultsReleased: schema.assignments.resultsReleased,
       retakeWaitHours: schema.assignments.retakeWaitHours,
       retakesNeedUnlock: schema.assignments.retakesNeedUnlock,
+      correctionsCap: schema.assignments.correctionsCap,
+      retakeWindowDays: schema.assignments.retakeWindowDays,
+      retakeThreshold: schema.assignments.retakeThreshold,
+      firstSubmittedAt: sql<Date | null>`(select min(a.submitted_at) from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status <> 'in_progress')`,
+      firstPercent: sql<
+        number | null
+      >`(select a.percent from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status <> 'in_progress' order by a.number asc limit 1)`,
+      finalPercent: sql<
+        number | null
+      >`(select f.percent from ${schema.assignmentFinalScores} f where f.assignment_id = ${schema.assignments.id} and f.student_id = ${studentId})`,
+      finalBasis: sql<FinalBasis | null>`(select f.basis from ${schema.assignmentFinalScores} f where f.assignment_id = ${schema.assignments.id} and f.student_id = ${studentId})`,
       lastSubmittedAt: sql<Date | null>`(select max(a.submitted_at) from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status <> 'in_progress')`,
       unlockedThrough: sql<number>`(select coalesce(max(u.attempt_number), 0)::int from ${schema.attemptUnlocks} u where u.assignment_id = ${schema.assignments.id} and u.student_id = ${studentId} and u.granted_at is not null)`,
       requestedThrough: sql<number>`(select coalesce(max(u.attempt_number), 0)::int from ${schema.attemptUnlocks} u where u.assignment_id = ${schema.assignments.id} and u.student_id = ${studentId} and u.granted_at is null)`,
@@ -199,6 +229,8 @@ export async function listStudentAssignments(
       inProgressAttemptId: sql<
         string | null
       >`(select a.id from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status = 'in_progress' order by a.number desc limit 1)`,
+      inProgressAnswered: sql<number>`(select count(*)::int from ${schema.responses} r join ${schema.attempts} a on a.id = r.attempt_id where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status = 'in_progress' and r.answer is not null)`,
+      inProgressTotal: sql<number>`(select coalesce(max(jsonb_array_length(a.question_set)), 0)::int from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status = 'in_progress')`,
       latestAttemptId: sql<
         string | null
       >`(select a.id from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status <> 'in_progress' order by a.number desc limit 1)`,
@@ -234,6 +266,13 @@ export async function listStudentAssignments(
         accessCode,
         lastSubmittedAt,
         latestAttemptId: _latest,
+        inProgressAnswered,
+        inProgressTotal,
+        firstSubmittedAt,
+        firstPercent: firstPercentRaw,
+        finalPercent,
+        finalBasis,
+        retakeWindowDays,
         unlockedThrough,
         requestedThrough,
         ...r
@@ -246,6 +285,13 @@ export async function listStudentAssignments(
         const corrections = summaries.get(r.id) ?? null;
         const retake = retakes.get(r.id) ?? null;
         const bestPercent = r.bestPercent === null ? null : Number(r.bestPercent);
+        // Corrections cap (Jon, Oct 8 2026): formatives only; the window counts from attempt 1.
+        const capped = r.type === "formative" && r.correctionsCap;
+        const firstPercent = firstPercentRaw === null ? null : Number(firstPercentRaw);
+        const finalPct = finalPercent === null ? null : Number(finalPercent);
+        const retakeBy = capped
+          ? retakeWindowEnd(retakeWindowDays, firstSubmittedAt ? new Date(firstSubmittedAt) : null)
+          : null;
         let state: StudentCardState;
         if (status === "scheduled") state = "upcoming";
         else if (status === "closed") state = "closed";
@@ -257,9 +303,13 @@ export async function listStudentAssignments(
             corrections: r.retakesNeedUnlock ? "none" : (corrections?.state ?? "none"),
             attemptsUsed: r.attemptsUsed,
             attemptsAllowed: r.attemptsAllowed,
-            bestPercent,
+            bestPercent: capped && finalPct !== null ? finalPct : bestPercent,
             plan: retake?.plan ?? null,
             needsUnlock: r.retakesNeedUnlock && needsUnlock(r.attemptsUsed, unlockedThrough),
+            correctionsCap: capped,
+            firstPercent,
+            threshold: r.retakeThreshold,
+            windowClosed: retakeBy !== null && now >= retakeBy,
           });
         else state = "not_started";
         return {
@@ -269,6 +319,13 @@ export async function listStudentAssignments(
           state,
           corrections,
           retake,
+          retakeBy,
+          retakeWindowClosed: retakeBy !== null && now >= retakeBy,
+          firstPercent,
+          final: finalPct === null ? null : { percent: finalPct, basis: finalBasis ?? null },
+          progress: r.inProgressAttemptId
+            ? { answered: Math.min(inProgressAnswered, inProgressTotal), total: inProgressTotal }
+            : null,
           bestPercent: r.bestPercent === null ? null : Number(r.bestPercent),
           nextAttemptAt: next && next > now ? next : null,
           retakeRequested: r.retakesNeedUnlock && requestedThrough === r.attemptsUsed + 1,

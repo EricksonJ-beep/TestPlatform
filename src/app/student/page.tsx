@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AssignmentCard } from "./assignment-card";
 import { PracticeTab } from "./practice-tab";
 import { ResultsTab } from "./results-tab";
+import { SECTION_TITLE, sectionAssessments } from "@/lib/student-home";
 
 export default async function StudentHome() {
   const session = await requireStudent();
@@ -34,10 +35,12 @@ export default async function StudentHome() {
       a.state === "not_started" ||
       a.state === "in_progress" ||
       a.state === "corrections_needed" ||
+      a.state === "corrections_optional" ||
       a.state === "corrections_returned" ||
       a.state === "relearning" ||
       a.state === "retake_required"
   ).length;
+  const sections = sectionAssessments(assignments);
 
   return (
     <div className="flex flex-col gap-5">
@@ -92,28 +95,62 @@ export default async function StudentHome() {
         </Link>
       ) : null}
 
-      <Tabs defaultValue="assignments">
+      <Tabs defaultValue="assessments">
         <TabsList className="w-full justify-start sm:w-auto">
-          <TabsTrigger value="assignments">Assignments</TabsTrigger>
+          <TabsTrigger value="assessments">Assessments</TabsTrigger>
           <TabsTrigger value="practice">Practice</TabsTrigger>
           <TabsTrigger value="results">My results</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="assignments">
+        <TabsContent value="assessments">
           {assignments.length === 0 ? (
             <div className="rounded-lg border border-border bg-card">
               <EmptyState
                 icon={ClipboardList}
-                title="No assignments yet"
+                title="No assessments yet"
                 description="When your teacher opens a quiz or test for your class, it shows up here with a Start button."
               />
             </div>
           ) : (
-            <ul className="flex flex-col gap-3" aria-label="Assignments">
-              {assignments.map((a) => (
-                <AssignmentCard key={a.id} a={a} />
-              ))}
-            </ul>
+            <div className="flex flex-col gap-5" data-assessment-sections>
+              {(["needs_you", "waiting"] as const).map((key) =>
+                sections[key].length > 0 ? (
+                  <section key={key} aria-labelledby={`section-${key}`} data-section={key}>
+                    <h2
+                      id={`section-${key}`}
+                      className="mb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase"
+                    >
+                      {SECTION_TITLE[key]}
+                      <span className="ml-1.5 font-normal tabular">· {sections[key].length}</span>
+                    </h2>
+                    <ul className="flex flex-col gap-3" aria-label={SECTION_TITLE[key]}>
+                      {sections[key].map((a) => (
+                        <AssignmentCard key={a.id} a={a} />
+                      ))}
+                    </ul>
+                  </section>
+                ) : null
+              )}
+              {sections.needs_you.length === 0 && sections.waiting.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Nothing open right now. Closed assessments are below.
+                </p>
+              ) : null}
+              {sections.closed.length > 0 ? (
+                <details className="group" data-section="closed">
+                  <summary className="cursor-pointer list-none text-xs font-medium tracking-wide text-muted-foreground uppercase select-none hover:text-foreground">
+                    <span className="group-open:hidden">Show closed</span>
+                    <span className="hidden group-open:inline">Hide closed</span>
+                    <span className="ml-1.5 font-normal tabular">· {sections.closed.length}</span>
+                  </summary>
+                  <ul className="mt-2 flex flex-col gap-3" aria-label="Closed">
+                    {sections.closed.map((a) => (
+                      <AssignmentCard key={a.id} a={a} />
+                    ))}
+                  </ul>
+                </details>
+              ) : null}
+            </div>
           )}
         </TabsContent>
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Clock, Lock } from "lucide-react";
 import type { StudentAssignment } from "@/lib/queries/assignments";
+import { TYPE_LABEL } from "@/lib/student-home";
 import { LocalTime } from "@/components/local-time";
 import { Button } from "@/components/ui/button";
 import { RetakePicker } from "./retake-picker";
@@ -9,6 +10,10 @@ const PILL: Record<StudentAssignment["state"], { label: string; className: strin
   upcoming: { label: "Opens soon", className: "bg-muted text-muted-foreground" },
   not_started: { label: "Not started", className: "bg-warning-soft text-warning-foreground" },
   in_progress: { label: "In progress", className: "bg-brand-soft text-brand-deep" },
+  corrections_optional: {
+    label: "Corrections optional",
+    className: "bg-brand-soft text-brand-deep",
+  },
   corrections_needed: {
     label: "Corrections needed",
     className: "bg-coral-soft text-[#B93E27]",
@@ -35,8 +40,17 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
   const c = a.corrections;
   const correcting =
     a.state === "corrections_needed" ||
+    a.state === "corrections_optional" ||
     a.state === "corrections_returned" ||
     a.state === "corrections_submitted";
+  // Jon, Oct 8 2026: a set the student has started but not finished says so.
+  const correctionsStarted =
+    (a.state === "corrections_needed" || a.state === "corrections_optional") &&
+    !!c &&
+    c.started > 0;
+  const capped = a.type === "formative" && a.correctionsCap;
+  const windowOpen = a.retakeBy !== null && !a.retakeWindowClosed;
+  const pillLabel = correctionsStarted ? "Corrections in progress" : pill.label;
   const href =
     correcting && c ? `/student/corrections/${c.attemptId}` : `/student/assignments/${a.id}`;
   const nextAttempt = a.attemptsAllowed === null || a.attemptsUsed < a.attemptsAllowed;
@@ -47,7 +61,15 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
       case "in_progress":
         return { label: "Continue", primary: true };
       case "corrections_needed":
-        return { label: "Do corrections", primary: true };
+        return {
+          label: correctionsStarted ? "Continue corrections" : "Do corrections",
+          primary: true,
+        };
+      case "corrections_optional":
+        return {
+          label: correctionsStarted ? "Continue corrections" : "Do corrections",
+          primary: false,
+        };
       case "corrections_returned":
         return { label: "Revise corrections", primary: true };
       case "corrections_submitted":
@@ -79,8 +101,17 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
       <div className="mr-auto min-w-0">
         <div className="flex flex-wrap items-center gap-2">
           <h3 className="text-base font-medium">{a.title}</h3>
-          <span className={`rounded-md px-2 py-0.5 text-xs font-medium ${pill.className}`}>
-            {pill.label}
+          <span
+            className="rounded-md border border-border px-1.5 py-0.5 text-[11px] font-medium tracking-wide text-muted-foreground uppercase"
+            data-type={a.type}
+          >
+            {TYPE_LABEL[a.type]}
+          </span>
+          <span
+            className={`rounded-md px-2 py-0.5 text-xs font-medium ${pill.className}`}
+            data-pill={correctionsStarted ? "corrections_in_progress" : a.state}
+          >
+            {pillLabel}
           </span>
         </div>
         <p className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm text-muted-foreground">
@@ -114,6 +145,17 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
               {a.attemptsAllowed === 1 ? "attempt" : "attempts"} used
             </span>
           ) : null}
+          {a.state === "in_progress" && a.progress && a.progress.total > 0 ? (
+            <span className="inline-flex items-center gap-1.5 tabular" data-progress>
+              <span className="h-1.5 w-16 overflow-hidden rounded-full bg-muted" aria-hidden>
+                <span
+                  className="block h-full bg-brand"
+                  style={{ width: `${(a.progress.answered / a.progress.total) * 100}%` }}
+                />
+              </span>
+              {a.progress.answered} of {a.progress.total} answered
+            </span>
+          ) : null}
           {a.nextAttemptAt ? (
             <span>
               Next attempt <LocalTime date={a.nextAttemptAt} />
@@ -127,16 +169,51 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
                 : `Your teacher unlocks attempt ${a.attemptsUsed + 1}`}
             </span>
           ) : null}
-          {a.bestPercent !== null && a.resultsReleased ? (
+          {a.final && a.resultsReleased && capped ? (
+            <span className="tabular" data-final={a.final.basis ?? "none"}>
+              {a.final.basis === "best_attempt" ? "Best" : "Score"} {Math.round(a.final.percent)}%
+              {a.final.basis === "corrections_to_threshold"
+                ? " · after corrections, your top score until you retake"
+                : a.final.basis === "corrections_to_full"
+                  ? " · after corrections"
+                  : a.final.basis === "retake"
+                    ? " · from your retake"
+                    : ""}
+            </span>
+          ) : a.bestPercent !== null && a.resultsReleased ? (
             <span className="tabular">
               Best {Math.round(a.bestPercent)}%{allProficient ? " · all targets proficient" : ""}
             </span>
           ) : null}
+          {a.retakeBy && a.state !== "in_progress" && a.attemptsUsed > 0 ? (
+            windowOpen ? (
+              a.state === "done" ? null : (
+                <span data-retake-window>
+                  Retake by <LocalTime date={a.retakeBy} />
+                </span>
+              )
+            ) : (
+              <span data-retake-window="closed">
+                Retakes closed <LocalTime date={a.retakeBy} />
+              </span>
+            )
+          ) : null}
           {c && a.state === "corrections_needed" ? (
             <span className="inline-flex items-center gap-1" data-corrections-hint>
               <Lock className="size-3.5" aria-hidden />
-              Correct {c.remaining} missed {c.remaining === 1 ? "question" : "questions"}
-              {nextAttempt ? ` to unlock attempt ${a.attemptsUsed + 1}` : ""}
+              {correctionsStarted
+                ? `${c.started} of ${c.needed} corrections started`
+                : `Correct ${c.remaining} missed ${c.remaining === 1 ? "question" : "questions"}`}
+              {capped
+                ? ` to bring this up to ${a.retakeThreshold}%`
+                : nextAttempt
+                  ? ` to unlock attempt ${a.attemptsUsed + 1}`
+                  : ""}
+            </span>
+          ) : c && a.state === "corrections_optional" ? (
+            <span data-corrections-hint>
+              {correctionsStarted ? `${c.started} of ${c.needed} corrections started · ` : ""}
+              Finish corrections to raise this to 100%
             </span>
           ) : c && a.state === "corrections_returned" ? (
             <span data-corrections-hint>Your teacher sent your corrections back with a note</span>

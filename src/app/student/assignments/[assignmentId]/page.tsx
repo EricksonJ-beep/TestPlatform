@@ -79,6 +79,12 @@ export default async function StudentAssignmentPage({
               {a.attemptsAllowed === 1 ? "attempt" : "attempts"} used
             </span>
           ) : null}
+          {a.retakeBy && a.attemptsUsed > 0 ? (
+            <span data-retake-window={a.retakeWindowClosed ? "closed" : "open"}>
+              {a.retakeWindowClosed ? "Retakes closed " : "Retake by "}
+              <LocalTime date={a.retakeBy} />
+            </span>
+          ) : null}
         </p>
       </div>
 
@@ -108,7 +114,11 @@ export default async function StudentAssignmentPage({
               ? "Your corrections are in. Your teacher will approve them or send them back."
               : c.state === "returned"
                 ? "Your teacher sent your corrections back. Revise and resubmit to unlock your next attempt."
-                : `Correct ${c.remaining} missed ${c.remaining === 1 ? "question" : "questions"} on attempt ${c.attemptNumber}${attemptsLeft === null || attemptsLeft > 0 ? " to unlock your next attempt" : ""}.`}
+                : a.state === "corrections_optional"
+                  ? `Corrections are optional on this quiz. Finish them on attempt ${c.attemptNumber} to raise your score to 100%.`
+                  : a.type === "formative" && a.correctionsCap
+                    ? `Correct ${c.remaining} missed ${c.remaining === 1 ? "question" : "questions"} on attempt ${c.attemptNumber} to bring this quiz up to ${a.retakeThreshold}%${attemptsLeft === null || attemptsLeft > 0 ? ", then retake it to go higher" : ""}.`
+                    : `Correct ${c.remaining} missed ${c.remaining === 1 ? "question" : "questions"} on attempt ${c.attemptNumber}${attemptsLeft === null || attemptsLeft > 0 ? " to unlock your next attempt" : ""}.`}
           </span>
           <Button
             size="lg"

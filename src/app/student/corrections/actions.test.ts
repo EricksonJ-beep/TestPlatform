@@ -20,7 +20,7 @@ vi.mock("@/db", async () => {
   return { db, schema, dbDriver: "pg" };
 });
 
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { createAttempt, finalizeAttempt } from "@/lib/attempts";
 import { listStudentAssignments } from "@/lib/queries/assignments";
@@ -415,6 +415,22 @@ describe("submitCorrections and the review gate", () => {
     const card = (await listStudentAssignments(ids.s1)).find((a) => a.id === ids.formative)!;
     expect(card.state).toBe("retake_available"); // formative, 1 of 3 attempts used, not perfect
     expect(card.corrections).toMatchObject({ state: "approved" });
+    // Corrections cap (Jon, Oct 8 2026): 40% on attempt 1, corrections approved → lifted to the
+    // 80% threshold, and the retake window (7 days from attempt 1) is open.
+    expect(card.final).toMatchObject({ percent: 80, basis: "corrections_to_threshold" });
+    expect(card.retakeBy).toBeInstanceOf(Date);
+    expect(card.retakeWindowClosed).toBe(false);
+    const [finalRow] = await db
+      .select()
+      .from(schema.assignmentFinalScores)
+      .where(
+        and(
+          eq(schema.assignmentFinalScores.assignmentId, ids.formative),
+          eq(schema.assignmentFinalScores.studentId, ids.s1)
+        )
+      );
+    expect(finalRow).toMatchObject({ percent: 80, basis: "corrections_to_threshold" });
+    expect(finalRow.totalEarned).toBeCloseTo(finalRow.totalPossible * 0.8, 5);
     const next = await ok(startAttempt(ids.formative, null));
     expect(next.resumed).toBe(false);
   });

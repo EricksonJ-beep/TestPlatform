@@ -122,6 +122,8 @@ async function loadScope(attemptId: string): Promise<Scope | null> {
 export type CorrectionsSetSummary = CorrectionsSummary & {
   attemptId: string;
   attemptNumber: number;
+  /** Needed items with any saved correction (a draft counts), so a set can read "in progress". */
+  started: number;
   /** The teacher's note on a returned set, if any. */
   reviewerNote: string | null;
 };
@@ -142,7 +144,15 @@ export async function getCorrectionsSummary(
     .where(eq(schema.corrections.attemptId, attemptId));
   const summary = correctionsSummary(scope.needed, rows);
   const note = rows.find((r) => r.status === "returned" && r.reviewerNote)?.reviewerNote ?? null;
-  return { ...summary, attemptId, attemptNumber: scope.attempt.number, reviewerNote: note };
+  const neededSet = new Set(scope.needed);
+  const started = rows.filter((r) => neededSet.has(r.questionId)).length;
+  return {
+    ...summary,
+    started: Math.min(started, summary.needed),
+    attemptId,
+    attemptNumber: scope.attempt.number,
+    reviewerNote: note,
+  };
 }
 
 /** Which questions need a correction and whether each one is settled (used by the actions). */

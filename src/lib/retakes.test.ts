@@ -128,6 +128,48 @@ describe("cycleState", () => {
       })
     ).toBe("done");
   });
+  it("corrections cap: optional corrections at/above the threshold; done once the window closes", () => {
+    const f = {
+      type: "formative" as const,
+      plan: null,
+      attemptsAllowed: 3,
+      correctionsCap: true,
+      threshold: 80,
+    };
+    expect(
+      cycleState({ ...base, ...f, corrections: "needed", firstPercent: 50, bestPercent: 50 })
+    ).toBe("corrections_needed");
+    expect(
+      cycleState({ ...base, ...f, corrections: "needed", firstPercent: 85, bestPercent: 85 })
+    ).toBe("corrections_optional");
+    expect(
+      cycleState({ ...base, ...f, corrections: "approved", firstPercent: 85, bestPercent: 100 })
+    ).toBe("done");
+    expect(
+      cycleState({ ...base, ...f, corrections: "approved", firstPercent: 50, bestPercent: 80 })
+    ).toBe("retake_available");
+    expect(
+      cycleState({
+        ...base,
+        ...f,
+        corrections: "approved",
+        firstPercent: 50,
+        bestPercent: 80,
+        windowClosed: true,
+      })
+    ).toBe("done");
+    // Without the cap the window means nothing and corrections are never optional.
+    expect(
+      cycleState({
+        ...base,
+        ...f,
+        correctionsCap: false,
+        corrections: "needed",
+        firstPercent: 85,
+        bestPercent: 85,
+      })
+    ).toBe("corrections_needed");
+  });
   it("formatives: retake available while attempts remain and the score isn't perfect", () => {
     expect(
       cycleState({

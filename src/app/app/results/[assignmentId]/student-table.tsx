@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { cn } from "cn";
 import { PROGRESS_LABEL } from "@/lib/corrections";
+import { BASIS_LABEL } from "@/lib/final-basis";
 import type { CorrectionsProgressRow } from "@/lib/queries/corrections";
 import type { GradebookAttempt, GradebookRow } from "@/lib/queries/results";
 import { LocalTime } from "@/components/local-time";
@@ -229,6 +230,13 @@ function StudentRows({
               {summative && s.final.tier ? (
                 <span className="block text-xs font-normal text-muted-foreground">
                   Tier {s.final.tier} · {s.final.targetsBelowThreshold} below threshold
+                </span>
+              ) : null}
+              {s.final.basis &&
+              s.final.basis !== "best_attempt" &&
+              s.final.basis !== "per_target" ? (
+                <span className="block text-xs font-normal text-muted-foreground" data-basis>
+                  {BASIS_LABEL[s.final.basis]}
                 </span>
               ) : null}
             </>

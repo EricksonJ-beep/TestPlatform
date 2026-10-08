@@ -7,6 +7,7 @@ import { db, schema } from "@/db";
 import type { QuestionType } from "@/db/types";
 import { answerToText, correctAnswerText, type Answer, type GradableOption } from "@/lib/grading";
 import type { StimulusInfo } from "@/lib/stimulus-groups";
+import type { FinalBasis } from "@/db/schema";
 
 export type GradebookAttempt = {
   id: string;
@@ -47,6 +48,7 @@ export type GradebookRow = {
     percent: number;
     tier: number | null;
     targetsBelowThreshold: number;
+    basis: FinalBasis | null;
   } | null;
 };
 
@@ -154,6 +156,7 @@ export async function getGradebook(assignmentId: string): Promise<GradebookRow[]
             percent: f.percent,
             tier: f.tier,
             targetsBelowThreshold: f.targetsBelowThreshold,
+            basis: f.basis,
           }
         : null,
     };
@@ -746,6 +749,8 @@ export type ExportRow = {
   maxScore: number | null;
   percent: number | null;
   attempts: number;
+  /** How the counting score came about (corrections cap, retake, …); null with no score. */
+  basis: FinalBasis | null;
 };
 
 /** One row per enrolled student with the score that counts (highest); blank when they have no finished attempt. */
@@ -764,6 +769,7 @@ export async function highestScoresRows(assignmentId: string): Promise<ExportRow
       maxScore: schema.assignmentFinalScores.totalPossible,
       percent: schema.assignmentFinalScores.percent,
       attempts: sql<number>`(select count(*)::int from ${schema.attempts} a where a.assignment_id = ${assignmentId} and a.student_id = ${schema.users.id} and a.status <> 'in_progress')`,
+      basis: schema.assignmentFinalScores.basis,
     })
     .from(schema.enrollments)
     .innerJoin(schema.users, eq(schema.enrollments.studentId, schema.users.id))
