@@ -1,0 +1,13 @@
+{
+  "name": "bio-u2-test-biochemistry",
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "unit": "Unit 2 · Biochemistry",
+  "bank": "Bio · Unit 2 Test: Biochemistry",
+  "assessment": {
+    "title": "Unit 2 Test: Biochemistry",
+    "type": "summative",
+    "instructions": "32 questions on Unit 2: atoms, elements, and chemical bonds; the four macromolecule tests (Benedict's, iodine, Biuret, Sudan IV); carbohydrates, lipids, proteins, and nucleic acids; and enzymes. The two matching questions count one point per pair."
+  },
+  "assign": []
+}

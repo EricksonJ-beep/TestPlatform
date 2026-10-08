@@ -18,6 +18,7 @@ import { applyAllPacks, applyPack, listPacks } from "./content-packs";
 
 const ids = { teacher: "", course: "", cls: "" };
 let ps: { id: string };
+let bio: { id: string };
 let bioUnit2: { id: string };
 
 beforeAll(async () => {
@@ -51,20 +52,18 @@ beforeAll(async () => {
       [1, 2, 3, 4].map((n) => ({ courseId: ps.id, code: `U1.LT${n}`, title: `Target ${n}` }))
     );
   // Jon's Biology A course is seeded with named units and per-unit codes (scripts/courses/biology.ts).
-  const [bio] = await db
-    .insert(schema.courses)
-    .values({ ownerId: t.id, name: "Biology A" })
-    .returning();
+  [bio] = await db.insert(schema.courses).values({ ownerId: t.id, name: "Biology A" }).returning();
   [bioUnit2] = await db
     .insert(schema.units)
     .values({ courseId: bio.id, name: "Unit 2 · Biochemistry", sortOrder: 1 })
     .returning();
-  await db.insert(schema.learningTargets).values({
-    courseId: bio.id,
-    unitId: bioUnit2.id,
-    code: "U2.LT4",
-    title: "The four macromolecules",
-  });
+  await db.insert(schema.learningTargets).values(
+    [
+      ["U2.LT1", "Atoms, molecules, and bonds"],
+      ["U2.LT4", "The four macromolecules"],
+      ["U2.LT5", "Enzymes"],
+    ].map(([code, title]) => ({ courseId: bio.id, unitId: bioUnit2.id, code, title }))
+  );
   const [cls] = await db
     .insert(schema.classes)
     .values({ ownerId: t.id, courseId: course.id, name: "Anatomy · 5th Hour" })
@@ -206,12 +205,58 @@ describe("content packs", () => {
       .select()
       .from(schema.learningTargets)
       .where(eq(schema.learningTargets.unitId, bioUnit2.id));
-    expect(bioTargets).toHaveLength(1); // every row landed on U2.LT4; no stray targets
+    expect(bioTargets).toHaveLength(3); // the seeded U2 targets only; no stray targets
     const carbAssessment = (await db.query.assessments.findFirst({
       where: eq(schema.assessments.title, "Unit 2 Quiz: Carbohydrates"),
     }))!;
     expect(carbAssessment).toMatchObject({
       type: "formative",
+      isPublished: true,
+      unitId: bioUnit2.id,
+    });
+    // The Biology biochemistry test: 30 multiple choice + 2 matching (one point per pair, 39 in all),
+    // nine pictures, the enzyme graph shared by two questions as one stimulus, shelved under Unit 2.
+    const bct = first.find((o) => o.name === "bio-u2-test-biochemistry")!;
+    expect(bct.status).toBe("applied");
+    if (bct.status === "applied")
+      expect(bct.summary).toMatchObject({
+        questions: 32,
+        unitId: bioUnit2.id,
+        assignedTo: [],
+        errors: [],
+      });
+    const bctBank = (await db.query.questionBanks.findFirst({
+      where: eq(schema.questionBanks.name, "Bio · Unit 2 Test: Biochemistry"),
+    }))!;
+    expect(bctBank.unitId).toBe(bioUnit2.id);
+    const bctQs = await db
+      .select()
+      .from(schema.questions)
+      .where(eq(schema.questions.bankId, bctBank.id));
+    expect(bctQs).toHaveLength(32);
+    expect(bctQs.filter((q) => q.type === "matching")).toHaveLength(2);
+    expect(bctQs.reduce((sum, q) => sum + q.points, 0)).toBe(39);
+    expect(
+      bctQs.filter((q) => q.mediaUrl?.startsWith("/quiz-images/bio-u2-test-biochemistry/"))
+    ).toHaveLength(9);
+    const stimuli = await db
+      .select()
+      .from(schema.stimuli)
+      .where(eq(schema.stimuli.courseId, bio.id));
+    expect(stimuli).toHaveLength(1);
+    expect(bctQs.filter((q) => q.stimulusId === stimuli[0].id)).toHaveLength(2);
+    const bctTagged = await db.select().from(schema.questionTargets);
+    for (const target of bioTargets) {
+      const mine = bctTagged.filter(
+        (t) => t.learningTargetId === target.id && bctQs.some((q) => q.id === t.questionId)
+      );
+      expect(mine).toHaveLength({ "U2.LT1": 8, "U2.LT4": 20, "U2.LT5": 4 }[target.code]!);
+    }
+    const bctAssessment = (await db.query.assessments.findFirst({
+      where: eq(schema.assessments.title, "Unit 2 Test: Biochemistry"),
+    }))!;
+    expect(bctAssessment).toMatchObject({
+      type: "summative",
       isPublished: true,
       unitId: bioUnit2.id,
     });
