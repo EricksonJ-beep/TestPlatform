@@ -126,6 +126,7 @@ export type {
   GradingConfig,
   NumericGradingConfig,
   PerTargetBest,
+  FinalBasis,
   ServedQuestion,
   TemplateVariable,
 } from "./schema";

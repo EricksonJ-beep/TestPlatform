@@ -64,6 +64,8 @@ const settingsSchema = z.object({
   resultsReleased: bool,
   retakeWaitHours: optInt(0, 24 * 30, "Wait is 0–720 hours."),
   retakesNeedUnlock: bool,
+  correctionsCap: bool,
+  retakeWindowDays: optInt(0, 90, "The retake window is 0–90 days."),
 });
 
 function parseWindow(d: z.infer<typeof settingsSchema>) {
@@ -92,6 +94,8 @@ function settingsFrom(d: z.infer<typeof settingsSchema>) {
     resultsReleased: d.resultsReleased,
     retakeWaitHours: d.retakeWaitHours ?? 0,
     retakesNeedUnlock: d.retakesNeedUnlock,
+    correctionsCap: d.correctionsCap,
+    retakeWindowDays: d.retakeWindowDays ?? 7,
   };
 }
 

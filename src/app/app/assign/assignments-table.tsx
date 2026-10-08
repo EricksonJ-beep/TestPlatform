@@ -121,6 +121,12 @@ export function AssignmentsTable({
                     <span>{a.retakeThreshold}% threshold</span>
                     {a.retakeWaitHours ? <span>{a.retakeWaitHours} h between attempts</span> : null}
                     {a.retakesNeedUnlock ? <span>Retakes need your OK</span> : null}
+                    {a.assessmentType === "formative" && a.correctionsCap ? (
+                      <span>
+                        Corrections cap
+                        {a.retakeWindowDays ? ` · ${a.retakeWindowDays}-day retake window` : ""}
+                      </span>
+                    ) : null}
                   </span>
                 </TableCell>
                 <TableCell className="hidden text-xs whitespace-normal text-muted-foreground tabular sm:table-cell">

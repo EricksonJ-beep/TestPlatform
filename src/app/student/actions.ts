@@ -70,17 +70,22 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
     }
   }
 
-  const assignment = await db.query.assignments.findFirst({
-    columns: {
-      opensAt: true,
-      closesAt: true,
-      accessCode: true,
-      attemptsAllowed: true,
-      retakeWaitHours: true,
-      retakesNeedUnlock: true,
-    },
-    where: eq(schema.assignments.id, assignmentId),
-  });
+  const [assignment] = await db
+    .select({
+      opensAt: schema.assignments.opensAt,
+      closesAt: schema.assignments.closesAt,
+      accessCode: schema.assignments.accessCode,
+      attemptsAllowed: schema.assignments.attemptsAllowed,
+      retakeWaitHours: schema.assignments.retakeWaitHours,
+      retakesNeedUnlock: schema.assignments.retakesNeedUnlock,
+      correctionsCap: schema.assignments.correctionsCap,
+      retakeWindowDays: schema.assignments.retakeWindowDays,
+      type: schema.assessments.type,
+    })
+    .from(schema.assignments)
+    .innerJoin(schema.assessments, eq(schema.assignments.assessmentId, schema.assessments.id))
+    .where(eq(schema.assignments.id, assignmentId))
+    .limit(1);
   if (!assignment) throw new ActionError("Not found.", 404);
   const [unlock] = await db
     .select({ through: sql<number>`coalesce(max(${schema.attemptUnlocks.attemptNumber}), 0)::int` })
@@ -93,7 +98,10 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
       )
     );
   const [last] = await db
-    .select({ submittedAt: sql<Date | null>`max(${schema.attempts.submittedAt})` })
+    .select({
+      submittedAt: sql<Date | null>`max(${schema.attempts.submittedAt})`,
+      firstSubmittedAt: sql<Date | null>`min(${schema.attempts.submittedAt})`,
+    })
     .from(schema.attempts)
     .where(
       and(
@@ -103,6 +111,7 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
       )
     );
   const lastSubmittedAt = last?.submittedAt ? new Date(last.submittedAt) : null;
+  const firstSubmittedAt = last?.firstSubmittedAt ? new Date(last.firstSubmittedAt) : null;
   const used = await db.$count(
     schema.attempts,
     and(
@@ -111,9 +120,17 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
     )
   );
   const check = canStartAttempt({
-    assignment,
+    assignment: {
+      ...assignment,
+      // The retake window is a corrections-cap rule, so formatives only (Jon, Oct 8 2026).
+      retakeWindowDays:
+        assignment.type === "formative" && assignment.correctionsCap
+          ? assignment.retakeWindowDays
+          : null,
+    },
     attemptsUsed: used,
     lastSubmittedAt,
+    firstSubmittedAt,
     unlockedThrough: unlock?.through ?? 0,
     accessCode,
     now,

@@ -360,6 +360,31 @@ export function AssignmentDialog({
               defaultChecked={existing?.retakesNeedUnlock ?? false}
             />
             <Toggle
+              key={`c-${assessmentId}`}
+              name="correctionsCap"
+              label="Corrections cap (formatives)"
+              help="Below the threshold: the student must do corrections, and finishing them brings the score up to the threshold. At or above it: corrections are optional and bring the score to 100%. A retake's score stands on its own; the highest counts."
+              defaultChecked={existing?.correctionsCap ?? true}
+            />
+            <div className="grid gap-1.5">
+              <Label htmlFor="as-window">Retake window (days after the first attempt)</Label>
+              <Input
+                key={`w-${assessmentId}`}
+                id="as-window"
+                name="retakeWindowDays"
+                type="number"
+                min={0}
+                max={90}
+                className="w-32"
+                defaultValue={existing?.retakeWindowDays ?? 7}
+              />
+              <p className="text-xs text-muted-foreground">
+                Under the corrections cap, retakes must start within this many days. 0 means no
+                window.
+              </p>
+              <FieldError errors={fieldErrors} name="retakeWindowDays" />
+            </div>
+            <Toggle
               key={`o-${assessmentId}`}
               name="optionalRetakes"
               label="Allow optional retakes"

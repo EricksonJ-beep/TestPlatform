@@ -202,6 +202,7 @@ Attempt 1 → LT1 10, LT2 10, LT3 10, LT4 7 = 37/40 (92.5%). LT4 is 70% → belo
 - Corrections are required on the *missed* items within the targets being retaken (all missed items for formatives).
 - None of the three gates can be skipped — the retake button stays locked until corrections are submitted (and approved, if that mode is on), one relearning activity is complete, and one practice set is complete for **every** target being retaken. Practice is completion-based, not score-based.
 - A target can never score lower after a retake (highest per target).
+- **Corrections cap (formatives; Jon and colleague, Oct 8 2026, on by default per assignment):** attempt 1 below the threshold → *Must do corrections*; finishing them lifts the score to the threshold and no higher. Attempt 1 at or above it → corrections optional; finishing them lifts the score to 100%. A retake's score stands on its own (no correction credit), highest counts, up to the attempt limit (3), and it must start within the retake window (7 days from attempt 1); corrections stay open after the window. The results page and the Skyward CSV carry the counting score and how it came about.
 - Threshold (80%), attempt limits, and review mode are set per assignment (defaults per type). Optional retakes for targets ≥80% are **on by default** (can be disabled per assignment).
 - If **every** target is ≥80%, nothing is required; the student may still opt into a retake on any target. Corrections are required on missed items in every target being retaken, required or optional.
 

@@ -13,7 +13,7 @@ import {
 } from "@/lib/authz";
 import { logActivity } from "@/lib/activity-log";
 import { correctionIssues, ISSUE_TEXT, type CorrectionIssue } from "@/lib/corrections";
-import { recomputeGates } from "@/lib/gates";
+import { recomputeFinalScore } from "@/lib/attempts";
 import { getCorrectionScope, getCorrectionsSummary } from "@/lib/queries/corrections";
 
 const draftSchema = z.object({
@@ -166,7 +166,8 @@ export const submitCorrections = withAuthz(async (attemptId: string) => {
       )
     );
   const summary = (await getCorrectionsSummary(attemptId))!;
-  await recomputeGates(scope.attempt.assignmentId, scope.attempt.studentId);
+  // The final score reads attempt 1's corrections under the corrections cap; it recomputes the gates too.
+  await recomputeFinalScore(scope.attempt.assignmentId, scope.attempt.studentId);
   revalidate(scope.attempt.assignmentId, attemptId);
   return { state: summary.state, assignmentId: scope.attempt.assignmentId };
 });

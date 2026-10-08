@@ -1,5 +1,6 @@
 import { requireOwner, withAuthzRoute } from "@/lib/authz";
 import { toCsv } from "@/lib/csv";
+import { BASIS_LABEL } from "@/lib/final-basis";
 import { getAssignmentRow } from "@/lib/queries/assignments";
 import { highestScoresRows } from "@/lib/queries/results";
 
@@ -19,7 +20,7 @@ export const GET = withAuthzRoute<{ params: Promise<{ assignmentId: string }> }>
     ]);
     if (!row) return new Response("Not found", { status: 404 });
     const csv = toCsv(
-      ["last_name", "first_name", "email", "score", "max_score", "percent", "attempts"],
+      ["last_name", "first_name", "email", "score", "max_score", "percent", "attempts", "basis"],
       rows.map((r) => [
         r.lastName,
         r.firstName,
@@ -28,6 +29,7 @@ export const GET = withAuthzRoute<{ params: Promise<{ assignmentId: string }> }>
         r.maxScore,
         r.percent === null ? null : Math.round(r.percent * 10) / 10,
         r.attempts,
+        r.basis ? BASIS_LABEL[r.basis] : null,
       ])
     );
     const slug = `${row.assessmentTitle} ${row.className}`

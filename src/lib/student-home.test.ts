@@ -19,6 +19,7 @@ describe("student home sections", () => {
     expect(sectionOf("in_progress")).toBe("needs_you");
     expect(sectionOf("not_started")).toBe("needs_you");
     expect(sectionOf("corrections_needed")).toBe("needs_you");
+    expect(sectionOf("corrections_optional")).toBe("needs_you");
     expect(sectionOf("corrections_returned")).toBe("needs_you");
     expect(sectionOf("retake_required")).toBe("needs_you");
     expect(sectionOf("retake_available")).toBe("needs_you");

@@ -35,6 +35,7 @@ export default async function StudentHome() {
       a.state === "not_started" ||
       a.state === "in_progress" ||
       a.state === "corrections_needed" ||
+      a.state === "corrections_optional" ||
       a.state === "corrections_returned" ||
       a.state === "relearning" ||
       a.state === "retake_required"

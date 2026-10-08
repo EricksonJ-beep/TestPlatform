@@ -81,6 +81,7 @@ export const BLOCKER_TEXT: Record<RetakeBlocker, string> = {
 
 export type CycleState =
   | "corrections_needed"
+  | "corrections_optional"
   | "corrections_returned"
   | "corrections_submitted"
   | "relearning"
@@ -105,6 +106,15 @@ export function cycleState(input: {
   plan: RetakePlan | null;
   /** The assignment needs a teacher unlock for the next attempt and none has been given. */
   needsUnlock?: boolean;
+  /**
+   * Corrections cap (formatives, Jon Oct 8 2026): with attempt 1 at or above the threshold,
+   * corrections are optional (they lift the score to 100); once the retake window has closed,
+   * no retake is offered.
+   */
+  correctionsCap?: boolean;
+  firstPercent?: number | null;
+  threshold?: number;
+  windowClosed?: boolean;
 }): CycleState {
   const state = readyState(input);
   if (input.needsUnlock && (state === "retake_required" || state === "retake_available"))
@@ -113,13 +123,20 @@ export function cycleState(input: {
 }
 
 function readyState(input: Parameters<typeof cycleState>[0]): CycleState {
-  if (input.corrections === "needed") return "corrections_needed";
+  const capped = input.type === "formative" && !!input.correctionsCap;
+  if (input.corrections === "needed") {
+    const first = input.firstPercent ?? null;
+    if (capped && first !== null && first >= (input.threshold ?? 80)) return "corrections_optional";
+    return "corrections_needed";
+  }
   if (input.corrections === "returned") return "corrections_returned";
   if (input.corrections === "submitted") return "corrections_submitted";
   const attemptsLeft = input.attemptsAllowed === null || input.attemptsUsed < input.attemptsAllowed;
   if (!attemptsLeft || input.type === "practice") return "done";
   if (input.type === "formative") {
-    return input.bestPercent !== null && input.bestPercent >= 100 ? "done" : "retake_available";
+    if (input.bestPercent !== null && input.bestPercent >= 100) return "done";
+    if (capped && input.windowClosed) return "done";
+    return "retake_available";
   }
   const plan = input.plan;
   if (!plan) return "done";

@@ -26,9 +26,12 @@ export type StartCheck =
         | "code_wrong"
         | "no_attempts_left"
         | "wait"
-        | "needs_unlock";
+        | "needs_unlock"
+        | "window_closed";
       /** For "wait": when the next attempt opens. */
       availableAt?: Date;
+      /** For "window_closed": when retakes stopped being allowed. */
+      closedAt?: Date;
     };
 
 /**
@@ -45,10 +48,14 @@ export function canStartAttempt(input: {
     retakeWaitHours?: number;
     /** Every attempt after the first needs a teacher unlock (Jon, Oct 1 2026). */
     retakesNeedUnlock?: boolean;
+    /** Retakes must start within this many days of the first attempt (corrections cap); null/0 = no limit. */
+    retakeWindowDays?: number | null;
   };
   attemptsUsed: number;
   /** When the student's most recent finished attempt was submitted. */
   lastSubmittedAt?: Date | null;
+  /** When the student's first finished attempt was submitted (the retake window counts from it). */
+  firstSubmittedAt?: Date | null;
   /** Highest attempt number the teacher has unlocked for this student (0 = none). */
   unlockedThrough?: number;
   accessCode?: string | null;
@@ -75,7 +82,20 @@ export function canStartAttempt(input: {
   if (assignment.retakesNeedUnlock && needsUnlock(attemptsUsed, input.unlockedThrough ?? 0)) {
     return { ok: false, reason: "needs_unlock" };
   }
+  const closedAt = retakeWindowEnd(assignment.retakeWindowDays, input.firstSubmittedAt);
+  if (attemptsUsed > 0 && closedAt && now >= closedAt) {
+    return { ok: false, reason: "window_closed", closedAt };
+  }
   return { ok: true };
+}
+
+/** When the retake window shuts: first submission + the window; null when there is no window yet. */
+export function retakeWindowEnd(
+  retakeWindowDays: number | null | undefined,
+  firstSubmittedAt: Date | null | undefined
+): Date | null {
+  if (!retakeWindowDays || !firstSubmittedAt) return null;
+  return new Date(firstSubmittedAt.getTime() + retakeWindowDays * 86_400_000);
 }
 
 /** The next attempt (used + 1) needs an unlock unless it is the first or the teacher already unlocked it. */
@@ -85,15 +105,19 @@ export function needsUnlock(attemptsUsed: number, unlockedThrough: number): bool
 
 /** Human text for a refused start, including when a waiting period ends. */
 export function startReasonText(check: Exclude<StartCheck, { ok: true }>): string {
-  if (check.reason === "wait" && check.availableAt) {
-    const when = check.availableAt.toLocaleString("en-US", {
+  const fmt = (d: Date) =>
+    d.toLocaleString("en-US", {
       month: "short",
       day: "numeric",
       hour: "numeric",
       minute: "2-digit",
       timeZone: "America/Chicago",
     });
-    return `Your next attempt opens ${when}.`;
+  if (check.reason === "wait" && check.availableAt) {
+    return `Your next attempt opens ${fmt(check.availableAt)}.`;
+  }
+  if (check.reason === "window_closed" && check.closedAt) {
+    return `Retakes on this quiz closed ${fmt(check.closedAt)}.`;
   }
   return START_REASON_TEXT[check.reason];
 }
@@ -112,6 +136,7 @@ export const START_REASON_TEXT: Record<Exclude<StartCheck, { ok: true }>["reason
   no_attempts_left: "You've used every attempt.",
   wait: "You have to wait before your next attempt.",
   needs_unlock: "Your teacher opens each retake. Ask them to unlock your next attempt.",
+  window_closed: "The retake window for this quiz has closed.",
 };
 
 /** Codes are compared case-insensitively, ignoring spaces and dashes. */

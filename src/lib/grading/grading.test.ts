@@ -374,6 +374,65 @@ describe("final score: highest counts", () => {
     expect(tierFor(3, 3)).toBe(2);
   });
 
+  it("corrections cap (Jon, Oct 8 2026): below 80 corrects to 80, at/above corrects to 100, retakes stand alone", () => {
+    const a = (id: string, n: number, e: number, correctionsApproved = false) => ({
+      attemptId: id,
+      number: n,
+      totalEarned: e,
+      totalPossible: 10,
+      perTarget: [],
+      correctionsApproved,
+    });
+    const cap = { threshold: 80, correctionsCap: true };
+    // 50% and no corrections yet: the raw score stands (the card says Must do corrections).
+    expect(computeFinalScore("formative", [a("a1", 1, 5)], cap)).toMatchObject({
+      percent: 50,
+      basis: "best_attempt",
+      bestAttemptId: "a1",
+    });
+    // Corrections done: lifted to the threshold, 8 of 10, and no higher.
+    expect(computeFinalScore("formative", [a("a1", 1, 5, true)], cap)).toMatchObject({
+      totalEarned: 8,
+      totalPossible: 10,
+      percent: 80,
+      basis: "corrections_to_threshold",
+    });
+    // At or above the threshold, corrections lift to 100.
+    expect(computeFinalScore("formative", [a("a1", 1, 9, true)], cap)).toMatchObject({
+      totalEarned: 10,
+      percent: 100,
+      basis: "corrections_to_full",
+    });
+    expect(computeFinalScore("formative", [a("a1", 1, 9)], cap)).toMatchObject({
+      percent: 90,
+      basis: "best_attempt",
+    });
+    // A retake stands on its own: 92% beats the corrected 80; 70% does not.
+    expect(
+      computeFinalScore("formative", [a("a1", 1, 5, true), a("a2", 2, 9.2)], cap)
+    ).toMatchObject({ percent: 92, basis: "retake", bestAttemptId: "a2" });
+    expect(computeFinalScore("formative", [a("a1", 1, 5, true), a("a2", 2, 7)], cap)).toMatchObject(
+      {
+        percent: 80,
+        basis: "corrections_to_threshold",
+        bestAttemptId: "a1",
+      }
+    );
+    // A retake earns no correction credit of its own.
+    expect(
+      computeFinalScore("formative", [a("a1", 1, 5, true), a("a2", 2, 6, true)], cap)
+    ).toMatchObject({ percent: 80, basis: "corrections_to_threshold" });
+    // The cap is a formative rule only, and off means the old highest-counts rule.
+    expect(computeFinalScore("formative", [a("a1", 1, 5, true)], { threshold: 80 })).toMatchObject({
+      percent: 50,
+      basis: "best_attempt",
+    });
+    expect(computeFinalScore("practice", [a("a1", 1, 5, true)], cap)).toMatchObject({
+      percent: 50,
+      basis: "best_attempt",
+    });
+  });
+
   it("formative: best attempt by total; later attempt wins ties; practice same", () => {
     const a = (id: string, n: number, e: number) => ({
       attemptId: id,

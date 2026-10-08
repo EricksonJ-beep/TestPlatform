@@ -12,6 +12,7 @@ const NEEDS_YOU = new Set<StudentCardState>([
   "not_started",
   "in_progress",
   "corrections_needed",
+  "corrections_optional",
   "corrections_returned",
   "relearning",
   "retake_required",
