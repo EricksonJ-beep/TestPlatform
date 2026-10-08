@@ -46,9 +46,10 @@ beforeAll(async () => {
     .returning();
   await db
     .insert(schema.learningTargets)
-    .values(
-      [1, 2, 3, 4].map((n) => ({ courseId: ps.id, code: `U1.LT${n}`, title: `Target ${n}` }))
-    );
+    .values([
+      ...[1, 2, 3, 4].map((n) => ({ courseId: ps.id, code: `U1.LT${n}`, title: `Target ${n}` })),
+      { courseId: ps.id, code: "U2.LT2", title: "Parts of an atom" },
+    ]);
   const [cls] = await db
     .insert(schema.classes)
     .values({ ownerId: t.id, courseId: course.id, name: "Anatomy · 5th Hour" })
@@ -72,6 +73,7 @@ describe("content packs", () => {
     expect(names).toContain("ps-u1-test-form-b");
     expect(names).toContain("anatomy-u2-activity-osteon-labeling");
     expect(names).toContain("ps-u1-quiz-dimensional-analysis-sci-notation");
+    for (const n of [1, 2, 3, 4, 5]) expect(names).toContain(`ps-u2-element-quiz-${n}`);
   });
   it("applies each pack once: bank, questions with repo-hosted pictures, published assessment, assignment", async () => {
     const first = await applyAllPacks();
@@ -142,7 +144,7 @@ describe("content packs", () => {
       .select()
       .from(schema.learningTargets)
       .where(eq(schema.learningTargets.courseId, ps.id));
-    expect(psTargets).toHaveLength(4); // no stray targets created
+    expect(psTargets).toHaveLength(5); // no stray targets created
     expect(
       psQs.filter((q) => q.mediaUrl === "/quiz-images/ps-u1-test-form-b/ruler_q12.png")
     ).toHaveLength(1);
@@ -152,7 +154,7 @@ describe("content packs", () => {
         (t) => t.learningTargetId === target.id && psQs.some((q) => q.id === t.questionId)
       );
       expect(mine).toHaveLength(
-        { "U1.LT1": 9, "U1.LT2": 7, "U1.LT3": 8, "U1.LT4": 8 }[target.code]!
+        { "U1.LT1": 9, "U1.LT2": 7, "U1.LT3": 8, "U1.LT4": 8, "U2.LT2": 0 }[target.code]!
       );
     }
     const formBAssessment = (await db.query.assessments.findFirst({
@@ -203,6 +205,56 @@ describe("content packs", () => {
       attemptLimit: 3,
       courseId: ps.id,
     });
+    // The five element mini-quizzes (from Jon's "Elements Quizzes" slides) share one Unit 2 bank;
+    // each is its own published formative of ten 1-point questions plus 0-point bonus questions, all on U2.LT2.
+    const elementBank = (await db.query.questionBanks.findFirst({
+      where: eq(schema.questionBanks.name, "PS · Unit 2 Quiz: Elements"),
+    }))!;
+    const elementQs = await db
+      .select()
+      .from(schema.questions)
+      .where(eq(schema.questions.bankId, elementBank.id));
+    expect(elementQs).toHaveLength(58);
+    expect(elementQs.every((q) => q.type === "fill_blank")).toBe(true);
+    const u2lt2 = psTargets.find((t) => t.code === "U2.LT2")!;
+    expect(
+      psTagged.filter(
+        (t) => t.learningTargetId === u2lt2.id && elementQs.some((q) => q.id === t.questionId)
+      )
+    ).toHaveLength(58);
+    for (const [n, count, bonus] of [
+      [1, 10, 0],
+      [2, 11, 1],
+      [3, 12, 2],
+      [4, 12, 2],
+      [5, 13, 3],
+    ]) {
+      const outcome = first.find((o) => o.name === `ps-u2-element-quiz-${n}`)!;
+      expect(outcome.status).toBe("applied");
+      if (outcome.status === "applied")
+        expect(outcome.summary).toMatchObject({
+          bankId: elementBank.id,
+          questions: count,
+          assignedTo: [],
+          errors: [],
+        });
+      const quiz = (await db.query.assessments.findFirst({
+        where: eq(schema.assessments.title, `Element Quiz Number ${n}`),
+      }))!;
+      expect(quiz).toMatchObject({ type: "formative", isPublished: true, courseId: ps.id });
+      const sections = await db
+        .select()
+        .from(schema.assessmentSections)
+        .where(eq(schema.assessmentSections.assessmentId, quiz.id));
+      const placed = await db
+        .select()
+        .from(schema.assessmentQuestions)
+        .where(eq(schema.assessmentQuestions.sectionId, sections[0].id));
+      expect(placed).toHaveLength(count);
+      const mine = elementQs.filter((q) => placed.some((p) => p.questionId === q.id));
+      expect(mine.filter((q) => q.points === 0)).toHaveLength(bonus);
+      expect(mine.reduce((sum, q) => sum + q.points, 0)).toBe(10);
+    }
     // The osteon activity pack: no bank or CSV; it completes the hand-made draft (same page),
     // renames it, tags U2, and publishes it.
     const osteon = first.find((o) => o.name === "anatomy-u2-activity-osteon-labeling")!;

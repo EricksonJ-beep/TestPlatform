@@ -1,0 +1,12 @@
+{
+  "name": "ps-u2-element-quiz-4",
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science A",
+  "bank": "PS · Unit 2 Quiz: Elements",
+  "assessment": {
+    "title": "Element Quiz Number 4",
+    "type": "formative",
+    "instructions": "Ten elements from numbers 1 to 54 on the periodic table. If you are given the name, type the symbol. If you are given the symbol, type the full name. Capital letters do not matter. The 2 bonus questions at the end are worth 0 points, so they can only help you practice. Your best attempt counts."
+  },
+  "assign": []
+}
