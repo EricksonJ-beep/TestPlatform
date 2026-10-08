@@ -18,6 +18,7 @@ import { applyAllPacks, applyPack, listPacks } from "./content-packs";
 
 const ids = { teacher: "", course: "", cls: "" };
 let ps: { id: string };
+let bioUnit2: { id: string };
 
 beforeAll(async () => {
   const [t] = await db
@@ -49,6 +50,21 @@ beforeAll(async () => {
     .values(
       [1, 2, 3, 4].map((n) => ({ courseId: ps.id, code: `U1.LT${n}`, title: `Target ${n}` }))
     );
+  // Jon's Biology A course is seeded with named units and per-unit codes (scripts/courses/biology.ts).
+  const [bio] = await db
+    .insert(schema.courses)
+    .values({ ownerId: t.id, name: "Biology A" })
+    .returning();
+  [bioUnit2] = await db
+    .insert(schema.units)
+    .values({ courseId: bio.id, name: "Unit 2 · Biochemistry", sortOrder: 1 })
+    .returning();
+  await db.insert(schema.learningTargets).values({
+    courseId: bio.id,
+    unitId: bioUnit2.id,
+    code: "U2.LT4",
+    title: "The four macromolecules",
+  });
   const [cls] = await db
     .insert(schema.classes)
     .values({ ownerId: t.id, courseId: course.id, name: "Anatomy · 5th Hour" })
@@ -161,6 +177,43 @@ describe("content packs", () => {
       type: "summative",
       isPublished: true,
       courseId: ps.id,
+    });
+    // The Biology carbohydrate quiz: 10 questions on U2.LT4, two molecule pictures, and both the
+    // bank and the published assessment shelved under the pack's unit.
+    const carbs = first.find((o) => o.name === "bio-u2-quiz-carbohydrates")!;
+    expect(carbs.status).toBe("applied");
+    if (carbs.status === "applied")
+      expect(carbs.summary).toMatchObject({
+        questions: 10,
+        unitId: bioUnit2.id,
+        assignedTo: [],
+        errors: [],
+      });
+    const carbBank = (await db.query.questionBanks.findFirst({
+      where: eq(schema.questionBanks.name, "Bio · Unit 2 Quiz: Carbohydrates"),
+    }))!;
+    expect(carbBank.unitId).toBe(bioUnit2.id);
+    const carbQs = await db
+      .select()
+      .from(schema.questions)
+      .where(eq(schema.questions.bankId, carbBank.id));
+    expect(carbQs).toHaveLength(10);
+    expect(carbQs.filter((q) => q.type === "multiple_select")).toHaveLength(1);
+    expect(
+      carbQs.filter((q) => q.mediaUrl?.startsWith("/quiz-images/bio-u2-quiz-carbohydrates/"))
+    ).toHaveLength(2);
+    const bioTargets = await db
+      .select()
+      .from(schema.learningTargets)
+      .where(eq(schema.learningTargets.unitId, bioUnit2.id));
+    expect(bioTargets).toHaveLength(1); // every row landed on U2.LT4; no stray targets
+    const carbAssessment = (await db.query.assessments.findFirst({
+      where: eq(schema.assessments.title, "Unit 2 Quiz: Carbohydrates"),
+    }))!;
+    expect(carbAssessment).toMatchObject({
+      type: "formative",
+      isPublished: true,
+      unitId: bioUnit2.id,
     });
     // The osteon activity pack: no bank or CSV; it completes the hand-made draft (same page),
     // renames it, tags U2, and publishes it.
