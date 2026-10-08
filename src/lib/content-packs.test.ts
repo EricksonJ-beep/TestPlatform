@@ -71,6 +71,7 @@ describe("content packs", () => {
     expect(names).toContain("anatomy-u1-quiz-intro-lab-mitosis");
     expect(names).toContain("ps-u1-test-form-b");
     expect(names).toContain("anatomy-u2-activity-osteon-labeling");
+    expect(names).toContain("ps-u1-quiz-dimensional-analysis-sci-notation");
   });
   it("applies each pack once: bank, questions with repo-hosted pictures, published assessment, assignment", async () => {
     const first = await applyAllPacks();
@@ -160,6 +161,46 @@ describe("content packs", () => {
     expect(formBAssessment).toMatchObject({
       type: "summative",
       isPublished: true,
+      courseId: ps.id,
+    });
+    // The Physical Science DA/SN quiz (from Jon's Google Form "DA SN E"): 10 questions, 25 points,
+    // all on U1.LT3, a published formative, no assignment.
+    const dasn = first.find((o) => o.name === "ps-u1-quiz-dimensional-analysis-sci-notation")!;
+    expect(dasn.status).toBe("applied");
+    if (dasn.status === "applied")
+      expect(dasn.summary).toMatchObject({ questions: 10, assignedTo: [], errors: [] });
+    const dasnBank = (await db.query.questionBanks.findFirst({
+      where: eq(
+        schema.questionBanks.name,
+        "PS · Unit 1 Quiz: Dimensional Analysis & Scientific Notation"
+      ),
+    }))!;
+    const dasnQs = await db
+      .select()
+      .from(schema.questions)
+      .where(eq(schema.questions.bankId, dasnBank.id));
+    expect(dasnQs).toHaveLength(10);
+    expect(dasnQs.reduce((sum, q) => sum + q.points, 0)).toBe(25);
+    expect(dasnQs.map((q) => q.type).sort()).toEqual([
+      ...Array(2).fill("fill_blank"),
+      ...Array(8).fill("numeric"),
+    ]);
+    const lt3 = psTargets.find((t) => t.code === "U1.LT3")!;
+    expect(
+      psTagged.filter(
+        (t) => t.learningTargetId === lt3.id && dasnQs.some((q) => q.id === t.questionId)
+      )
+    ).toHaveLength(10);
+    const dasnAssessment = (await db.query.assessments.findFirst({
+      where: eq(
+        schema.assessments.title,
+        "Unit 1 Quiz: Dimensional Analysis & Scientific Notation"
+      ),
+    }))!;
+    expect(dasnAssessment).toMatchObject({
+      type: "formative",
+      isPublished: true,
+      attemptLimit: 3,
       courseId: ps.id,
     });
     // The osteon activity pack: no bank or CSV; it completes the hand-made draft (same page),

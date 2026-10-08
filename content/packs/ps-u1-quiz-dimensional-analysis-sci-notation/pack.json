@@ -1,0 +1,12 @@
+{
+  "name": "ps-u1-quiz-dimensional-analysis-sci-notation",
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science A",
+  "bank": "PS · Unit 1 Quiz: Dimensional Analysis & Scientific Notation",
+  "assessment": {
+    "title": "Unit 1 Quiz: Dimensional Analysis & Scientific Notation",
+    "type": "formative",
+    "instructions": "Ten problems on unit conversions (dimensional analysis) and scientific notation, 25 points. Set up a picket fence on scratch paper for every conversion so the units cancel. Type each answer as a number; you may add the unit (0.0075 kg). For scientific notation, type it like 7.072 x 10^3. Round to three significant figures where the question says so. Your best attempt counts."
+  },
+  "assign": []
+}
