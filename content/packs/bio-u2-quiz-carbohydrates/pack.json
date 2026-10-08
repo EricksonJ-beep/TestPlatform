@@ -1,0 +1,13 @@
+{
+  "name": "bio-u2-quiz-carbohydrates",
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "unit": "Unit 2 · Biochemistry",
+  "bank": "Bio · Unit 2 Quiz: Carbohydrates",
+  "assessment": {
+    "title": "Unit 2 Quiz: Carbohydrates",
+    "type": "formative",
+    "instructions": "Ten questions on carbohydrates: the tests for sugars and starch, monosaccharides, disaccharides, and polysaccharides, and what carbohydrates do for living things. Question 4 has more than one correct answer. Your best attempt counts."
+  },
+  "assign": []
+}

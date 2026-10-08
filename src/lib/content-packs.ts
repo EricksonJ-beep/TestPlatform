@@ -16,7 +16,7 @@
  */
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import { and, eq, or, sql } from "drizzle-orm";
+import { and, eq, isNull, or, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { parseCsvRecords } from "@/lib/csv";
 import { parseQuestionRecords } from "@/lib/import/question-csv";
@@ -26,6 +26,12 @@ export type PackDefinition = {
   name: string;
   teacherEmail: string;
   course: string;
+  /**
+   * The course unit (by name, e.g. "Unit 2 · Biochemistry") the bank and the
+   * assessment shelve under on the Banks and Assessments pages. The CSV's unit
+   * column creates it when the course does not have it yet.
+   */
+  unit?: string;
   /** The bank the CSV imports into; absent for an activity-only pack. */
   bank?: string;
   /** Earlier names this pack's bank went by; a bank still using one is renamed to `bank` on deploy. */
@@ -210,6 +216,26 @@ async function applyQuiz(
   const questionIds = result.rows.flatMap((r) => (r.questionId ? [r.questionId] : []));
   errors.push(...result.rows.filter((r) => r.error).map((r) => `line ${r.line}: ${r.error}`));
 
+  // The shelf: resolved after the import so a unit the CSV just created counts.
+  let unitId: string | null = null;
+  if (def.unit) {
+    const unit = await db.query.units.findFirst({
+      columns: { id: true },
+      where: and(
+        eq(schema.units.courseId, courseId),
+        sql`lower(${schema.units.name}) = ${key(def.unit)}`
+      ),
+    });
+    if (unit) unitId = unit.id;
+    else
+      errors.push(`unit "${def.unit}" not found in the course; bank and assessment left unshelved`);
+  }
+  if (unitId)
+    await db
+      .update(schema.questionBanks)
+      .set({ unitId })
+      .where(and(eq(schema.questionBanks.id, bank.id), isNull(schema.questionBanks.unitId)));
+
   let assessmentId: string | null = null;
   const assignments: string[] = [];
   if (def.assessment && questionIds.length) {
@@ -220,13 +246,20 @@ async function applyQuiz(
         sql`lower(${schema.assessments.title}) = ${key(def.assessment.title)}`
       ),
     });
-    if (existing) assessmentId = existing.id;
-    else {
+    if (existing) {
+      assessmentId = existing.id;
+      if (unitId)
+        await db
+          .update(schema.assessments)
+          .set({ unitId })
+          .where(and(eq(schema.assessments.id, existing.id), isNull(schema.assessments.unitId)));
+    } else {
       const [a] = await db
         .insert(schema.assessments)
         .values({
           ownerId: teacherId,
           courseId,
+          unitId,
           type: def.assessment.type,
           title: def.assessment.title,
           instructions: def.assessment.instructions ?? null,
@@ -279,6 +312,7 @@ async function applyQuiz(
 
   return {
     bankId: bank.id,
+    unitId,
     imported: result.counts,
     questions: questionIds.length,
     assessmentId,

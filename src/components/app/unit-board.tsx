@@ -144,7 +144,7 @@ export function UnitBoard({ course: initial, orphans = [], adoptInto, noun, plac
           >
             <GripVertical className="size-5" />
           </span>
-          <span className="absolute right-2 bottom-2 hidden items-center gap-0.5 group-focus-within:inline-flex group-hover:inline-flex">
+          <span className="absolute right-2 bottom-2 hidden items-center gap-0.5 group-focus-within:inline-flex group-hover:inline-flex group-has-[[data-popup-open]]:inline-flex">
             <button
               type="button"
               className="rounded px-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30"
@@ -178,7 +178,7 @@ export function UnitBoard({ course: initial, orphans = [], adoptInto, noun, plac
                 >
                   <FolderInput className="size-3.5" aria-hidden />
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="w-max max-w-80">
                   <DropdownMenuGroup>
                     <DropdownMenuLabel>Move to</DropdownMenuLabel>
                     {course.shelves
