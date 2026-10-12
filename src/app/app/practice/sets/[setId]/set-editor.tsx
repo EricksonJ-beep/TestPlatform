@@ -164,14 +164,14 @@ export function SetEditor({
               A pool draw (new questions each attempt)
             </label>
             {source === "pool" ? (
-              <div className="ml-6 flex flex-wrap items-end gap-2">
-                <div className="grid min-w-40 flex-1 gap-1">
+              <div className="ml-6 grid items-end gap-2 sm:grid-cols-[minmax(0,1fr)_6rem]">
+                <div className="grid min-w-0 gap-1">
                   <Label htmlFor="ps-pool">Pool</Label>
                   <select
                     id="ps-pool"
                     name="poolId"
                     defaultValue={detail.pool?.id ?? pools[0]?.id ?? ""}
-                    className={selectClass}
+                    className={`${selectClass} w-full min-w-0 truncate`}
                   >
                     {pools.map((p) => (
                       <option key={p.id} value={p.id}>
@@ -197,14 +197,14 @@ export function SetEditor({
               A bank draw (a fresh hand from a whole bank each attempt)
             </label>
             {source === "bank" ? (
-              <div className="ml-6 flex flex-wrap items-end gap-2">
-                <div className="grid min-w-40 flex-1 gap-1">
+              <div className="ml-6 grid items-end gap-2 sm:grid-cols-[minmax(0,1fr)_6rem]">
+                <div className="grid min-w-0 gap-1">
                   <Label htmlFor="ps-bank">Bank</Label>
                   <select
                     id="ps-bank"
                     name="bankId"
                     defaultValue={detail.bank?.id ?? banks[0]?.id ?? ""}
-                    className={selectClass}
+                    className={`${selectClass} w-full min-w-0 truncate`}
                   >
                     {banks.map((b) => (
                       <option key={b.id} value={b.id}>
@@ -340,7 +340,7 @@ function DrawCount({
   errors: Record<string, string[]>;
 }) {
   return (
-    <div className="grid w-24 gap-1">
+    <div className="grid gap-1">
       <Label htmlFor="ps-draw">Draw</Label>
       <Input
         id="ps-draw"
