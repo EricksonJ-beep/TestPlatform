@@ -109,15 +109,18 @@ export const createPracticeSet = withAuthz(async (formData: FormData) => {
   return { practiceSetId: s.id };
 });
 
+const optId = z
+  .string()
+  .optional()
+  .or(z.literal(""))
+  .transform((v) => v || null);
+
 const setSettingsSchema = z.object({
   title: z.string().trim().min(1, "Give it a title.").max(160),
   description: optText(2000),
-  source: z.enum(["fixed", "pool"]),
-  poolId: z
-    .string()
-    .optional()
-    .or(z.literal(""))
-    .transform((v) => v || null),
+  source: z.enum(["fixed", "pool", "bank"]),
+  poolId: optId,
+  bankId: optId,
   drawCount: z
     .string()
     .optional()
@@ -129,15 +132,39 @@ const setSettingsSchema = z.object({
     ),
 });
 
-/** Title, description, targets, and the source (fixed questions or a pool draw). */
+/** Rule: a bank the caller owns, or one shared with them at any level, the same as picking its questions by hand. */
+async function assertBankUsable(bankId: string, userId: string) {
+  const b = await db.query.questionBanks.findFirst({
+    columns: { ownerId: true },
+    where: eq(schema.questionBanks.id, bankId),
+  });
+  if (!b) throw new ActionError("That bank doesn't exist.", 404);
+  if (b.ownerId === userId) return;
+  const share = await db.query.shares.findFirst({
+    columns: { id: true },
+    where: and(
+      eq(schema.shares.resourceType, "question_bank"),
+      eq(schema.shares.resourceId, bankId),
+      eq(schema.shares.sharedWithUserId, userId)
+    ),
+  });
+  if (!share) throw new ActionError("That bank isn't shared with you.", 403);
+}
+
+/**
+ * Title, description, targets, and the source: fixed questions, a pool draw,
+ * or a bank draw (Jon, Oct 12 2026: "build a practice set from those question
+ * banks… a new practice set each time"). At most one of pool / bank is kept.
+ */
 export const updatePracticeSet = withAuthz(async (setId: string, formData: FormData) => {
   const access = await requireContentAccess({ type: SET, id: setId });
   const parsed = setSettingsSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) throw invalid(parsed.error);
   const targetIds = targetIdsFrom(formData);
   await assertTargetsOnCourse(access.courseId, targetIds);
-  const { source, poolId, drawCount, ...rest } = parsed.data;
+  const { source, poolId, bankId, drawCount, ...rest } = parsed.data;
   let pool: string | null = null;
+  let bank: string | null = null;
   if (source === "pool") {
     if (!poolId) throw new ActionError("Pick a pool.", 400, { poolId: ["Pick a pool."] });
     const p = await db.query.questionPools.findFirst({
@@ -148,9 +175,20 @@ export const updatePracticeSet = withAuthz(async (setId: string, formData: FormD
       throw new ActionError("That pool isn't on this set's course.", 400);
     pool = poolId;
   }
+  if (source === "bank") {
+    if (!bankId) throw new ActionError("Pick a bank.", 400, { bankId: ["Pick a bank."] });
+    const b = await db.query.questionBanks.findFirst({
+      columns: { courseId: true, isArchived: true },
+      where: eq(schema.questionBanks.id, bankId),
+    });
+    if (!b || b.isArchived || !access.courseId || b.courseId !== access.courseId)
+      throw new ActionError("That bank isn't on this set's course.", 400);
+    await assertBankUsable(bankId, access.userId);
+    bank = bankId;
+  }
   await db
     .update(schema.practiceSets)
-    .set({ ...rest, poolId: pool, drawCount: pool ? drawCount : null })
+    .set({ ...rest, poolId: pool, bankId: bank, drawCount: pool || bank ? drawCount : null })
     .where(eq(schema.practiceSets.id, setId));
   await db
     .delete(schema.practiceSetTargets)
@@ -270,21 +308,30 @@ export const movePracticeQuestion = withAuthz(
   }
 );
 
-/** Publishing makes a set visible to enrolled students. Rule: it needs at least one question (or a pool) and a target. */
+/** Publishing makes a set visible to enrolled students. Rule: it needs at least one question (or a pool or bank that has some) and a target. */
 export const setPracticeSetPublished = withAuthz(async (setId: string, published: boolean) => {
   const access = await requireContentAccess({ type: SET, id: setId });
   if (published) {
     const set = await db.query.practiceSets.findFirst({
-      columns: { poolId: true, courseId: true },
+      columns: { poolId: true, bankId: true, courseId: true },
       where: eq(schema.practiceSets.id, setId),
     });
     const n = set?.poolId
       ? await db.$count(schema.poolQuestions, eq(schema.poolQuestions.poolId, set.poolId))
-      : await db.$count(
-          schema.practiceSetQuestions,
-          eq(schema.practiceSetQuestions.practiceSetId, setId)
-        );
-    if (n === 0) throw new ActionError("Add at least one question (or pick a pool) first.", 400);
+      : set?.bankId
+        ? await db.$count(
+            schema.questions,
+            and(eq(schema.questions.bankId, set.bankId), eq(schema.questions.isArchived, false))
+          )
+        : await db.$count(
+            schema.practiceSetQuestions,
+            eq(schema.practiceSetQuestions.practiceSetId, setId)
+          );
+    if (n === 0)
+      throw new ActionError(
+        "Add at least one question first, or pick a pool or bank that has some.",
+        400
+      );
     if (!set?.courseId) throw new ActionError("The set needs a course.", 400);
     const t = await db.$count(
       schema.practiceSetTargets,

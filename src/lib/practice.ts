@@ -34,23 +34,10 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-/** Live questions in a pool with what a draw needs. */
-export async function loadPoolQuestions(poolId: string): Promise<PoolQuestion[]> {
-  const rows = await db
-    .select({
-      questionId: schema.questions.id,
-      points: schema.questions.points,
-      stimulusId: schema.questions.stimulusId,
-    })
-    .from(schema.poolQuestions)
-    .innerJoin(
-      schema.questions,
-      and(
-        eq(schema.poolQuestions.questionId, schema.questions.id),
-        eq(schema.questions.isArchived, false)
-      )
-    )
-    .where(eq(schema.poolQuestions.poolId, poolId));
+/** Attach each question's target ids; the draw uses them to label the served item. */
+async function withTargets(
+  rows: { questionId: string; points: number; stimulusId: string | null }[]
+): Promise<PoolQuestion[]> {
   if (rows.length === 0) return [];
   const tRows = await db
     .select({
@@ -72,10 +59,48 @@ export async function loadPoolQuestions(poolId: string): Promise<PoolQuestion[]>
   return rows.map((r) => ({ ...r, targetIds: tBy.get(r.questionId) ?? [] }));
 }
 
+/** Live questions in a pool with what a draw needs. */
+export async function loadPoolQuestions(poolId: string): Promise<PoolQuestion[]> {
+  const rows = await db
+    .select({
+      questionId: schema.questions.id,
+      points: schema.questions.points,
+      stimulusId: schema.questions.stimulusId,
+    })
+    .from(schema.poolQuestions)
+    .innerJoin(
+      schema.questions,
+      and(
+        eq(schema.poolQuestions.questionId, schema.questions.id),
+        eq(schema.questions.isArchived, false)
+      )
+    )
+    .where(eq(schema.poolQuestions.poolId, poolId));
+  return withTargets(rows);
+}
+
+/**
+ * Live questions in a bank with what a draw needs (Jon, Oct 12 2026: a practice
+ * set can deal from a whole bank). Archived rows, old versions among them, stay
+ * out, so an edited question is served in its newest form.
+ */
+export async function loadBankQuestions(bankId: string): Promise<PoolQuestion[]> {
+  const rows = await db
+    .select({
+      questionId: schema.questions.id,
+      points: schema.questions.points,
+      stimulusId: schema.questions.stimulusId,
+    })
+    .from(schema.questions)
+    .where(and(eq(schema.questions.bankId, bankId), eq(schema.questions.isArchived, false)));
+  return withTargets(rows);
+}
+
 /**
  * Start (or resume) a practice attempt. Rule: a fixed set serves every
- * question in the teacher's order; a pool set draws `drawCount`, preferring
- * questions this student hasn't seen on earlier attempts of the set. Ordering
+ * question in the teacher's order; a pool or bank set draws `drawCount`,
+ * preferring questions this student hasn't seen on earlier attempts of the
+ * set, so every attempt is a fresh hand until the source runs out. Ordering
  * and matching options are shuffled; choice options keep the author's order.
  */
 export async function startPracticeAttempt(
@@ -107,12 +132,23 @@ export async function startPracticeAttempt(
   );
 
   let picked: PoolQuestion[];
-  if (set.poolId) {
-    const pool = await db.query.questionPools.findFirst({
-      columns: { drawStimulusGroups: true },
-      where: eq(schema.questionPools.id, set.poolId),
-    });
-    const questions = await loadPoolQuestions(set.poolId);
+  const drawFrom = set.poolId
+    ? { kind: "pool" as const, id: set.poolId }
+    : set.bankId
+      ? { kind: "bank" as const, id: set.bankId }
+      : null;
+  if (drawFrom) {
+    const pool =
+      drawFrom.kind === "pool"
+        ? await db.query.questionPools.findFirst({
+            columns: { drawStimulusGroups: true },
+            where: eq(schema.questionPools.id, drawFrom.id),
+          })
+        : null;
+    const questions =
+      drawFrom.kind === "pool"
+        ? await loadPoolQuestions(drawFrom.id)
+        : await loadBankQuestions(drawFrom.id);
     const prior = await db.query.practiceAttempts.findMany({
       columns: { questionSet: true },
       where: and(

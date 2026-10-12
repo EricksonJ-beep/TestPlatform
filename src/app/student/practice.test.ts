@@ -23,7 +23,11 @@ vi.mock("@/db", async () => {
 import { eq } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { listStudentAssignments } from "@/lib/queries/assignments";
-import { getStudentPractice, listPracticeContent } from "@/lib/queries/practice";
+import {
+  getPracticeSetDetail,
+  getStudentPractice,
+  listPracticeContent,
+} from "@/lib/queries/practice";
 import { getRetakeStatus } from "@/lib/queries/retakes";
 import { setAssignmentPin } from "@/app/app/assign/actions";
 import {
@@ -530,6 +534,89 @@ describe("Ticket 1.13: practice sets and relearning activities as retake gates",
     }))!;
     const seen = new Set(a1.questionSet.map((q) => q.questionId));
     expect(a2.questionSet.some((q) => seen.has(q.questionId))).toBe(false);
+  });
+
+  it("a bank set deals a fresh hand each attempt (Jon, Oct 12 2026); only banks on the course the teacher can use", async () => {
+    asUser(ids.teacher, "teacher");
+    const bank = (await db.query.questionBanks.findFirst({
+      where: eq(schema.questionBanks.name, "Bank"),
+    }))!;
+    const [chem] = await db
+      .insert(schema.courses)
+      .values({ ownerId: ids.teacher, name: "Chemistry" })
+      .returning();
+    const [offCourse, notShared] = await db
+      .insert(schema.questionBanks)
+      .values([
+        { ownerId: ids.teacher, courseId: chem.id, name: "Chem bank" },
+        { ownerId: ids.teacherB, courseId: ids.course, name: "Colleague's private bank" },
+      ])
+      .returning();
+    // One archived question (an old version, say) must never deal.
+    const archived = ids.q[ids.lt[0]][0];
+    await db
+      .update(schema.questions)
+      .set({ isArchived: true })
+      .where(eq(schema.questions.id, archived.id));
+
+    const { practiceSetId } = await ok(
+      createPracticeSet(fd({ title: "Elements practice", courseId: ids.course }))
+    );
+    const settings = (bankId?: string) =>
+      fd({
+        title: "Elements practice",
+        source: "bank",
+        ...(bankId ? { bankId } : {}),
+        drawCount: "8",
+        targetIds: [lt4()],
+      });
+    await fails(updatePracticeSet(practiceSetId, settings()), 400); // no bank picked
+    await fails(updatePracticeSet(practiceSetId, settings(offCourse.id)), 400);
+    await fails(updatePracticeSet(practiceSetId, settings(notShared.id)), 403);
+    await ok(updatePracticeSet(practiceSetId, settings(bank.id)));
+    const summary = (await listPracticeContent(ids.teacher)).sets.find(
+      (x) => x.id === practiceSetId
+    );
+    expect(summary).toMatchObject({ source: "bank", questions: 8 });
+    expect((await getPracticeSetDetail(practiceSetId))?.bank).toMatchObject({
+      name: "Bank",
+      size: 79,
+    });
+    await ok(setPracticeSetPublished(practiceSetId, true));
+
+    asUser(ids.student, "student");
+    const all = new Map(Object.values(ids.q).flatMap((qs) => qs.map((q) => [q.id, q] as const)));
+    const first = await ok(startPractice(practiceSetId));
+    const a1 = (await db.query.practiceAttempts.findFirst({
+      where: eq(schema.practiceAttempts.id, first.attemptId),
+    }))!;
+    expect(a1.questionSet).toHaveLength(8);
+    for (const s of a1.questionSet) {
+      expect(s.questionId).not.toBe(archived.id);
+      const q = all.get(s.questionId)!;
+      await ok(answerPractice(first.attemptId, q.id, { kind: "choice", optionId: q.right }));
+    }
+    const second = await ok(startPractice(practiceSetId));
+    expect(second.attemptId).not.toBe(first.attemptId);
+    const a2 = (await db.query.practiceAttempts.findFirst({
+      where: eq(schema.practiceAttempts.id, second.attemptId),
+    }))!;
+    expect(a2.questionSet).toHaveLength(8);
+    const seen = new Set(a1.questionSet.map((q) => q.questionId));
+    expect(a2.questionSet.some((q) => seen.has(q.questionId))).toBe(false);
+    expect(a2.questionSet.some((q) => q.questionId === archived.id)).toBe(false);
+
+    // Back to a fixed list: the bank comes off the set.
+    asUser(ids.teacher, "teacher");
+    await ok(
+      updatePracticeSet(
+        practiceSetId,
+        fd({ title: "Elements practice", source: "fixed", targetIds: [lt4()] })
+      )
+    );
+    const detail = await getPracticeSetDetail(practiceSetId);
+    expect(detail?.bank).toBeNull();
+    expect(detail?.drawCount).toBeNull();
   });
 });
 

@@ -1045,8 +1045,14 @@ export const practiceSets = pgTable(
     courseId: uuid("course_id").references(() => courses.id, { onDelete: "set null" }),
     title: text("title").notNull(),
     description: text("description"),
-    /** Either explicit questions (practice_set_questions) or draw from a pool. */
+    /**
+     * Source: explicit questions (practice_set_questions), a pool draw, or a
+     * bank draw (Jon, Oct 12 2026: "build a practice set from those question
+     * banks… a new practice set each time"). At most one of pool_id / bank_id
+     * is set; draw_count applies to either draw.
+     */
     poolId: uuid("pool_id").references(() => questionPools.id, { onDelete: "set null" }),
+    bankId: uuid("bank_id").references(() => questionBanks.id, { onDelete: "set null" }),
     drawCount: integer("draw_count"),
     worksheetId: uuid("worksheet_id").references(() => worksheets.id, { onDelete: "set null" }),
     isPublished: boolean("is_published").default(false).notNull(),

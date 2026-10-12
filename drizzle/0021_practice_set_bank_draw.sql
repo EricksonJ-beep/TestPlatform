@@ -1,0 +1,2 @@
+ALTER TABLE "practice_sets" ADD COLUMN "bank_id" uuid;--> statement-breakpoint
+ALTER TABLE "practice_sets" ADD CONSTRAINT "practice_sets_bank_id_question_banks_id_fk" FOREIGN KEY ("bank_id") REFERENCES "public"."question_banks"("id") ON DELETE set null ON UPDATE no action;

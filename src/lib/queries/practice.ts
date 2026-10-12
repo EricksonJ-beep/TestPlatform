@@ -15,6 +15,7 @@ import {
   type PracticeItemState,
   type PracticeProgress,
 } from "@/lib/practice-rules";
+import { listBanksForCourse } from "@/lib/queries/assessments";
 import type { StudentAssignment } from "@/lib/queries/assignments";
 import { sanitizedQuestions, type StudentQuestion } from "@/lib/queries/attempts";
 
@@ -38,7 +39,7 @@ export type PracticeSetSummary = {
   courseName: string | null;
   isPublished: boolean;
   sortOrder: number;
-  source: "fixed" | "pool";
+  source: "fixed" | "pool" | "bank";
   questions: number;
   targets: TargetRef[];
   /** Distinct students with a completed attempt. */
@@ -119,15 +120,52 @@ async function targetsFor(
   return out;
 }
 
-const setQuestionCount = sql<number>`case when ${schema.practiceSets.poolId} is null
-  then (select count(*)::int from ${schema.practiceSetQuestions} psq
-        inner join ${schema.questions} q on q.id = psq.question_id and q.is_archived = false
-        where psq.practice_set_id = ${schema.practiceSets.id})
-  else least(coalesce(${schema.practiceSets.drawCount}, 1000000),
+/** Questions an attempt serves: the fixed list, or the draw count capped by the pool's or bank's live questions. */
+const setQuestionCount = sql<number>`case
+  when ${schema.practiceSets.poolId} is not null
+  then least(coalesce(${schema.practiceSets.drawCount}, 1000000),
         (select count(*)::int from ${schema.poolQuestions} pq
          inner join ${schema.questions} q on q.id = pq.question_id and q.is_archived = false
          where pq.pool_id = ${schema.practiceSets.poolId}))
+  when ${schema.practiceSets.bankId} is not null
+  then least(coalesce(${schema.practiceSets.drawCount}, 1000000),
+        (select count(*)::int from ${schema.questions} q
+         where q.bank_id = ${schema.practiceSets.bankId} and q.is_archived = false))
+  else (select count(*)::int from ${schema.practiceSetQuestions} psq
+        inner join ${schema.questions} q on q.id = psq.question_id and q.is_archived = false
+        where psq.practice_set_id = ${schema.practiceSets.id})
   end`;
+
+/** Live (unarchived, current-version) questions in a bank. */
+const liveBankQuestions = (bankId: string) =>
+  db.$count(
+    schema.questions,
+    and(eq(schema.questions.bankId, bankId), eq(schema.questions.isArchived, false))
+  );
+
+/** Banks a teacher may deal a practice set from on a course (own + shared), with their live question counts. */
+export async function listBanksForPracticeDraw(
+  teacherId: string,
+  courseId: string
+): Promise<{ id: string; name: string; size: number }[]> {
+  const banks = await listBanksForCourse(teacherId, courseId);
+  if (banks.length === 0) return [];
+  const sizes = await db
+    .select({ bankId: schema.questions.bankId, n: sql<number>`count(*)::int` })
+    .from(schema.questions)
+    .where(
+      and(
+        inArray(
+          schema.questions.bankId,
+          banks.map((b) => b.id)
+        ),
+        eq(schema.questions.isArchived, false)
+      )
+    )
+    .groupBy(schema.questions.bankId);
+  const sizeBy = new Map(sizes.map((r) => [r.bankId, r.n]));
+  return banks.map((b) => ({ ...b, size: sizeBy.get(b.id) ?? 0 }));
+}
 
 /** Everything a teacher has built, both kinds, for /app/practice. */
 export async function listPracticeContent(
@@ -142,6 +180,7 @@ export async function listPracticeContent(
       isPublished: schema.practiceSets.isPublished,
       sortOrder: schema.practiceSets.sortOrder,
       poolId: schema.practiceSets.poolId,
+      bankId: schema.practiceSets.bankId,
       questions: setQuestionCount,
       completions: sql<number>`(select count(distinct pa.student_id)::int from ${schema.practiceAttempts} pa where pa.practice_set_id = ${schema.practiceSets.id} and pa.completed_at is not null)`,
       updatedAt: schema.practiceSets.updatedAt,
@@ -178,10 +217,10 @@ export async function listPracticeContent(
     ),
   ]);
   return {
-    sets: setRows.map(({ poolId, ...r }) => ({
+    sets: setRows.map(({ poolId, bankId, ...r }) => ({
       kind: "practice_set",
       ...r,
-      source: poolId ? "pool" : "fixed",
+      source: poolId ? "pool" : bankId ? "bank" : "fixed",
       targets: setTargets.get(r.id) ?? [],
     })),
     activities: actRows.map((r) => ({
@@ -212,6 +251,8 @@ export type PracticeSetDetail = {
   sortOrder: number;
   worksheetId: string | null;
   pool: { id: string; name: string; size: number } | null;
+  /** A bank draw: `size` counts the bank's live questions. */
+  bank: { id: string; name: string; size: number } | null;
   drawCount: number | null;
   targets: TargetRef[];
   questions: PracticeSetQuestionRow[];
@@ -231,14 +272,18 @@ export async function getPracticeSetDetail(setId: string): Promise<PracticeSetDe
       worksheetId: schema.practiceSets.worksheetId,
       poolId: schema.practiceSets.poolId,
       poolName: schema.questionPools.name,
+      bankId: schema.practiceSets.bankId,
+      bankName: schema.questionBanks.name,
       drawCount: schema.practiceSets.drawCount,
     })
     .from(schema.practiceSets)
     .leftJoin(schema.courses, eq(schema.practiceSets.courseId, schema.courses.id))
     .leftJoin(schema.questionPools, eq(schema.practiceSets.poolId, schema.questionPools.id))
+    .leftJoin(schema.questionBanks, eq(schema.practiceSets.bankId, schema.questionBanks.id))
     .where(eq(schema.practiceSets.id, setId))
     .limit(1);
   if (!set) return null;
+  const bankSize = set.bankId ? await liveBankQuestions(set.bankId) : 0;
   const poolSize = set.poolId
     ? await db.$count(
         schema.poolQuestions,
@@ -301,10 +346,11 @@ export async function getPracticeSetDetail(setId: string): Promise<PracticeSetDe
       .from(schema.practiceAttempts)
       .where(eq(schema.practiceAttempts.practiceSetId, setId)),
   ]);
-  const { poolId, poolName, ...rest } = set;
+  const { poolId, poolName, bankId, bankName, ...rest } = set;
   return {
     ...rest,
     pool: poolId ? { id: poolId, name: poolName ?? "Pool", size: poolSize } : null,
+    bank: bankId ? { id: bankId, name: bankName ?? "Bank", size: bankSize } : null,
     targets: targets.get(setId) ?? [],
     questions: qRows.map((q) => ({
       ...q,
