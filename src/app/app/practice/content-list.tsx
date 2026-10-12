@@ -103,7 +103,11 @@ export function ContentList({
                   {isSet ? (
                     <span>
                       · {item.questions} {item.questions === 1 ? "question" : "questions"}
-                      {item.source === "pool" ? " from a pool" : ""}
+                      {item.source === "pool"
+                        ? " from a pool"
+                        : item.source === "bank"
+                          ? " dealt from a bank"
+                          : ""}
                     </span>
                   ) : null}
                   <span>

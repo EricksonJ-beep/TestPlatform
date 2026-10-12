@@ -3,9 +3,9 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { isAuthzError, requireContentAccess } from "@/lib/authz";
-import { listBanksForCourse, listPoolsForBuilder } from "@/lib/queries/assessments";
+import { listPoolsForBuilder } from "@/lib/queries/assessments";
 import { listTargets } from "@/lib/queries/courses";
-import { getPracticeSetDetail } from "@/lib/queries/practice";
+import { getPracticeSetDetail, listBanksForPracticeDraw } from "@/lib/queries/practice";
 import { SetEditor } from "./set-editor";
 import { FollowCourse } from "@/components/app/course-focus";
 
@@ -27,7 +27,9 @@ export default async function PracticeSetPage({ params }: PageProps<"/app/practi
   const [targets, pools, banks] = await Promise.all([
     detail.courseId ? listTargets(detail.courseId) : Promise.resolve([]),
     detail.courseId ? listPoolsForBuilder(detail.courseId) : Promise.resolve([]),
-    detail.courseId ? listBanksForCourse(access.userId, detail.courseId) : Promise.resolve([]),
+    detail.courseId
+      ? listBanksForPracticeDraw(access.userId, detail.courseId)
+      : Promise.resolve([]),
   ]);
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-4">

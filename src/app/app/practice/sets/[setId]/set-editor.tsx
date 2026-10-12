@@ -30,7 +30,9 @@ const selectClass =
 
 type Target = { id: string; code: string; title: string };
 
-/** Build a practice set: settings and targets on the left, its questions (or pool draw) on the right. */
+type Source = "fixed" | "pool" | "bank";
+
+/** Build a practice set: settings and targets on the left, its questions (or the pool / bank draw) on the right. */
 export function SetEditor({
   detail,
   targets,
@@ -40,10 +42,13 @@ export function SetEditor({
   detail: PracticeSetDetail;
   targets: Target[];
   pools: { id: string; name: string; size: number }[];
-  banks: { id: string; name: string }[];
+  /** Banks on the course the teacher owns or can view, with their live question counts. */
+  banks: { id: string; name: string; size: number }[];
 }) {
   const router = useRouter();
-  const [source, setSource] = useState<"fixed" | "pool">(detail.pool ? "pool" : "fixed");
+  const [source, setSource] = useState<Source>(
+    detail.pool ? "pool" : detail.bank ? "bank" : "fixed"
+  );
   const [confirmDelete, setConfirmDelete] = useState(false);
   const save = useAction();
   const publish = useAction();
@@ -176,18 +181,40 @@ export function SetEditor({
                   </select>
                   <FieldError errors={save.fieldErrors} name="poolId" />
                 </div>
-                <div className="grid w-24 gap-1">
-                  <Label htmlFor="ps-draw">Draw</Label>
-                  <Input
-                    id="ps-draw"
-                    name="drawCount"
-                    type="number"
-                    min={1}
-                    max={100}
-                    defaultValue={detail.drawCount ?? 10}
-                  />
-                  <FieldError errors={save.fieldErrors} name="drawCount" />
+                <DrawCount detail={detail} errors={save.fieldErrors} />
+              </div>
+            ) : null}
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="radio"
+                name="source"
+                value="bank"
+                checked={source === "bank"}
+                onChange={() => setSource("bank")}
+                className="accent-brand"
+                disabled={banks.length === 0}
+              />
+              A bank draw (a fresh hand from a whole bank each attempt)
+            </label>
+            {source === "bank" ? (
+              <div className="ml-6 flex flex-wrap items-end gap-2">
+                <div className="grid min-w-40 flex-1 gap-1">
+                  <Label htmlFor="ps-bank">Bank</Label>
+                  <select
+                    id="ps-bank"
+                    name="bankId"
+                    defaultValue={detail.bank?.id ?? banks[0]?.id ?? ""}
+                    className={selectClass}
+                  >
+                    {banks.map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.name} ({b.size})
+                      </option>
+                    ))}
+                  </select>
+                  <FieldError errors={save.fieldErrors} name="bankId" />
                 </div>
+                <DrawCount detail={detail} errors={save.fieldErrors} />
               </div>
             ) : null}
           </fieldset>
@@ -206,6 +233,21 @@ export function SetEditor({
                   ? `Each attempt draws ${detail.drawCount ?? detail.pool.size} of the ${detail.pool.size} live questions in “${detail.pool.name}”, preferring ones the student hasn't seen.`
                   : "Pick a pool and save; each attempt then draws fresh questions from it."}
               </p>
+            </section>
+          ) : source === "bank" ? (
+            <section className="rounded-lg border border-border bg-card p-4 text-sm">
+              <h2 className="font-medium">Bank draw</h2>
+              <p className="mt-1 text-muted-foreground">
+                {detail.bank
+                  ? `Each attempt deals ${Math.min(detail.drawCount ?? detail.bank.size, detail.bank.size)} of the ${detail.bank.size} live questions in “${detail.bank.name}”, preferring ones the student hasn't seen, so every try is a new practice set until the bank runs out.`
+                  : "Pick a bank and save; each attempt then deals fresh questions from it."}
+              </p>
+              {detail.bank ? (
+                <p className="mt-2 text-muted-foreground">
+                  Questions you add to or edit in the bank show up on the next attempt. Archived
+                  ones never deal.
+                </p>
+              ) : null}
             </section>
           ) : (
             <>
@@ -286,6 +328,29 @@ export function SetEditor({
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function DrawCount({
+  detail,
+  errors,
+}: {
+  detail: PracticeSetDetail;
+  errors: Record<string, string[]>;
+}) {
+  return (
+    <div className="grid w-24 gap-1">
+      <Label htmlFor="ps-draw">Draw</Label>
+      <Input
+        id="ps-draw"
+        name="drawCount"
+        type="number"
+        min={1}
+        max={100}
+        defaultValue={detail.drawCount ?? 10}
+      />
+      <FieldError errors={errors} name="drawCount" />
     </div>
   );
 }
