@@ -1,0 +1,28 @@
+{
+  "name": "ps-u6-lt5-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science B",
+  "unit": "Unit 6 · Work and Efficiency",
+  "bank": "PS · U6.LT5 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U6.LT5 Practice: Energy Flow in a Rube Goldberg Machine",
+    "description": "Practice naming the simple machines in a Rube Goldberg chain, finding the IMA of a step, and tracing how energy changes form from step to step.",
+    "drawCount": 10,
+    "targets": ["U6.LT5"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U6.LT5 Relearning: Rube Goldberg Planning Guide",
+    "content": "**What you need to be able to do:** I can plan and build a Rube Goldberg machine and explain how energy flows through it, step by step.\n\n**Think of a relay race.** Nobody runs until the starting gun goes off, and each runner hands the baton to the next. In your machine, the baton is **energy**, and the last step does the task. A sloppy handoff is like friction: some energy drops out as heat or sound.\n\n**What it is.** A **Rube Goldberg machine** is a **complex machine** built from **simple machines** (levers, inclined planes, pulleys, wedges) that does a simple task, like popping a balloon, in many steps.\n\n**Energy words.** **Energy** is the ability to cause change. **Kinetic** energy is energy of motion; **potential** energy is stored energy (**gravitational** when raised, **elastic** when stretched or squeezed, **chemical** in bonds). **Sound** and **thermal** (heat) energy spread out. **Law of Conservation of Energy:** energy can never be created or destroyed; it only changes form. Energy only seems \"lost\" when friction turns it into heat or sound that can't push the next step, so your machine needs a **start** and can't run forever.\n\n**Planning steps.**\n1. Pick the final task.\n2. Work backward: what has to hit the last step, and what sets that off?\n3. Choose at least 3 different simple machines (each lever class counts as a different machine).\n4. Decide how energy passes from each step to the next (something falls, rolls, or swings into the next machine).\n5. Measure **De** (distance of effort) and **Dr** (distance of resistance) for each machine. On a lever, measure both from the fulcrum; on a ramp, De is the length and Dr is the height. Calculate IMA = De ÷ Dr and label it. For a pulley, count the rope segments instead (include the end that gets pulled): pulling down – count and subtract 1; pulling up – count them all.\n6. Test, fix the weak links (a step that runs out of energy or misses), and test again.\n\n**Worked example plan.** **Step 1, inclined plane:** a marble starts at the top of a ramp 0.60 m long and 0.12 m high. Formula: IMA = De ÷ Dr. Set up: IMA = 0.60 m ÷ 0.12 m. Answer: **5** (no units). Energy: gravitational potential → kinetic.\n\n**Step 2, 1st-class lever:** a ruler rests on an eraser (the eraser is the fulcrum, between the marble and the other end), with clay on the short end so the long end tilts up. The marble lands on the long end, 20 cm from the eraser (De); the short end, 8 cm from the eraser (Dr), flips up and knocks a washer off a ledge. Formula: IMA = De ÷ Dr. Set up: IMA = 20 cm ÷ 8 cm. Answer: **2.5**. Energy: kinetic (marble) → kinetic (ruler and clay), plus a click of sound and a little heat.\n\n**Step 3, 3rd-class lever:** the washer falls (gravitational potential → kinetic) onto a ruler hinged at one end and held level by a rubber band from above, hitting it 5 cm from the hinge (De). The far end, 25 cm from the hinge (Dr), swings down and drives a taped pin (a wedge) into the balloon. Formula: IMA = De ÷ Dr. Set up: IMA = 5 cm ÷ 25 cm. Answer: **0.2** (less than 1, but the pin moves fast and far). Energy: kinetic (washer) → kinetic (ruler and pin) and a little elastic (the band stretches); the pin pops the balloon, releasing its stored elastic energy as a loud bang (sound).\n\n**Checklist.**\n☐ At least 3 different simple machines, each labeled with its name (and lever class), De, Dr, and IMA.\n☐ The energy change for every step is written down.\n☐ One start (a push, pull, or drop), then it runs on its own and does the final task every time you test it.\n\n**Watch out for:** an upside-down IMA (it is De ÷ Dr; a ramp's IMA is always more than 1), saying energy is \"used up\" or \"destroyed\" (it changes form), and counting dominoes or a falling cup as a simple machine (they pass energy along but have no IMA).\n\n**Check Mr. Erickson's project sheet for the exact task and requirements.**",
+    "prompts": [
+      "What task will your machine finish? Working backward from that task, describe the last two steps of your machine.",
+      "List your 3 (or more) simple machines in order. Name each one (give the class for any lever) and tell where each one gets its energy from.",
+      "Pick one of your machines. Give its De and Dr (measured or planned) and calculate its IMA. Show the Formula, Set up, and Answer.",
+      "Trace the energy through your machine from the starting push to the final task. Name the energy form at each step (gravitational potential, kinetic, elastic, sound, thermal).",
+      "Where will your machine \"lose\" energy to friction (heat) or sound? Name one weak link you will test and how you could fix it."
+    ],
+    "targets": ["U6.LT5"]
+  }
+}

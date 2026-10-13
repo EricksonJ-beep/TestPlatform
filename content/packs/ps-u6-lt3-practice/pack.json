@@ -1,0 +1,27 @@
+{
+  "name": "ps-u6-lt3-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science B",
+  "unit": "Unit 6 · Work and Efficiency",
+  "bank": "PS · U6.LT3 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U6.LT3 Practice: Inclined Planes",
+    "description": "Practice identifying inclined planes and their parts and calculating IMA, AMA, work, effort force, and efficiency for a ramp.",
+    "drawCount": 10,
+    "targets": ["U6.LT3"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U6.LT3 Relearning: Inclined Planes",
+    "content": "**What you need to be able to do:** I can identify and calculate the IMA, AMA, and efficiency of an inclined plane.\n\n**Think of climbing a sledding hill.** Charging straight up the steep side is short but exhausting. Walking up the long, gentle path on the side takes more steps, but each step is easy. A ramp works the same way: you trade a longer distance for a smaller force.\n\n**An inclined plane is a flat surface that is higher on one end.** Wheelchair ramps, loading ramps into a truck, roads that zigzag up a hill, and slides are all inclined planes. A **wedge** (an axe blade) and a **screw** (jar-lid threads) are modified inclined planes.\n\n**The trade-off.** Sliding a load up a ramp takes **less force** than lifting it straight up, but you push over a **longer distance**. The ramp does **not** reduce the work. On a ramp: **De** (distance of effort) = the **length** of the ramp, **Dr** (distance of resistance) = the **height**, **Fr** (force of resistance) = the **weight** of the object, and **Fe** (force of effort) = the push or pull **along** the ramp. A longer, less steep ramp to the same height needs less force.\n\n**The formulas.** **IMA = De ÷ Dr = length ÷ height.** **AMA = Fr ÷ Fe.** IMA and AMA have no units. **Work input = Fe × De** and **Work output = Fr × Dr** (in joules, J). Ideal (no friction): Work In = Work Out, so Fe × De = Fr × Dr. **Efficiency = Work output ÷ Work input × 100 = AMA ÷ IMA × 100.** A real ramp is always below 100% because energy is lost to friction and heat, so the AMA is always less than the IMA. To turn a mass into a weight, use weight (Fr) = m × g with g = 9.8 m/s^{2}.\n\n**Worked example 1:** A wheelchair ramp is 6.4 m long and rises 0.8 m. Formula: IMA = length ÷ height. Set up: IMA = 6.4 m ÷ 0.8 m. Answer: **8** (no units). If the ramp were ideal, a 560 N rider and chair would need Fe = Fr ÷ IMA = 560 N ÷ 8 = **70 N**.\n\n**Worked example 2:** Jae pushes a 500 N box up a ramp 3 m long and 0.6 m high with a 125 N push. Step 1: Work input = 125 N × 3 m = 375 J. Step 2: Work output = 500 N × 0.6 m = 300 J. Step 3: Efficiency = 300 J ÷ 375 J × 100 = **80%**. Other way: IMA = 3 ÷ 0.6 = 5, AMA = 500 ÷ 125 = 4, and 4 ÷ 5 × 100 = **80%**.\n\n**Worked example 3:** Find the push for a 30 kg box on a ramp 2.4 m long and 0.6 m high that is 70% efficient. Step 1: Fr = 30 kg × 9.8 m/s^{2} = 294 N. Step 2: IMA = 2.4 ÷ 0.6 = 4, so the ideal Fe = 294 N ÷ 4 = 73.5 N. Step 3: The real ramp needs more: Fe = 73.5 N ÷ 0.7 = **105 N**.\n\n**Watch out for:** dividing height ÷ length (the IMA of a ramp is always more than 1), using forces for IMA or distances for AMA, using the ramp's length for work output (output uses the height), flipping efficiency so it is over 100%, forgetting × 100, and using kg as if it were N.",
+    "prompts": [
+      "Explain why a ramp lets you use less force but does not save you any work. Use the words effort force, distance, and work.",
+      "A ramp is 5.4 m long and 0.9 m high. Find its IMA and the ideal Fe needed to push a 690 N cart up it. Show the Formula, Set up, and Answer with units.",
+      "Name three inclined planes you have seen in real life (not counting a ramp in a classroom). For each one, tell what moves along it and why a longer, gentler slope would make the job easier.",
+      "Wyatt pulls a 350 N wagon up a ramp 4 m long and 0.8 m high with a 90 N pull. Find the work input, the work output, and the efficiency. Show each step."
+    ],
+    "targets": ["U6.LT3"]
+  }
+}

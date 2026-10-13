@@ -1,0 +1,27 @@
+{
+  "name": "ps-u6-lt2-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science B",
+  "unit": "Unit 6 · Work and Efficiency",
+  "bank": "PS · U6.LT2 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U6.LT2 Practice: Levers",
+    "description": "Practice naming the parts and classes of levers and calculating IMA, AMA, effort force, and efficiency.",
+    "drawCount": 10,
+    "targets": ["U6.LT2"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U6.LT2 Relearning: Levers",
+    "content": "**What you need to be able to do:** I can identify and calculate the IMA, AMA, and efficiency of the three different classes of levers.\n\n**Think of carrying groceries up the stairs.** You can take every bag in one heavy trip or in several light trips. Each light trip takes less force, but you climb the stairs more times, and the bags end up upstairs either way. A lever makes the same trade: push through a longer distance and you need less force. It never changes the amount of work. (A seesaw shows it: a little kid can lift a bigger kid by sitting farther from the fulcrum.)\n\n**Parts.** The **fulcrum** is the fixed point the lever pivots around. The **effort (input) force, Fe**, is your push. The **resistance (output) force, Fr**, is the weight of the load. The **effort arm (De)** runs from the fulcrum to the effort force, and the **resistance arm (Dr)** runs from the fulcrum to the load. All distances are measured from the fulcrum.\n\n**Classes: what is in the middle?** **1st class:** the fulcrum (seesaw/teeter totter, crowbar, scissors, pliers); IMA can be more than, equal to, or less than 1. **2nd class:** the load (wheelbarrow, nutcracker, bottle opener); the effort arm is always longer, so IMA is always more than 1. **3rd class:** the effort (tweezers, broom, shovel, fishing pole, your forearm when your bicep lifts); IMA is less than 1, so it does not multiply force, but the load moves farther and faster than your hand. Memory trick: F-R-E for 1st, 2nd, 3rd.\n\n**Formulas.** **IMA = De ÷ Dr** (distances). **AMA = Fr ÷ Fe** (forces). IMA and AMA have no units. Ideal lever (assume 100% efficiency): **Fe × De = Fr × Dr**. **Efficiency = AMA ÷ IMA × 100** or **Work output ÷ Work input × 100**, with Work output = Fr × Dr and Work input = Fe × De (here De and Dr are how far each end moves). A load in kg: find its weight first, Fr = m × 9.8.\n\n**Worked example 1:** A wheelbarrow's handles are 1.6 m from the wheel's axle, and the dirt is 0.4 m from the axle. The load is in the middle, so it is **2nd class**. Formula: IMA = De ÷ Dr. Set up: IMA = 1.6 m ÷ 0.4 m. Answer: **4** (no units).\n\n**Worked example 2:** A board rests on a rock (the fulcrum) to move a 360 N rock that sits 0.5 m from the fulcrum; the student pushes 2 m from the fulcrum. Formula: Fe = Fr × Dr ÷ De. Set up: Fe = 360 N × 0.5 m ÷ 2 m. Answer: **90 N** (ideal). The real push is 100 N, so AMA = 360 ÷ 100 = 3.6, IMA = 2 ÷ 0.5 = 4, and efficiency = 3.6 ÷ 4 × 100 = **90%**.\n\n**Worked example 3:** Maya pushes down on a crowbar with 150 N while her hand moves 0.6 m, and a 500 N rock rises 0.15 m. Step 1: Work input = 150 N × 0.6 m = 90 J. Step 2: Work output = 500 N × 0.15 m = 75 J. Step 3: Efficiency = 75 J ÷ 90 J × 100 = **83.3%**.\n\n**Watch out for:** flipped ratios (Dr ÷ De or Fe ÷ Fr), forces in IMA or distances in AMA, forgetting × 100, an efficiency over 100% (a real lever always has AMA less than IMA), using kg as N (multiply by 9.8 first), and calling your forearm 1st class (the bicep pulls between the elbow and the hand, so it is 3rd class).",
+    "prompts": [
+      "Name the class of each lever and tell what is in the middle: a teeter totter, a bottle opener, and your forearm when your bicep lifts a book.",
+      "A pry bar has an effort arm of 1.5 m and a resistance arm of 0.3 m. Find its IMA and the ideal Fe needed to lift a 420 N rock. Show the Formula, Set up, and Answer for each (Fe in N; IMA has no units).",
+      "Explain why a broom or a fishing pole is useful even though its IMA is less than 1.",
+      "Addy pushes down on a lever with 120 N while her hand moves 0.5 m, and a 400 N load rises 0.12 m. Find the work input, the work output, and the efficiency. Show each step."
+    ],
+    "targets": ["U6.LT2"]
+  }
+}

@@ -1,6 +1,6 @@
 # Physical Science practice banks: practice built into Bloom
 
-_Brainstormed with Jon, Oct 13 2026. Platform tickets P2–P4 built Oct 13 (✅ below); content (P5) next. PLAN.md §3.7, §3.7a, §8, §10, Appendix A and docs/decisions.md are updated to match._
+_Brainstormed with Jon, Oct 13 2026. Platform tickets P2–P4 built Oct 13 (✅ below); content (P5) finished Oct 13 for all six units. PLAN.md §3.7, §3.7a, §8, §10, Appendix A and docs/decisions.md are updated to match._
 
 ## The idea in one line
 
@@ -73,7 +73,7 @@ When a set deals from a bank, draw across difficulty bands (1–2 easy, 3 medium
 
 ### Ticket P5 · Content: one batch per unit
 
-Progress: **Unit 1 ✅** (merged Oct 13 2026, PR #25; packs `ps-u1-lt1..4-practice`, revision 2 after an independent key audit). **Unit 2 ✅** (packs `ps-u2-lt1..4-practice`, audited before first push). **Unit 3 ✅** (packs `ps-u3-lt1..4-practice`; formula fill-ins are case-sensitive). **Unit 4 ✅** (packs `ps-u4-lt1..4-practice`, Physical Science B; graphs as text tables). **Unit 5 ✅** (packs `ps-u5-lt1..4-practice`; g = 9.8; momentum only as collisions and recoil in LT4).
+Progress: **Unit 1 ✅** (merged Oct 13 2026, PR #25; packs `ps-u1-lt1..4-practice`, revision 2 after an independent key audit). **Unit 2 ✅** (packs `ps-u2-lt1..4-practice`, audited before first push). **Unit 3 ✅** (packs `ps-u3-lt1..4-practice`; formula fill-ins are case-sensitive). **Unit 4 ✅** (packs `ps-u4-lt1..4-practice`, Physical Science B; graphs as text tables). **Unit 5 ✅** (packs `ps-u5-lt1..4-practice`; g = 9.8; momentum only as collisions and recoil in LT4). **Unit 6 ✅** (packs `ps-u6-lt1..5-practice`; no power; stems always name IMA or AMA; efficiency as a percent, by work and by AMA ÷ IMA; pulleys use Jon's deck rule, "pulling down – count and subtract 1, pulling up – count them all"; U6.LT5 is a 25-question energy-flow bank with no energy math and a Rube Goldberg planning guide). All 25 Physical Science targets are done: 1,225 questions.
 
 Lessons from Unit 1:
 - Vercel **preview builds use the live database**, and the build step applies migrations and packs. Pushing a pack to any branch puts it in front of students before merge. Check a batch before its first push.

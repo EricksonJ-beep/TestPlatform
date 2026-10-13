@@ -1,0 +1,27 @@
+{
+  "name": "ps-u6-lt4-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science B",
+  "unit": "Unit 6 · Work and Efficiency",
+  "bank": "PS · U6.LT4 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U6.LT4 Practice: Pulleys",
+    "description": "Practice identifying fixed and movable pulleys and block and tackles, using the rope rule to find IMA, and calculating AMA, rope pulled, work, and efficiency.",
+    "drawCount": 10,
+    "targets": ["U6.LT4"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U6.LT4 Relearning: Pulleys",
+    "content": "**What you need to be able to do:** I can identify fixed pulleys, movable pulleys, and pulley systems, and calculate the IMA, AMA, and efficiency of a pulley.\n\n**Think of carrying a couch with friends.** If 4 friends each hold a strap under it, each one holds up only a quarter of the weight. In a pulley system, every rope segment that holds up the movable pulley takes a share of the load, so your pull is smaller. The catch: to raise the load 1 m, each of those 4 segments must get 1 m shorter, so you pull 4 m of rope. You trade force for distance.\n\n**Pulleys.** A **pulley** is a wheel with a groove that holds a rope, chain, or belt. A **fixed pulley** is attached to a support (a flagpole, window blinds). It **changes the direction of the force**, so you can pull down and use your body weight, but its IMA is 1. A **movable pulley** is attached to the load and moves with it. A single movable pulley with the rope tied to the ceiling and pulled **up** has 2 rope segments, so its IMA is 2. A **pulley system**, or **block and tackle**, combines fixed and movable pulleys to multiply your input force.\n\n**The rope rule (IMA).** Count the strings involved as the support. **Pulling down – count and subtract 1. Pulling up – count them all.** Start from the TOTAL number of rope segments, including the one in your hand.\n\n**The formulas.** IMA = De ÷ Dr (for a pulley, use the rope rule). AMA = Fr ÷ Fe. Work output = Fr × Dr. Work input = Fe × De. Efficiency = Work output ÷ Work input × 100, or AMA ÷ IMA × 100. Less force means more rope: **De = IMA × Dr**. Friction turns some work into heat, so a real AMA is less than the IMA and efficiency is below 100%. Turn kg into N with g = 9.8 m/s^{2}. IMA and AMA have no units.\n\n**Worked example 1:** A block and tackle has 6 rope segments in total (including the one in your hand), and you pull down on the free end to lift a 1,200 N engine 0.5 m. Assume 100% efficiency. Rope rule: pulling down, 6 − 1 = IMA 5. Formula: Fe = Fr ÷ IMA. Set up: Fe = 1,200 N ÷ 5. Answer: **240 N**. Rope pulled: De = IMA × Dr = 5 × 0.5 m = **2.5 m**.\n\n**Worked example 2:** You pull with 125 N through 6 m of rope to lift a 400 N load 1.5 m. Formula: Efficiency = Work output ÷ Work input × 100. Set up: Work output = 400 N × 1.5 m = 600 J; Work input = 125 N × 6 m = 750 J; 600 J ÷ 750 J × 100. Answer: **80%**. Check: IMA = 6 m ÷ 1.5 m = 4, AMA = 400 N ÷ 125 N = 3.2, and 3.2 ÷ 4 × 100 = **80%**.\n\n**Worked example 3:** A block and tackle with an IMA of 6 is 75% efficient. What effort force lifts a 140 kg engine? Formula: Fe = Fr ÷ IMA ÷ efficiency (as a decimal). Set up: Fr = 140 kg × 9.8 m/s^{2} = 1,372 N. Ideal Fe = 1,372 N ÷ 6 = 228.7 N. Real Fe = 228.7 N ÷ 0.75. Answer: **304.9 N**, more than the ideal force.\n\n**Watch out for:** counting the rope you pull down on as a support, giving a fixed pulley an IMA of 2 or 0, using distances for AMA or forces for IMA, flipping a ratio (Fe ÷ Fr or input ÷ output), forgetting × 100, using kg as N, and any efficiency of 100% or more for a real machine.",
+    "prompts": [
+      "Explain the rope rule in your own words. Then find the IMA of a block and tackle with 9 rope segments when you pull down on the free end, and again when you pull up on it.",
+      "Why would someone use a single fixed pulley to raise a flag or open window blinds? Tell what it does and what it does not do.",
+      "A pulley system lifts a 450 N load 2 m while you pull with 170 N through 6 m of rope. Find the work output, work input, IMA, AMA, and efficiency. Show the Formula, Set up, and Answer with units.",
+      "A block and tackle lets you lift a heavy engine with much less effort force. What has to increase? Explain why, using work input and work output."
+    ],
+    "targets": ["U6.LT4"]
+  }
+}
