@@ -1,0 +1,131 @@
+{
+  "name": "anatomy-u1-practice-bank",
+  "revision": 2,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Anatomy and Physiology",
+  "unit": "Unit 1",
+  "bank": "AP · Unit 1 · Practice",
+  "openPractice": true,
+  "targets": [
+    {
+      "unit": "Unit 1",
+      "code": "U1.LT1",
+      "title": "Anatomy, physiology, and levels of organization",
+      "description": "1.a Differentiate key foundational concepts in anatomy and physiology, including the distinction between the two fields and terms related to the organization of the human body."
+    },
+    {
+      "unit": "Unit 1",
+      "code": "U1.LT2",
+      "title": "Anatomical position, directions, planes, and regions",
+      "description": "1.b Describe the structural orientation of the human body, including anatomical position, directional terms, major planes, axial and appendicular regions, and positional terminology."
+    },
+    {
+      "unit": "Unit 1",
+      "code": "U1.LT3",
+      "title": "Body cavities and serous membranes",
+      "description": "1.c Identify major body cavities and their subdivisions, along with the associated serous membranes and the fluids within each cavity."
+    },
+    {
+      "unit": "Unit 1",
+      "code": "U1.LT4",
+      "title": "Abdominopelvic quadrants and regions",
+      "description": "1.d Describe major regions of the abdominopelvic area, including the quadrants, nine abdominal regions, and methods used to subdivide the abdominal region."
+    },
+    {
+      "unit": "Unit 1",
+      "code": "U1.LT5",
+      "title": "Homeostasis",
+      "description": "1.e Explain the concept of homeostasis."
+    },
+    {
+      "unit": "Unit 1",
+      "code": "U1.LT6",
+      "title": "Negative and positive feedback",
+      "description": "1.f Differentiate between negative and positive feedback systems."
+    },
+    {
+      "unit": "Unit 1",
+      "code": "U1.LT7",
+      "title": "Structure of an atom",
+      "description": "2.a Describe the structure of an atom."
+    },
+    {
+      "unit": "Unit 1",
+      "code": "U1.LT8",
+      "title": "Atoms, molecules, compounds, ions, and isotopes",
+      "description": "2.b Distinguish among atoms, molecules, compounds, ions, and isotopes."
+    },
+    {
+      "unit": "Unit 1",
+      "code": "U1.LT9",
+      "title": "Chemical bonds",
+      "description": "2.c Explain the major types of chemical bonding."
+    },
+    {
+      "unit": "Unit 1",
+      "code": "U1.LT10",
+      "title": "Water, oxygen, carbon dioxide, and pH",
+      "description": "2.d Explain the functions and importance of the body's major inorganic compounds, including water, oxygen, and carbon dioxide."
+    },
+    {
+      "unit": "Unit 1",
+      "code": "U1.LT11",
+      "title": "Organic compounds",
+      "description": "2.e Describe the body's major organic compounds and their functions."
+    },
+    {
+      "unit": "Unit 1",
+      "code": "U1.LT12",
+      "title": "Enzymes",
+      "description": "2.f Explain the role enzymes play in cellular processes."
+    },
+    {
+      "unit": "Unit 1",
+      "code": "U1.LT13",
+      "title": "Cytoplasm and organelles",
+      "description": "3.a Define cytoplasm and organelle."
+    },
+    {
+      "unit": "Unit 1",
+      "code": "U1.LT14",
+      "title": "Organelle structure and function",
+      "description": "3.b Describe the structure, function and relationship of all cell organelles."
+    },
+    {
+      "unit": "Unit 1",
+      "code": "U1.LT15",
+      "title": "The cell membrane",
+      "description": "3.c Describe the structure of the cell membrane."
+    },
+    {
+      "unit": "Unit 1",
+      "code": "U1.LT16",
+      "title": "Membrane transport",
+      "description": "3.d Describe the different modes of transport of substances across cell membranes."
+    },
+    {
+      "unit": "Unit 1",
+      "code": "U1.LT17",
+      "title": "Microscopic anatomy of tissues",
+      "description": "4.a Identify the microscopic anatomy of body tissues."
+    },
+    {
+      "unit": "Unit 1",
+      "code": "U1.LT18",
+      "title": "Characteristics of tissue types",
+      "description": "4.b List the characteristics of each tissue type."
+    },
+    {
+      "unit": "Unit 1",
+      "code": "U1.LT19",
+      "title": "Functions of tissue types",
+      "description": "4.c List the functions of each tissue type."
+    },
+    {
+      "unit": "Unit 1",
+      "code": "U1.LT20",
+      "title": "Locations of tissue types",
+      "description": "4.d Give examples of the locations of each tissue type in the body."
+    }
+  ]
+}

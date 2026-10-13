@@ -1,0 +1,59 @@
+{
+  "name": "anatomy-u5-practice-bank",
+  "revision": 2,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Anatomy and Physiology",
+  "unit": "Unit 5",
+  "bank": "AP · Unit 5 · Practice",
+  "openPractice": true,
+  "targets": [
+    {
+      "unit": "Unit 5",
+      "code": "U5.LT1",
+      "title": "Lymphatic system and immunity",
+      "description": "10.e Describe the structure and function of the lymphatic system, including lymph formation, lymphatic circulation, major organs, and its role in immunity."
+    },
+    {
+      "unit": "Unit 5",
+      "code": "U5.LT2",
+      "title": "Digestive organs",
+      "description": "11.a Describe the parts and functions of the digestive system organs."
+    },
+    {
+      "unit": "Unit 5",
+      "code": "U5.LT3",
+      "title": "Digestive enzymes",
+      "description": "11.b Describe the functions of major digestive enzymes (ex. pepsin, amylase, ptyalin, and lipase)."
+    },
+    {
+      "unit": "Unit 5",
+      "code": "U5.LT4",
+      "title": "Swallowing, vomiting, and defecation",
+      "description": "11.c Describe the mechanisms of swallowing, vomiting, and defecating."
+    },
+    {
+      "unit": "Unit 5",
+      "code": "U5.LT5",
+      "title": "Respiratory organs",
+      "description": "12.a Describe the locations, structures and functions of the organs of the respiratory system."
+    },
+    {
+      "unit": "Unit 5",
+      "code": "U5.LT6",
+      "title": "Mechanics of breathing",
+      "description": "12.b Describe the mechanics of breathing."
+    },
+    {
+      "unit": "Unit 5",
+      "code": "U5.LT7",
+      "title": "Respiratory volumes and capacities",
+      "description": "12.c Define respiratory air volumes and capacities."
+    },
+    {
+      "unit": "Unit 5",
+      "code": "U5.LT8",
+      "title": "Control of breathing",
+      "description": "12.d Explain the mechanism of respiratory control and factors that may influence it."
+    }
+  ]
+}

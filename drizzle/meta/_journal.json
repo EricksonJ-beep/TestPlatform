@@ -162,6 +162,13 @@
       "when": 1791908556882,
       "tag": "0022_practice_hints",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1791912106174,
+      "tag": "0023_student_built_practice",
+      "breakpoints": true
     }
   ]
 }

@@ -59,6 +59,17 @@ export type PackDefinition = {
     retakeWaitHours?: number;
     retakesNeedUnlock?: boolean;
   }[];
+  /**
+   * Open the bank for "Build my practice" (Jon, Oct 13 2026): students may be
+   * dealt its questions on their own. Leave unset for test and retake banks.
+   */
+  openPractice?: boolean;
+  /**
+   * Learning targets to create or update in the course before the CSV imports,
+   * matched by code (Anatomy practice packs, Oct 13 2026). The unit is created
+   * when the course does not have it yet.
+   */
+  targets?: { unit: string; code: string; title: string; description?: string }[];
   /** A practice set that deals a fresh hand from the pack's bank each attempt. */
   practiceSet?: {
     title: string;
@@ -211,6 +222,7 @@ export async function applyPack(
 
   const summary: Record<string, unknown> = {};
   const errors: string[] = [];
+  if (def.targets?.length) summary.targets = await upsertTargets(def.targets, course.id);
   if (def.bank)
     Object.assign(summary, await applyQuiz(def, def.bank, teacher.id, course.id, root, errors));
   if (def.practiceSet) {
@@ -232,6 +244,55 @@ export async function applyPack(
   return { name: def.name, status: "applied", summary };
 }
 
+/** Create or update the pack's learning targets (by code) and their units (by name). */
+async function upsertTargets(
+  targets: NonNullable<PackDefinition["targets"]>,
+  courseId: string
+): Promise<{ created: number; updated: number }> {
+  const units = await db.query.units.findMany({
+    columns: { id: true, name: true },
+    where: eq(schema.units.courseId, courseId),
+  });
+  const existing = await db.query.learningTargets.findMany({
+    columns: { id: true, code: true },
+    where: eq(schema.learningTargets.courseId, courseId),
+  });
+  let created = 0;
+  let updated = 0;
+  for (const [i, t] of targets.entries()) {
+    let unit = units.find((u) => key(u.name) === key(t.unit));
+    if (!unit) {
+      [unit] = await db
+        .insert(schema.units)
+        .values({ courseId, name: t.unit.trim(), sortOrder: units.length })
+        .returning({ id: schema.units.id, name: schema.units.name });
+      units.push(unit);
+    }
+    const values = {
+      title: t.title,
+      description: t.description ?? null,
+      unitId: unit.id,
+      sortOrder: 100 + i,
+    };
+    const found = existing.find((e) => key(e.code) === key(t.code));
+    if (found) {
+      await db
+        .update(schema.learningTargets)
+        .set(values)
+        .where(eq(schema.learningTargets.id, found.id));
+      updated++;
+    } else {
+      const [row] = await db
+        .insert(schema.learningTargets)
+        .values({ courseId, code: t.code.trim(), ...values })
+        .returning({ id: schema.learningTargets.id, code: schema.learningTargets.code });
+      existing.push(row);
+      created++;
+    }
+  }
+  return { created, updated };
+}
+
 /** The quiz half of a pack: bank, CSV import, published assessment, assignments. */
 async function applyQuiz(
   def: PackDefinition,
@@ -251,8 +312,13 @@ async function applyQuiz(
   if (!bank) {
     [bank] = await db
       .insert(schema.questionBanks)
-      .values({ ownerId: teacherId, courseId, name: bankName })
+      .values({ ownerId: teacherId, courseId, name: bankName, openPractice: !!def.openPractice })
       .returning({ id: schema.questionBanks.id });
+  } else if (def.openPractice) {
+    await db
+      .update(schema.questionBanks)
+      .set({ openPractice: true })
+      .where(eq(schema.questionBanks.id, bank.id));
   }
 
   const csvText = readFileSync(join(root, def.name, "questions.csv"), "utf8");

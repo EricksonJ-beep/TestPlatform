@@ -12,7 +12,7 @@
  * reserved (treated as a teacher for now). Scores are written only by server
  * code — no guard hands a client the ability to set them.
  */
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import type { SharePermission } from "@/db/types";
 import { getCurrentSession, type Session } from "@/lib/session";
@@ -383,10 +383,15 @@ export function publicAction<A extends unknown[], T>(
 
 export type PracticeAttemptAccess = Session & {
   as: "teacher" | "student";
-  attempt: { id: string; studentId: string; practiceSetId: string; completedAt: Date | null };
+  attempt: {
+    id: string;
+    studentId: string;
+    practiceSetId: string | null;
+    completedAt: Date | null;
+  };
 };
 
-// Rule: a practice attempt is read and written only by its own student; the set's owner may read it.
+// Rule: a practice attempt is read and written only by its own student; the set's owner (the course's owner for a student-built practice) may read it.
 export async function requirePracticeAttemptAccess(
   attemptId: string
 ): Promise<PracticeAttemptAccess> {
@@ -398,13 +403,16 @@ export async function requirePracticeAttemptAccess(
       studentId: schema.practiceAttempts.studentId,
       practiceSetId: schema.practiceAttempts.practiceSetId,
       completedAt: schema.practiceAttempts.completedAt,
-      ownerId: schema.practiceSets.ownerId,
+      ownerId: sql<
+        string | null
+      >`coalesce(${schema.practiceSets.ownerId}, ${schema.courses.ownerId})`,
     })
     .from(schema.practiceAttempts)
-    .innerJoin(
+    .leftJoin(
       schema.practiceSets,
       eq(schema.practiceAttempts.practiceSetId, schema.practiceSets.id)
     )
+    .leftJoin(schema.courses, eq(schema.practiceAttempts.courseId, schema.courses.id))
     .where(eq(schema.practiceAttempts.id, attemptId))
     .limit(1);
   if (!row) throw notFound();

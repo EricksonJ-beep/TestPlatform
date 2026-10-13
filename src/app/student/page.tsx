@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ClipboardList, Plus } from "lucide-react";
-import { requireStudent } from "@/lib/authz";
+import { requireStudent, studentCourseIds } from "@/lib/authz";
+import { listCustomPracticeOptions } from "@/lib/custom-practice";
 import { listStudentAssignments } from "@/lib/queries/assignments";
 import { listStudentClasses } from "@/lib/queries/classes";
 import { getStudentPractice } from "@/lib/queries/practice";
@@ -21,8 +22,9 @@ export default async function StudentHome() {
     listStudentClasses(session.userId),
     listStudentAssignments(session.userId),
   ]);
-  const [practice, results, me] = await Promise.all([
+  const [practice, buildable, results, me] = await Promise.all([
     getStudentPractice(session.userId, assignments),
+    studentCourseIds(session.userId).then(listCustomPracticeOptions),
     listStudentResults(session.userId, assignments),
     db.query.users.findFirst({
       columns: { mustChangePassword: true },
@@ -155,7 +157,7 @@ export default async function StudentHome() {
         </TabsContent>
 
         <TabsContent value="practice">
-          <PracticeTab practice={practice} />
+          <PracticeTab practice={practice} buildable={buildable} />
         </TabsContent>
 
         <TabsContent value="results">

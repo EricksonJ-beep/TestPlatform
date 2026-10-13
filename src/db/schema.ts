@@ -300,6 +300,12 @@ export const questionBanks = pgTable(
     name: text("name").notNull(),
     description: text("description"),
     isArchived: boolean("is_archived").default(false).notNull(),
+    /**
+     * Open for "Build my practice" (Jon, Oct 13 2026): students may be dealt
+     * this bank's questions when they practice its course's targets on their
+     * own. Off by default so test and retake banks never leak.
+     */
+    openPractice: boolean("open_practice").default(false).notNull(),
     ...timestamps,
   },
   (t) => [index("question_banks_owner_idx").on(t.ownerId)]
@@ -1101,9 +1107,17 @@ export const practiceAttempts = pgTable(
     studentId: uuid("student_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    practiceSetId: uuid("practice_set_id")
-      .notNull()
-      .references(() => practiceSets.id, { onDelete: "cascade" }),
+    /** Null on a student-built practice (then course_id and target_ids say what was asked for). */
+    practiceSetId: uuid("practice_set_id").references(() => practiceSets.id, {
+      onDelete: "cascade",
+    }),
+    /**
+     * "Build my practice" (Jon, Oct 13 2026): the course and the learning
+     * targets the student picked; questions come from the course's banks that
+     * are open for practice.
+     */
+    courseId: uuid("course_id").references(() => courses.id, { onDelete: "cascade" }),
+    targetIds: jsonb("target_ids").$type<string[]>(),
     questionSet: jsonb("question_set").$type<ServedQuestion[]>().notNull(),
     answers: jsonb("answers").$type<Record<string, unknown>>().default({}).notNull(),
     score: doublePrecision("score"),
@@ -1117,6 +1131,11 @@ export const practiceAttempts = pgTable(
   (t) => [
     index("practice_attempts_student_idx").on(t.studentId),
     index("practice_attempts_set_idx").on(t.practiceSetId),
+    index("practice_attempts_course_idx").on(t.courseId),
+    check(
+      "practice_attempts_source",
+      sql`${t.practiceSetId} is not null or ${t.courseId} is not null`
+    ),
   ]
 );
 

@@ -96,6 +96,23 @@ export const setBankArchived = withAuthz(async (bankId: string, archived: boolea
   return { ok: true };
 });
 
+/**
+ * Open or close a bank for "Build my practice" (Jon, Oct 13 2026). Owner only:
+ * opening hands every question in it to students on the bank's course.
+ */
+export const setBankOpenPractice = withAuthz(async (bankId: string, open: boolean) => {
+  const access = await requireShared({ type: "question_bank", id: bankId }, "co_edit");
+  if (access.access !== "owner")
+    throw new ActionError("Only the owner can open a bank for student practice.", 403);
+  await db
+    .update(schema.questionBanks)
+    .set({ openPractice: open })
+    .where(eq(schema.questionBanks.id, bankId));
+  revalidateBank(bankId);
+  revalidatePath("/student");
+  return { ok: true };
+});
+
 const MAX_ROWS = 1000;
 
 function parseRecords(headers: string[], records: RawRecord[]) {

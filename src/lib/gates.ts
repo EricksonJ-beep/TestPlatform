@@ -279,15 +279,20 @@ async function practiceByTarget(
     .where(
       and(
         eq(schema.practiceAttempts.studentId, studentId),
-        isNotNull(schema.practiceAttempts.completedAt)
+        isNotNull(schema.practiceAttempts.completedAt),
+        isNotNull(schema.practiceAttempts.practiceSetId)
       )
     );
   // Worksheet-backed attempts carry the targets their submit credited; ordinary attempts credit every target.
   const creditedBy = new Map<string, unknown[]>();
   for (const d of done)
-    (creditedBy.get(d.practiceSetId) ?? creditedBy.set(d.practiceSetId, []).get(d.practiceSetId)!).push(
-      (d.answers as { _worksheet?: { creditedTargetIds?: unknown } })._worksheet?.creditedTargetIds
-    );
+    if (d.practiceSetId)
+      (
+        creditedBy.get(d.practiceSetId) ?? creditedBy.set(d.practiceSetId, []).get(d.practiceSetId)!
+      ).push(
+        (d.answers as { _worksheet?: { creditedTargetIds?: unknown } })._worksheet
+          ?.creditedTargetIds
+      );
   for (const targetId of targetIds) {
     const pinned = pins.filter((p) => p.learningTargetId === targetId).map((p) => p.practiceSetId!);
     const candidates = pinned.length
@@ -297,7 +302,9 @@ async function practiceByTarget(
       targetId,
       candidates.length === 0
         ? true
-        : candidates.some((id) => (creditedBy.get(id) ?? []).some((c) => creditsTarget(c, targetId)))
+        : candidates.some((id) =>
+            (creditedBy.get(id) ?? []).some((c) => creditsTarget(c, targetId))
+          )
     );
   }
   return out;

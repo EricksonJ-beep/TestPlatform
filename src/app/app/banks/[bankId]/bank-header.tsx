@@ -2,13 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Archive, ArchiveRestore, Pencil, Trash2 } from "lucide-react";
+import { Archive, ArchiveRestore, Pencil, Shuffle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FieldError, useAction } from "@/components/use-action";
 import type { BankDetail } from "@/lib/queries/banks";
-import { deleteBank, setBankArchived, updateBank } from "../actions";
+import { deleteBank, setBankArchived, setBankOpenPractice, updateBank } from "../actions";
 
 const ACCESS_LABEL = {
   owner: "You own this",
@@ -107,6 +107,15 @@ export function BankHeader({
               Archived
             </span>
           ) : null}
+          {bank.openPractice ? (
+            <span
+              className="rounded-md bg-success-soft px-2 py-0.5 text-xs font-medium text-success-foreground"
+              title="Students can be dealt these questions in Build my practice."
+              data-open-practice
+            >
+              Open for student practice
+            </span>
+          ) : null}
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
           {bank.courseName ?? "No course"}
@@ -142,6 +151,22 @@ export function BankHeader({
             )}
             {bank.isArchived ? "Restore bank" : "Archive bank"}
           </Button>
+          {access === "owner" && bank.courseId ? (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={pending}
+              title={
+                bank.openPractice
+                  ? "Stop dealing this bank's questions in students' Build my practice."
+                  : "Let students practice this bank's questions on their own, by learning target. Leave test and retake banks closed."
+              }
+              onClick={() => run(setBankOpenPractice(bank.id, !bank.openPractice))}
+            >
+              <Shuffle data-icon="inline-start" aria-hidden />
+              {bank.openPractice ? "Close to student practice" : "Open for student practice"}
+            </Button>
+          ) : null}
           {access === "owner" ? (
             confirmDelete ? (
               <span className="inline-flex items-center gap-1">
