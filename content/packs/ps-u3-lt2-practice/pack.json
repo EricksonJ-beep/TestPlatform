@@ -1,0 +1,27 @@
+{
+  "name": "ps-u3-lt2-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science A",
+  "unit": "Unit 3 · Bonding",
+  "bank": "PS · U3.LT2 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U3.LT2 Practice: Ionic or Covalent?",
+    "description": "Practice classifying compounds as ionic or covalent using the metal/nonmetal rule, polyatomic ions, and property data.",
+    "drawCount": 10,
+    "targets": ["U3.LT2"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U3.LT2 Relearning: Ionic or Covalent?",
+    "content": "**What you need to be able to do:** I can look at a compound and tell whether it's ionic or covalent.\n\n**Think of lunch money vs. a shared pizza.** If your friend hands you a dollar, the dollar moves from them to you: one person gives, the other takes. That is an **ionic** bond. If you and a friend split a pizza, nobody gives it away; you both eat from it at the same time. That is a **covalent** bond. Metals are the \"givers\" and nonmetals are the \"takers,\" so when a giver meets a taker, electrons get handed over. When two takers meet, neither one will give, so they share.\n\n**The rule.** Metal + nonmetal makes an **ionic compound**: the metal **transfers** electrons to the nonmetal. Two nonmetals make a **covalent compound**: the electrons are **shared**, and the unit is called a **molecule**. **Metals sit left of the staircase** on the periodic table; nonmetals are to the right. Hydrogen is a nonmetal even though it sits on the left. Transition metals like iron and copper, and metals like lead and tin, are still metals. Two metals (like Ca and Mg) do not make an ionic compound.\n\n**Polyatomic ions.** If a compound contains a polyatomic ion, it is **ionic**. That includes **ammonium, NH₄⁺**, even though ammonium compounds have no metal at all. The ammonium ion plays the part of the metal.\n\n**Why atoms bond.** Atoms bond **to be stable**. The **octet rule** says most atoms are stable with **8** outer electrons (hydrogen and helium are the exceptions). Noble gases already have a full outer shell, so they don't bond. In covalent bonds, a **single bond** shares 2 electrons, a **double bond** shares 4, and a **triple bond** shares 6.\n\n**Properties (your evidence).** Ionic compounds have **high melting points** (generally above 300 °C), form **crystals**, and **conduct electricity when dissolved in water** because they break into free-moving ions. Covalent compounds have **low melting points**, can be solid, liquid, or gas, and **do not conduct** when dissolved because they stay as whole molecules. Color, mass, and where a bottle was stored are **irrelevant evidence**.\n\n**Worked example 1:** Classify CaBr₂. Step 1: List the elements: calcium and bromine. Step 2: Calcium is left of the staircase (metal); bromine is right (nonmetal). Step 3: Metal + nonmetal. Answer: **ionic**, calcium transfers electrons to bromine.\n\n**Worked example 2:** Classify (NH₄)₃PO₄ (ammonium is NH₄⁺, phosphate is PO₄³⁻). Step 1: Every atom (N, H, P, O) is a nonmetal, so the nonmetal rule says covalent... but wait. Step 2: Look for polyatomic ions: it has ammonium and phosphate. Step 3: A compound with a polyatomic ion is ionic. Answer: **ionic**.\n\n**Worked example 3:** An unknown melts at 80 °C and its solution does not light the bulb. Step 1: 80 °C is far below 300 °C, which points to covalent. Step 2: No conductivity means no free ions, which also points to covalent. Answer: **covalent**. Bonus: oxygen gas, O₂, has one double bond, so it shares 2 × 2 = 4 electrons.\n\n**Watch out for:** calling an ammonium compound covalent just because it has no metal, calling hydrogen a metal, calling two metals ionic, forgetting that transition metals are metals, and using color, mass, or \"it dissolves\" as evidence. Use melting point and conductivity instead.",
+    "prompts": [
+      "Classify KI, SO₃, and NH₄NO₃ (ammonium is NH₄⁺, nitrate is NO₃⁻) as ionic or covalent, and give the reason for each.",
+      "Explain the difference between how electrons behave in an ionic bond and in a covalent bond. Use Na and Cl, and two Cl atoms, as your examples.",
+      "A student says, \"This unknown is ionic because it is white and dissolves in water.\" Explain what is wrong with the evidence and name two tests that would actually decide.",
+      "Why don't noble gases like argon form compounds? Use the word stable in your answer."
+    ],
+    "targets": ["U3.LT2"]
+  }
+}
