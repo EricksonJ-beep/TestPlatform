@@ -1,0 +1,27 @@
+{
+  "name": "ps-u3-lt1-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science A",
+  "unit": "Unit 3 · Bonding",
+  "bank": "PS · U3.LT1 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U3.LT1 Practice: Reading Chemical Formulas",
+    "description": "Practice naming the elements in a formula and counting atoms with subscripts, parentheses, and coefficients.",
+    "drawCount": 10,
+    "targets": ["U3.LT1"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U3.LT1 Relearning: Reading Chemical Formulas",
+    "content": "**What you need to be able to do:** I can read a chemical formula and tell what elements are in a compound and how many atoms of each.\n\n**Think of a combo meal.** One combo is a burger and 2 fries. If the sign says (burger + 2 fries) × 3, you get 3 burgers and 6 fries, because the 3 multiplies everything in the combo. If you then order that whole thing for 2 friends, everything doubles again. A chemical formula works the same way: parentheses are a combo, the small number outside them multiplies the whole combo, and a big number in front multiplies the whole order.\n\n**Key ideas.** A **chemical formula** tells what elements and how many of each element are in one unit of a compound. A **compound** is two or more elements chemically combined. Each capital letter starts a new **element** symbol (Na is sodium, not N plus a). One unit of a covalent compound is a **molecule**; one unit of an ionic compound is a **formula unit**.\n\n**Subscript:** the small number below applies only to the symbol it follows. No subscript means 1. In H₂O there are 2 H and 1 O. **Parentheses:** the subscript outside multiplies everything inside. Draw an arrow from the outside subscript to every atom inside. **Coefficient:** the big number in front multiplies everything in the formula. Always multiply, never add.\n\n**Worked example 1:** Ba(OH)₂. Step 1: List the elements: Ba, O, H. Step 2: Ba has no subscript, so Ba = 1. Step 3: The outside 2 multiplies O and H: O = 1 × 2 = 2, H = 1 × 2 = 2. Step 4: Total = 1 + 2 + 2 = 5 atoms.\n\n**Worked example 2:** (NH₄)₂CO₃. Step 1: List the elements: N, H, C, O. Step 2: The outside 2 multiplies N and H: N = 1 × 2 = 2, H = 4 × 2 = 8. Step 3: C and O are outside the parentheses: C = 1, O = 3. Step 4: Total = 2 + 8 + 1 + 3 = 14 atoms.\n\n**Worked example 3:** 2Al(NO₃)₃. Step 1: Count one formula unit: Al = 1, N = 1 × 3 = 3, O = 3 × 3 = 9. Step 2: The coefficient 2 multiplies everything: Al = 2, N = 6, O = 18. Step 3: Total = 2 + 6 + 18 = 26 atoms.\n\n**Same total does not mean same substance.** H₂O and CO₂ both have 3 atoms, but they are made of different elements, so they are different substances. More atoms also does not always mean more mass, because atoms of different elements have different masses.\n\n**Watch out for:** counting only inside the parentheses and ignoring the outside subscript, adding numbers instead of multiplying (3 + 2 = 5), putting a subscript on the whole formula, using a coefficient on only the first element, and reading a two-letter symbol like Mn or Ca as two elements.",
+    "prompts": [
+      "List the number of atoms of each element in Ca₃(PO₄)₂, then give the total. Show how you used the outside subscript.",
+      "Explain the difference between the 2 in front and the 3 below in 2Na₃PO₄. Then count the atoms of each element.",
+      "Kai counts the oxygen atoms in Cu(NO₃)₂ and gets 3. What mistake did he make, and what is the correct count?",
+      "Jae says NO₂ and SO₂ must be the same substance because both have 3 atoms. Is he right? Explain."
+    ],
+    "targets": ["U3.LT1"]
+  }
+}

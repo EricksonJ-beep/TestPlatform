@@ -1,0 +1,27 @@
+{
+  "name": "ps-u3-lt4-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science A",
+  "unit": "Unit 3 · Bonding",
+  "bank": "PS · U3.LT4 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U3.LT4 Practice: Naming Compounds from Formulas",
+    "description": "Practice turning chemical formulas into names: binary ionic, polyatomic ions, transition metals with Roman numerals, and covalent prefixes.",
+    "drawCount": 10,
+    "targets": ["U3.LT4"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U3.LT4 Relearning: Naming Compounds from Formulas",
+    "content": "**What you need to be able to do:** I can take the chemical formula of a compound and write its name — ionic or covalent, including polyatomic ions and transition metals.\n\n**Think of ordering a drink.** If a shop sells lemonade in only one size, you just say \"a lemonade.\" If it sells coffee in small and large, you have to say which size. Metals work the same way. Calcium only comes in one \"size\" (Ca²⁺), so you just say **calcium**. Iron comes in two (Fe²⁺ and Fe³⁺), so you must say which one: **iron(II)** or **iron(III)**. The Roman numeral is the size of the charge, not the number of atoms.\n\n**Step 1 is always: ionic or covalent?** Metal + nonmetal (or any polyatomic ion, like ammonium) = **ionic**. Two nonmetals = **covalent**. The two systems have different rules, so decide first.\n\n**Ionic names:** metal first, then the nonmetal with an **-ide** ending (chlorine → chloride, oxygen → oxide, nitrogen → nitride, phosphorus → phosphide). **No prefixes, ever.** A **polyatomic ion keeps its own name** with no -ide (sodium nitrate, ammonium chloride). Group 1, 2, and 13 metals have only one charge, so they **never get a Roman numeral**. Metals that can have more than one charge (Fe, Cu, Pb, Sn, and other transition metals) **always** get one.\n\n**Finding the Roman numeral (reverse criss-cross):** find the total negative charge from the anions, the metals must cancel it, then divide by the number of metal atoms. ALWAYS double check that the charges add to zero. If a formula like FeO has no subscripts, it may have been reduced, so do the math instead of guessing.\n\n**Covalent names:** use prefixes (mono 1, di 2, tri 3, tetra 4, penta 5, hexa 6, hepta 7, octa 8, nona 9, deca 10). The first element gets a prefix **except mono**. The second element always gets a prefix and an -ide ending. No criss-cross and no reducing in covalent.\n\n**Worked example 1:** Mg₃P₂. Mg is a metal and P is a nonmetal → ionic. Magnesium is Group 2 → no numeral. Phosphorus → phosphide. Check: 3(+2) + 2(−3) = 0. Answer: **magnesium phosphide**.\n\n**Worked example 2:** Fe₂(CO₃)₃ (carbonate is CO₃²⁻). Iron is a metal → ionic, and iron needs a numeral. Total negative: 3 × (−2) = −6. Two irons must total +6, so each iron is +6 ÷ 2 = +3. Check: 2(+3) + 3(−2) = 0. Carbonate keeps its name. Answer: **iron(III) carbonate**.\n\n**Worked example 3:** N₂O₅. Both nonmetals → covalent, use prefixes. 2 nitrogens → dinitrogen; 5 oxygens → pentoxide. Answer: **dinitrogen pentoxide**.\n\n**Watch out for:** prefixes on ionic compounds (\"calcium dichloride\"), numerals on Group 1, 2, or 13 metals (\"magnesium(II) oxide\"), using the metal's subscript as its numeral (Fe₂O₃ is not iron(II)), putting -ide on a polyatomic ion (\"sodium sulfide\" for Na₂SO₄), leaving out covalent prefixes (\"phosphorus chloride\"), and putting mono on the first element.",
+    "prompts": [
+      "Sulfate is SO₄²⁻. Name PbSO₄ and show the charge math that gives you the Roman numeral.",
+      "Explain why BaO is named barium oxide and not barium(II) oxide or barium monoxide.",
+      "Name P₂S₅ and explain how you knew to use prefixes.",
+      "Phosphate is PO₄³⁻. Name each compound and say which system you used: Na₃PO₄, CuCl, PCl₃."
+    ],
+    "targets": ["U3.LT4"]
+  }
+}

@@ -298,6 +298,22 @@ describe("shared rules", () => {
     expect(rows[3].issues[0].message).toMatch(/has no text, image, or video/);
   });
 
+  it("fill_blank: tolerance_mode case_sensitive keeps capitals exact (chemical formulas)", () => {
+    const fbRow = {
+      ...base,
+      type: "fill_blank",
+      stem: "Calcium chloride is ___.",
+      correct: "CaCl2",
+    };
+    expect(parseQuestionRecord(fbRow, 2).gradingConfig).toEqual({
+      acceptedAnswers: ["CaCl2"],
+      caseSensitive: false,
+    });
+    expect(
+      parseQuestionRecord({ ...fbRow, tolerance_mode: "case_sensitive" }, 2).gradingConfig
+    ).toEqual({ acceptedAnswers: ["CaCl2"], caseSensitive: true });
+  });
+
   it("hint: optional practice hint, trimmed; blank is null", () => {
     expect(parseQuestionRecord(base, 2).hint).toBeNull();
     expect(parseQuestionRecord({ ...base, hint: "  Plasma is the liquid part.  " }, 2).hint).toBe(
