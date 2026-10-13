@@ -162,6 +162,7 @@ export function QuestionEditor({
       type,
       stem,
       explanation: String(fd.get("explanation") ?? ""),
+      hint: String(fd.get("hint") ?? ""),
       points: Number(fd.get("points") ?? 1),
       difficulty: Number(fd.get("difficulty") ?? 3),
       bloom: (fd.get("bloom") as string) || null,
@@ -713,6 +714,14 @@ export function QuestionEditor({
           rows={2}
           defaultValue={question?.explanation ?? ""}
         />
+      </div>
+
+      <div className="grid gap-1.5">
+        <Label htmlFor="qe-hint">Practice hint</Label>
+        <Textarea id="qe-hint" name="hint" rows={2} defaultValue={question?.hint ?? ""} />
+        <p className="text-xs text-muted-foreground">
+          Shown in practice after a student misses this question three times.
+        </p>
       </div>
 
       <div className="grid gap-3 @lg:grid-cols-2">

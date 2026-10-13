@@ -190,6 +190,11 @@ export function QuestionList({
                 <span className="font-medium">Explanation:</span> <RichText text={q.explanation} />
               </p>
             ) : null}
+            {q.hint ? (
+              <p className="mb-1">
+                <span className="font-medium">Hint:</span> <RichText text={q.hint} />
+              </p>
+            ) : null}
             {q.mediaUrl ? <p className="truncate">Image: {q.mediaUrl}</p> : null}
             {q.videoUrl ? <p className="truncate">Video: {q.videoUrl}</p> : null}
             <p className="mt-2 flex flex-wrap items-center gap-x-3 text-xs">

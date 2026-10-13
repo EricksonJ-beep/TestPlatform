@@ -298,6 +298,13 @@ describe("shared rules", () => {
     expect(rows[3].issues[0].message).toMatch(/has no text, image, or video/);
   });
 
+  it("hint: optional practice hint, trimmed; blank is null", () => {
+    expect(parseQuestionRecord(base, 2).hint).toBeNull();
+    expect(parseQuestionRecord({ ...base, hint: "  Plasma is the liquid part.  " }, 2).hint).toBe(
+      "Plasma is the liquid part."
+    );
+  });
+
   it("duplicate external_id within the file is an error on the later row", () => {
     const rows = parseQuestionRecords([
       { ...base, external_id: "A-1" },

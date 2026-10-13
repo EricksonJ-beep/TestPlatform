@@ -155,6 +155,13 @@
       "when": 1791813996645,
       "tag": "0021_practice_set_bank_draw",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1791908556882,
+      "tag": "0022_practice_hints",
+      "breakpoints": true
     }
   ]
 }

@@ -397,6 +397,7 @@ export async function commitImport(
           type: row.type,
           stem: row.stem,
           explanation: row.explanation,
+          hint: row.hint,
           points: row.points,
           difficulty: row.difficulty,
           bloom: row.bloom,

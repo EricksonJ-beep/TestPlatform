@@ -14,6 +14,7 @@ const q = (over: Partial<BankQuestionRow>): BankQuestionRow => ({
   topic: null,
   tags: [],
   explanation: null,
+  hint: null,
   externalId: null,
   version: 1,
   mediaUrl: null,
