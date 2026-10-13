@@ -28,6 +28,12 @@ import { commitImport } from "@/lib/import/question-import";
 
 export type PackDefinition = {
   name: string;
+  /**
+   * Bump to ship corrections to a pack that already applied (Jon, Oct 13 2026).
+   * Each revision applies once: questions update in place by external_id (new
+   * versions), and the set and activity are found by title and updated.
+   */
+  revision?: number;
   teacherEmail: string;
   course: string;
   /**
@@ -93,6 +99,11 @@ export type PackOutcome =
   | { name: string; status: "skipped"; reason: string };
 
 const key = (s: string) => s.trim().toLowerCase();
+
+/** The name a pack's application is recorded under: revision 1 keeps the bare name. */
+export function appliedName(def: Pick<PackDefinition, "name" | "revision">): string {
+  return def.revision && def.revision > 1 ? `${def.name}@r${def.revision}` : def.name;
+}
 
 /** Every pack folder under content/packs, in name order. */
 export function listPacks(root = join(process.cwd(), "content", "packs")): PackDefinition[] {
@@ -186,7 +197,7 @@ export async function applyPack(
 
   const renamed = await syncNames(def, teacher.id);
   const done = await db.query.contentPacks.findFirst({
-    where: eq(schema.contentPacks.name, def.name),
+    where: eq(schema.contentPacks.name, appliedName(def)),
   });
   if (done) return { name: def.name, status: "already_applied", renamed };
   const course = await db.query.courses.findFirst({
@@ -217,7 +228,7 @@ export async function applyPack(
   if (def.activity)
     summary.activity = await applyActivity(def.activity, teacher.id, course.id, errors);
   summary.errors = errors;
-  await db.insert(schema.contentPacks).values({ name: def.name, summary });
+  await db.insert(schema.contentPacks).values({ name: appliedName(def), summary });
   return { name: def.name, status: "applied", summary };
 }
 

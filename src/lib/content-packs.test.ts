@@ -455,6 +455,56 @@ describe("content packs", () => {
     });
   });
 
+  it("a new revision of an applied pack applies once more, updating questions, set, and notes in place", async () => {
+    const root = mkdtempSync(join(tmpdir(), "bloom-packs-"));
+    const name = "test-revision-pack";
+    mkdirSync(join(root, name));
+    const csv = (stem: string) =>
+      [
+        "external_id,course,learning_target,type,stem,correct,explanation,hint",
+        `R-1,Physical Science A,U1.LT2,numeric,${stem},5,Because.,Think.`,
+      ].join("\n");
+    const def = {
+      name,
+      teacherEmail: "EricksonJ@cadott.k12.wi.us",
+      course: "Physical Science A",
+      bank: "PS · Revision bank",
+      practiceSet: { title: "Revision set", drawCount: 10, targets: ["U1.LT2"] },
+      activity: {
+        kind: "reading" as const,
+        title: "Revision reading",
+        content: "Old text.",
+        targets: ["U1.LT2"],
+      },
+    };
+    writeFileSync(join(root, name, "questions.csv"), csv("Old stem?"));
+    expect((await applyPack(def, root)).status).toBe("applied");
+    expect((await applyPack(def, root)).status).toBe("already_applied");
+
+    writeFileSync(join(root, name, "questions.csv"), csv("New stem?"));
+    const r2 = { ...def, revision: 2, activity: { ...def.activity, content: "New text." } };
+    const out = await applyPack(r2, root);
+    expect(out.status).toBe("applied");
+    if (out.status === "applied")
+      expect(out.summary).toMatchObject({
+        practiceSet: { reused: true },
+        activity: { reused: true },
+      });
+    expect((await applyPack(r2, root)).status).toBe("already_applied");
+    const live = await db.query.questions.findMany({
+      where: eq(schema.questions.externalId, "R-1"),
+    });
+    expect(live.map((q) => [q.stem, q.version, q.isArchived])).toEqual([["New stem?", 2, false]]);
+    const sets = await db.query.practiceSets.findMany({
+      where: eq(schema.practiceSets.title, "Revision set"),
+    });
+    expect(sets).toHaveLength(1);
+    const reading = await db.query.relearningActivities.findMany({
+      where: eq(schema.relearningActivities.title, "Revision reading"),
+    });
+    expect(reading.map((a) => a.content)).toEqual(["New text."]);
+  });
+
   it("skips a pack whose teacher is missing and leaves it unapplied for next time", async () => {
     const out = await applyAllPacks("/nonexistent");
     expect(out).toEqual([]);
