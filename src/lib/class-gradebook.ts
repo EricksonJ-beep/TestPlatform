@@ -245,7 +245,7 @@ export function cellTag(input: CellInput): CellTag {
 /** Times on the tags, in Bloom's school time zone (as `startReasonText` writes them). */
 export type TagFormat = { time: (d: Date) => string; date: (d: Date) => string };
 
-const CENTRAL: TagFormat = {
+export const CENTRAL: TagFormat = {
   time: (d) =>
     d.toLocaleString("en-US", {
       month: "short",

@@ -68,6 +68,10 @@ export type ClassGradebookAttempt = {
   pendingManual: number;
   /** An open attempt that is paused, stored or worked out (`currentPause`). */
   paused: boolean;
+  /** An open attempt's deadline (time limit or the window's close); null with neither, or paused. */
+  dueAt: Date | null;
+  /** When the student pressed "Ask my teacher to let me finish". */
+  askedAt: Date | null;
   /** Target codes a targeted retake covered; null for a full attempt. */
   scopeCodes: string[] | null;
 };
@@ -93,12 +97,25 @@ export type ClassGradebookCell = {
   corrections: (SetSummary & { attemptId: string; attemptNumber: number }) | null;
   /** Summatives: per-target retake picture from the stored gate rows; null otherwise. */
   retake: { targets: RetakeTarget[]; plan: RetakePlan } | null;
+  /**
+   * "Retakes need my OK": the student's next try and where it stands (locked, asked for, or
+   * unlocked by the teacher), for the cell panel's Approve / Decline, Unlock try N, Take back.
+   * Null when the setting is off, before attempt 1, while an attempt is open, or with no try left.
+   */
+  unlock: UnlockState | null;
   /** Under the cap: the last moment a retake may start. */
   retakeBy: Date | null;
   /** Most tab switches on any attempt. */
   tabSwitches: number;
   /** Summatives: the last tier change, since Monday, was up. */
   movedUpThisWeek: boolean;
+};
+
+export type UnlockState = {
+  attemptNumber: number;
+  state: "locked" | "requested" | "unlocked";
+  /** The student's request for that try, if they made one. */
+  requestedAt: Date | null;
 };
 
 export type ClassGradebook = {
@@ -281,6 +298,7 @@ export async function getClassGradebook(
           assignmentId: schema.attemptUnlocks.assignmentId,
           studentId: schema.attemptUnlocks.studentId,
           attemptNumber: schema.attemptUnlocks.attemptNumber,
+          requestedAt: schema.attemptUnlocks.requestedAt,
           grantedAt: schema.attemptUnlocks.grantedAt,
         })
         .from(schema.attemptUnlocks)
@@ -493,6 +511,20 @@ export async function getClassGradebook(
       if (!unlockedBlocker && plan?.blocker && plan.blocker !== "no_attempts")
         unlockedBlocker = { reason: plan.blocker };
     }
+    // The next try under "Retakes need my OK", as the results table offers it (Oct 1 2026).
+    const next = used + 1;
+    const nextRow = pairUnlocks.find((u) => u.attemptNumber === next) ?? null;
+    const unlock: UnlockState | null =
+      a.retakesNeedUnlock &&
+      used > 0 &&
+      !open &&
+      (a.attemptsAllowed === null || next <= a.attemptsAllowed)
+        ? {
+            attemptNumber: next,
+            state: unlockedThrough >= next ? "unlocked" : requested ? "requested" : "locked",
+            requestedAt: nextRow?.requestedAt ?? null,
+          }
+        : null;
     const selected = new Set(retake?.plan.selected ?? []);
     const activitiesToCheck = new Set(
       (pendingBy.get(studentId) ?? [])
@@ -542,12 +574,15 @@ export async function getClassGradebook(
         tabSwitches: x.tabSwitches,
         pendingManual: x.status === "in_progress" ? 0 : x.pendingManual,
         paused: x.id === open?.id && !!pause,
+        dueAt: x.status === "in_progress" ? x.dueAt : null,
+        askedAt: x.status === "in_progress" ? x.resumeRequestedAt : null,
         scopeCodes: x.scope ? x.scope.map((id) => codeBy.get(id) ?? "?") : null,
       })),
       openAttemptId: open?.id ?? null,
       latestAttemptId: latest?.id ?? null,
       corrections,
       retake,
+      unlock,
       retakeBy: card.retakeBy,
       tabSwitches: Math.max(0, ...mine.map((x) => x.tabSwitches)),
       movedUpThisWeek: !!final && movedUp(final, week),
