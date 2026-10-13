@@ -217,7 +217,9 @@ export function parseQuestionRecord(raw: RawRecord, line: number): ParsedRow {
       if (correct && accepted.length === 0)
         error("correct must list accepted answers separated by |.", "correct");
       if (!stem.includes("___")) warn("Stem has no ___ blank marker.", "stem");
-      gradingConfig = { acceptedAnswers: accepted, caseSensitive: false };
+      // Chemical formulas need exact capitals: CO (carbon monoxide) is not Co (cobalt). Oct 13 2026.
+      const caseSensitive = (raw.tolerance_mode ?? "").trim().toLowerCase() === "case_sensitive";
+      gradingConfig = { acceptedAnswers: accepted, caseSensitive };
       break;
     }
     case "short_answer": {

@@ -383,7 +383,7 @@ Template: `question_import_template.csv` (also `question_import_template.xlsx` w
 **Columns (in order):**
 `external_id, course, unit, topic, learning_target, standard, pool, type, stem, stimulus_ref, stimulus_text, stimulus_image_url, stimulus_video_url, option_a, option_b, option_c, option_d, option_e, option_f, correct, tolerance, tolerance_mode, unit, points, difficulty, bloom, grading, explanation, hint, image_url, video_url, tags`
 
-`hint` (optional) is shown in practice after the third miss.
+`hint` (optional) is shown in practice after the third miss. For `fill_blank`, `tolerance_mode` = `case_sensitive` makes the accepted answers match capitals exactly (chemical formulas: CO is not Co); subscript digits a student pastes (CaCl₂) always read as plain digits.
 
 **Required:** `course, unit, learning_target, type, stem`, and `correct` (except `matching`, `extended_response`). Missing required → row rejected with a clear error; import continues for other rows and shows a summary.
 

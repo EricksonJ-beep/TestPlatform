@@ -111,6 +111,15 @@ describe("fill in the blank", () => {
       )
     ).toMatchObject({ isCorrect: false });
   });
+
+  it("chemical formulas: exact capitals when case-sensitive; subscript digits read as plain digits", () => {
+    const formula = { ...fb, gradingConfig: { acceptedAnswers: ["CaCl2"], caseSensitive: true } };
+    expect(gradeResponse(formula, { kind: "text", text: "CaCl2" }).isCorrect).toBe(true);
+    expect(gradeResponse(formula, { kind: "text", text: "CaCl\u2082" }).isCorrect).toBe(true);
+    expect(gradeResponse(formula, { kind: "text", text: "CACL2" }).isCorrect).toBe(false);
+    const co = { ...fb, gradingConfig: { acceptedAnswers: ["CO"], caseSensitive: true } };
+    expect(gradeResponse(co, { kind: "text", text: "Co" }).isCorrect).toBe(false);
+  });
 });
 
 describe("short answer and extended response", () => {

@@ -63,15 +63,19 @@ export function gradeMultiSelect(q: GradableQuestion, a: Answer): GradeResult {
   };
 }
 
+/** Subscript digits (CaCl₂, pasted from notes) read as plain digits (CaCl2). */
+const plainDigits = (s: string) =>
+  s.replace(/[\u2080-\u2089]/g, (d) => String(d.charCodeAt(0) - 0x2080));
+
 export function gradeFillBlank(q: GradableQuestion, a: Answer): GradeResult {
   const cfg = (q.gradingConfig ?? {}) as { acceptedAnswers?: string[]; caseSensitive?: boolean };
   const text = a && a.kind === "text" ? a.text : "";
   if (!text.trim()) return wrong(q, "No answer.");
   const accepted = cfg.acceptedAnswers ?? [];
-  const given = cfg.caseSensitive ? text.trim().replace(/\s+/g, " ") : norm(text);
-  const ok = accepted.some(
-    (x) => (cfg.caseSensitive ? x.trim().replace(/\s+/g, " ") : norm(x)) === given
-  );
+  const clean = (s: string) =>
+    cfg.caseSensitive ? plainDigits(s).trim().replace(/\s+/g, " ") : norm(plainDigits(s));
+  const given = clean(text);
+  const ok = accepted.some((x) => clean(x) === given);
   return ok ? right(q) : wrong(q, "Not one of the accepted answers.");
 }
 
