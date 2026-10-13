@@ -67,6 +67,19 @@ describe("groupByKind", () => {
   });
 });
 
+describe("assessments", () => {
+  it("a title that names no column falls back on the assessment's type", () => {
+    const cols = groupByKind([
+      { ...bank("f", "Cell organelles check"), type: "formative" },
+      { ...bank("s", "Unit 2 final"), type: "summative" },
+      { ...bank("q", "Unit 1 Retake Test"), type: "summative" },
+    ]);
+    const where = (id: string) => cols.find((c) => c.items.some((i) => i.id === id))!.kind;
+    expect([where("f"), where("s"), where("q")]).toEqual(["quiz", "test", "retake"]);
+    expect(cols.map((c) => c.kind)).not.toContain("other");
+  });
+});
+
 describe("placeInColumn", () => {
   const cols = groupByKind([
     bank("q1", "LT1 Quiz"),

@@ -23,9 +23,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAction } from "@/components/use-action";
 import { AdoptButton } from "@/components/app/adopt-button";
-import { autoOrderColumn, placeBankInColumn } from "@/app/app/banks/actions";
+import type { ActionResult } from "@/lib/authz";
 
-export type BankCard = {
+export type KindCard = {
   id: string;
   name: string;
   courseId: string | null;
@@ -34,28 +34,62 @@ export type BankCard = {
   sortOrder: number;
   kind: string | null;
   kindOrder: number | null;
+  /** An assessment's type; a title that names no column falls back on it. */
+  type?: string;
   node: ReactNode;
 };
 
 const unitKey = (id: string | null) => id ?? "none";
 
 /**
- * The Question banks page for the current course (Jon, Oct 13 2026): one shelf
- * per unit, and inside each a column per bank type (Practice, Quiz, Test,
- * Retake, plus "Other" when a name says none of them). Columns start in
- * automatic order (LT1 above LT2); dragging a card sets its unit, its type and
- * the column's order, and "Auto-order" hands a column back. Empty units are
- * chips that take a drop. Keyboard: ↑ ↓ move within a column, and a "Move to"
- * menu lists the types and the units.
+ * A light tint per type so neighbouring cards read apart at a glance (Jon,
+ * Oct 13 2026: "light colors but just a little"): the card's background and
+ * a stripe down its left edge, from Bloom's soft status colors.
  */
-export function BankBoard({
+const KIND_CARD: Record<BankKind, string> = {
+  practice: "[&>a]:bg-success-soft/60 [&>a]:border-l-success",
+  quiz: "[&>a]:bg-sky-50 [&>a]:border-l-sky-500",
+  test: "[&>a]:bg-warning-soft/60 [&>a]:border-l-warning",
+  retake: "[&>a]:bg-coral-soft/70 [&>a]:border-l-coral",
+  other: "[&>a]:bg-muted/70 [&>a]:border-l-muted-foreground/40",
+};
+const KIND_HEADING: Record<BankKind, string> = {
+  practice: "text-success-foreground",
+  quiz: "text-sky-700",
+  test: "text-warning-foreground",
+  retake: "text-coral-deep",
+  other: "text-muted-foreground",
+};
+
+/**
+ * The Question banks and Assessments pages for the current course (Jon, Oct
+ * 13 2026): one shelf per unit, and inside each a column per type (Practice,
+ * Quiz, Test, Retake, plus "Other" when needed). Columns start in automatic
+ * order (LT1 above LT2); dragging a card sets its unit, its type and the
+ * column's order, and "Auto-order" hands a column back. Empty units are chips
+ * that take a drop. Keyboard: ↑ ↓ move within a column, and a "Move to" menu
+ * lists the types and the units.
+ */
+export function KindBoard({
   course,
   orphans = [],
   adoptInto,
+  noun,
+  place,
+  autoOrder,
 }: {
-  course: CourseShelves<BankCard>;
-  orphans?: BankCard[];
-  adoptInto?: { course: { id: string; name: string } };
+  course: CourseShelves<KindCard>;
+  orphans?: KindCard[];
+  adoptInto?: { type: "question_bank" | "assessment"; course: { id: string; name: string } };
+  /** "bank" or "assessment", for the page's wording. */
+  noun: string;
+  place: (
+    id: string,
+    unitId: string | null,
+    kind: string,
+    orderedIds: string[]
+  ) => Promise<ActionResult<unknown>>;
+  autoOrder: (ids: string[]) => Promise<ActionResult<unknown>>;
 }) {
   const [items, setItems] = useState(() => course.shelves.flatMap((s) => s.items));
   const [dragging, setDragging] = useState<string | null>(null);
@@ -79,7 +113,7 @@ export function BankBoard({
             : b
       )
     );
-    run(placeBankInColumn(id, unitId, kind, orderedIds));
+    run(place(id, unitId, kind, orderedIds));
   }
 
   /** Put a card at the end of a unit's column (its own type unless one is given). */
@@ -136,7 +170,7 @@ export function BankBoard({
   const loose = shelves.find((s) => s.unitId === null && s.count > 0);
 
   const cardItem = (
-    card: BankCard,
+    card: KindCard,
     shelf: (typeof shelves)[number],
     column: (typeof shelf.columns)[number],
     i: number
@@ -155,7 +189,8 @@ export function BankBoard({
       }}
       {...dragProps(card.id, () => dropOnColumn(shelf.unitId, { cardId: card.id }))}
       className={cn(
-        "group relative rounded-lg transition-opacity",
+        "group relative rounded-lg transition-opacity [&>a]:border-l-4",
+        KIND_CARD[column.kind],
         dragging === card.id && "opacity-40",
         over === card.id && dragging !== card.id && "ring-3 ring-brand/40"
       )}
@@ -276,7 +311,12 @@ export function BankBoard({
                 )}
               >
                 <div className="flex items-center gap-1 px-1">
-                  <h4 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                  <h4
+                    className={cn(
+                      "text-xs font-semibold tracking-wide uppercase",
+                      KIND_HEADING[column.kind]
+                    )}
+                  >
                     {BANK_KIND_LABEL[column.kind]}
                     <span className="ml-1 font-normal tabular">· {column.items.length}</span>
                   </h4>
@@ -291,7 +331,7 @@ export function BankBoard({
                         setItems((prev) =>
                           prev.map((b) => (ids.includes(b.id) ? { ...b, kindOrder: null } : b))
                         );
-                        run(autoOrderColumn(ids));
+                        run(autoOrder(ids));
                       }}
                     >
                       <ArrowDownUp className="size-3" aria-hidden />
@@ -301,7 +341,7 @@ export function BankBoard({
                 </div>
                 {column.items.length === 0 ? (
                   <p className="rounded-md border border-dashed border-border px-2 py-4 text-center text-xs text-muted-foreground">
-                    Drop a bank here
+                    Drop {noun === "assessment" ? "an assessment" : "a bank"} here
                   </p>
                 ) : (
                   <ul className="flex flex-col gap-2">
@@ -327,7 +367,7 @@ export function BankBoard({
       <section className="flex flex-col gap-6" aria-label={course.course}>
         {filled.length === 0 && !loose ? (
           <p className="rounded-lg border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">
-            No banks in {course.course} yet.
+            No {noun}s in {course.course} yet.
           </p>
         ) : null}
         {filled.map(shelfView)}
@@ -376,7 +416,7 @@ export function BankBoard({
                 {card.node}
                 {adoptInto ? (
                   <AdoptButton
-                    item={{ type: "question_bank", id: card.id }}
+                    item={{ type: adoptInto.type, id: card.id }}
                     course={adoptInto.course}
                   />
                 ) : null}

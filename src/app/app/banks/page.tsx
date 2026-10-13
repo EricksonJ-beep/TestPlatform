@@ -7,7 +7,8 @@ import { listMyBanks } from "@/lib/queries/banks";
 import { listUnitsForTeacher } from "@/lib/queries/courses";
 import { focusShelves, groupByUnit } from "@/lib/unit-shelves";
 import { EmptyState } from "@/components/empty-state";
-import { BankBoard } from "@/components/app/bank-board";
+import { KindBoard } from "@/components/app/kind-board";
+import { autoOrderColumn, placeBankInColumn } from "./actions";
 import { NewBankDialog } from "./new-bank-dialog";
 
 export const metadata: Metadata = { title: "Question banks" };
@@ -85,13 +86,16 @@ export default async function BanksPage({ searchParams }: PageProps<"/app/banks"
           />
         </div>
       ) : board ? (
-        <BankBoard
+        <KindBoard
           // Keyed on its cards: the board keeps drag state locally, so a server change
           // (a card put in this course, a new card) remounts it with the fresh cards.
           key={`${board.courseId ?? "none"}:${board.shelves.flatMap((s) => s.items.map((i) => i.id)).join(",")}`}
           course={board}
           orphans={focused ? orphans : []}
-          adoptInto={focused && current ? { course: current } : undefined}
+          adoptInto={focused && current ? { type: "question_bank", course: current } : undefined}
+          noun="bank"
+          place={placeBankInColumn}
+          autoOrder={autoOrderColumn}
         />
       ) : null}
     </div>

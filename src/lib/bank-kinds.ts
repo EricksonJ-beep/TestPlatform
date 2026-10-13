@@ -37,9 +37,22 @@ export function kindFromName(name: string): BankKind {
   return "other";
 }
 
-/** The column a bank shows in: the one the teacher chose, else the one its name implies. */
-export function bankKind(bank: { kind: string | null; name: string }): BankKind {
-  return isBankKind(bank.kind) ? bank.kind : kindFromName(bank.name);
+/** An assessment's own type, for a title that names no column (Jon, Oct 13 2026). */
+const FROM_TYPE: Record<string, BankKind> = {
+  practice: "practice",
+  formative: "quiz",
+  summative: "test",
+};
+
+/**
+ * The column a bank (or an assessment) shows in: the one the teacher chose,
+ * else the one its name implies, else, for an assessment, its type
+ * (formative → Quiz, summative → Test).
+ */
+export function bankKind(item: { kind: string | null; name: string; type?: string }): BankKind {
+  if (isBankKind(item.kind)) return item.kind;
+  const fromName = kindFromName(item.name);
+  return fromName === "other" && item.type ? (FROM_TYPE[item.type] ?? "other") : fromName;
 }
 
 /** "U2.LT3", "LT 3", "Unit 2 · LT3" → [2, 3]; missing parts sort last. */

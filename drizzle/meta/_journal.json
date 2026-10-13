@@ -176,6 +176,13 @@
       "when": 1791920921127,
       "tag": "0024_bank_kinds",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1791922230935,
+      "tag": "0025_assessment_kinds",
+      "breakpoints": true
     }
   ]
 }

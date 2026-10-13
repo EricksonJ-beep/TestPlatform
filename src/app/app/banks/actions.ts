@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db, schema } from "@/db";
@@ -17,7 +17,7 @@ import {
 import { extractedToRecords } from "@/lib/ai/to-records";
 import { listTargets } from "@/lib/queries/courses";
 import { isBankKind } from "@/lib/bank-kinds";
-import { placeOnShelf } from "@/lib/shelf-db";
+import { clearKindOrder, placeInKindColumn, placeOnShelf } from "@/lib/shelf-db";
 
 const bankSchema = z.object({
   name: z.string().trim().min(1, "Give the bank a name.").max(120),
@@ -282,16 +282,20 @@ export const placeBank = withAuthz(
 /**
  * Drop a bank into a unit's type column (Jon, Oct 13 2026: Practice / Quiz /
  * Test / Retake columns he can arrange). Owner only. The bank takes the
- * column's type for good, and the column keeps the order given; ids that are
- * not the owner's or not in that unit are ignored.
+ * column's type for good, and the column keeps the order given.
  */
 export const placeBankInColumn = withAuthz(
   async (bankId: string, unitId: string | null, kind: string, orderedIds: string[]) => {
     const session = await requireOwner({ type: "question_bank", id: bankId });
     if (!isBankKind(kind)) throw new ActionError("Unknown bank type.", 400);
-    await placeOnShelf(schema.questionBanks, session.userId, bankId, unitId, [bankId]);
-    await db.update(schema.questionBanks).set({ kind }).where(eq(schema.questionBanks.id, bankId));
-    await writeColumnOrder(session.userId, bankId, orderedIds ?? []);
+    await placeInKindColumn(
+      schema.questionBanks,
+      session.userId,
+      bankId,
+      unitId,
+      kind,
+      orderedIds ?? []
+    );
     revalidatePath("/app/banks");
     return { ok: true };
   }
@@ -300,42 +304,7 @@ export const placeBankInColumn = withAuthz(
 /** Hand a column back to automatic order (by learning target, then name). Owner's banks only. */
 export const autoOrderColumn = withAuthz(async (bankIds: string[]) => {
   const session = await requireTeacher();
-  const ids = (bankIds ?? []).map(String).slice(0, 500);
-  if (ids.length)
-    await db
-      .update(schema.questionBanks)
-      .set({ kindOrder: null })
-      .where(
-        and(inArray(schema.questionBanks.id, ids), eq(schema.questionBanks.ownerId, session.userId))
-      );
+  await clearKindOrder(schema.questionBanks, session.userId, bankIds ?? []);
   revalidatePath("/app/banks");
   return { ok: true };
 });
-
-async function writeColumnOrder(ownerId: string, movedId: string, orderedIds: string[]) {
-  const moved = await db.query.questionBanks.findFirst({
-    columns: { courseId: true, unitId: true },
-    where: eq(schema.questionBanks.id, movedId),
-  });
-  if (!moved) return;
-  const ids = Array.from(new Set([...orderedIds.map(String), movedId]));
-  const mine = await db
-    .select({
-      id: schema.questionBanks.id,
-      courseId: schema.questionBanks.courseId,
-      unitId: schema.questionBanks.unitId,
-    })
-    .from(schema.questionBanks)
-    .where(and(inArray(schema.questionBanks.id, ids), eq(schema.questionBanks.ownerId, ownerId)));
-  const allowed = new Set(
-    mine.filter((r) => r.courseId === moved.courseId && r.unitId === moved.unitId).map((r) => r.id)
-  );
-  let i = 0;
-  for (const id of ids) {
-    if (!allowed.has(id)) continue;
-    await db
-      .update(schema.questionBanks)
-      .set({ kindOrder: i++ })
-      .where(eq(schema.questionBanks.id, id));
-  }
-}
