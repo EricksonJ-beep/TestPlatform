@@ -1,0 +1,27 @@
+{
+  "name": "ps-u4-lt3-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science B",
+  "unit": "Unit 4 · Motion",
+  "bank": "PS · U4.LT3 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U4.LT3 Practice: Acceleration",
+    "description": "Practice identifying acceleration and calculating acceleration, final velocity, and time, including slowing down and unit conversions.",
+    "drawCount": 10,
+    "targets": ["U4.LT3"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U4.LT3 Relearning: Acceleration",
+    "content": "**What you need to be able to do:** I can identify and calculate acceleration.\n\n**Think about riding in a car.** You feel pushed back into your seat when the driver steps on the gas, you lean forward when the driver brakes, and you slide sideways when the car turns a corner. Each of those pushes is your body noticing that the velocity changed. When the car cruises straight down the highway at a steady speed, you feel nothing, even at 65 mph. That feeling of change is acceleration.\n\n**Acceleration** is the rate of change of velocity. When the velocity of an object changes, the object is accelerating. Because velocity is speed and direction, there are **three ways to accelerate**: **speeding up**, **slowing down**, and **changing direction**. A car going around a curve at a constant speed is still accelerating, because its direction changes. **Zero acceleration** means constant speed in a straight line.\n\n**Formula:** a = (v_{f} − v_{i}) / t, where v_{f} is final velocity, v_{i} is initial velocity, and t is time. \"From rest\" means v_{i} = 0. To find final velocity: v_{f} = v_{i} + a × t. To find time: t = (v_{f} − v_{i}) / a.\n\n**Units:** the SI unit is **m/s^{2}**. It comes from (m/s) / s: a change in velocity (m/s) divided by time (s). 3 m/s^{2} means the velocity changes by 3 m/s every second. If speeds are in km/h and time is in seconds, the unit is km/h/s.\n\n**Negative acceleration (deceleration):** for an object moving forward, positive = speeding up and negative = slowing down. Always do final minus initial and keep the sign.\n\n**Worked example 1:** A bike speeds up from 4 m/s to 10 m/s in 3 s. Formula: a = (v_{f} − v_{i}) / t. Set Up: a = (10 m/s − 4 m/s) / 3 s = 6 m/s / 3 s. Answer: 2 m/s^{2}.\n\n**Worked example 2:** A skateboarder is traveling 12 m/s, crashes, and slides to a stop in 2 s. Formula: a = (v_{f} − v_{i}) / t. Set Up: a = (0 m/s − 12 m/s) / 2 s. Answer: -6 m/s^{2} (negative because he is slowing down).\n\n**Worked example 3:** A car moving forward at 20 m/s has an acceleration of −4.0 m/s^{2}. What is its velocity after 3 s? Formula: v_{f} = v_{i} + a × t. Set Up: v_{f} = 20 m/s + (−4.0 m/s^{2} × 3 s) = 20 m/s − 12 m/s. Answer: 8 m/s forward.\n\n**Watch out for:** forgetting that turning counts as acceleration, subtracting backwards (v_{i} − v_{f}) and getting the wrong sign, leaving off the units (m/s^{2}, not m/s), and mixing hours, minutes, and seconds. If a speed is in mph or km/h and the answer needs m/s^{2}, convert to m/s first.",
+    "prompts": [
+      "Name the three ways an object can accelerate and give a real example of each.",
+      "A dog runs from rest to 9 m/s in 3 s. Find its acceleration using Formula / Set Up / Answer with units.",
+      "A car has an acceleration of 6 m/s^{2}. How much time is needed for it to reach 18 m/s from rest? Show your setup.",
+      "Explain why a car on a straight road at a constant 100 km/h has zero acceleration, but a car going around a curve at 35 mi/h does not."
+    ],
+    "targets": ["U4.LT3"]
+  }
+}

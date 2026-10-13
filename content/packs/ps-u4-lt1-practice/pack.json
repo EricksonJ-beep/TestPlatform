@@ -1,0 +1,27 @@
+{
+  "name": "ps-u4-lt1-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science B",
+  "unit": "Unit 4 · Motion",
+  "bank": "PS · U4.LT1 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U4.LT1 Practice: Distance, Time, and Speed",
+    "description": "Practice the motion vocabulary and solving for speed, distance, time, and average speed with the speed triangle.",
+    "drawCount": 10,
+    "targets": ["U4.LT1"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U4.LT1 Relearning: Distance, Time, and Speed",
+    "content": "**What you need to be able to do:** I can define and calculate distance, time, and speed.\n\n**Think of a road trip on Highway 29.** The odometer tells you how far you went (distance). The clock tells you how long it took (time). The speedometer tells you how fast you are going right now (speed). If you know any two of these, you can figure out the third.\n\n**Key ideas.** **Motion** is movement or change in position over time. **Distance** is how far an object has traveled, measured in meters (m). **Speed** is the distance an object travels per unit of time, so speed units are always a distance unit over a time unit: m/s, km/h, mph, mi/min. **Average speed** = total distance / total time for the whole trip. **Instantaneous speed** is the speed at any given point of time (what a speedometer shows). **Constant speed** means equal distances in equal times; **changing speed** means speeding up or slowing down. **Displacement** is the distance and direction from the starting point (reference point). Walk 50 m north then 30 m south: distance = 80 m, displacement = 20 m north.\n\n**The speed triangle:** d on top, s and t on the bottom. Cover what you want. **Speed = Distance/Time**, **Distance = speed × time**, **Time = Distance/Speed**. Every answer needs **Formula / Set Up / Answer with units.**\n\n**Worked example 1:** Marcus runs 150 m in 20 s. What is his speed? Formula: S = d/t. Set Up: S = 150 m / 20 s. Answer: **7.5 m/s**.\n\n**Worked example 2:** Liv drives 30 miles at 40 mph. How many minutes does it take? (1 hour = 60 minutes) Formula: t = d/s. Set Up: t = 30 mi / 40 mi/h = 0.75 h. Convert: 0.75 h × 60 = **45 minutes**.\n\n**Worked example 3:** A group of bikers ride 90 km in the first 2 hours and 30 km in the last 1 hour. What is their average speed? Formula: average speed = total distance / total time. Set Up: (90 km + 30 km) / (2 h + 1 h) = 120 km / 3 h. Answer: **40 km/h**. (Averaging the two speeds, 45 km/h and 30 km/h, gives 37.5 km/h, which is wrong.)\n\n**Watch out for:** using the wrong form of the triangle (multiplying when you should divide), leaving off units, mixing minutes and hours (convert first when the answer is in mph or km/h), averaging speeds instead of using total distance ÷ total time, and mixing up distance with displacement.",
+    "prompts": [
+      "Explain the difference between distance and displacement using a trip from your house to school and back.",
+      "Raegan swims 200 m at 2.5 m/s. Find her time using Formula / Set Up / Answer with units.",
+      "Riley drives 20 miles in 30 minutes. If 30 minutes = 0.5 hours, what is her speed in miles per hour? Show your setup.",
+      "Jae runs 1 km at 4 m/s and then 1 km at 2 m/s. Explain why his average speed is NOT 3 m/s."
+    ],
+    "targets": ["U4.LT1"]
+  }
+}

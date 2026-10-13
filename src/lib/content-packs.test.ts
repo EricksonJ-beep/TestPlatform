@@ -54,6 +54,23 @@ beforeAll(async () => {
     { courseId: ps.id, name: "Unit 2 · Atomic Structure", sortOrder: 1 },
     { courseId: ps.id, name: "Unit 3 · Bonding", sortOrder: 2 },
   ]);
+  // Physical Science B carries Units 4–6 (scripts/courses/physical-science.ts).
+  const [psB] = await db
+    .insert(schema.courses)
+    .values({ ownerId: t.id, name: "Physical Science B" })
+    .returning();
+  const [motion] = await db
+    .insert(schema.units)
+    .values({ courseId: psB.id, name: "Unit 4 · Motion", sortOrder: 0 })
+    .returning();
+  await db.insert(schema.learningTargets).values(
+    [1, 2, 3, 4].map((n) => ({
+      courseId: psB.id,
+      unitId: motion.id,
+      code: `U4.LT${n}`,
+      title: `Unit 4 target ${n}`,
+    }))
+  );
   await db.insert(schema.learningTargets).values(
     [2, 3].flatMap((u) =>
       [1, 2, 3, 4].map((n) => ({
@@ -106,8 +123,8 @@ describe("content packs", () => {
   });
   it("applies each pack once: bank, questions with repo-hosted pictures, published assessment, assignment", async () => {
     const first = await applyAllPacks();
-    // Physical Science Units 1–3 practice packs (Oct 13 2026): 50 questions, a set, and notes each.
-    for (const name of [1, 2, 3].flatMap((u) =>
+    // Physical Science Units 1–4 practice packs (Oct 13 2026): 50 questions, a set, and notes each.
+    for (const name of [1, 2, 3, 4].flatMap((u) =>
       [1, 2, 3, 4].map((n) => `ps-u${u}-lt${n}-practice`)
     )) {
       const out = first.find((o) => o.name === name)!;

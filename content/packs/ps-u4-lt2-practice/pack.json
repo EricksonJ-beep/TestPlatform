@@ -1,0 +1,27 @@
+{
+  "name": "ps-u4-lt2-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science B",
+  "unit": "Unit 4 · Motion",
+  "bank": "PS · U4.LT2 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U4.LT2 Practice: Velocity and Momentum",
+    "description": "Practice telling speed from velocity and calculating velocity and momentum (p = m x v) with correct units.",
+    "drawCount": 10,
+    "targets": ["U4.LT2"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U4.LT2 Relearning: Velocity and Momentum",
+    "content": "**What you need to be able to do:** I can identify and calculate velocity and momentum.\n\n**Think of giving directions to a friend.** If you say \"drive 50 mi/h,\" your friend still doesn't know where to go. If you say \"drive 50 mi/h north on Highway 29,\" now they do. That is the difference between **speed** and **velocity**. And think about catching a ball: a tennis ball tossed at you is easy to stop, but a bowling ball at the same velocity is much harder, because it has more mass. That \"hard to stop\" idea is **momentum**.\n\n**Velocity** includes the speed of an object and the direction of its motion (like 25 m/s north). Velocity has the same units as speed (m/s, mi/h, km/h). Speed is just how fast and is always positive; velocity includes direction, so it can be negative when we call one direction negative. A car going around a curve at a constant 35 mi/h has a constant speed, but its velocity changes because its direction changes. (Any change in velocity is acceleration, which you will calculate in LT3.) To decide if something is moving, compare it to a **reference point**: a passenger on a bus is not moving compared to her seat, but she is moving compared to a tree outside.\n\n**Momentum** is the product of an object's mass and its velocity. Its symbol is **p**. Formulas: **Momentum = mass x velocity (p = m x v)**, **Velocity = momentum / mass (v = p / m)**, **Mass = momentum / velocity (m = p / v)**. Units: mass in kg, velocity in m/s, momentum in **kg·m/s**. More mass or more velocity means more momentum. If the mass doubles, momentum doubles; if the velocity doubles, momentum doubles. An object at rest has zero momentum.\n\nAlways show **Formula / Set Up / Answer with units.**\n\n**Worked example 1:** Kayla rides her bike 840 m north to school in 120 s. What is her velocity? Formula: v = d / t. Set Up: v = 840 m / 120 s. Answer: **7 m/s north** (do not forget the direction).\n\n**Worked example 2:** An 80 kg football player runs at 3.0 m/s. What is his momentum? Formula: p = m x v. Set Up: p = 80 kg x 3.0 m/s. Answer: **240 kg·m/s**.\n\n**Worked example 3:** A 12 kg wagon has a momentum of 96 kg·m/s. How fast is it going? Formula: v = p / m. Set Up: v = 96 kg·m/s / 12 kg. Answer: **8 m/s**. (If you are finding mass instead, divide momentum by velocity.)\n\n**Watch out for:** leaving the direction off a velocity, treating speed and velocity as the same thing, multiplying when you should divide (finding m or v), forgetting kg·m/s on momentum, and using grams or km/h without converting to kg and m/s first.",
+    "prompts": [
+      "Explain the difference between speed and velocity, and give one example of each.",
+      "Find the momentum of a 55 kg student running at 6.0 m/s. Show Formula / Set Up / Answer with units.",
+      "A 4.0 kg cat has a momentum of 10 kg·m/s. Find its velocity and show your setup.",
+      "A car and a truck move at the same velocity. Which has more momentum, and why?"
+    ],
+    "targets": ["U4.LT2"]
+  }
+}
