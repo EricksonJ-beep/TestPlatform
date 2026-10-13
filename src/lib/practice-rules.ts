@@ -1,7 +1,7 @@
 /**
  * Practice sets and relearning activities (PLAN.md §3.7, Ticket 1.13): the
- * pure rules. A practice attempt is complete when every question has been
- * answered once; its percent counts only auto-graded items. An activity is
+ * pure rules. A practice attempt is complete when every question is closed
+ * (right, or its answer revealed); its percent counts only auto-graded items. An activity is
  * complete when its kind's rule is met: video ≥ 90% watched, reading scrolled
  * to the end and confirmed, link opened and confirmed, guided notes with every
  * prompt answered. Worksheets complete from their own webhook (Ticket 1.14).
@@ -108,18 +108,93 @@ export function checkActivityCompletion(input: {
   }
 }
 
-/** One answered practice item, stored in `practice_attempts.answers` keyed by question id. */
+/**
+ * Apps Script–style checking (Jon, Oct 13 2026): a wrong check leaves the
+ * question open to try again, the hint unlocks after this many misses, and the
+ * student may reveal the answer at any time, which closes the question.
+ */
+export const HINT_AFTER_MISSES = 3;
+
+/** One practice item, stored in `practice_attempts.answers` keyed by question id. */
 export type PracticeAnswer = {
+  /** The last answer checked; null when the answer was revealed before any check. */
   answer: unknown;
-  /** null when the question needs a human (never graded in practice). */
+  /** The last check's result; null when the question needs a human (never graded in practice). */
   isCorrect: boolean | null;
   pointsEarned: number | null;
   pointsPossible: number;
   answeredAt: string;
+  /** Wrong checks so far. Absent on items saved under the one-try rule (before Oct 13 2026). */
+  misses?: number;
+  /** The student asked to see the answer. */
+  revealed?: boolean;
+  /** Done with: right, revealed, or read by the teacher. Absent means a one-try item, which is closed. */
+  closed?: boolean;
 };
 
+export function isClosed(a: PracticeAnswer | undefined): boolean {
+  return a ? (a.closed ?? true) : false;
+}
+
+export function hintUnlocked(a: PracticeAnswer | undefined): boolean {
+  return (a?.misses ?? 0) >= HINT_AFTER_MISSES;
+}
+
+/**
+ * Rule: a check on an open item replaces its answer and result; a wrong one
+ * adds a miss and keeps it open, anything else closes it. A closed item never
+ * changes.
+ */
+export function recordCheck(
+  prior: PracticeAnswer | undefined,
+  result: {
+    answer: unknown;
+    isCorrect: boolean | null;
+    pointsEarned: number | null;
+    pointsPossible: number;
+  },
+  at: string
+): PracticeAnswer {
+  if (prior && isClosed(prior)) return prior;
+  const wrong = result.isCorrect === false;
+  return {
+    ...result,
+    answeredAt: at,
+    misses: (prior?.misses ?? 0) + (wrong ? 1 : 0),
+    revealed: false,
+    closed: !wrong,
+  };
+}
+
+/**
+ * Rule: revealing closes an open item as not correct, keeping whatever partial
+ * points its last check earned; an item only a teacher can read carries no
+ * points either way. A closed item never changes.
+ */
+export function recordReveal(
+  prior: PracticeAnswer | undefined,
+  pointsPossible: number,
+  at: string,
+  manual = false
+): PracticeAnswer {
+  if (prior && isClosed(prior)) return prior;
+  return {
+    answer: prior?.answer ?? null,
+    isCorrect: manual ? null : false,
+    pointsEarned: manual ? null : (prior?.pointsEarned ?? 0),
+    pointsPossible,
+    answeredAt: at,
+    misses: prior?.misses ?? 0,
+    revealed: true,
+    closed: true,
+  };
+}
+
 export type PracticeProgress = {
+  /** Closed items: right, revealed, or read by the teacher. */
   answered: number;
+  /** Closed items that were right without a reveal. */
+  correct: number;
   total: number;
   complete: boolean;
   /** Auto-graded items only; manual items are practice, not points. */
@@ -128,18 +203,20 @@ export type PracticeProgress = {
   percent: number | null;
 };
 
-/** Rule: complete = every served question answered once; percent over the auto-graded items. */
+/** Rule: complete = every served question closed; percent over the closed auto-graded items. */
 export function practiceProgress(
   questionSet: ServedQuestion[],
   answers: Record<string, PracticeAnswer>
 ): PracticeProgress {
   let answered = 0;
+  let correct = 0;
   let score = 0;
   let maxScore = 0;
   for (const q of questionSet) {
     const a = answers[q.questionId];
-    if (!a) continue;
+    if (!isClosed(a)) continue;
     answered++;
+    if (a.isCorrect === true) correct++;
     if (a.pointsEarned === null) continue;
     score += a.pointsEarned;
     maxScore += a.pointsPossible;
@@ -148,6 +225,7 @@ export function practiceProgress(
   const r2 = (n: number) => Math.round(n * 100) / 100;
   return {
     answered,
+    correct,
     total,
     complete: total > 0 && answered >= total,
     score: r2(score),

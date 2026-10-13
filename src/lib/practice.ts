@@ -1,9 +1,10 @@
 /**
  * Server-only practice lifecycle (PLAN.md §3.7, Ticket 1.13): serve a practice
- * set, grade each answer the moment it lands (instant feedback with the
- * explanation), mark the attempt complete when every question has been
- * answered once, record activity completions, and recompute retake gates
- * after each completion. Nothing here is a grade: practice never counts.
+ * set, check each answer the moment it lands (Apps Script style since Oct 13
+ * 2026: try again after a miss, a hint after three, reveal any time), mark the
+ * attempt complete when every question is closed, record activity
+ * completions, and recompute retake gates after each completion. Nothing here
+ * is a grade: practice never counts.
  */
 import { and, asc, eq, inArray, isNull } from "drizzle-orm";
 import { db, schema } from "@/db";
@@ -18,7 +19,11 @@ import {
 } from "@/lib/grading";
 import {
   checkActivityCompletion,
+  hintUnlocked,
+  isClosed,
   practiceProgress,
+  recordCheck,
+  recordReveal,
   type CompletionCheck,
   type PracticeAnswer,
   type PracticeProgress,
@@ -246,17 +251,25 @@ export type PracticeFeedback = {
   isCorrect: boolean | null;
   pointsEarned: number | null;
   pointsPossible: number;
-  /** The answer key as text; null when there is no fixed key (essays). */
+  /** The answer key as text; null when there is no fixed key (essays) or the question is still open. */
   correctAnswer: string | null;
+  /** Null while the question is still open. */
   explanation: string | null;
-  /** Feedback written on the option(s) the student chose. */
+  /** Feedback written on the option(s) the student chose; empty while the question is still open. */
   optionFeedback: string[];
   detail?: Record<string, boolean>;
   note?: string;
+  /** Right, revealed, or read by the teacher: the key and explanation are showing. */
+  closed: boolean;
+  revealed: boolean;
+  misses: number;
+  /** The teacher's hint, once the student has missed enough times. */
+  hint: string | null;
 };
 
 type FeedbackQuestion = GradableQuestion & {
   explanation: string | null;
+  hint: string | null;
   optionFeedback: Map<string, string | null>;
 };
 
@@ -264,7 +277,11 @@ async function loadFeedbackQuestions(ids: string[]): Promise<Map<string, Feedbac
   const gradable = await loadGradableQuestions(ids);
   if (ids.length === 0) return new Map();
   const extra = await db
-    .select({ id: schema.questions.id, explanation: schema.questions.explanation })
+    .select({
+      id: schema.questions.id,
+      explanation: schema.questions.explanation,
+      hint: schema.questions.hint,
+    })
     .from(schema.questions)
     .where(inArray(schema.questions.id, ids));
   const fb = await db
@@ -280,13 +297,18 @@ async function loadFeedbackQuestions(ids: string[]): Promise<Map<string, Feedbac
     out.set(id, {
       ...q,
       explanation: extra.find((e) => e.id === id)?.explanation ?? null,
+      hint: extra.find((e) => e.id === id)?.hint ?? null,
       optionFeedback: new Map(fb.filter((f) => f.questionId === id).map((f) => [f.id, f.feedback])),
     });
   }
   return out;
 }
 
-/** Grade one answer and describe it back: right or wrong, the key, the explanation, option feedback. */
+/**
+ * Grade one answer and describe it back: right or wrong, the key, the
+ * explanation, option feedback. This is the closed form; `feedbackFor` hides
+ * the key while the question is still open.
+ */
 export function buildFeedback(
   q: FeedbackQuestion,
   served: ServedQuestion,
@@ -313,20 +335,66 @@ export function buildFeedback(
       .filter((x): x is string => !!x),
     detail: result.detail,
     note: result.note,
+    closed: true,
+    revealed: false,
+    misses: 0,
+    hint: null,
   };
 }
 
 /**
- * Record one answer on a practice attempt and return the feedback. Rule: one
- * answer per question per attempt; a second answer returns the first's
- * feedback unchanged. Completing the last question closes the attempt with its
- * percent and recomputes every retake gate the student has.
+ * What the student sees for a stored item. Rule: an open item shows only that
+ * the last check missed (and the hint once it is unlocked), never the key,
+ * the explanation, or option feedback; a closed item shows everything.
  */
-export async function answerPracticeQuestion(
+export function feedbackFor(
+  q: FeedbackQuestion,
+  served: ServedQuestion,
+  entry: PracticeAnswer
+): PracticeFeedback {
+  const full = buildFeedback(q, served, entry.answer as Answer);
+  const closed = isClosed(entry);
+  const shared = {
+    questionId: q.id,
+    isCorrect: entry.isCorrect,
+    pointsEarned: entry.pointsEarned,
+    pointsPossible: entry.pointsPossible,
+    closed,
+    revealed: !!entry.revealed,
+    misses: entry.misses ?? 0,
+    hint: hintUnlocked(entry) ? q.hint : null,
+  };
+  if (closed) return { ...full, ...shared };
+  return {
+    ...shared,
+    correctAnswer: null,
+    explanation: null,
+    optionFeedback: [],
+    note: full.note,
+  };
+}
+
+type PracticeResult = {
+  feedback: PracticeFeedback;
+  progress: PracticeProgress;
+  completed: boolean;
+};
+
+/**
+ * Apply one change to one item on a practice attempt and return what the
+ * student sees. Rule: a closed item never changes; closing the last open item
+ * completes the attempt with its percent and recomputes every retake gate the
+ * student has.
+ */
+async function updatePracticeItem(
   attemptId: string,
   questionId: string,
-  answer: Answer
-): Promise<{ feedback: PracticeFeedback; progress: PracticeProgress; completed: boolean }> {
+  next: (
+    q: FeedbackQuestion,
+    served: ServedQuestion,
+    prior: PracticeAnswer | undefined
+  ) => PracticeAnswer
+): Promise<PracticeResult> {
   const attempt = await db.query.practiceAttempts.findFirst({
     where: eq(schema.practiceAttempts.id, attemptId),
   });
@@ -339,30 +407,21 @@ export async function answerPracticeQuestion(
   if (!q) throw new Error("question missing");
 
   const prior = answers[questionId];
-  if (prior) {
+  if (prior && isClosed(prior)) {
     return {
-      feedback: buildFeedback(q, served, prior.answer as Answer),
+      feedback: feedbackFor(q, served, prior),
       progress: practiceProgress(attempt.questionSet, answers),
       completed: false,
     };
   }
-  const feedback = buildFeedback(q, served, answer);
-  const next: Record<string, PracticeAnswer> = {
-    ...answers,
-    [questionId]: {
-      answer,
-      isCorrect: feedback.isCorrect,
-      pointsEarned: feedback.pointsEarned,
-      pointsPossible: feedback.pointsPossible,
-      answeredAt: new Date().toISOString(),
-    },
-  };
-  const progress = practiceProgress(attempt.questionSet, next);
+  const entry = next(q, served, prior);
+  const updated: Record<string, PracticeAnswer> = { ...answers, [questionId]: entry };
+  const progress = practiceProgress(attempt.questionSet, updated);
   const completed = progress.complete && !attempt.completedAt;
   await db
     .update(schema.practiceAttempts)
     .set({
-      answers: next,
+      answers: updated,
       ...(completed
         ? {
             completedAt: new Date(),
@@ -374,23 +433,63 @@ export async function answerPracticeQuestion(
     })
     .where(eq(schema.practiceAttempts.id, attemptId));
   if (completed) await recomputeGatesForStudent(attempt.studentId);
-  return { feedback, progress, completed };
+  return { feedback: feedbackFor(q, served, entry), progress, completed };
 }
 
-/** Feedback for every question already answered on an attempt (for resuming and the summary). */
+/**
+ * Check one answer. Rule: a wrong check adds a miss and leaves the question
+ * open to try again (the hint unlocks after three); a right one, or one only a
+ * teacher can read, closes it.
+ */
+export async function answerPracticeQuestion(
+  attemptId: string,
+  questionId: string,
+  answer: Answer
+): Promise<PracticeResult> {
+  return updatePracticeItem(attemptId, questionId, (q, served, prior) => {
+    const graded = buildFeedback(q, served, answer);
+    return recordCheck(
+      prior,
+      {
+        answer,
+        isCorrect: graded.isCorrect,
+        pointsEarned: graded.pointsEarned,
+        pointsPossible: graded.pointsPossible,
+      },
+      new Date().toISOString()
+    );
+  });
+}
+
+/** Show the answer: closes the question as not correct and shows the key and explanation. */
+export async function revealPracticeAnswer(
+  attemptId: string,
+  questionId: string
+): Promise<PracticeResult> {
+  return updatePracticeItem(attemptId, questionId, (q, served, prior) =>
+    recordReveal(
+      prior,
+      served.points,
+      new Date().toISOString(),
+      buildFeedback(q, served, null).isCorrect === null
+    )
+  );
+}
+
+/** What the student sees for every item already touched on an attempt (for resuming and the summary). */
 export async function feedbackForAttempt(attempt: {
   questionSet: ServedQuestion[];
   answers: Record<string, unknown>;
 }): Promise<Record<string, PracticeFeedback>> {
   const answers = attempt.answers as Record<string, PracticeAnswer>;
-  const ids = Object.keys(answers);
+  const ids = attempt.questionSet.map((s) => s.questionId).filter((id) => answers[id]);
   if (ids.length === 0) return {};
   const questions = await loadFeedbackQuestions(ids);
   const out: Record<string, PracticeFeedback> = {};
   for (const id of ids) {
     const q = questions.get(id);
     const served = attempt.questionSet.find((s) => s.questionId === id);
-    if (q && served) out[id] = buildFeedback(q, served, answers[id].answer as Answer);
+    if (q && served) out[id] = feedbackFor(q, served, answers[id]);
   }
   return out;
 }
