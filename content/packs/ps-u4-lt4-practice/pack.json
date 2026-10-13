@@ -1,0 +1,27 @@
+{
+  "name": "ps-u4-lt4-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science B",
+  "unit": "Unit 4 · Motion",
+  "bank": "PS · U4.LT4 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U4.LT4 Practice: Motion Graphs",
+    "description": "Practice reading distance-time and velocity-time graphs, finding speed from slope, and choosing the graph that matches a motion.",
+    "drawCount": 10,
+    "targets": ["U4.LT4"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U4.LT4 Relearning: Motion Graphs",
+    "content": "**What you need to be able to do:** I can construct and interpret graphs illustrating distance, velocity, and acceleration.\n\n**Think of a trip odometer and a speedometer.** A trip odometer tells you **how far** you have gone; a speedometer tells you **how fast** you are going right now. If you sit on the couch, the trip odometer stays stuck on the same number, but the speedometer reads 0. If you cruise down Highway 29 at 55 mph, the trip odometer keeps climbing, but the speedometer stays stuck on 55. That is exactly the difference between a **distance-time graph** (like the trip odometer) and a **velocity-time graph** (like the speedometer). Always read the y-axis label first.\n\n**Axes.** Time is the **independent variable**, so it goes on the **x-axis**. Distance or velocity is the **dependent variable** and goes on the **y-axis**.\n\n**Slope.** Slope = rise ÷ run. The slope of a distance-time graph is the **speed** (s = d/t). The slope of a velocity-time graph is the **acceleration** (a = (v_f − v_i) / t). **Steeper = faster** on a distance-time graph.\n\n**Distance-time shapes:** horizontal line = **no motion (stopped)**; straight line going up = **constant speed away from the start**; straight line going down = **constant speed back toward the start**; curve getting steeper = **speeding up**.\n\n**Velocity-time shapes:** horizontal line above zero = **constant velocity** (zero acceleration); rising line = **accelerating**; falling line toward zero = **decelerating**; line on zero = **stopped**; below zero = **moving backward**; crossing zero = stops and changes direction.\n\n**Worked example 1:** A distance-time graph rises in a straight line from 10 m at 2 s to 34 m at 8 s. Find the speed. Formula: s = d/t. Set Up: s = (34 m − 10 m) / (8 s − 2 s) = 24 m / 6 s. Answer: **4 m/s**.\n\n**Worked example 2:** A velocity-time graph rises in a straight line from 3 m/s at 0 s to 15 m/s at 4 s. What is the motion, and what is the slope? The velocity is going up, so the object is accelerating. Formula: a = (v_f − v_i) / t. Set Up: a = (15 m/s − 3 m/s) / 4 s = 12 m/s / 4 s. Answer: **3 m/s²**.\n\n**Worked example 3:** Marcus's distance-time graph: rises from 0 m at 0 s to 60 m at 30 s, flat at 60 m until 50 s, then falls to 0 m at 70 s. Step 1: 0–30 s, line up → moving away at 60 m / 30 s = 2 m/s. Step 2: 30–50 s, flat → stopped. Step 3: 50–70 s, line down → walking back toward the start at 60 m / 20 s = 3 m/s. Answer: he is **fastest from 50 s to 70 s**, while returning to the start.\n\n**Watch out for:** reading a flat line the same way on both graphs (flat on distance-time = stopped, flat on velocity-time = constant velocity); calling a line going down on a distance-time graph \"slowing down\" (it means heading back toward the start); using the end values instead of the change for a segment; and swapping the independent and dependent variables.",
+    "prompts": [
+      "Describe what a flat line means on a distance-time graph and on a velocity-time graph. Explain why they are different.",
+      "A distance-time graph rises in a straight line from 5 m at 1 s to 29 m at 7 s. Find the speed using Formula / Set Up / Answer with units.",
+      "Sketch or describe, segment by segment, the distance-time graph for this trip: you walk to a friend's house at a steady speed, stay 10 minutes, then walk home faster.",
+      "A velocity-time graph starts at 8 m/s and drops in a straight line to 0 m/s, then goes below zero. Describe what the object is doing in each part."
+    ],
+    "targets": ["U4.LT4"]
+  }
+}
