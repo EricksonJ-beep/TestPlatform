@@ -50,6 +50,9 @@ beforeAll(async () => {
     .values({ ownerId: t.id, name: "Physical Science A" })
     .returning();
   await db
+    .insert(schema.units)
+    .values({ courseId: ps.id, name: "Unit 1 · Introduction to Physical Science", sortOrder: 0 });
+  await db
     .insert(schema.learningTargets)
     .values(
       [1, 2, 3, 4].map((n) => ({ courseId: ps.id, code: `U1.LT${n}`, title: `Target ${n}` }))
@@ -92,6 +95,18 @@ describe("content packs", () => {
   });
   it("applies each pack once: bank, questions with repo-hosted pictures, published assessment, assignment", async () => {
     const first = await applyAllPacks();
+    // Physical Science Unit 1 practice packs (Oct 13 2026): 50 questions, a set, and notes each.
+    for (const n of [1, 2, 3, 4]) {
+      const out = first.find((o) => o.name === `ps-u1-lt${n}-practice`)!;
+      expect(out.status).toBe("applied");
+      if (out.status === "applied")
+        expect(out.summary).toMatchObject({
+          questions: 50,
+          practiceSet: { published: true },
+          activity: { published: true },
+          errors: [],
+        });
+    }
     const skin = first.find((o) => o.name === "anatomy-u2-lab-quiz-integumentary")!;
     expect(skin.status).toBe("applied");
     if (skin.status !== "applied") throw new Error("unreachable");
