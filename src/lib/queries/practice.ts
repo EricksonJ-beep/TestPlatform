@@ -9,6 +9,7 @@ import { studentCourseIds } from "@/lib/authz";
 import type { ActivityKind, CompletionEvidence } from "@/db/types";
 import type { Answer } from "@/lib/grading";
 import { feedbackForAttempt, type PracticeFeedback } from "@/lib/practice";
+import { customPracticeTitle } from "@/lib/custom-practice";
 import {
   practiceProgress,
   type PracticeAnswer,
@@ -713,6 +714,8 @@ export async function getStudentPractice(
 export type PracticeRunnerPayload = {
   attempt: { id: string; startedAt: Date; completedAt: Date | null };
   set: { id: string; title: string; description: string | null };
+  /** A student-built practice (no set): what to deal again for "Practice again". */
+  custom: { courseId: string; targetIds: string[]; count: number } | null;
   questions: StudentQuestion[];
   /** Answered questions with what the student put and the feedback they got. */
   answered: Record<string, { answer: Answer; feedback: PracticeFeedback }>;
@@ -727,11 +730,26 @@ export async function getPracticeRunnerPayload(
     where: eq(schema.practiceAttempts.id, attemptId),
   });
   if (!attempt) return null;
-  const set = await db.query.practiceSets.findFirst({
-    columns: { id: true, title: true, description: true, courseId: true },
-    where: eq(schema.practiceSets.id, attempt.practiceSetId),
-  });
-  if (!set) return null;
+  let set: PracticeRunnerPayload["set"] & { courseId: string | null };
+  let custom: PracticeRunnerPayload["custom"] = null;
+  if (attempt.practiceSetId) {
+    const row = await db.query.practiceSets.findFirst({
+      columns: { id: true, title: true, description: true, courseId: true },
+      where: eq(schema.practiceSets.id, attempt.practiceSetId),
+    });
+    if (!row) return null;
+    set = row;
+  } else {
+    if (!attempt.courseId) return null;
+    const targetIds = attempt.targetIds ?? [];
+    set = {
+      id: attempt.id,
+      title: await customPracticeTitle(attempt.courseId, targetIds),
+      description: null,
+      courseId: attempt.courseId,
+    };
+    custom = { courseId: attempt.courseId, targetIds, count: attempt.questionSet.length };
+  }
   const served = attempt.questionSet;
   const questions = await sanitizedQuestions(
     served.map((s) => s.questionId),
@@ -759,6 +777,7 @@ export async function getPracticeRunnerPayload(
   return {
     attempt: { id: attempt.id, startedAt: attempt.startedAt, completedAt: attempt.completedAt },
     set: { id: set.id, title: set.title, description: set.description },
+    custom,
     questions: served.map((s) => questions.get(s.questionId)!).filter(Boolean),
     answered,
     progress: practiceProgress(served, answers),

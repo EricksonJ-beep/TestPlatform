@@ -1,0 +1,119 @@
+{
+  "name": "anatomy-u2-practice-bank",
+  "revision": 2,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Anatomy and Physiology",
+  "unit": "Unit 2",
+  "bank": "AP · Unit 2 · Practice",
+  "openPractice": true,
+  "targets": [
+    {
+      "unit": "Unit 2",
+      "code": "U2.LT1",
+      "title": "Layers of the skin",
+      "description": "5.a Compare the structures and functions of the layers of the skin."
+    },
+    {
+      "unit": "Unit 2",
+      "code": "U2.LT2",
+      "title": "Keratinization",
+      "description": "5.b Describe the keratinization process that produces a barrier resistant to abrasion and water loss."
+    },
+    {
+      "unit": "Unit 2",
+      "code": "U2.LT3",
+      "title": "Ultraviolet radiation and the skin",
+      "description": "5.c Explain the effects of ultraviolet radiation on the skin."
+    },
+    {
+      "unit": "Unit 2",
+      "code": "U2.LT4",
+      "title": "Skin glands and the acid mantle",
+      "description": "5.d Describe the glands of the skin, their secretions, and the functions of these secretions, including the surface film (acid mantle)."
+    },
+    {
+      "unit": "Unit 2",
+      "code": "U2.LT5",
+      "title": "Temperature, sensation, and skin repair",
+      "description": "5.e Describe how the integumentary system regulates body temperature, supports sensation, and responds to injuries through repair processes."
+    },
+    {
+      "unit": "Unit 2",
+      "code": "U2.LT6",
+      "title": "Functions of the skeletal system",
+      "description": "6.a Describe the functions of the skeletal system."
+    },
+    {
+      "unit": "Unit 2",
+      "code": "U2.LT7",
+      "title": "Bone tissue and bone cells",
+      "description": "6.b Explain the composition, organization, and functional characteristics of bone tissue, including bone matrix, spongy and compact bone, and the roles of osteoblasts, osteoclasts, and osteocytes."
+    },
+    {
+      "unit": "Unit 2",
+      "code": "U2.LT8",
+      "title": "Bone growth, remodeling, and calcium",
+      "description": "6.c Describe bone growth, remodeling, and the role of bone in calcium homeostasis."
+    },
+    {
+      "unit": "Unit 2",
+      "code": "U2.LT9",
+      "title": "Axial and appendicular skeleton",
+      "description": "6.d Identify the components and functions of the axial and appendicular skeleton."
+    },
+    {
+      "unit": "Unit 2",
+      "code": "U2.LT10",
+      "title": "Bone landmarks",
+      "description": "6.e Relate major bone landmarks to their functions."
+    },
+    {
+      "unit": "Unit 2",
+      "code": "U2.LT11",
+      "title": "Vertebrae",
+      "description": "6.f Explain differences in structure and function among various vertebrae."
+    },
+    {
+      "unit": "Unit 2",
+      "code": "U2.LT12",
+      "title": "Joints and movements",
+      "description": "6.g Describe the different types of joints, how they work, and apply appropriate movement terminology to joint functions."
+    },
+    {
+      "unit": "Unit 2",
+      "code": "U2.LT13",
+      "title": "Skull development and male vs. female skeletons",
+      "description": "6.h Discuss skull development and describe skeletal differences between males and females."
+    },
+    {
+      "unit": "Unit 2",
+      "code": "U2.LT14",
+      "title": "Muscle tissue",
+      "description": "7.a Describe the characteristics and functions of muscular tissue."
+    },
+    {
+      "unit": "Unit 2",
+      "code": "U2.LT15",
+      "title": "Types of muscle contractions",
+      "description": "7.b Distinguish among the different types of muscle contractions."
+    },
+    {
+      "unit": "Unit 2",
+      "code": "U2.LT16",
+      "title": "Muscle fiber types and performance",
+      "description": "7.c Relate types of muscle fibers to muscular performance."
+    },
+    {
+      "unit": "Unit 2",
+      "code": "U2.LT17",
+      "title": "Major skeletal muscles and actions",
+      "description": "7.d Identify the major human skeletal muscles and their actions."
+    },
+    {
+      "unit": "Unit 2",
+      "code": "U2.LT18",
+      "title": "Origin, insertion, and muscle roles",
+      "description": "7.e Define origin, insertion, agonist and antagonist, prime mover and synergist."
+    }
+  ]
+}

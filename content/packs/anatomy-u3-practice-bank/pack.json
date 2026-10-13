@@ -1,0 +1,41 @@
+{
+  "name": "anatomy-u3-practice-bank",
+  "revision": 2,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Anatomy and Physiology",
+  "unit": "Unit 3",
+  "bank": "AP · Unit 3 · Practice",
+  "openPractice": true,
+  "targets": [
+    {
+      "unit": "Unit 3",
+      "code": "U3.LT1",
+      "title": "Organization of the nervous system",
+      "description": "8.a Describe the anatomical organization and general functions of the nervous system, including major cell types, brain regions, the spinal cord, and peripheral nerves."
+    },
+    {
+      "unit": "Unit 3",
+      "code": "U3.LT2",
+      "title": "Sensory and motor pathways",
+      "description": "8.b Explain how the nervous system processes and integrates sensory and motor information, including sensory pathways, motor pathways, and cortical functional areas."
+    },
+    {
+      "unit": "Unit 3",
+      "code": "U3.LT3",
+      "title": "Somatic, autonomic, and cranial nerves",
+      "description": "8.c Compare the somatic and autonomic divisions of the nervous system, including the structures and functions of the sympathetic and parasympathetic systems and cranial nerves."
+    },
+    {
+      "unit": "Unit 3",
+      "code": "U3.LT4",
+      "title": "Neurons, synapses, and reflexes",
+      "description": "8.d Describe neural communication and response mechanisms, including neuron function, synaptic activity, and the process of neural reflexes."
+    },
+    {
+      "unit": "Unit 3",
+      "code": "U3.LT5",
+      "title": "Special senses",
+      "description": "8.e Explain the structures and physiological processes involved in the major special senses, including olfaction, gustation, hearing, equilibrium, and vision."
+    }
+  ]
+}

@@ -8,9 +8,12 @@ import {
   ActionError,
   requireContentAccess,
   requirePracticeAttemptAccess,
+  requireSession,
+  studentCourseIds,
   withAuthz,
 } from "@/lib/authz";
 import { logActivity } from "@/lib/activity-log";
+import { customPracticeTitle, startCustomPractice } from "@/lib/custom-practice";
 import {
   answerPracticeQuestion,
   completeActivity,
@@ -76,20 +79,16 @@ export const startPractice = withAuthz(async (practiceSetId: string) => {
 
 /** Log a finished practice set; the error the student sees when a question isn't theirs. */
 async function afterPracticeChange<T extends { completed: boolean }>(
-  access: { userId: string; attempt: { practiceSetId: string } },
+  access: { userId: string; attempt: { id: string; practiceSetId: string | null } },
   run: () => Promise<T>
 ): Promise<T> {
   try {
     const r = await run();
     if (r.completed) {
-      const set = await db.query.practiceSets.findFirst({
-        columns: { title: true },
-        where: eq(schema.practiceSets.id, access.attempt.practiceSetId),
-      });
       await logActivity({
         userId: access.userId,
         kind: "practice_completed",
-        detail: { title: set?.title },
+        detail: { title: await attemptTitle(access.attempt.id, access.attempt.practiceSetId) },
       });
       revalidate();
     }
@@ -124,6 +123,51 @@ export const revealPractice = withAuthz(async (attemptId: string, questionId: st
   if (access.as !== "student") throw new ActionError("Students only.", 403);
   if (access.attempt.completedAt) throw new ActionError("This attempt is finished.", 409);
   return afterPracticeChange(access, () => revealPracticeAnswer(attemptId, questionId));
+});
+
+async function attemptTitle(attemptId: string, practiceSetId: string | null) {
+  if (practiceSetId) {
+    const set = await db.query.practiceSets.findFirst({
+      columns: { title: true },
+      where: eq(schema.practiceSets.id, practiceSetId),
+    });
+    return set?.title;
+  }
+  const a = await db.query.practiceAttempts.findFirst({
+    columns: { courseId: true, targetIds: true },
+    where: eq(schema.practiceAttempts.id, attemptId),
+  });
+  return a?.courseId ? customPracticeTitle(a.courseId, a.targetIds ?? []) : undefined;
+}
+
+const customSchema = z.object({
+  courseId: z.string().uuid(),
+  targetIds: z.array(z.string().uuid()).min(1).max(200),
+  count: z.number().int().min(1).max(100),
+});
+
+/**
+ * "Build my practice" (Jon, Oct 13 2026): deal a fresh practice on the
+ * targets the student picked. Rule: students only, on a course their classes
+ * use; the targets must belong to that course (checked when dealing).
+ */
+export const startBuiltPractice = withAuthz(async (raw: unknown) => {
+  const session = await requireSession();
+  if (session.role !== "student") throw new ActionError("Students only.", 403);
+  const parsed = customSchema.safeParse(raw);
+  if (!parsed.success) throw new ActionError("Pick at least one learning target.", 400);
+  const { courseId, targetIds, count } = parsed.data;
+  if (!(await studentCourseIds(session.userId)).includes(courseId))
+    throw new ActionError("You're not in a class for that course.", 403);
+  try {
+    const r = await startCustomPractice(session.userId, courseId, targetIds, count);
+    revalidate();
+    return r;
+  } catch (err) {
+    if (err instanceof Error && err.message === "empty")
+      throw new ActionError("There are no practice questions for those targets yet.", 409);
+    throw err;
+  }
 });
 
 /** Mark an activity complete once its rule is met (checked server-side); gates recompute. */
