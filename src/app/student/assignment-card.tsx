@@ -50,7 +50,11 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
     c.started > 0;
   const capped = a.type === "formative" && a.correctionsCap;
   const windowOpen = a.retakeBy !== null && !a.retakeWindowClosed;
-  const pillLabel = correctionsStarted ? "Corrections in progress" : pill.label;
+  const pillLabel = correctionsStarted
+    ? "Corrections in progress"
+    : a.state === "in_progress" && a.paused
+      ? "Paused"
+      : pill.label;
   const href =
     correcting && c ? `/student/corrections/${c.attemptId}` : `/student/assignments/${a.id}`;
   const nextAttempt = a.attemptsAllowed === null || a.attemptsUsed < a.attemptsAllowed;
@@ -59,7 +63,7 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
       case "not_started":
         return { label: "Start", primary: true };
       case "in_progress":
-        return { label: "Continue", primary: true };
+        return { label: a.paused ? "Finish in class" : "Continue", primary: true };
       case "corrections_needed":
         return {
           label: correctionsStarted ? "Continue corrections" : "Do corrections",

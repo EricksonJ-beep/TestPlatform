@@ -10,6 +10,7 @@ import { classAverages } from "@/lib/mastery";
 import { CorrectionsBar, CorrectionsSummary } from "./corrections-progress";
 import { StudentResultsTable } from "./student-table";
 import { HardQuestions, MasteryHeatmap } from "./mastery-grid";
+import { ResumeCodeButton } from "@/components/app/resume-code-button";
 import { RegradeButton } from "./regrade-button";
 import { Button } from "@/components/ui/button";
 import { FollowCourse } from "@/components/app/course-focus";
@@ -81,6 +82,7 @@ export default async function AssignmentResultsPage({
             Tier board
           </Button>
         ) : null}
+        <ResumeCodeButton />
         <RegradeButton
           assignmentId={assignmentId}
           attempts={rows.reduce((n, r) => n + r.attempts.length, 0)}

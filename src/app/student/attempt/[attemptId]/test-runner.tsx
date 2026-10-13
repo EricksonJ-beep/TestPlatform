@@ -2,7 +2,15 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AlertTriangle, ChevronLeft, ChevronRight, Flag, Maximize2 } from "lucide-react";
+import {
+  AlertTriangle,
+  ChevronLeft,
+  ChevronRight,
+  Flag,
+  Lock,
+  Maximize2,
+  PauseCircle,
+} from "lucide-react";
 import { cn } from "cn";
 import type { Answer } from "@/lib/grading";
 import type { RunnerPayload } from "@/lib/queries/attempts";
@@ -10,7 +18,14 @@ import { RichText } from "@/components/rich-text";
 import { StimulusPanel } from "@/components/stimulus/stimulus-panel";
 import { TargetChip } from "@/components/targets/target-chip";
 import { Button } from "@/components/ui/button";
-import { recordTabSwitch, saveAnswer, setFlag, submitAttempt } from "../../actions";
+import {
+  attemptHeartbeat,
+  finishLater,
+  recordTabSwitch,
+  saveAnswer,
+  setFlag,
+  submitAttempt,
+} from "../../actions";
 import { AnswerInput, isAnswered } from "./answer-input";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
@@ -59,20 +74,28 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
 
   // --- Submit (manual or automatic) -------------------------------------------------
   const submittedRef = useRef(false);
-  const doSubmit = useCallback(async () => {
-    if (submittedRef.current) return;
-    submittedRef.current = true;
-    setSubmitting(true);
-    const r = await submitAttempt(attempt.id);
-    // 404: the teacher deleted this attempt underneath us; the assignment page explains the state.
-    if (r.ok || r.status === 409 || r.status === 404)
-      router.push(`/student/assignments/${assignment.id}`);
-    else {
-      submittedRef.current = false;
-      setSubmitting(false);
-      setSaveError(r.error);
-    }
-  }, [attempt.id, assignment.id, router]);
+  const doSubmit = useCallback(
+    async (auto = false) => {
+      if (submittedRef.current) return;
+      submittedRef.current = true;
+      setSubmitting(true);
+      const r = await submitAttempt(attempt.id, auto);
+      // 423: the window closed, so the test paused instead (Finish later); show the paused screen.
+      if (!r.ok && r.status === 423) {
+        router.refresh();
+        return;
+      }
+      // 404: the teacher deleted this attempt underneath us; the assignment page explains the state.
+      if (r.ok || r.status === 409 || r.status === 404)
+        router.push(`/student/assignments/${assignment.id}`);
+      else {
+        submittedRef.current = false;
+        setSubmitting(false);
+        setSaveError(r.error);
+      }
+    },
+    [attempt.id, assignment.id, router]
+  );
 
   useEffect(() => {
     if (!dueAtMs) return;
@@ -82,7 +105,7 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
       setRemaining(left);
       if (left <= 0) {
         setTimeUp(true);
-        void doSubmit();
+        void doSubmit(true);
       }
     };
     tick();
@@ -103,9 +126,10 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
           setSaveState("error");
           setSaveError(r.error);
           if (r.status === 404) router.push(`/student/assignments/${assignment.id}`);
+          if (r.status === 423) router.refresh(); // paused (idle or window closed)
           if (r.status === 409 && /Time is up/.test(r.error)) {
             setTimeUp(true);
-            void doSubmit();
+            void doSubmit(true);
           }
         }
       });
@@ -130,6 +154,41 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
     });
     void setFlag(attempt.id, questionId, next);
   };
+
+  // --- Finish later (Oct 13 2026) ---------------------------------------------------
+  // Heartbeat: only real activity (typing, clicking, scrolling) keeps the test open;
+  // after 10 minutes without any, the server pauses it.
+  const lastInteraction = useRef(0);
+  useEffect(() => {
+    lastInteraction.current = Date.now(); // opening the test counts as activity
+    const mark = () => {
+      lastInteraction.current = Date.now();
+    };
+    const events = ["pointerdown", "keydown", "wheel", "scroll", "touchstart"] as const;
+    for (const ev of events) window.addEventListener(ev, mark, { passive: true });
+    const t = setInterval(() => {
+      if (document.visibilityState !== "visible") return;
+      if (Date.now() - lastInteraction.current > 120_000) return;
+      void attemptHeartbeat(attempt.id).then((r) => {
+        if (r.ok && r.data.paused) router.refresh();
+      });
+    }, 60_000);
+    return () => {
+      for (const ev of events) window.removeEventListener(ev, mark);
+      clearInterval(t);
+    };
+  }, [attempt.id, router]);
+  const [pausing, setPausing] = useState<"idle" | "confirm" | "working">("idle");
+  const pauseNow = async () => {
+    setPausing("working");
+    const r = await finishLater(attempt.id);
+    if (r.ok || r.status === 423) router.refresh();
+    else {
+      setPausing("idle");
+      setSaveError(r.error);
+    }
+  };
+  const locked = new Set(attempt.lockedQuestionIds);
 
   // --- Integrity: tab switches, full screen, font scale ------------------------------
   useEffect(() => {
@@ -202,6 +261,15 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
         ) : null}
         <button
           type="button"
+          onClick={() => setPausing(pausing === "confirm" ? "idle" : "confirm")}
+          className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+          data-finish-later
+        >
+          <PauseCircle className="size-4" aria-hidden />
+          Finish later
+        </button>
+        <button
+          type="button"
           onClick={fullScreen}
           aria-label="Full screen"
           className="rounded-md p-1.5 text-muted-foreground hover:bg-muted"
@@ -219,6 +287,31 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
       </div>
 
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 px-4 py-5 md:px-6">
+        {pausing !== "idle" ? (
+          <section
+            className="flex flex-col gap-3 rounded-lg border border-brand/40 bg-brand-soft px-4 py-3 text-sm"
+            aria-label="Finish later"
+            data-finish-later-confirm
+          >
+            <p>
+              <strong>Out of time?</strong> Your answers so far are saved and{" "}
+              <strong>locked</strong>, and the clock stops. To finish, you&apos;ll need{" "}
+              {assignment.teacherName}&apos;s resume code in class.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                onClick={() => void pauseNow()}
+                disabled={pausing === "working"}
+              >
+                {pausing === "working" ? "Pausing…" : "Pause and finish later"}
+              </Button>
+              <Button type="button" variant="ghost" onClick={() => setPausing("idle")}>
+                Keep working
+              </Button>
+            </div>
+          </section>
+        ) : null}
         {timeUp ? (
           <p
             role="alert"
@@ -301,12 +394,20 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
                 </div>
               ) : null}
               <div className="mt-4">
-                <AnswerInput
-                  key={q.id}
-                  question={q}
-                  answer={answers[q.id] ?? null}
-                  onChange={(a) => onChange(q.id, a, isText)}
-                />
+                {locked.has(q.id) ? (
+                  <p className="mb-2 inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
+                    <Lock className="size-3.5" aria-hidden />
+                    Locked: you answered this before the test paused.
+                  </p>
+                ) : null}
+                <fieldset disabled={locked.has(q.id)} className="disabled:opacity-70">
+                  <AnswerInput
+                    key={q.id}
+                    question={q}
+                    answer={answers[q.id] ?? null}
+                    onChange={(a) => onChange(q.id, a, isText)}
+                  />
+                </fieldset>
               </div>
             </article>
 

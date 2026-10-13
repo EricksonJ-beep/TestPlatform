@@ -6,10 +6,17 @@ import { z } from "zod";
 import { db, schema } from "@/db";
 import { deleteAttempt as removeAttempt, finalizeAttempt } from "@/lib/attempts";
 import {
+  currentResumeCode,
+  issueResumeCode,
+  resumeAttempt,
+  settleAttempt,
+} from "@/lib/attempt-pause";
+import {
   ActionError,
   type AttemptAccess,
   requireAttemptAccess,
   requireOwner,
+  requireTeacher,
   withAuthz,
 } from "@/lib/authz";
 
@@ -227,4 +234,26 @@ export const deleteAttempt = withAuthz(async (attemptId: string) => {
   revalidatePath(`/app/results/${assignmentId}/students/${access.attempt.studentId}`);
   revalidatePath("/app/results/corrections");
   return { assignmentId, number };
+});
+
+/**
+ * Finish later (Jon, Oct 13 2026): let one student back into their paused
+ * test without a code. The clock restarts from the time they had left.
+ */
+export const letContinue = withAuthz(async (attemptId: string) => {
+  const access = await requireAttemptAccess(attemptId);
+  if (access.as !== "teacher") throw new ActionError("Teachers only.", 403);
+  // An idle test reads as paused before anyone has touched it; settle it first.
+  await settleAttempt(attemptId);
+  if (!(await resumeAttempt(attemptId))) throw new ActionError("That test isn't paused.", 409);
+  revalidate(access.attempt.assignmentId, attemptId);
+  return { ok: true };
+});
+
+/** The resume code to post on the board: the current one, or a new one when `fresh` or none is running. */
+export const getResumeCode = withAuthz(async (fresh: boolean) => {
+  const session = await requireTeacher();
+  const current = fresh ? null : await currentResumeCode(session.userId);
+  const code = current ?? (await issueResumeCode(session.userId));
+  return { code: code.code, expiresAt: code.expiresAt.toISOString() };
 });

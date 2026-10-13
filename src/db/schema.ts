@@ -711,6 +711,23 @@ export const attempts = pgTable(
     /** Server-enforced deadline for this attempt (start + limit + accommodations). */
     dueAt: timestamp("due_at", { withTimezone: true }),
     tabSwitches: integer("tab_switches").default(0).notNull(),
+    /**
+     * Finish later (Jon, Oct 13 2026: students who run out of time in class or
+     * Seminar finish in his room). Set while the attempt is paused: the
+     * questions stay hidden, the clock is stopped, and it reopens only with
+     * the teacher's resume code or the teacher's OK.
+     */
+    pausedAt: timestamp("paused_at", { withTimezone: true }),
+    /** "student" (Finish later), "idle" (10 minutes without activity), "closed" (window closed). */
+    pauseReason: text("pause_reason"),
+    /** Time left on the clock when paused; the deadline restarts from it on resume. */
+    remainingMs: integer("remaining_ms"),
+    /** Questions answered before a pause; they cannot be changed afterwards. */
+    lockedQuestionIds: jsonb("locked_question_ids").$type<string[]>().default([]).notNull(),
+    /** Last sign of the student working (a save or the test page's heartbeat). */
+    lastActiveAt: timestamp("last_active_at", { withTimezone: true }),
+    /** The student asked the teacher to let them finish. */
+    resumeRequestedAt: timestamp("resume_requested_at", { withTimezone: true }),
     ...timestamps,
   },
   (t) => [
@@ -722,6 +739,25 @@ export const attempts = pgTable(
     index("attempts_student_idx").on(t.studentId),
     index("attempts_assignment_idx").on(t.assignmentId),
   ]
+);
+
+/**
+ * A teacher's resume code (Jon, Oct 13 2026): posted on the board, it reopens
+ * any paused attempt on that teacher's assignments until it expires (one class
+ * period), so a paused test is finished in his room.
+ */
+export const resumeCodes = pgTable(
+  "resume_codes",
+  {
+    id: id(),
+    teacherId: uuid("teacher_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    code: text("code").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    ...timestamps,
+  },
+  (t) => [index("resume_codes_teacher_idx").on(t.teacherId)]
 );
 
 /**

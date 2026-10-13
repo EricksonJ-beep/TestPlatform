@@ -37,9 +37,10 @@ export default async function StudentAssignmentPage({
   const correctionsBlock =
     !a.retakesNeedUnlock && !!c && c.state !== "approved" && c.state !== "none";
   const retaking = a.state === "retake_required" || a.state === "retake_available";
+  // A paused or unfinished test stays reachable after the window closes (Finish later, Oct 13 2026).
   const canStart =
-    a.status === "open" &&
-    (a.state === "in_progress" || a.state === "not_started" || retaking) &&
+    (a.state === "in_progress" ||
+      (a.status === "open" && (a.state === "not_started" || retaking))) &&
     !correctionsBlock;
 
   return (
@@ -173,6 +174,7 @@ export default async function StudentAssignmentPage({
           assignmentId={a.id}
           needsCode={a.needsCode}
           resume={a.state === "in_progress"}
+          paused={a.state === "in_progress" && a.paused}
           timeLimitMinutes={a.timeLimitMinutes}
           label={retaking ? "Start retake" : "Start"}
           intro={

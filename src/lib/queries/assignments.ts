@@ -170,6 +170,8 @@ export type StudentAssignment = {
   status: AssignmentStatus;
   attemptsUsed: number;
   inProgressAttemptId: string | null;
+  /** The in-progress attempt is paused (Finish later, Oct 13 2026), or idle long enough to be. */
+  paused: boolean;
   /** How far the in-progress attempt is (answers saved out of questions served); null otherwise. */
   progress: { answered: number; total: number } | null;
   bestPercent: number | null;
@@ -229,6 +231,7 @@ export async function listStudentAssignments(
       inProgressAttemptId: sql<
         string | null
       >`(select a.id from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status = 'in_progress' order by a.number desc limit 1)`,
+      inProgressPaused: sql<boolean>`exists (select 1 from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status = 'in_progress' and (a.paused_at is not null or a.last_active_at < now() - interval '10 minutes'))`,
       inProgressAnswered: sql<number>`(select count(*)::int from ${schema.responses} r join ${schema.attempts} a on a.id = r.attempt_id where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status = 'in_progress' and r.answer is not null)`,
       inProgressTotal: sql<number>`(select coalesce(max(jsonb_array_length(a.question_set)), 0)::int from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status = 'in_progress')`,
       latestAttemptId: sql<
@@ -294,8 +297,10 @@ export async function listStudentAssignments(
           : null;
         let state: StudentCardState;
         if (status === "scheduled") state = "upcoming";
-        else if (status === "closed") state = "closed";
+        // A test still in progress stays reachable after the window closes: it pauses and is
+        // finished in class with the teacher's resume code (Finish later, Oct 13 2026).
         else if (r.inProgressAttemptId) state = "in_progress";
+        else if (status === "closed") state = "closed";
         else if (r.attemptsUsed > 0)
           state = cycleState({
             type: r.type,
@@ -323,6 +328,7 @@ export async function listStudentAssignments(
           retakeWindowClosed: retakeBy !== null && now >= retakeBy,
           firstPercent,
           final: finalPct === null ? null : { percent: finalPct, basis: finalBasis ?? null },
+          paused: !!r.inProgressAttemptId && !!r.inProgressPaused,
           progress: r.inProgressAttemptId
             ? { answered: Math.min(inProgressAnswered, inProgressTotal), total: inProgressTotal }
             : null,
