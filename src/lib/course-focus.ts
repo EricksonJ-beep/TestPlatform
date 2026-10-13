@@ -54,3 +54,19 @@ export function splitByCourse<T extends { courseId: string | null }>(
   const orphans = items.filter((i) => i.courseId === null);
   return { mine, orphans, elsewhere: items.length - mine.length - orphans.length };
 }
+
+/**
+ * A queue (grading, corrections) opened from the Dashboard's "Needs you" with `?assignment=`
+ * (Jon, Oct 13 2026): that assignment's items only, whatever course the sidebar is on, so the
+ * link always lands on the items it counted. Without it, the course split applies as before.
+ */
+export function focusQueue<T extends { courseId: string | null; assignmentId: string }>(
+  items: T[],
+  current: { id: string } | null,
+  assignmentId: string | null
+): { items: T[]; elsewhere: number } {
+  if (assignmentId)
+    return { items: items.filter((i) => i.assignmentId === assignmentId), elsewhere: 0 };
+  const split = splitByCourse(items, current);
+  return { items: [...split.mine, ...split.orphans], elsewhere: split.elsewhere };
+}

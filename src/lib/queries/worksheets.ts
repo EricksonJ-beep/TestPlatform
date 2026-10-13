@@ -38,7 +38,10 @@ async function targetsByWorksheet(ids: string[]): Promise<Map<string, TargetRef[
       sortOrder: schema.learningTargets.sortOrder,
     })
     .from(schema.practiceSetTargets)
-    .innerJoin(schema.practiceSets, eq(schema.practiceSetTargets.practiceSetId, schema.practiceSets.id))
+    .innerJoin(
+      schema.practiceSets,
+      eq(schema.practiceSetTargets.practiceSetId, schema.practiceSets.id)
+    )
     .innerJoin(
       schema.learningTargets,
       eq(schema.practiceSetTargets.learningTargetId, schema.learningTargets.id)
@@ -83,9 +86,7 @@ const eventCounts = {
   submits: sql<number>`(select count(*)::int from ${schema.worksheetEvents} e where e.worksheet_id = ${schema.worksheets.id} and e.event = 'submit')`,
   students: sql<number>`(select count(distinct e.student_id)::int from ${schema.worksheetEvents} e where e.worksheet_id = ${schema.worksheets.id} and e.student_id is not null)`,
   unmatched: sql<number>`(select count(distinct e.email)::int from ${schema.worksheetEvents} e where e.worksheet_id = ${schema.worksheets.id} and e.student_id is null)`,
-  lastEventAt: sql<
-    Date | null
-  >`(select max(e.occurred_at) from ${schema.worksheetEvents} e where e.worksheet_id = ${schema.worksheets.id})`,
+  lastEventAt: sql<Date | null>`(select max(e.occurred_at) from ${schema.worksheetEvents} e where e.worksheet_id = ${schema.worksheets.id})`,
 };
 
 /** Worksheets the teacher owns plus unregistered ones nobody owns yet (created by a first webhook). */
@@ -187,7 +188,10 @@ export async function getWorksheetDetail(worksheetId: string): Promise<Worksheet
       })
       .from(schema.worksheetEvents)
       .where(
-        and(eq(schema.worksheetEvents.worksheetId, worksheetId), isNull(schema.worksheetEvents.studentId))
+        and(
+          eq(schema.worksheetEvents.worksheetId, worksheetId),
+          isNull(schema.worksheetEvents.studentId)
+        )
       )
       .groupBy(schema.worksheetEvents.email)
       .orderBy(asc(schema.worksheetEvents.email)),
@@ -237,18 +241,18 @@ export async function listLinkableStudents(teacherId: string): Promise<LinkableS
     .orderBy(asc(schema.users.lastName), asc(schema.users.firstName));
 }
 
-/** Unmatched submissions across the teacher's worksheets, for the dashboard. */
-export async function countUnmatchedSubmissions(teacherId: string): Promise<number> {
+/**
+ * Worksheet emails still to match, for the Dashboard's "Needs you" (Jon, Oct 13 2026): one per
+ * email per worksheet, the way each worksheet's "n unmatched emails" counts them, and only on the
+ * teacher's own worksheets, where matching happens (a worksheet nobody owns is registered first).
+ */
+export async function countUnmatchedEmails(teacherId: string): Promise<number> {
   const [r] = await db
-    .select({ n: sql<number>`count(*)::int` })
+    .select({
+      n: sql<number>`count(distinct (${schema.worksheetEvents.worksheetId}, ${schema.worksheetEvents.email}))::int`,
+    })
     .from(schema.worksheetEvents)
     .innerJoin(schema.worksheets, eq(schema.worksheetEvents.worksheetId, schema.worksheets.id))
-    .where(
-      and(
-        or(eq(schema.worksheets.ownerId, teacherId), isNull(schema.worksheets.ownerId)),
-        isNull(schema.worksheetEvents.studentId),
-        eq(schema.worksheetEvents.event, "submit")
-      )
-    );
+    .where(and(eq(schema.worksheets.ownerId, teacherId), isNull(schema.worksheetEvents.studentId)));
   return r?.n ?? 0;
 }
