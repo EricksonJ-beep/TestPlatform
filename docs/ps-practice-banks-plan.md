@@ -72,6 +72,14 @@ When a set deals from a bank, draw across difficulty bands (1–2 easy, 3 medium
 **Done when** 20 deals from a 50-question bank all contain every band.
 
 ### Ticket P5 · Content: one batch per unit
+
+Progress: **Unit 1 ✅** (merged Oct 13 2026, PR #25; packs `ps-u1-lt1..4-practice`, revision 2 after an independent key audit). **Unit 2** in progress.
+
+Lessons from Unit 1:
+- Vercel **preview builds use the live database**, and the build step applies migrations and packs. Pushing a pack to any branch puts it in front of students before merge. Check a batch before its first push.
+- A pack applies once. To ship corrections, bump `revision` in pack.json: questions update in place by `external_id` (new versions), and the set and notes are found by title.
+- Run `npx tsx scripts/check-pack.ts content/packs/<name>` before committing, then an independent audit that recomputes every numeric key from the stem.
+- Numeric questions can't check a format, only a value: "write in scientific notation" needs multiple choice or fill-in, not numeric.
 For each unit, in order 1 → 6:
 1. Pull Jon's Drive materials for the unit (notes, slides, worksheets, tests) and note his vocabulary and methods (how he sets up conversions, which formula triangles, rounding rules, which polyatomic ion list).
 2. Write 50 questions per target (25 for U6.LT5) in the pack CSV: target, type, difficulty, Bloom's level, **hint**, explanation, tags.
