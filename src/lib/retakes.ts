@@ -69,6 +69,69 @@ export function planRetake(input: {
   return { required, optional, selected, locked, canStart: blocker === null, blocker };
 }
 
+/** One target of a student's summative retake picture, as the card, the start action, and the gradebook read it. */
+export type RetakeTarget = {
+  id: string;
+  code: string;
+  title: string;
+  percent: number;
+  required: boolean;
+  optedIn: boolean;
+  gate: GateFlags & { unlocked: boolean };
+};
+
+/** A stored `retake_gates` row, as far as the retake picture reads it. */
+export type StoredGate = GateFlags & {
+  learningTargetId: string;
+  optedIn: boolean;
+  unlockedAt: Date | null;
+};
+
+/**
+ * Rule: the targets are the ones on the counting score (per-target best), in the course's target
+ * order; required = below the threshold; flags come from the stored gate rows (a target with no
+ * row has every gate shut). In a course with CVTC rules (Jon, Oct 13 2026) the corrections gate is
+ * always open, even on rows written before the course turned the rules on. `getRetakeStatus` and
+ * the class gradebook (`getClassGradebook`) both build the picture here, so they agree.
+ */
+export function retakeTargets(input: {
+  perTarget: Record<string, { percent: number }>;
+  /** The targets' names; a target missing here is left out. */
+  names: { id: string; code: string; title: string; sortOrder: number }[];
+  gates: StoredGate[];
+  threshold: number;
+  cvtcRules: boolean;
+}): RetakeTarget[] {
+  const gateBy = new Map(input.gates.map((g) => [g.learningTargetId, g]));
+  return input.names
+    .filter((t) => t.id in input.perTarget)
+    .sort((a, b) => a.sortOrder - b.sortOrder || a.code.localeCompare(b.code))
+    .map((t) => {
+      const g = gateBy.get(t.id);
+      const percent = input.perTarget[t.id].percent;
+      const required = percent < input.threshold;
+      const optedIn = g?.optedIn ?? false;
+      const flags: GateFlags = {
+        correctionsOk: input.cvtcRules ? true : (g?.correctionsOk ?? false),
+        activityOk: g?.activityOk ?? false,
+        practiceOk: g?.practiceOk ?? false,
+      };
+      return {
+        id: t.id,
+        code: t.code,
+        title: t.title,
+        percent,
+        required,
+        optedIn,
+        gate: {
+          ...flags,
+          unlocked:
+            !!g?.unlockedAt || (input.cvtcRules && (required || optedIn) && gateOpen(flags)),
+        },
+      };
+    });
+}
+
 export const BLOCKER_TEXT: Record<RetakeBlocker, string> = {
   no_attempts: "You've used every attempt.",
   nothing_selected: "Every target is proficient. Choose a target to retake it.",

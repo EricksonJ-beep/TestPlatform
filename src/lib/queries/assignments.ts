@@ -5,17 +5,11 @@
 import { and, asc, desc, eq, inArray, or, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import type { FinalBasis } from "@/db/schema";
-import {
-  assignmentStatus,
-  needsUnlock,
-  nextAttemptAt,
-  retakeWindowEnd,
-  type AssignmentStatus,
-} from "@/lib/assignments";
-import { correctionsCapOn } from "@/lib/grading";
+import { assignmentStatus, nextAttemptAt, type AssignmentStatus } from "@/lib/assignments";
+import { deriveCardState, type StudentCardState } from "@/lib/card-state";
 import { getCorrectionsSummary, type CorrectionsSetSummary } from "@/lib/queries/corrections";
 import { getRetakeStatus, type RetakeStatus } from "@/lib/queries/retakes";
-import { correctionsRule, cycleState, type CorrectionsRule, type CycleState } from "@/lib/retakes";
+import type { CorrectionsRule } from "@/lib/retakes";
 
 export type AssignmentRow = {
   id: string;
@@ -139,7 +133,7 @@ export async function listAssignableAssessments(teacherId: string) {
 // Student side
 // ---------------------------------------------------------------------------
 
-export type StudentCardState = "upcoming" | "not_started" | "in_progress" | "closed" | CycleState;
+export type { StudentCardState } from "@/lib/card-state";
 
 export type StudentAssignment = {
   id: string;
@@ -296,54 +290,39 @@ export async function listStudentAssignments(
         cvtcRules: cvtcRaw,
         ...r
       }): StudentAssignment => {
-        const status = assignmentStatus(r, now);
         const next = nextAttemptAt(
           r.retakeWaitHours,
           lastSubmittedAt ? new Date(lastSubmittedAt) : null
         );
         const corrections = summaries.get(r.id) ?? null;
         const retake = retakes.get(r.id) ?? null;
-        const bestPercent = r.bestPercent === null ? null : Number(r.bestPercent);
-        // Corrections cap (Jon, Oct 8 2026): formatives only, never in a CVTC course (Oct 13 2026);
-        // the window counts from attempt 1.
         const cvtcRules = !!cvtcRaw;
-        const capped = correctionsCapOn({ type: r.type, correctionsCap, cvtcRules });
         const firstPercent = firstPercentRaw === null ? null : Number(firstPercentRaw);
-        const rule = correctionsRule({
-          type: r.type,
-          capped,
-          retakesNeedUnlock: r.retakesNeedUnlock,
-          cvtcRules,
-          firstPercent,
-          threshold: r.retakeThreshold,
-        });
         const finalPct = finalPercent === null ? null : Number(finalPercent);
-        const retakeBy = capped
-          ? retakeWindowEnd(retakeWindowDays, firstSubmittedAt ? new Date(firstSubmittedAt) : null)
-          : null;
-        let state: StudentCardState;
-        if (status === "scheduled") state = "upcoming";
-        // A test still in progress stays reachable after the window closes: it pauses and is
-        // finished in class with the teacher's resume code (Finish later, Oct 13 2026).
-        else if (r.inProgressAttemptId) state = "in_progress";
-        else if (status === "closed") state = "closed";
-        else if (r.attemptsUsed > 0)
-          state = cycleState({
+        // Who owes what (Jon, Oct 13 2026): the same rule the teacher's class gradebook reads.
+        const { status, state, capped, rule, retakeBy, windowClosed } = deriveCardState(
+          {
             type: r.type,
-            // Teacher unlocks (Oct 1) and CVTC rules (Oct 13 2026): the rule keeps corrections off the gate.
-            corrections: corrections?.state ?? "none",
-            rule,
-            attemptsUsed: r.attemptsUsed,
+            opensAt: r.opensAt,
+            closesAt: r.closesAt,
             attemptsAllowed: r.attemptsAllowed,
-            bestPercent: capped && finalPct !== null ? finalPct : bestPercent,
-            plan: retake?.plan ?? null,
-            needsUnlock: r.retakesNeedUnlock && needsUnlock(r.attemptsUsed, unlockedThrough),
-            correctionsCap: capped,
+            retakeThreshold: r.retakeThreshold,
+            retakesNeedUnlock: r.retakesNeedUnlock,
+            correctionsCap,
+            retakeWindowDays,
+            cvtcRules,
+            attemptsUsed: r.attemptsUsed,
+            inProgress: !!r.inProgressAttemptId,
+            unlockedThrough,
             firstPercent,
-            threshold: r.retakeThreshold,
-            windowClosed: retakeBy !== null && now >= retakeBy,
-          });
-        else state = "not_started";
+            firstSubmittedAt: firstSubmittedAt ? new Date(firstSubmittedAt) : null,
+            bestPercent: r.bestPercent === null ? null : Number(r.bestPercent),
+            finalPercent: finalPct,
+            corrections: corrections?.state ?? "none",
+            plan: retake?.plan ?? null,
+          },
+          now
+        );
         return {
           ...r,
           needsCode: !!accessCode,
@@ -352,7 +331,7 @@ export async function listStudentAssignments(
           corrections,
           retake,
           retakeBy,
-          retakeWindowClosed: retakeBy !== null && now >= retakeBy,
+          retakeWindowClosed: windowClosed,
           firstPercent,
           correctionsCap: capped,
           cvtcRules,

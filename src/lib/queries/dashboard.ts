@@ -19,7 +19,7 @@ import {
   type RequestBlocker,
   type StaleReason,
 } from "@/lib/needs-you";
-import { pausePoint, type PauseReason } from "@/lib/pause";
+import { currentPause, type PauseReason } from "@/lib/pause";
 import { listPendingVerifications, type PendingVerification } from "@/lib/queries/practice";
 import { getRetakeStatus } from "@/lib/queries/retakes";
 import { countUnmatchedEmails } from "@/lib/queries/worksheets";
@@ -54,12 +54,10 @@ export type PausedAttempt = {
   askedAt: Date | null;
 };
 
-const PAUSE_REASONS: PauseReason[] = ["student", "idle", "closed"];
-
 /**
  * Every paused test on the teacher's assignments (Finish later, Jon Oct 13 2026), oldest pause
- * first. Paused is worked out in code with `pausePoint` (research notes A1): a stored pause, or an
- * open attempt that has gone idle or outlived its window but hasn't been touched since.
+ * first. Paused is worked out in code with `currentPause` (research notes A1): a stored pause, or
+ * an open attempt that has gone idle or outlived its window but hasn't been touched since.
  */
 export async function listPausedAttempts(
   teacherId: string,
@@ -95,13 +93,7 @@ export async function listPausedAttempts(
     );
   const out: PausedAttempt[] = [];
   for (const r of rows) {
-    const stored = r.pausedAt
-      ? {
-          at: r.pausedAt,
-          reason: PAUSE_REASONS.find((x) => x === r.pauseReason) ?? ("student" as const),
-        }
-      : null;
-    const point = stored ?? pausePoint(r, r.closesAt, now);
+    const point = currentPause(r, r.closesAt, now);
     if (!point) continue;
     out.push({
       attemptId: r.attemptId,

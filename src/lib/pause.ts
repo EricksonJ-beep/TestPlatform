@@ -67,6 +67,28 @@ export function pausePoint(
   return due;
 }
 
+const PAUSE_REASONS: PauseReason[] = ["student", "idle", "closed"];
+
+/**
+ * The pause an open attempt is in right now: the stored one, or else the one `pausePoint` says it
+ * has already reached but nothing has written yet (research notes A1: worked out in code, never
+ * with an SQL idle check). Null while the test is live. The Dashboard's paused list and the class
+ * gradebook both read it.
+ */
+export function currentPause(
+  a: Pausable & { pauseReason: string | null },
+  closesAt: Date | null,
+  now: Date
+): { at: Date; reason: PauseReason } | null {
+  if (a.status !== "in_progress") return null;
+  if (a.pausedAt)
+    return {
+      at: a.pausedAt,
+      reason: PAUSE_REASONS.find((x) => x === a.pauseReason) ?? "student",
+    };
+  return pausePoint(a, closesAt, now);
+}
+
 /**
  * The time-limit minutes still owed when a test pauses because its window
  * closed. The stored deadline was capped at the close, so the time limit is
