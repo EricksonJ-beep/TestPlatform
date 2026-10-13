@@ -9,7 +9,7 @@
 import { and, asc, eq, inArray, isNull } from "drizzle-orm";
 import { db, schema } from "@/db";
 import type { CompletionEvidence, ServedQuestion } from "@/db/types";
-import { drawFromPool, type PoolQuestion } from "@/lib/assessments/serve";
+import { dealByDifficulty, type PoolQuestion } from "@/lib/assessments/serve";
 import { recomputeGates, recomputeGatesForStudent } from "@/lib/gates";
 import {
   correctAnswerText,
@@ -39,10 +39,12 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
+type DealQuestion = PoolQuestion & { difficulty: number };
+
 /** Attach each question's target ids; the draw uses them to label the served item. */
 async function withTargets(
-  rows: { questionId: string; points: number; stimulusId: string | null }[]
-): Promise<PoolQuestion[]> {
+  rows: { questionId: string; points: number; stimulusId: string | null; difficulty: number }[]
+): Promise<DealQuestion[]> {
   if (rows.length === 0) return [];
   const tRows = await db
     .select({
@@ -65,12 +67,13 @@ async function withTargets(
 }
 
 /** Live questions in a pool with what a draw needs. */
-export async function loadPoolQuestions(poolId: string): Promise<PoolQuestion[]> {
+export async function loadPoolQuestions(poolId: string): Promise<DealQuestion[]> {
   const rows = await db
     .select({
       questionId: schema.questions.id,
       points: schema.questions.points,
       stimulusId: schema.questions.stimulusId,
+      difficulty: schema.questions.difficulty,
     })
     .from(schema.poolQuestions)
     .innerJoin(
@@ -89,12 +92,13 @@ export async function loadPoolQuestions(poolId: string): Promise<PoolQuestion[]>
  * set can deal from a whole bank). Archived rows, old versions among them, stay
  * out, so an edited question is served in its newest form.
  */
-export async function loadBankQuestions(bankId: string): Promise<PoolQuestion[]> {
+export async function loadBankQuestions(bankId: string): Promise<DealQuestion[]> {
   const rows = await db
     .select({
       questionId: schema.questions.id,
       points: schema.questions.points,
       stimulusId: schema.questions.stimulusId,
+      difficulty: schema.questions.difficulty,
     })
     .from(schema.questions)
     .where(and(eq(schema.questions.bankId, bankId), eq(schema.questions.isArchived, false)));
@@ -103,9 +107,10 @@ export async function loadBankQuestions(bankId: string): Promise<PoolQuestion[]>
 
 /**
  * Start (or resume) a practice attempt. Rule: a fixed set serves every
- * question in the teacher's order; a pool or bank set draws `drawCount`,
- * preferring questions this student hasn't seen on earlier attempts of the
- * set, so every attempt is a fresh hand until the source runs out. Ordering
+ * question in the teacher's order; a pool or bank set deals `drawCount`
+ * across difficulty (easy → medium → hard, see dealByDifficulty), preferring
+ * questions this student hasn't seen on earlier attempts of the set, so every
+ * attempt is a fresh hand until the source runs out. Ordering
  * and matching options are shuffled; choice options keep the author's order.
  */
 export async function startPracticeAttempt(
@@ -162,7 +167,7 @@ export async function startPracticeAttempt(
       ),
     });
     const avoid = new Set(prior.flatMap((p) => p.questionSet.map((q) => q.questionId)));
-    picked = drawFromPool(questions, set.drawCount ?? questions.length, {
+    picked = dealByDifficulty(questions, set.drawCount ?? questions.length, {
       drawStimulusGroups: pool?.drawStimulusGroups ?? false,
       rng: Math.random,
       avoid,

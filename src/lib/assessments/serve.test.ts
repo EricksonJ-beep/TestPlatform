@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   buildQuestionSet,
+  dealByDifficulty,
+  difficultyBand,
   drawFromPool,
   nominalPoints,
   seededRng,
@@ -119,5 +121,58 @@ describe("buildQuestionSet", () => {
 
   it("nominal points count fixed items and expected pool draws", () => {
     expect(nominalPoints(sections)).toBe(10);
+  });
+});
+
+describe("dealByDifficulty", () => {
+  // A 50-question bank: 15 easy (1–2), 20 medium (3), 15 hard (4–5).
+  const bank = [
+    ...Array.from({ length: 15 }, (_, i) => ({ ...pq(`e${i}`), difficulty: 1 + (i % 2) })),
+    ...Array.from({ length: 20 }, (_, i) => ({ ...pq(`m${i}`), difficulty: 3 })),
+    ...Array.from({ length: 15 }, (_, i) => ({ ...pq(`h${i}`), difficulty: 4 + (i % 2) })),
+  ];
+  const diff = new Map(bank.map((q) => [q.questionId, q.difficulty]));
+  const bands = (ids: string[]) => ids.map((id) => difficultyBand(diff.get(id)!));
+
+  it("deals 3 easy, 4 medium, 3 hard out of 10, in that order, every time", () => {
+    for (let seed = 1; seed <= 20; seed++) {
+      const ids = dealByDifficulty(bank, 10, {
+        drawStimulusGroups: false,
+        rng: seededRng(seed),
+      }).map((q) => q.questionId);
+      expect(new Set(ids).size).toBe(10);
+      expect(bands(ids)).toEqual([
+        ...Array(3).fill("easy"),
+        ...Array(4).fill("medium"),
+        ...Array(3).fill("hard"),
+      ]);
+    }
+  });
+
+  it("prefers questions not seen before, in every band", () => {
+    const seen = new Set(["e0", "e1", "e2", "m0", "h0"]);
+    const ids = dealByDifficulty(bank, 10, {
+      drawStimulusGroups: false,
+      rng: seededRng(3),
+      avoid: seen,
+    }).map((q) => q.questionId);
+    expect(ids.filter((id) => seen.has(id))).toEqual([]);
+  });
+
+  it("fills a short band from the others; an all-medium bank still deals the full count", () => {
+    const noEasy = bank.filter((q) => q.difficulty > 2);
+    const ids = dealByDifficulty(noEasy, 10, {
+      drawStimulusGroups: false,
+      rng: seededRng(5),
+    }).map((q) => q.questionId);
+    expect(new Set(ids).size).toBe(10);
+    expect(bands(ids).includes("easy")).toBe(false);
+    const flat = Array.from({ length: 12 }, (_, i) => ({ ...pq(`x${i}`), difficulty: 3 }));
+    expect(
+      dealByDifficulty(flat, 10, { drawStimulusGroups: false, rng: seededRng(1) })
+    ).toHaveLength(10);
+    expect(
+      dealByDifficulty(flat, 20, { drawStimulusGroups: false, rng: seededRng(1) })
+    ).toHaveLength(12);
   });
 });
