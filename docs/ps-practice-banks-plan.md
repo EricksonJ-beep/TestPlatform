@@ -73,7 +73,7 @@ When a set deals from a bank, draw across difficulty bands (1–2 easy, 3 medium
 
 ### Ticket P5 · Content: one batch per unit
 
-Progress: **Unit 1 ✅** (merged Oct 13 2026, PR #25; packs `ps-u1-lt1..4-practice`, revision 2 after an independent key audit). **Unit 2 ✅** (packs `ps-u2-lt1..4-practice`, audited before first push). **Unit 3 ✅** (packs `ps-u3-lt1..4-practice`; formula fill-ins are case-sensitive). **Unit 4 ✅** (packs `ps-u4-lt1..4-practice`, Physical Science B; graphs as text tables).
+Progress: **Unit 1 ✅** (merged Oct 13 2026, PR #25; packs `ps-u1-lt1..4-practice`, revision 2 after an independent key audit). **Unit 2 ✅** (packs `ps-u2-lt1..4-practice`, audited before first push). **Unit 3 ✅** (packs `ps-u3-lt1..4-practice`; formula fill-ins are case-sensitive). **Unit 4 ✅** (packs `ps-u4-lt1..4-practice`, Physical Science B; graphs as text tables). **Unit 5 ✅** (packs `ps-u5-lt1..4-practice`; g = 9.8; momentum only as collisions and recoil in LT4).
 
 Lessons from Unit 1:
 - Vercel **preview builds use the live database**, and the build step applies migrations and packs. Pushing a pack to any branch puts it in front of students before merge. Check a batch before its first push.

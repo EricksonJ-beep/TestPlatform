@@ -1,0 +1,27 @@
+{
+  "name": "ps-u5-lt1-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science B",
+  "unit": "Unit 5 · Forces",
+  "bank": "PS · U5.LT1 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U5.LT1 Practice: Identifying Forces",
+    "description": "Practice naming the forces on an object, telling mass from weight, and calculating weight with W = m × g.",
+    "drawCount": 10,
+    "targets": ["U5.LT1"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U5.LT1 Relearning: Identifying Forces",
+    "content": "**What you need to be able to do:** I can identify forces acting on an object.\n\n**Think of a backpack on your shoulder.** You feel it pulling down on you (that's gravity), and you feel your shoulder strap holding it up. Every object is like that backpack: something is always pulling or pushing on it, even when it is sitting still. Your job is to name each push or pull and say which way it points.\n\n**A force is a push or a pull.** Forces are measured in **newtons (N)**. One newton is the force needed to give a 1-kg mass an acceleration of 1 m/s^{2} (1 N = 1 kg·m/s^{2}).\n\n**The named forces.** **Gravity (Fg)** is a long-range pull toward Earth; it points **down**. **Normal force (FN)** is the support force from a surface; it is always **perpendicular** to the surface (up from a floor or table). **Applied force (Fapp)** is a push or pull a person or object puts on, like pulling a wagon. **Friction (Ff)** is the force between two surfaces; it opposes motion, so it points **opposite** the direction of motion. **Air resistance (Fair)** is friction from air; it also points opposite the motion (up on a falling object). **Tension (T)** is the force from a string, rope, or cable; it pulls along the rope (up for something hanging).\n\n**Types of friction.** **Static** friction: the surfaces are not moving (a desk that won't budge). **Sliding** friction: one surface slides across another (a box pushed across the floor). **Rolling** friction: a wheel or ball rolls (bike tires on the road).\n\n**Mass vs. weight.** **Mass** is the amount of matter, in kg. **Weight** is the force of gravity on an object, in N. Mass does not change in outer space, but weight does, because g changes. **W = m × g**, with g = 9.8 m/s^{2} on Earth (Moon 1.6, Mars 3.7, Jupiter 24.8 m/s^{2}). To find mass, rearrange: **m = W ÷ g**.\n\n**Worked example 1:** What is the weight of a 72 kg student on Earth? Formula: W = m × g. Set up: W = 72 kg × 9.8 m/s^{2}. Answer: **705.6 N**.\n\n**Worked example 2:** A dresser weighs 539 N on Earth. What is its mass? Formula: m = W ÷ g. Set up: m = 539 N ÷ 9.8 m/s^{2}. Answer: **55 kg**. On the Moon its mass is still 55 kg.\n\n**Worked example 3:** A 185 kg rover lands on Mars (g = 3.7 m/s^{2}). Which forces act on it while it sits still on level ground, and what is its weight there? Forces: Fg down and FN up (nothing pushing it sideways, so no applied force or friction). Formula: W = m × g. Set up: W = 185 kg × 3.7 m/s^{2}. Answer: **684.5 N**.\n\n**Watch out for:** dividing when you should multiply (weight is always a bigger number than mass on Earth), swapping mass and weight or their units (kg vs. N), using 9.8 on another planet, adding a \"force of the kick\" or \"force of motion\" after the push has stopped, and pointing friction the same way the object moves.",
+    "prompts": [
+      "A wagon is pulled to the right across a sidewalk with a rope. List every force acting on the wagon and the direction each one points.",
+      "Explain the difference between mass and weight, and tell what happens to each when an astronaut goes from Earth to Mars.",
+      "Calculate the weight of a 64 kg student on Earth (g = 9.8 m/s^{2}). Show the Formula, Set up, and Answer with units.",
+      "Name the type of friction (static, sliding, or rolling) for: a parked bike that won't move when you nudge it, a sled sliding down a snowy path, and a rolling basketball. Explain each choice."
+    ],
+    "targets": ["U5.LT1"]
+  }
+}

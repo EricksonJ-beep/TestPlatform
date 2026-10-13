@@ -1,0 +1,27 @@
+{
+  "name": "ps-u5-lt2-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science B",
+  "unit": "Unit 5 · Forces",
+  "bank": "PS · U5.LT2 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U5.LT2 Practice: Free-Body Diagrams and Net Force",
+    "description": "Practice labeling free-body diagrams, reading arrow lengths, and calculating net force and normal force.",
+    "drawCount": 10,
+    "targets": ["U5.LT2"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U5.LT2 Relearning: Free-Body Diagrams and Net Force",
+    "content": "**What you need to be able to do:** I can calculate forces acting on an object using a free-body diagram (FBD).\n\n**Think of tug-of-war.** If both teams pull equally hard, the rope does not move: the pulls cancel. If one team pulls harder, the rope moves toward that team, and only the *difference* between the teams matters. Every force problem works like that: forces on the same side team up (add), forces on opposite sides fight (subtract), and the winner sets the direction.\n\n**Key ideas.** A **free-body diagram** shows only the forces acting on one object, with arrows for the relative size (length) and direction of each force. Labels: **Fg** = gravity (weight, points down), **FN** = normal force (points up from a level surface), **Fapp** = applied force (a push or pull), **Ff** = friction (opposite the motion), **Fair** = air resistance (opposite the motion, up for a falling object), **T** = tension (a rope or cable, up for a hanging object).\n\n**Arrow lengths tell the story.** Constant velocity: Fapp and Ff are the **same length**. Speeding up: Fapp is **longer** than Ff. Slowing down: Ff is longer than the forward arrow, or there is no forward force at all (coasting). Falling and speeding up: Fg is longer than Fair.\n\n**Net force** is the total force after the arrows are combined. Same direction: **add**. Opposite directions: **subtract**, and the net force points toward the bigger side. Do horizontal and vertical **separately**. **Type A** problems are balanced: net force = 0 N, so the object is at rest or moving at constant velocity (Newton's 1st law). **Type B** problems have a net force, so the object accelerates (F = ma). For an object at rest on a level surface, **FN = Fg = m × g**, with g = 9.8 m/s².\n\n**Worked example 1:** Storm pulls a wagon right with 70 N and friction pulls left with 25 N. Formula: Fnet = Fapp − Ff. Set up: Fnet = 70 N − 25 N. Answer: **45 N to the right**, so the wagon speeds up (Type B).\n\n**Worked example 2:** A 10 kg box sits at rest on a level floor. What is the normal force? Formula: FN = Fg = m × g. Set up: FN = 10 kg × 9.8 m/s². Answer: **98 N up**.\n\n**Worked example 3:** An 80 kg skydiver falls at a constant velocity. How big is the air resistance? Constant velocity means Type A, so Fair = Fg. Formula: Fair = m × g. Set up: Fair = 80 kg × 9.8 m/s². Answer: **784 N up**.\n\n**Watch out for:** adding forces that point in opposite directions (20 N up and 20 N down is 0 N, not 40 N), drawing a longer forward arrow for constant velocity, giving a thrown or kicked object a \"force from the kick\" after it leaves your foot, dividing by 9.8 when you should multiply to get weight, and mixing horizontal forces into the normal force.",
+    "prompts": [
+      "Describe the FBD for a lamp hanging at rest from one cord: name each force, its label, its direction, and how the arrow lengths compare.",
+      "Jacob pushes a box right with 55 N, Addy pushes it right with 20 N, and friction is 40 N left. Find the net force and its direction using Formula / Set up / Answer.",
+      "A 4 kg backpack sits at rest on a level desk. Find the normal force (g = 9.8 m/s²) and explain why it equals the backpack's weight.",
+      "Explain how the Fapp and Ff arrows change between a car driving at constant speed on Hwy 29 and the same car speeding up to merge."
+    ],
+    "targets": ["U5.LT2"]
+  }
+}
