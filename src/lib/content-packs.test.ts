@@ -64,11 +64,12 @@ beforeAll(async () => {
     .values([
       { courseId: psB.id, name: "Unit 4 · Motion", sortOrder: 0 },
       { courseId: psB.id, name: "Unit 5 · Forces", sortOrder: 1 },
+      { courseId: psB.id, name: "Unit 6 · Work and Efficiency", sortOrder: 2 },
     ])
     .returning();
   await db.insert(schema.learningTargets).values(
     psBUnits.flatMap((unit, i) =>
-      [1, 2, 3, 4].map((n) => ({
+      (i === 2 ? [1, 2, 3, 4, 5] : [1, 2, 3, 4]).map((n) => ({
         courseId: psB.id,
         unitId: unit.id,
         code: `U${i + 4}.LT${n}`,
@@ -128,15 +129,16 @@ describe("content packs", () => {
   });
   it("applies each pack once: bank, questions with repo-hosted pictures, published assessment, assignment", async () => {
     const first = await applyAllPacks();
-    // Physical Science Units 1–5 practice packs (Oct 13 2026): 50 questions, a set, and notes each.
-    for (const name of [1, 2, 3, 4, 5].flatMap((u) =>
-      [1, 2, 3, 4].map((n) => `ps-u${u}-lt${n}-practice`)
-    )) {
+    // Physical Science Units 1–6 practice packs (Oct 13 2026): 50 questions, a set, and notes each;
+    // U6.LT5 (Rube Goldberg) is the smaller 25-question bank with a planning guide.
+    for (const name of [1, 2, 3, 4, 5, 6]
+      .flatMap((u) => [1, 2, 3, 4].map((n) => `ps-u${u}-lt${n}-practice`))
+      .concat("ps-u6-lt5-practice")) {
       const out = first.find((o) => o.name === name)!;
       expect(out.status).toBe("applied");
       if (out.status === "applied")
         expect(out.summary).toMatchObject({
-          questions: 50,
+          questions: name === "ps-u6-lt5-practice" ? 25 : 50,
           practiceSet: { published: true },
           activity: { published: true },
           errors: [],

@@ -1,0 +1,27 @@
+{
+  "name": "ps-u6-lt1-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science B",
+  "unit": "Unit 6 · Work and Efficiency",
+  "bank": "PS · U6.LT1 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U6.LT1 Practice: Calculating Work",
+    "description": "Practice using W = F × d, finding weight with m × 9.8 for lifting problems, spotting when no work is done, and using Work in = Work out for ideal machines.",
+    "drawCount": 10,
+    "targets": ["U6.LT1"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U6.LT1 Relearning: Calculating Work",
+    "content": "**What you need to be able to do:** I can calculate work.\n\n**Think of a paycheck.** In science, you only get paid for work when the job actually gets done. Push on a stuck car until you are tired, and if it never moves, your paycheck is 0 J. Work is a force that moves an object through a distance.\n\n**Work = force × distance.** The formula is **W = F × d**. Force (F) is in **newtons (N)**, distance (d) is in **meters (m)**, and work (W) is in **joules (J)**. One joule is one newton-meter: **1 J = 1 N·m**. To find the force, divide: **F = W ÷ d**. To find the distance, divide: **d = W ÷ F**. If a distance is in cm, change it to m first (100 cm = 1 m).\n\n**Two conditions for work.** (1) The object must **move**. (2) The force must be **in the direction of the motion**. Pushing on a wall that doesn't move does no work. Carrying a box across the room at the same height: your upward holding force does no work, because the force points up while the box moves sideways.\n\n**Lifting.** To lift something, your force has to equal its **weight**. If the problem gives the mass in kg, change it to newtons first: **weight = m × 9.8** (g = 9.8 m/s^{2}). Then multiply the weight by the height.\n\n**Machines.** A **machine** makes work easier by doing one of three things: it **changes the direction** of a force, **increases the force**, or **increases the distance (or speed)** of a force. No machine can increase both the force and the distance at the same time, and **a machine does not reduce the amount of work**. In an **ideal** machine, **Work in = Work out**, so **Fe × De = Fr × Dr** (effort force × effort distance = resistance force × resistance distance). In a real machine, friction turns some work into heat, so work out is always less than work in. The six simple machines are the **lever, pulley, wheel and axle, wedge, screw, and inclined plane**.\n\n**Worked example 1:** Group B pushes a cart across the gym with a force of 55 N for 8 m. How much work do they do? Formula: W = F × d. Set up: W = 55 N × 8 m. Answer: **440 J**.\n\n**Worked example 2:** Jae lifts a 24 kg box onto a shelf 1.2 m high. How much work does he do? Step 1: weight = m × 9.8 = 24 kg × 9.8 m/s^{2} = 235.2 N. Formula: W = F × d. Set up: W = 235.2 N × 1.2 m. Answer: **282.24 J** (about 282.2 J).\n\n**Worked example 3:** An ideal lever lifts a 720 N rock 0.25 m when Maya pushes her end down 1.5 m. What force does she push with? Formula: Fe × De = Fr × Dr, so Fe = (Fr × Dr) ÷ De. Set up: Fe = (720 N × 0.25 m) ÷ 1.5 m = 180 J ÷ 1.5 m. Answer: **120 N**. Less force, longer distance, same work.\n\n**Watch out for:** using kg as if it were a force (multiply by 9.8 first), adding or dividing instead of multiplying (W = F × d), giving work the unit N or N/m instead of J, counting work when nothing moves or when the force is sideways to the motion, using an object's weight when someone is pushing it sideways, and forgetting to change cm to m.",
+    "prompts": [
+      "Jacob pushes a wheeled toolbox across the shop floor with a force of 65 N for 14 m. Calculate the work. Show the Formula, Set up, and Answer with units.",
+      "A 9 kg toolbox is lifted 1.6 m onto a workbench. Calculate the work done (g = 9.8 m/s^{2}). Show the Formula, Set up, and Answer with units.",
+      "Explain why no work is done on a box by your upward holding force when you carry it across the room at the same height, even though your arms get tired. Use both conditions for work.",
+      "A ramp lets you push a heavy box with less force than lifting it straight up. Explain what has to increase, and why the ramp does not reduce the amount of work you do."
+    ],
+    "targets": ["U6.LT1"]
+  }
+}
