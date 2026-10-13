@@ -1,9 +1,11 @@
 import Link from "next/link";
-import { Check, Layers, Lock, X } from "lucide-react";
+import { Check, Layers, Lock, Shuffle, X } from "lucide-react";
 import { cn } from "cn";
 import { groupByUnit } from "@/lib/practice-groups";
+import type { CustomPracticeCourse } from "@/lib/custom-practice";
 import type { NeededTarget, StudentPractice } from "@/lib/queries/practice";
 import { EmptyState } from "@/components/empty-state";
+import { Button } from "@/components/ui/button";
 import { TargetChip } from "@/components/targets/target-chip";
 import { ActivityCard, PracticeSetCard } from "./practice-cards";
 
@@ -12,7 +14,14 @@ import { ActivityCard, PracticeSetCard } from "./practice-cards";
  * retake" first, with a three-item checklist per target, then everything
  * published on their courses, always open, in the teacher's order.
  */
-export function PracticeTab({ practice }: { practice: StudentPractice }) {
+export function PracticeTab({
+  practice,
+  buildable = [],
+}: {
+  practice: StudentPractice;
+  /** Courses with questions open for "Build my practice" (Jon, Oct 13 2026). */
+  buildable?: CustomPracticeCourse[];
+}) {
   const { needed, sets, activities } = practice;
   const items = [
     ...activities.map((a) => ({ kind: "activity" as const, sortOrder: a.sortOrder, item: a })),
@@ -46,7 +55,11 @@ export function PracticeTab({ practice }: { practice: StudentPractice }) {
         </section>
       ))}
 
-      {items.length === 0 ? (
+      {buildable.map((c) => (
+        <BuildCard key={c.id} course={c} />
+      ))}
+
+      {items.length === 0 && buildable.length > 0 ? null : items.length === 0 ? (
         <div className="rounded-lg border border-border bg-card">
           <EmptyState
             icon={Layers}
@@ -90,6 +103,46 @@ export function PracticeTab({ practice }: { practice: StudentPractice }) {
         })
       )}
     </div>
+  );
+}
+
+/** "Build my practice": pick a unit and targets, get a fresh set every time. */
+function BuildCard({ course }: { course: CustomPracticeCourse }) {
+  return (
+    <section
+      className="flex flex-col gap-3 rounded-lg border border-brand/40 bg-card px-4 py-4"
+      aria-label={`Build my practice · ${course.name}`}
+      data-build-card={course.id}
+    >
+      <div className="flex flex-wrap items-center gap-3">
+        <Shuffle className="size-5 text-brand-deep" aria-hidden />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <h2 className="text-base font-medium">Build my practice · {course.name}</h2>
+          <p className="text-sm text-muted-foreground">
+            Pick a unit and the learning targets you want. New questions every time.
+          </p>
+        </div>
+        <Button
+          nativeButton={false}
+          render={<Link href={`/student/practice/build?course=${course.id}`} />}
+        >
+          Build practice
+        </Button>
+      </div>
+      <ul className="flex flex-wrap gap-2" aria-label="Jump to a unit">
+        {course.units.map((u) => (
+          <li key={u.id ?? "other"}>
+            <Link
+              href={`/student/practice/build?course=${course.id}${u.id ? `&unit=${u.id}` : ""}`}
+              className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground"
+            >
+              {u.name}
+              <span className="tabular">· {u.targets.length}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

@@ -1,0 +1,64 @@
+{
+  "name": "anatomy-u4-practice-bank",
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Anatomy and Physiology",
+  "unit": "Unit 4",
+  "bank": "AP · Unit 4 · Practice",
+  "openPractice": true,
+  "targets": [
+    {
+      "unit": "Unit 4",
+      "code": "U4.LT1",
+      "title": "Functions of the endocrine system",
+      "description": "9.a Explain the general functions and physiological roles of the endocrine system."
+    },
+    {
+      "unit": "Unit 4",
+      "code": "U4.LT2",
+      "title": "Hormone types and regulation",
+      "description": "9.b Differentiate major hormone types and describe how hormonal secretion is regulated."
+    },
+    {
+      "unit": "Unit 4",
+      "code": "U4.LT3",
+      "title": "Hypothalamus and pituitary",
+      "description": "9.c Describe the functional relationship between the hypothalamus, pituitary gland, and other endocrine organs."
+    },
+    {
+      "unit": "Unit 4",
+      "code": "U4.LT4",
+      "title": "Major hormones and their disorders",
+      "description": "9.d Explain the actions of major hormones and the consequences of their hypo- and hypersecretion."
+    },
+    {
+      "unit": "Unit 4",
+      "code": "U4.LT5",
+      "title": "Endocrine vs. nervous control and stress",
+      "description": "9.e Compare endocrine and nervous system regulation of homeostasis, including their coordinated responses to stress."
+    },
+    {
+      "unit": "Unit 4",
+      "code": "U4.LT6",
+      "title": "The heart and the pathway of blood",
+      "description": "10.a Describe the structure and function of the heart and trace the pathway of blood through the cardiovascular system."
+    },
+    {
+      "unit": "Unit 4",
+      "code": "U4.LT7",
+      "title": "Blood vessels and blood flow",
+      "description": "10.b Compare the major types of blood vessels and explain mechanisms that regulate blood flow and venous return."
+    },
+    {
+      "unit": "Unit 4",
+      "code": "U4.LT8",
+      "title": "Blood composition and clotting",
+      "description": "10.c Describe the composition and functions of blood, including formed elements, red blood cell production, hemostasis, and coagulation."
+    },
+    {
+      "unit": "Unit 4",
+      "code": "U4.LT9",
+      "title": "Blood typing",
+      "description": "10.d Explain the principles of blood typing and transfusion compatibility within the ABO and Rh systems."
+    }
+  ]
+}

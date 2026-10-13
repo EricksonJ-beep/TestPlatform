@@ -1,0 +1,52 @@
+{
+  "name": "anatomy-u6-practice-bank",
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Anatomy and Physiology",
+  "unit": "Unit 6",
+  "bank": "AP · Unit 6 · Practice",
+  "openPractice": true,
+  "targets": [
+    {
+      "unit": "Unit 6",
+      "code": "U6.LT1",
+      "title": "Anatomy of the urinary tract",
+      "description": "13.a Illustrate the gross anatomy of the urinary tract."
+    },
+    {
+      "unit": "Unit 6",
+      "code": "U6.LT2",
+      "title": "Functions of the urinary system",
+      "description": "13.b Describe general functions of the urinary system and its components."
+    },
+    {
+      "unit": "Unit 6",
+      "code": "U6.LT3",
+      "title": "Urine formation",
+      "description": "13.c Explain the functional processes of urine formation, including filtration, reabsorption, secretion, and excretion."
+    },
+    {
+      "unit": "Unit 6",
+      "code": "U6.LT4",
+      "title": "Reproductive anatomy and functions",
+      "description": "14.a Describe the parts and general functions of the male and female reproductive system."
+    },
+    {
+      "unit": "Unit 6",
+      "code": "U6.LT5",
+      "title": "Reproductive hormones",
+      "description": "14.b Explain the way in which hormones control the activities of the reproductive organs and the development of secondary sexual characteristics."
+    },
+    {
+      "unit": "Unit 6",
+      "code": "U6.LT6",
+      "title": "Male and female similarities",
+      "description": "14.c Describe the similarities between the male and female reproductive system."
+    },
+    {
+      "unit": "Unit 6",
+      "code": "U6.LT7",
+      "title": "Diploid and haploid cycle",
+      "description": "14.d Explain the diploid and haploid cycle in human reproduction."
+    }
+  ]
+}

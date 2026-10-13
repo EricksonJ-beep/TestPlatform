@@ -14,7 +14,7 @@ import { StimulusPanel } from "@/components/stimulus/stimulus-panel";
 import { TargetChip } from "@/components/targets/target-chip";
 import { Button } from "@/components/ui/button";
 import { AnswerInput, isAnswered } from "../../attempt/[attemptId]/answer-input";
-import { answerPractice, startPractice } from "../actions";
+import { answerPractice, startBuiltPractice, startPractice } from "../actions";
 
 type Answered = { answer: Answer; feedback: PracticeFeedback };
 
@@ -68,7 +68,10 @@ export function PracticeRunner({ payload }: { payload: PracticeRunnerPayload }) 
 
   async function again() {
     setRestarting(true);
-    const r = await startPractice(set.id);
+    // A built practice deals a fresh hand on the same targets; a set starts a new attempt.
+    const r = payload.custom
+      ? await startBuiltPractice(payload.custom)
+      : await startPractice(set.id);
     if (r.ok) router.push(`/student/practice/${r.data.attemptId}`);
     else {
       setRestarting(false);
@@ -145,7 +148,9 @@ export function PracticeRunner({ payload }: { payload: PracticeRunnerPayload }) 
             </dl>
             <p className="text-sm text-muted-foreground">
               {progress.complete
-                ? "This counts as a completed practice set. Try it again any time; your best score is what your teacher sees."
+                ? payload.custom
+                  ? "Nice work. Practice again for a new set of questions on the same targets, or build a different one."
+                  : "This counts as a completed practice set. Try it again any time; your best score is what your teacher sees."
                 : "Finish every question to complete the set."}
             </p>
             <div className="flex flex-wrap gap-2">
@@ -168,6 +173,18 @@ export function PracticeRunner({ payload }: { payload: PracticeRunnerPayload }) 
               >
                 Review answers
               </Button>
+              {payload.custom ? (
+                <Button
+                  size="lg"
+                  variant="outline"
+                  nativeButton={false}
+                  render={
+                    <Link href={`/student/practice/build?course=${payload.custom.courseId}`} />
+                  }
+                >
+                  Pick other targets
+                </Button>
+              ) : null}
               <Button
                 size="lg"
                 variant="ghost"

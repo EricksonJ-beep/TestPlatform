@@ -132,6 +132,8 @@ export type BankDetail = {
   ownerFirstName: string;
   ownerLastName: string;
   isArchived: boolean;
+  /** Students may be dealt its questions in "Build my practice". */
+  openPractice: boolean;
 };
 
 export async function getBank(bankId: string): Promise<BankDetail | null> {
@@ -146,6 +148,7 @@ export async function getBank(bankId: string): Promise<BankDetail | null> {
       ownerFirstName: schema.users.firstName,
       ownerLastName: schema.users.lastName,
       isArchived: schema.questionBanks.isArchived,
+      openPractice: schema.questionBanks.openPractice,
     })
     .from(schema.questionBanks)
     .leftJoin(schema.courses, eq(schema.questionBanks.courseId, schema.courses.id))

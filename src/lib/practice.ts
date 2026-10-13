@@ -195,7 +195,24 @@ export async function startPracticeAttempt(
     }));
   }
   if (picked.length === 0) throw new Error("empty");
+  const questionSet = await serveQuestions(picked, practiceSetId, setTargets);
+  const [attempt] = await db
+    .insert(schema.practiceAttempts)
+    .values({ practiceSetId, studentId, questionSet, answers: {} })
+    .returning({ id: schema.practiceAttempts.id });
+  return { attemptId: attempt.id, resumed: false };
+}
 
+/**
+ * Turn picked questions into the served list. Ordering and matching options
+ * are shuffled; choice options keep the author's order. Each item's target is
+ * one of `preferredTargets` when it carries one, else its first tag.
+ */
+export async function serveQuestions(
+  picked: PoolQuestion[],
+  sectionId: string,
+  preferredTargets: Set<string>
+): Promise<ServedQuestion[]> {
   const types = await db
     .select({ id: schema.questions.id, type: schema.questions.type })
     .from(schema.questions)
@@ -220,25 +237,20 @@ export async function startPracticeAttempt(
   for (const o of optionRows)
     (optionsBy.get(o.questionId) ?? optionsBy.set(o.questionId, []).get(o.questionId)!).push(o.id);
 
-  const questionSet: ServedQuestion[] = picked.map((p, i) => {
+  return picked.map((p, i) => {
     const type = typeBy.get(p.questionId);
     const always = type === "ordering" || type === "matching";
     // The item's target: one the set is tagged with when possible, else its first tag.
-    const target = p.targetIds.find((t) => setTargets.has(t)) ?? p.targetIds[0] ?? null;
+    const target = p.targetIds.find((t) => preferredTargets.has(t)) ?? p.targetIds[0] ?? null;
     const base: ServedQuestion = {
       questionId: p.questionId,
-      sectionId: practiceSetId,
+      sectionId,
       learningTargetId: target,
       points: p.points,
       order: i + 1,
     };
     return always ? { ...base, optionOrder: shuffle(optionsBy.get(p.questionId) ?? []) } : base;
   });
-  const [attempt] = await db
-    .insert(schema.practiceAttempts)
-    .values({ practiceSetId, studentId, questionSet, answers: {} })
-    .returning({ id: schema.practiceAttempts.id });
-  return { attemptId: attempt.id, resumed: false };
 }
 
 export type PracticeFeedback = {

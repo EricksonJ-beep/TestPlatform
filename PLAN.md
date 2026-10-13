@@ -350,7 +350,7 @@ Repo, Next.js + Tailwind + shadcn scaffold, Neon project + Drizzle schema/migrat
 **Parked — reviewed, NOT approved (do not build unless Jon says so):** categorize/bucket questions · show-your-work drawing · audio response · file-upload response · word bank for fill-in-blank · build-a-test-from-existing-tests · AI rubric scoring of written responses · time-per-question analytics · per-distractor feedback · teacher-pace mode · certificates · email reminders · student self-registration.
 | Student login = | Email + password (Auth.js Credentials + bcrypt); Google later if wanted |
 | Infrastructure = | **Neon + Drizzle + Auth.js + Cloudflare R2 + Vercel** (decided Sept 21, 2026; replaces Supabase — free-tier auto-pause and slot limits) |
-| Practice source = | Curated sets you build and publish |
+| Practice source = | Curated sets you build and publish, plus student-built practice by unit and learning target from banks you open for practice (Oct 13, 2026) |
 | Sharing at launch = | You + one physical science colleague, shared bank |
 | Skyward = | Track highest + CSV export; no direct integration in v1 |
 | Formative attempts = | Default 3, configurable per assignment |
