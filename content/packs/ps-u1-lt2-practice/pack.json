@@ -8,9 +8,7 @@
     "title": "U1.LT2 Practice: Measurement, Sig Figs, and Percent Error",
     "description": "Practice reading tools with the smallest division rule, judging accuracy and precision, using sig figs, and calculating averages and percent error.",
     "drawCount": 10,
-    "targets": [
-      "U1.LT2"
-    ]
+    "targets": ["U1.LT2"]
   },
   "activity": {
     "kind": "guided_notes",
@@ -22,8 +20,6 @@
       "Count the sig figs in 0.0500 m and 5,000 m, and explain why the answers are different.",
       "Multiply 4.25 cm × 3.1 cm. Report the area with the correct sig figs and explain which rule you used."
     ],
-    "targets": [
-      "U1.LT2"
-    ]
+    "targets": ["U1.LT2"]
   }
 }

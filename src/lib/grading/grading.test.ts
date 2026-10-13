@@ -160,6 +160,8 @@ describe("numeric", () => {
     expect(parseNumericInput("3.1 X 10^(-4)")).toEqual({ value: 0.00031, unit: "" });
     expect(parseNumericInput("6.02*10^23")?.value).toBeCloseTo(6.02e23, -20);
     expect(parseNumericInput("5 x 2")).toEqual({ value: 5, unit: "x 2" });
+    expect(parseNumericInput("\u22124")).toEqual({ value: -4, unit: "" });
+    expect(parseNumericInput("6.3 x 10^\u22124")).toEqual({ value: 0.00063, unit: "" });
     expect(parseNumericInput("1,500")).toEqual({ value: 1500, unit: "" });
     expect(parseNumericInput("3/4")).toEqual({ value: 0.75, unit: "" });
     expect(parseNumericInput("-2.5e3 J")).toEqual({ value: -2500, unit: "J" });

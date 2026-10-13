@@ -182,6 +182,7 @@ const normUnit = (u: string) =>
 export function parseNumericInput(raw: string): { value: number; unit: string } | null {
   const s = raw
     .trim()
+    .replace(/[\u2212\u2013]/g, "-") // typographic minus and en dash, as pasted or auto-corrected
     .replace(/,/g, "")
     .replace(/^\+/, "")
     .replace(/^(-?(?:\d+\.?\d*|\.\d+))\s*[x×*]\s*10\s*\^\s*\(?\s*([+-]?\d+)\s*\)?/i, "$1e$2");

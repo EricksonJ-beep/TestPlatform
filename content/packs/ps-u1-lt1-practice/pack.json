@@ -8,9 +8,7 @@
     "title": "U1.LT1 Practice: Lab Equipment and the Scientific Method",
     "description": "Practice naming lab tools and safety rules, finding variables, writing hypotheses, and analyzing experiments.",
     "drawCount": 10,
-    "targets": [
-      "U1.LT1"
-    ]
+    "targets": ["U1.LT1"]
   },
   "activity": {
     "kind": "guided_notes",
@@ -22,8 +20,6 @@
       "Jae's data table has the columns Water Temperature (°C) and Time to Dissolve (s). Which variable goes on the x-axis, and what is the graph title?",
       "Explain step by step how to measure 5 g of salt on a digital scale using a weigh boat."
     ],
-    "targets": [
-      "U1.LT1"
-    ]
+    "targets": ["U1.LT1"]
   }
 }
