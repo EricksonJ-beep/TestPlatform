@@ -1,15 +1,19 @@
 import Link from "next/link";
 import {
   CheckCircle2,
+  CirclePause,
   ClipboardList,
   Hand,
+  KeyRound,
   Layers,
   LogIn,
+  MessageCircleQuestion,
   PlayCircle,
   Send,
   Users,
 } from "lucide-react";
 import { describeActivity, type ActivityKind, type ActivityRow } from "@/lib/activity-log";
+import { placeLabel } from "@/lib/needs-you";
 import { LocalTime } from "@/components/local-time";
 
 const ICON: Record<ActivityKind, typeof LogIn> = {
@@ -21,19 +25,27 @@ const ICON: Record<ActivityKind, typeof LogIn> = {
   practice_completed: Layers,
   activity_completed: CheckCircle2,
   retake_requested: Hand,
+  test_paused: CirclePause,
+  resume_requested: MessageCircleQuestion,
+  resumed: KeyRound,
 };
 
 const dayKey = (d: Date) => d.toISOString().slice(0, 10);
 
-/** A list of logged milestones, optionally with the student's name and a date heading per day. */
+/**
+ * A list of logged milestones, optionally with the student's name, where it happened (course ·
+ * period, for a feed across classes) and a date heading per day.
+ */
 export function ActivityFeed({
   rows,
   showName = true,
+  showPlace = false,
   groupByDay = false,
   emptyText = "No activity yet.",
 }: {
   rows: ActivityRow[];
   showName?: boolean;
+  showPlace?: boolean;
   groupByDay?: boolean;
   emptyText?: string;
 }) {
@@ -77,6 +89,11 @@ export function ActivityFeed({
                       </span>
                     ) : null}
                     {showName ? " · " : ""}
+                    {showPlace && r.place ? (
+                      <span className="text-muted-foreground" data-activity-place>
+                        {placeLabel(r.place)} ·{" "}
+                      </span>
+                    ) : null}
                     {r.assignmentId ? (
                       <Link href={`/app/results/${r.assignmentId}`} className="hover:underline">
                         {describeActivity(r)}

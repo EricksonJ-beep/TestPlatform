@@ -100,11 +100,14 @@ export function ClassGradebookSection({
   classes,
   currentClassId,
   gradebook,
+  live,
 }: {
   course: { id: string; name: string } | null;
   classes: PeriodOption[];
   currentClassId: string | null;
   gradebook: ClassGradebook | null;
+  /** The page's Live indicator (`LiveRefresh`), shown at the right of the header. */
+  live?: React.ReactNode;
 }) {
   return (
     <Card data-class-gradebook>
@@ -118,6 +121,7 @@ export function ClassGradebookSection({
           {classes.length > 1 || (classes.length === 1 && classes[0].period) ? (
             <PeriodChips classes={classes} currentId={currentClassId} />
           ) : null}
+          {live ? <div className="ml-auto">{live}</div> : null}
         </div>
         {gradebook ? (
           <p className="text-sm text-muted-foreground">

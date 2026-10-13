@@ -476,16 +476,25 @@ export const resumeWithCode = withAuthz(async (attemptId: string, code: string) 
     throw new ActionError("That code isn't right, or it has run out. Ask your teacher.", 400, {
       code: ["That code isn't right, or it has run out. Ask your teacher."],
     });
-  if (!(await resumeAttempt(attemptId))) throw new ActionError("This test isn't paused.", 409);
+  if (!(await resumeAttempt(attemptId, "code")))
+    throw new ActionError("This test isn't paused.", 409);
   revalidate(access.attempt.assignmentId);
   return { attemptId };
 });
 
-/** Ask the teacher to let you finish (they see it on the Results page). */
+/**
+ * Ask the teacher to let you finish (they see it in "Needs you" and on the Results page). The
+ * first ask of a pause is logged (`resume_requested`, Oct 13 2026); asking again only moves the
+ * time.
+ */
 export const askToFinish = withAuthz(async (attemptId: string) => {
   const access = await requireAttemptAccess(attemptId);
   assertOwnStudentRow(access, access.attempt);
-  await db
+  const before = await db.query.attempts.findFirst({
+    columns: { resumeRequestedAt: true, number: true },
+    where: eq(schema.attempts.id, attemptId),
+  });
+  const asked = await db
     .update(schema.attempts)
     .set({ resumeRequestedAt: new Date() })
     .where(
@@ -494,7 +503,15 @@ export const askToFinish = withAuthz(async (attemptId: string) => {
         eq(schema.attempts.status, "in_progress"),
         isNotNull(schema.attempts.pausedAt)
       )
-    );
+    )
+    .returning({ id: schema.attempts.id });
+  if (asked.length && before && !before.resumeRequestedAt)
+    await logActivity({
+      userId: access.userId,
+      kind: "resume_requested",
+      assignmentId: access.attempt.assignmentId,
+      detail: { attemptNumber: before.number },
+    });
   revalidate(access.attempt.assignmentId);
   return { asked: true };
 });

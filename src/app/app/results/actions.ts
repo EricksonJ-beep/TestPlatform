@@ -316,7 +316,8 @@ export const letContinue = withAuthz(async (attemptId: string) => {
   if (access.as !== "teacher") throw new ActionError("Teachers only.", 403);
   // An idle test reads as paused before anyone has touched it; settle it first.
   await settleAttempt(attemptId);
-  if (!(await resumeAttempt(attemptId))) throw new ActionError("That test isn't paused.", 409);
+  if (!(await resumeAttempt(attemptId, "teacher")))
+    throw new ActionError("That test isn't paused.", 409);
   revalidate(access.attempt.assignmentId, attemptId);
   return { ok: true };
 });

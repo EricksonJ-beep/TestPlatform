@@ -3,9 +3,12 @@
  * pause an attempt, settle one that should already be paused (idle or past
  * its window), reopen it with the teacher's resume code or the teacher's OK,
  * and issue resume codes. Nothing here checks who is asking; the actions do.
+ * Every pause and every reopening is logged once (`test_paused`, `resumed`;
+ * Oct 13 2026, dashboard plan build step 5), whichever path wrote it.
  */
-import { and, desc, eq, gt, isNotNull } from "drizzle-orm";
+import { and, desc, eq, gt, isNotNull, isNull } from "drizzle-orm";
 import { db, schema } from "@/db";
+import { logActivity } from "@/lib/activity-log";
 import { codesMatch, generateAccessCode } from "@/lib/assignments";
 import {
   RESUME_CODE_MS,
@@ -18,7 +21,11 @@ import {
   type PauseReason,
 } from "@/lib/pause";
 
-/** Pause an open attempt as of `at`: stop the clock, lock every answered question. */
+/**
+ * Pause an open attempt as of `at`: stop the clock, lock every answered question. The pause is
+ * logged (`test_paused`, stamped `at`, so an idle pause written later still lands when it
+ * happened) only by the call that wrote it, so two requests settling at once log it once.
+ */
 export async function pauseAttempt(
   attemptId: string,
   at: Date,
@@ -27,7 +34,15 @@ export async function pauseAttempt(
   remainingMs?: number | null
 ): Promise<boolean> {
   const attempt = await db.query.attempts.findFirst({
-    columns: { status: true, pausedAt: true, dueAt: true, lockedQuestionIds: true },
+    columns: {
+      status: true,
+      pausedAt: true,
+      dueAt: true,
+      lockedQuestionIds: true,
+      studentId: true,
+      assignmentId: true,
+      number: true,
+    },
     where: eq(schema.attempts.id, attemptId),
   });
   if (!attempt || attempt.status !== "in_progress" || attempt.pausedAt) return false;
@@ -35,7 +50,7 @@ export async function pauseAttempt(
     .select({ questionId: schema.responses.questionId })
     .from(schema.responses)
     .where(and(eq(schema.responses.attemptId, attemptId), isNotNull(schema.responses.answer)));
-  await db
+  const written = await db
     .update(schema.attempts)
     .set({
       pausedAt: at,
@@ -47,7 +62,22 @@ export async function pauseAttempt(
         answered.map((r) => r.questionId)
       ),
     })
-    .where(and(eq(schema.attempts.id, attemptId), eq(schema.attempts.status, "in_progress")));
+    .where(
+      and(
+        eq(schema.attempts.id, attemptId),
+        eq(schema.attempts.status, "in_progress"),
+        isNull(schema.attempts.pausedAt)
+      )
+    )
+    .returning({ id: schema.attempts.id });
+  if (written.length)
+    await logActivity({
+      userId: attempt.studentId,
+      kind: "test_paused",
+      assignmentId: attempt.assignmentId,
+      detail: { attemptNumber: attempt.number, reason },
+      at,
+    });
   return true;
 }
 
@@ -104,14 +134,28 @@ export async function touchAttempt(attemptId: string, now = new Date()): Promise
     .where(eq(schema.attempts.id, attemptId));
 }
 
-/** Reopen a paused attempt: the clock restarts from the time that was left. */
-export async function resumeAttempt(attemptId: string, now = new Date()): Promise<boolean> {
+/**
+ * Reopen a paused attempt: the clock restarts from the time that was left. `by` says who opened
+ * it (the resume code or the teacher's Let them continue) for the activity log (`resumed`).
+ */
+export async function resumeAttempt(
+  attemptId: string,
+  by: "code" | "teacher",
+  now = new Date()
+): Promise<boolean> {
   const attempt = await db.query.attempts.findFirst({
-    columns: { status: true, pausedAt: true, remainingMs: true },
+    columns: {
+      status: true,
+      pausedAt: true,
+      remainingMs: true,
+      studentId: true,
+      assignmentId: true,
+      number: true,
+    },
     where: eq(schema.attempts.id, attemptId),
   });
   if (!attempt || attempt.status !== "in_progress" || !attempt.pausedAt) return false;
-  await db
+  const written = await db
     .update(schema.attempts)
     .set({
       pausedAt: null,
@@ -121,7 +165,16 @@ export async function resumeAttempt(attemptId: string, now = new Date()): Promis
       lastActiveAt: now,
       resumeRequestedAt: null,
     })
-    .where(eq(schema.attempts.id, attemptId));
+    .where(and(eq(schema.attempts.id, attemptId), isNotNull(schema.attempts.pausedAt)))
+    .returning({ id: schema.attempts.id });
+  if (written.length)
+    await logActivity({
+      userId: attempt.studentId,
+      kind: "resumed",
+      assignmentId: attempt.assignmentId,
+      detail: { attemptNumber: attempt.number, by },
+      at: now,
+    });
   return true;
 }
 
