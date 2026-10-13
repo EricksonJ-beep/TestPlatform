@@ -1,6 +1,6 @@
 # Physical Science practice banks: practice built into Bloom
 
-_Brainstormed with Jon, Oct 13 2026. Not started. This changes PLAN.md §3.7 and §3.7a (see "What changes in PLAN.md" below); when this plan is approved, PLAN.md and docs/decisions.md get updated to match._
+_Brainstormed with Jon, Oct 13 2026. Platform tickets P2–P4 built Oct 13 (✅ below); content (P5) next. PLAN.md §3.7, §3.7a, §8, §10, Appendix A and docs/decisions.md are updated to match._
 
 ## The idea in one line
 
@@ -20,17 +20,9 @@ Stop building practice in Apps Script and walking it over to Bloom. Build it in 
 | Learning target list | Jon's LT sheet (`Bio_PS_AP_LT_Table.xlsx` in Drive) is the source of truth |
 | U6.LT5 (Rube Goldberg) | **Smaller bank (about 25)** on energy flow through machine chains, plus a planning guide as its relearning activity |
 
-## Learning targets: Bloom vs. Jon's sheet
+## Learning targets
 
-Jon's sheet has 25 Physical Science targets. Bloom's course seed (`scripts/courses/physical-science.ts`) has 20. These five are missing from Bloom and get added first:
-
-| Code | "I can" statement |
-| --- | --- |
-| U4.LT3 | I can identify and calculate acceleration. |
-| U5.LT1 | I can identify forces acting on an object. |
-| U5.LT2 | I can calculate forces acting on an object (FBD). |
-| U5.LT4 | I can calculate and explain Newton's 3rd Law. |
-| U6.LT1 | I can calculate work. |
+Jon's sheet (`Bio_PS_AP_LT_Table.xlsx` in Drive) has 25 Physical Science targets, and Bloom's course file (`scripts/courses/physical-science.ts`) already lists all 25 with matching wording. (An early read of that file missed five one-line entries; nothing was actually missing.)
 
 Note: U4.LT2 (velocity, momentum, **and acceleration**) overlaps U4.LT3 (acceleration). Plan: U4.LT2's bank leans on velocity and momentum, with only a few acceleration questions; U4.LT3 owns acceleration.
 
@@ -58,26 +50,25 @@ Note: U4.LT2 (velocity, momentum, **and acceleration**) overlaps U4.LT3 (acceler
 
 Tickets in order. Each stops at its "Done when" and gets a commit.
 
-### Ticket P1 · Add the missing learning targets
-Add the five targets above to `scripts/courses/physical-science.ts` and the live course.
-**Done when** Physical Science A/B in Bloom lists all 25 targets in unit order.
+### Ticket P1 · Learning targets ✅ (nothing to build)
+The course file already has all 25. If the live site is missing any, `npm run db:seed:courses -- physical-science` adds them, and a pack import creates any target code it doesn't find.
 
-### Ticket P2 · A hint on every question
+### Ticket P2 · A hint on every question ✅
 Add a nullable `hint` column to `questions`. Add a `hint` column to the CSV import (`question_import_template.csv`, `scripts/import-csv.ts`, content packs) and a Hint field in the question editor. Teacher preview shows it.
 **Done when** a pack with hints loads and the hint shows in the question editor.
 
-### Ticket P3 · Apps Script–style checking in the practice runner
+### Ticket P3 · Apps Script–style checking in the practice runner ✅
 - A wrong check keeps the question open: the student edits and checks again, with no limit.
 - After the **3rd miss**, the hint appears.
 - A **Show answer** button is always there; it reveals the correct answer + explanation and closes the question (recorded as "revealed").
 - A correct check shows the explanation and closes the question.
-- Save per question: tries, hint shown, revealed, correct. This feeds the relearning monitor ("LT3: 8/10 correct, 19 checks, hint used on 2").
+- Save per question: misses, revealed, correct. (Showing these on the relearning monitor is a later step.)
 - **Completion** (PLAN §3.7) changes from "every question answered once" to "**every question in the deal is closed**" (correct or revealed). Best % counts a question as correct only if it was right **before** reveal.
 
 **Done when** a student can miss a question 3 times, see the hint, get it right, and the set completes and counts toward the retake gate.
 
-### Ticket P4 · Difficulty-balanced deals
-When a set deals from a bank, draw across difficulty bands in the 15/20/15 proportion (for a deal of 10: 3 easy, 4 medium, 3 hard), then shuffle. If a band runs short, fill from the nearest band.
+### Ticket P4 · Difficulty-balanced deals ✅
+When a set deals from a bank, draw across difficulty bands (1–2 easy, 3 medium, 4–5 hard) in the 15/20/15 proportion (for a deal of 10: 3 easy, 4 medium, 3 hard), served easy → medium → hard. If a band runs short, fill from what is left.
 **Done when** 20 deals from a 50-question bank all contain every band.
 
 ### Ticket P5 · Content: one batch per unit
