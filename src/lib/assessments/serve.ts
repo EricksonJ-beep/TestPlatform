@@ -131,6 +131,58 @@ export function drawFromPool(
   return chosen;
 }
 
+/** Difficulty bands for a practice deal: 1–2 easy, 3 medium, 4–5 hard. */
+export type DifficultyBand = "easy" | "medium" | "hard";
+
+export function difficultyBand(difficulty: number): DifficultyBand {
+  return difficulty <= 2 ? "easy" : difficulty >= 4 ? "hard" : "medium";
+}
+
+/** Share of a practice deal per band (Jon, Oct 13 2026: about 15 easy, 20 medium, 15 hard of 50). */
+export const DEAL_MIX: Record<DifficultyBand, number> = { easy: 0.3, medium: 0.4, hard: 0.3 };
+const BANDS: DifficultyBand[] = ["easy", "medium", "hard"];
+
+/**
+ * A practice deal across difficulty bands. Rule: split `count` by DEAL_MIX
+ * (10 → 3 easy, 4 medium, 3 hard), draw each band fresh-first like
+ * drawFromPool, fill any band's shortfall from what is left (fresh first),
+ * then serve easy → medium → hard so each set warms up and ends with a
+ * stretch. A pool that keeps stimulus groups together draws as one band.
+ */
+export function dealByDifficulty(
+  pool: (PoolQuestion & { difficulty: number })[],
+  count: number,
+  opts: { drawStimulusGroups: boolean; rng: () => number; avoid?: Set<string> }
+): PoolQuestion[] {
+  if (opts.drawStimulusGroups) return drawFromPool(pool, count, opts);
+  const n = Math.min(count, pool.length);
+  if (n <= 0) return [];
+  const easy = Math.round(n * DEAL_MIX.easy);
+  const hard = Math.round(n * DEAL_MIX.hard);
+  const want: Record<DifficultyBand, number> = { easy, medium: n - easy - hard, hard };
+  const picked = new Map<DifficultyBand, (PoolQuestion & { difficulty: number })[]>();
+  const taken = new Set<string>();
+  for (const band of BANDS) {
+    const drawn = drawFromPool(
+      pool.filter((q) => difficultyBand(q.difficulty) === band),
+      want[band],
+      opts
+    ) as (PoolQuestion & { difficulty: number })[];
+    picked.set(band, drawn);
+    for (const q of drawn) taken.add(q.questionId);
+  }
+  const short = n - taken.size;
+  if (short > 0) {
+    const fill = drawFromPool(
+      pool.filter((q) => !taken.has(q.questionId)),
+      short,
+      opts
+    ) as (PoolQuestion & { difficulty: number })[];
+    for (const q of fill) picked.get(difficultyBand(q.difficulty))!.push(q);
+  }
+  return BANDS.flatMap((b) => shuffle(picked.get(b)!, opts.rng));
+}
+
 /** Resolve sections into the served list. Section order is kept; within a section, fixed items keep their order unless randomized. */
 export function buildQuestionSet(sections: BuilderSection[], opts: ServeOptions): ServedQuestion[] {
   const rng = opts.rng ?? Math.random;

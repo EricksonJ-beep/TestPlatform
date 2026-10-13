@@ -1,0 +1,26 @@
+{
+  "name": "ps-u1-lt1-practice",
+  "revision": 2,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science A",
+  "unit": "Unit 1 · Introduction to Physical Science",
+  "bank": "PS · U1.LT1 · Practice",
+  "practiceSet": {
+    "title": "U1.LT1 Practice: Lab Equipment and the Scientific Method",
+    "description": "Practice naming lab tools and safety rules, finding variables, writing hypotheses, and analyzing experiments.",
+    "drawCount": 10,
+    "targets": ["U1.LT1"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U1.LT1 Relearning: Lab Equipment and the Scientific Method",
+    "content": "**What you need to be able to do:** I can use lab equipment correctly and use the scientific method.\n\n**Think of a fair race.** If you want to know which pair of shoes makes you run faster, you have to run the same distance, on the same track, on the same day, and change only the shoes. If you also switch from grass to pavement, you can't tell whether the shoes or the track made the difference. An experiment works the same way: change one thing, measure one thing, and keep everything else the same.\n\n**The scientific method** is a process that produces reliable results to answer a question: state the problem, research and gather information, form a hypothesis, test the hypothesis, analyze data, and draw conclusions. A lab report follows the same path: **Problem, Hypothesis, Procedure, Observations, Analysis, Conclusion.**\n\n**Variables.** The **independent variable (IV)** is set by the experimenter (what was changed). The **dependent variable (DV)** is measured during the procedure (what was measured). **Constants** remain the same to get reliable data. The **control group** is the baseline you compare the experimental data to. A **confounding variable** is an environmental factor beyond your control. **Bias** is an opinion based on beliefs instead of data.\n\n**Hypothesis:** a testable prediction written **If... then... because...** It is not a guess; the because comes from what you already know. **Data tables and graphs:** the IV is always the first column and goes on the **x-axis**; the DV goes on the **y-axis**. The title is **DV vs. IV**.\n\n**Lab equipment.** A graduated cylinder gives precise volume in mL: get on eye level and read the bottom of the **meniscus**. A digital scale measures mass in g: **zero the scale with the weigh boat on it before** adding chemicals. A thermometer measures temperature (°C) and a meter stick measures length (cm, m). Goggles stay on, even through clean up. Fire extinguisher: **PASS** (Pull, Aim, Squeeze, Sweep).\n\n**Worked example 1:** Maya waters bean plants with 25 mL, 50 mL, or 75 mL a day and measures their height after 2 weeks. Step 1: What did she change? Amount of water, so that is the IV. Step 2: What did she measure? Plant height in cm, so that is the DV. Step 3: What stays the same? Seed type, soil, sunlight, and pot size are constants. Problem statement: How does the amount of water affect plant height?\n\n**Worked example 2:** Write the hypothesis for Maya. Step 1: Put the IV in the If part. Step 2: Put the DV prediction in the then part. Step 3: Add a reason. Answer: If plants get more water each day, then they will grow taller, because plants use water to grow.\n\n**Worked example 3:** Set up Maya's table and graph. Step 1: First column = Water per day (mL), second column = Plant height (cm). Step 2: x-axis = Water per day (mL), y-axis = Plant height (cm). Step 3: Title = DV vs. IV, so Plant Height vs. Water per Day.\n\n**Watch out for:** mixing up constants and the control group (the control is a baseline group, not a thing you hold the same), putting the IV on the y-axis or writing the title backwards, changing two things at once, reading the top of the meniscus, and adding chemicals before zeroing the scale.",
+    "prompts": [
+      "Jae tests how the temperature of water affects how fast a sugar cube dissolves. Name the IV, the DV, and two constants.",
+      "Write a hypothesis in If... then... because... form for Jae's experiment.",
+      "Jae's data table has the columns Water Temperature (°C) and Time to Dissolve (s). Which variable goes on the x-axis, and what is the graph title?",
+      "Explain step by step how to measure 5 g of salt on a digital scale using a weigh boat."
+    ],
+    "targets": ["U1.LT1"]
+  }
+}

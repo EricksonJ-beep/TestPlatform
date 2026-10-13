@@ -12,6 +12,9 @@ vi.mock("@/db", async () => {
   return { db, schema, dbDriver: "pg" };
 });
 
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { eq } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { applyAllPacks, applyPack, listPacks } from "./content-packs";
@@ -46,6 +49,9 @@ beforeAll(async () => {
     .insert(schema.courses)
     .values({ ownerId: t.id, name: "Physical Science A" })
     .returning();
+  await db
+    .insert(schema.units)
+    .values({ courseId: ps.id, name: "Unit 1 · Introduction to Physical Science", sortOrder: 0 });
   await db
     .insert(schema.learningTargets)
     .values(
@@ -89,6 +95,18 @@ describe("content packs", () => {
   });
   it("applies each pack once: bank, questions with repo-hosted pictures, published assessment, assignment", async () => {
     const first = await applyAllPacks();
+    // Physical Science Unit 1 practice packs (Oct 13 2026): 50 questions, a set, and notes each.
+    for (const n of [1, 2, 3, 4]) {
+      const out = first.find((o) => o.name === `ps-u1-lt${n}-practice`)!;
+      expect(out.status).toBe("applied");
+      if (out.status === "applied")
+        expect(out.summary).toMatchObject({
+          questions: 50,
+          practiceSet: { published: true },
+          activity: { published: true },
+          errors: [],
+        });
+    }
     const skin = first.find((o) => o.name === "anatomy-u2-lab-quiz-integumentary")!;
     expect(skin.status).toBe("applied");
     if (skin.status !== "applied") throw new Error("unreachable");
@@ -370,6 +388,123 @@ describe("content packs", () => {
     }))!;
     expect(un.isPublished).toBe(false);
   });
+  it("a practice pack makes a bank with hints, a set that deals from it, and a guided-notes reading", async () => {
+    const root = mkdtempSync(join(tmpdir(), "bloom-packs-"));
+    const name = "test-ps-u1-lt3-practice";
+    mkdirSync(join(root, name));
+    writeFileSync(
+      join(root, name, "questions.csv"),
+      [
+        "external_id,course,learning_target,type,stem,correct,difficulty,explanation,hint",
+        'T-1,Physical Science A,U1.LT3,numeric,How many cm are in 2 m?,200,1,"1 m = 100 cm, so 2 × 100 = 200 cm.",How many cm are in 1 m?',
+        "T-2,Physical Science A,U1.LT3,numeric,How many mm are in 3 cm?,30,4,1 cm = 10 mm.,",
+      ].join("\n")
+    );
+    const out = await applyPack(
+      {
+        name,
+        teacherEmail: "EricksonJ@cadott.k12.wi.us",
+        course: "Physical Science A",
+        bank: "PS · U1.LT3 · Practice",
+        practiceSet: {
+          title: "U1.LT3 Practice: conversions",
+          drawCount: 10,
+          targets: ["U1.LT3"],
+        },
+        activity: {
+          kind: "guided_notes",
+          title: "U1.LT3 Relearning: conversions",
+          content: "A conversion factor is a fraction equal to 1.",
+          prompts: ["What is a conversion factor?", "Convert 5 m to cm."],
+          targets: ["U1.LT3"],
+        },
+      },
+      root
+    );
+    expect(out.status).toBe("applied");
+    if (out.status !== "applied") return;
+    expect(out.summary).toMatchObject({
+      questions: 2,
+      practiceSet: { reused: false, published: true },
+      activity: { published: true },
+      errors: [],
+    });
+    const bankId = out.summary.bankId as string;
+    const qs = await db.query.questions.findMany({ where: eq(schema.questions.bankId, bankId) });
+    expect(qs.find((q) => q.externalId === "T-1")?.hint).toBe("How many cm are in 1 m?");
+    const set = (await db.query.practiceSets.findFirst({
+      where: eq(schema.practiceSets.title, "U1.LT3 Practice: conversions"),
+    }))!;
+    expect(set).toMatchObject({ bankId, drawCount: 10, isPublished: true, courseId: ps.id });
+    const tags = await db.query.practiceSetTargets.findMany({
+      where: eq(schema.practiceSetTargets.practiceSetId, set.id),
+    });
+    expect(tags).toHaveLength(1);
+    const notes = (await db.query.relearningActivities.findFirst({
+      where: eq(schema.relearningActivities.title, "U1.LT3 Relearning: conversions"),
+    }))!;
+    expect(notes).toMatchObject({
+      kind: "guided_notes",
+      url: null,
+      isPublished: true,
+      content: "A conversion factor is a fraction equal to 1.",
+      prompts: [
+        { id: "p1", prompt: "What is a conversion factor?" },
+        { id: "p2", prompt: "Convert 5 m to cm." },
+      ],
+    });
+  });
+
+  it("a new revision of an applied pack applies once more, updating questions, set, and notes in place", async () => {
+    const root = mkdtempSync(join(tmpdir(), "bloom-packs-"));
+    const name = "test-revision-pack";
+    mkdirSync(join(root, name));
+    const csv = (stem: string) =>
+      [
+        "external_id,course,learning_target,type,stem,correct,explanation,hint",
+        `R-1,Physical Science A,U1.LT2,numeric,${stem},5,Because.,Think.`,
+      ].join("\n");
+    const def = {
+      name,
+      teacherEmail: "EricksonJ@cadott.k12.wi.us",
+      course: "Physical Science A",
+      bank: "PS · Revision bank",
+      practiceSet: { title: "Revision set", drawCount: 10, targets: ["U1.LT2"] },
+      activity: {
+        kind: "reading" as const,
+        title: "Revision reading",
+        content: "Old text.",
+        targets: ["U1.LT2"],
+      },
+    };
+    writeFileSync(join(root, name, "questions.csv"), csv("Old stem?"));
+    expect((await applyPack(def, root)).status).toBe("applied");
+    expect((await applyPack(def, root)).status).toBe("already_applied");
+
+    writeFileSync(join(root, name, "questions.csv"), csv("New stem?"));
+    const r2 = { ...def, revision: 2, activity: { ...def.activity, content: "New text." } };
+    const out = await applyPack(r2, root);
+    expect(out.status).toBe("applied");
+    if (out.status === "applied")
+      expect(out.summary).toMatchObject({
+        practiceSet: { reused: true },
+        activity: { reused: true },
+      });
+    expect((await applyPack(r2, root)).status).toBe("already_applied");
+    const live = await db.query.questions.findMany({
+      where: eq(schema.questions.externalId, "R-1"),
+    });
+    expect(live.map((q) => [q.stem, q.version, q.isArchived])).toEqual([["New stem?", 2, false]]);
+    const sets = await db.query.practiceSets.findMany({
+      where: eq(schema.practiceSets.title, "Revision set"),
+    });
+    expect(sets).toHaveLength(1);
+    const reading = await db.query.relearningActivities.findMany({
+      where: eq(schema.relearningActivities.title, "Revision reading"),
+    });
+    expect(reading.map((a) => a.content)).toEqual(["New text."]);
+  });
+
   it("skips a pack whose teacher is missing and leaves it unapplied for next time", async () => {
     const out = await applyAllPacks("/nonexistent");
     expect(out).toEqual([]);

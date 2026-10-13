@@ -180,6 +180,7 @@ export type BankQuestionRow = {
   topic: string | null;
   tags: string[];
   explanation: string | null;
+  hint: string | null;
   externalId: string | null;
   version: number;
   mediaUrl: string | null;
@@ -234,6 +235,7 @@ export async function listBankQuestions(
       topic: schema.questions.topic,
       tags: schema.questions.tags,
       explanation: schema.questions.explanation,
+      hint: schema.questions.hint,
       externalId: schema.questions.externalId,
       version: schema.questions.version,
       mediaUrl: schema.questions.mediaUrl,
@@ -325,6 +327,7 @@ export type QuestionForEdit = {
   type: (typeof schema.questionType.enumValues)[number];
   stem: string;
   explanation: string | null;
+  hint: string | null;
   points: number;
   difficulty: number;
   bloom: (typeof schema.bloomLevel.enumValues)[number] | null;
@@ -372,6 +375,7 @@ export async function getQuestionForEdit(questionId: string): Promise<QuestionFo
     type: q.type,
     stem: q.stem,
     explanation: q.explanation,
+    hint: q.hint,
     points: q.points,
     difficulty: q.difficulty,
     bloom: q.bloom,

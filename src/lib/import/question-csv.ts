@@ -40,6 +40,7 @@ export const CSV_COLUMNS = [
   "bloom",
   "grading",
   "explanation",
+  "hint",
   "image_url",
   "video_url",
   "tags",
@@ -87,6 +88,8 @@ export type ParsedRow = {
   bloom: BloomLevel | null;
   grading: GradingMode;
   explanation: string | null;
+  /** Practice only: shown after the third miss. */
+  hint: string | null;
   imageUrl: string | null;
   videoUrl: string | null;
   tags: string[];
@@ -432,6 +435,7 @@ export function parseQuestionRecord(raw: RawRecord, line: number): ParsedRow {
     bloom,
     grading,
     explanation: blank(raw.explanation),
+    hint: blank(raw.hint),
     imageUrl,
     videoUrl,
     tags,

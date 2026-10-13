@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   checkActivityCompletion,
+  hintUnlocked,
+  isClosed,
   markWatched,
   practiceProgress,
+  recordCheck,
+  recordReveal,
   watchPercent,
 } from "./practice-rules";
 
@@ -138,5 +142,71 @@ describe("watch tracking", () => {
     expect([...w].sort((a, b) => a - b)).toEqual([0, 1, 2, 50, 51]);
     expect(watchPercent(w, 10)).toBe(30);
     expect(watchPercent(new Set([0, 1, 2, 3, 4, 5, 6, 7, 8]), 10)).toBe(90);
+  });
+});
+
+describe("Apps Script–style checking", () => {
+  const at = "2026-10-13T00:00:00Z";
+  const wrong = { answer: "x", isCorrect: false, pointsEarned: 0, pointsPossible: 1 };
+  const right = { answer: "y", isCorrect: true, pointsEarned: 1, pointsPossible: 1 };
+  const set = [
+    { questionId: "a", sectionId: "s", learningTargetId: null, points: 1, order: 1 },
+    { questionId: "b", sectionId: "s", learningTargetId: null, points: 1, order: 2 },
+  ];
+
+  it("a miss keeps the question open and counts toward the hint; a right check closes it", () => {
+    let a = recordCheck(undefined, wrong, at);
+    expect(a).toMatchObject({ misses: 1, closed: false, isCorrect: false });
+    expect(isClosed(a)).toBe(false);
+    a = recordCheck(a, wrong, at);
+    expect(hintUnlocked(a)).toBe(false);
+    a = recordCheck(a, wrong, at);
+    expect(hintUnlocked(a)).toBe(true);
+    a = recordCheck(a, right, at);
+    expect(a).toMatchObject({ misses: 3, closed: true, isCorrect: true, answer: "y" });
+    // Closed items never change.
+    expect(recordCheck(a, wrong, at)).toBe(a);
+    expect(recordReveal(a, 1, at)).toBe(a);
+  });
+
+  it("reveal closes as not correct, keeps partial points, and works before any check", () => {
+    const partial = recordCheck(
+      undefined,
+      { answer: ["p"], isCorrect: false, pointsEarned: 1, pointsPossible: 2 },
+      at
+    );
+    expect(recordReveal(partial, 2, at)).toMatchObject({
+      revealed: true,
+      closed: true,
+      isCorrect: false,
+      pointsEarned: 1,
+      misses: 1,
+    });
+    expect(recordReveal(undefined, 1, at)).toMatchObject({
+      answer: null,
+      isCorrect: false,
+      pointsEarned: 0,
+      closed: true,
+    });
+    expect(recordReveal(undefined, 1, at, true)).toMatchObject({
+      isCorrect: null,
+      pointsEarned: null,
+    });
+  });
+
+  it("progress counts only closed items; one-try items saved before retries count as closed", () => {
+    const open = recordCheck(undefined, wrong, at);
+    expect(practiceProgress(set, { a: open })).toMatchObject({ answered: 0, complete: false });
+    const legacy = { ...wrong, answeredAt: at };
+    const done = practiceProgress(set, {
+      a: legacy,
+      b: recordCheck(recordCheck(undefined, wrong, at), right, at),
+    });
+    expect(done).toMatchObject({ answered: 2, correct: 1, complete: true, percent: 50 });
+    const revealed = practiceProgress(set, {
+      a: recordReveal(open, 1, at),
+      b: recordCheck(undefined, right, at),
+    });
+    expect(revealed).toMatchObject({ correct: 1, complete: true, percent: 50 });
   });
 });

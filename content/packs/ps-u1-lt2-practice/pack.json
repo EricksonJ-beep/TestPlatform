@@ -1,0 +1,26 @@
+{
+  "name": "ps-u1-lt2-practice",
+  "revision": 2,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science A",
+  "unit": "Unit 1 · Introduction to Physical Science",
+  "bank": "PS · U1.LT2 · Practice",
+  "practiceSet": {
+    "title": "U1.LT2 Practice: Measurement, Sig Figs, and Percent Error",
+    "description": "Practice reading tools with the smallest division rule, judging accuracy and precision, using sig figs, and calculating averages and percent error.",
+    "drawCount": 10,
+    "targets": ["U1.LT2"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U1.LT2 Relearning: Measurement, Sig Figs, and Percent Error",
+    "content": "**What you need to be able to do:** I can measure accurately and precisely, using the appropriate units, significant figures, averages, and percent error to show how accurate data is.\n\n**Think about free throws.** A basketball player who swishes the shot is **accurate**: the ball went where it was supposed to go. A player whose shots all hit the exact same spot on the left side of the rim is **precise**: every shot lands close to the others, but they all miss. You can be precise and still be completely wrong. We want to be both accurate and precise!\n\n**Accuracy** is how close a measurement is to the true or target value (the **accepted value**). **Precision** is how close the data points are to one another. To judge precision, look at the spread of your trials (highest minus lowest). To judge accuracy, compare your average with the accepted value.\n\n**Smallest division rule.** The **smallest division** is the smallest line used to measure on any measuring tool. Those digits are certain (known). The **measuring rule**: estimate one place past the smallest division. That last digit is the uncertain digit. If the level sits exactly on a line, you still write the estimate (52.0 mL, not 52 mL). Read a graduated cylinder at eye level from the bottom of the **meniscus**.\n\n**Units.** Pick the tool and unit that fit the property: length in mm, cm, m, or km (ruler, meter stick); volume in mL or L (graduated cylinder, beaker, Erlenmeyer flask); mass in g (balance); temperature in °C (thermometer); time in s (stopwatch). No naked numbers!\n\n**Significant figures.** Significant: non-zero numbers, sandwiched zeroes, and trailing zeroes when a decimal is present. NOT significant: placeholder zeroes. When you **add or subtract**, keep no more decimal places than the measurement with the fewest. When you **multiply or divide**, keep no more sig figs in the ENTIRE number than the measurement with the fewest.\n\n**Average:** add up all values and divide by the total number of values. **Percent error** = |experimental − accepted| ÷ accepted × 100. It is always positive.\n\n**Worked example 1:** A graduated cylinder has a smallest division of 1 mL. The bottom of the meniscus is between 52 and 53 mL, about seven-tenths of the way up. The 52 is certain; estimate the tenths. Answer: **52.7 mL**.\n\n**Worked example 2:** Group A measures a sample three times: 14.2 g, 14.6 g, and 14.4 g. Average = (14.2 + 14.6 + 14.4) ÷ 3 = 43.2 ÷ 3 = **14.4 g**. The spread is 14.6 − 14.2 = 0.4 g.\n\n**Worked example 3:** The accepted mass of that sample is 15.0 g. % error = |14.4 − 15.0| ÷ 15.0 × 100 = 0.6 ÷ 15.0 × 100 = **4.0%**. The trials are fairly close together, but every one is low, so the data are more precise than accurate.\n\n**Watch out for:** leaving off the estimated digit; calling close-together data \"accurate\"; dividing by the experimental value instead of the accepted value in percent error; and counting total sig figs when you add (count decimal places instead).",
+    "prompts": [
+      "A beaker has a smallest division of 10 mL, and the liquid sits about halfway between the 60 and 70 mL lines. Write the reading using the smallest division rule and explain which digit is your estimate.",
+      "Jae's three trials are 9.8 s, 9.9 s, and 9.8 s, and the accepted time is 11.0 s. Find his average and percent error, show your setup, and say whether he was precise, accurate, both, or neither.",
+      "Count the sig figs in 0.0500 m and 5,000 m, and explain why the answers are different.",
+      "Multiply 4.25 cm × 3.1 cm. Report the area with the correct sig figs and explain which rule you used."
+    ],
+    "targets": ["U1.LT2"]
+  }
+}
