@@ -1,0 +1,27 @@
+{
+  "name": "ps-u5-lt4-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science B",
+  "unit": "Unit 5 · Forces",
+  "bank": "PS · U5.LT4 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U5.LT4 Practice: Newton's 3rd Law",
+    "description": "Practice finding action-reaction pairs, explaining why they don't cancel, comparing accelerations, and solving collision and recoil problems.",
+    "drawCount": 10,
+    "targets": ["U5.LT4"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U5.LT4 Relearning: Newton's 3rd Law",
+    "content": "**What you need to be able to do:** I can calculate and explain Newton's 3rd Law.\n\n**Think of two skaters holding hands.** If one skater pushes the other away, both of them roll backward. You can't push someone without getting pushed back. Forces work like **dance partners**: they always come in pairs, and both partners move at the same time.\n\n**Newton's 3rd law:** For every action there is an **equal and opposite reaction**. Whenever one object exerts a force on a second object, the second object exerts an equal and opposite force on the first object. To find the reaction, **switch the two objects and flip the direction**: you push the wall, the wall pushes you; a rocket pushes gas down, the gas pushes the rocket up; you push the Earth down when you jump, the Earth pushes you up; a swimmer pushes water back, the water pushes the swimmer forward.\n\n**Equal forces, different results.** The two forces are always the same size, even in a collision: a heavy and a light football player hit each other with **equal** forces. What is different is the **acceleration**. Use **a = F/m**: the object with less mass gets the bigger acceleration. That's why a skater rolls away from a wall but the wall doesn't move.\n\n**Why pairs don't cancel.** Action and reaction act on **different objects**, so they never go on the same FBD. Watch out: the weight (Fg) and normal force (FN) on a book both act on the book, so they are **not** a 3rd-law pair.\n\n**Momentum in collisions and recoil.** When objects push on each other, the momentum of the two objects remains the same before and after the collision. If two things start at rest and push apart (skaters, a cannon and its ball), their momenta are equal and opposite.\n\n**Worked example 1:** Jae (62 kg) on roller skates pushes off a wall and accelerates away at 1.5 m/s^{2}. How hard did he push the wall? Formula: F = m × a. Set up: F = 62 kg × 1.5 m/s^{2} = 93 N (the wall's push on Jae). Answer: Jae pushed the wall with **93 N**, because the pair is equal.\n\n**Worked example 2:** Students A (50 kg) and B (60 kg) on scooter boards push apart with 120 N each. Formula: a = F/m. Set up: A: 120 N ÷ 50 kg; B: 120 N ÷ 60 kg. Answer: A = **2.4 m/s^{2}**, B = **2.0 m/s^{2}**. Same force, but the lighter student gets the greater acceleration.\n\n**Worked example 3:** Two students (40 kg and 50 kg) stand still on ice skates and push apart. The 40 kg student moves at 2.5 m/s. Formula: m1 × v1 = m2 × v2. Set up: 40 kg × 2.5 m/s = 100 kg·m/s, so v2 = 100 ÷ 50 kg. Answer: **2.0 m/s** in the opposite direction.\n\n**Watch out for:** saying the heavier or faster object pushes harder (the forces are always equal), calling weight and normal force a 3rd-law pair, thinking the pair cancels (different objects!), and using the wrong mass when you find each object's acceleration.",
+    "prompts": [
+      "A rocket pushes hot gas downward. Name the reaction force and explain why the rocket goes up.",
+      "Explain why the weight of a book and the normal force from the table are NOT an action-reaction pair.",
+      "Saffron (45 kg) and Wyatt (75 kg) push off each other on scooter boards with 90 N. Find each person's acceleration and show your setup.",
+      "A 300 kg cannon fires a 5.0 kg ball at 90 m/s. Find the cannon's recoil speed and show your setup."
+    ],
+    "targets": ["U5.LT4"]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "ps-u5-lt3-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science B",
+  "unit": "Unit 5 · Forces",
+  "bank": "PS · U5.LT3 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U5.LT3 Practice: Newton's 1st and 2nd Laws",
+    "description": "Practice explaining inertia and balanced forces and solving F = ma problems for force, mass, and acceleration.",
+    "drawCount": 10,
+    "targets": ["U5.LT3"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U5.LT3 Relearning: Newton's 1st and 2nd Laws",
+    "content": "**What you need to be able to do:** I can calculate and explain Newton's 1st Law and Newton's 2nd Law.\n\n**Think of pushing carts at Walmart.** An empty cart sitting in the aisle won't move until you push it, and once it is rolling it wants to keep rolling. Push it harder and it speeds up faster. Now fill it with groceries and push just as hard: it speeds up much more slowly, and it is harder to stop. That is the 1st law (things keep doing what they are doing) and the 2nd law (more force = more acceleration, more mass = less acceleration) in one trip.\n\n**Newton's 1st law:** An object at rest stays at rest, and an object in motion stays in motion at a constant speed in a straight line, unless acted upon by an **unbalanced force**. **Inertia** is the resistance of an object to change motion. **More mass = more inertia**: a bowling ball is harder to start AND stop than a tennis ball. Examples: seatbelts (your body keeps moving forward when the car stops), headrests (your head stays put when the car is hit from behind), the tablecloth trick, and a hockey puck sliding across ice.\n\n**Balanced vs unbalanced.** If the forces are **balanced**, the net force is 0 N and the motion does not change (at rest, or constant speed in a straight line). If the forces are **unbalanced**, the object speeds up, slows down, or changes direction. Same direction forces add; opposite direction forces subtract.\n\n**Newton's 2nd law:** The acceleration of an object depends on the net force acting on it and the object's mass. **F = m × a** (F in newtons, m in kg, a in m/s^{2}). Rearranged: Mass = Force ÷ Acceleration, and Acceleration = Force ÷ Mass. **1 N = 1 kg·m/s^{2}**. Force and acceleration are **direct**: double the force, double the acceleration. Mass and acceleration are **inverse**: double the mass, cut the acceleration in half.\n\n**Worked example 1:** Saffron pushes a 12 kg cart with a net force of 30 N. What is its acceleration? Formula: a = F ÷ m. Set up: a = 30 N ÷ 12 kg. Answer: 2.5 m/s^{2}.\n\n**Worked example 2:** A 0.15 kg baseball goes from rest to 30 m/s in 0.050 s. What force did the bat apply? Step 1: a = Δv ÷ t = 30 m/s ÷ 0.050 s = 600 m/s^{2}. Step 2: F = m × a = 0.15 kg × 600 m/s^{2} = 90 N.\n\n**Worked example 3:** A cart accelerates at 2.0 m/s^{2}. If the mass is doubled with the same force, the acceleration is cut in half: 1 m/s^{2}. If instead the force is doubled with the same mass, the acceleration doubles: 4 m/s^{2}.\n\n**Watch out for:** using m/s for acceleration (it is m/s^{2}), dividing when you should multiply (F = m × a), using one force instead of the net force, thinking inertia is a force, and mixing up the laws (the 3rd law is about action-reaction pairs, not inertia or F = ma).",
+    "prompts": [
+      "Use inertia to explain why a fully loaded semi truck takes longer to stop than an empty pickup going the same speed.",
+      "A 55 kg student on a skateboard is pushed with a net force of 110 N. Find the acceleration using Formula / Set up / Answer.",
+      "A 0.40 kg ball goes from rest to 18 m/s in 0.030 s. Find the acceleration first, then the force. Show both steps.",
+      "If the net force on a cart is cut in half and the mass stays the same, what happens to the acceleration? Is that a direct or inverse relationship?"
+    ],
+    "targets": ["U5.LT3"]
+  }
+}
