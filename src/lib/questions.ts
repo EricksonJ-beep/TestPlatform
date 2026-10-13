@@ -79,6 +79,13 @@ export const questionPayloadSchema = z.object({
     .optional()
     .nullable()
     .transform((v) => v || null),
+  hint: z
+    .string()
+    .trim()
+    .max(2000)
+    .optional()
+    .nullable()
+    .transform((v) => v || null),
   points: z.number().int().min(0).max(100).default(1),
   difficulty: z.number().int().min(1).max(5).default(3),
   bloom: z
@@ -330,6 +337,7 @@ async function writeQuestionRow(
       type: p.type,
       stem: p.stem,
       explanation: p.explanation,
+      hint: p.hint,
       points: p.points,
       difficulty: p.difficulty,
       bloom: p.bloom,
@@ -444,6 +452,7 @@ export async function duplicateQuestionRow(
       type: q.type,
       stem: q.stem,
       explanation: q.explanation,
+      hint: q.hint,
       points: q.points,
       difficulty: q.difficulty,
       bloom: q.bloom,

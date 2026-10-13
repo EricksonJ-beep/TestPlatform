@@ -1,0 +1,26 @@
+{
+  "name": "ps-u1-lt4-practice",
+  "revision": 2,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science A",
+  "unit": "Unit 1 · Introduction to Physical Science",
+  "bank": "PS · U1.LT4 · Practice",
+  "practiceSet": {
+    "title": "U1.LT4 Practice: Matter, Changes, and Density",
+    "description": "Practice classifying matter, telling physical from chemical changes, and using density to identify substances.",
+    "drawCount": 10,
+    "targets": ["U1.LT4"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U1.LT4 Relearning: Matter, Changes, and Density",
+    "content": "**What you need to be able to do:** I can sort matter into groups (elements, compounds, mixtures), identify physical changes from chemical changes, and use density to figure out what a substance is.\n\n**Everyday analogy:** Think of a school lunch. A single grape is like an **element**: one kind of thing. A baked cake is like a **compound**: the flour, eggs, and sugar changed into something new that you cannot just pick apart. A tray with fries, an apple, and milk is a **mixture**: the parts are just sitting together and you can separate them.\n\n**Classifying matter.** **Matter** is anything that has mass and takes up space. All matter is either a **pure substance** or a **mixture**. Pure substances are **elements** (only one type of atom; cannot be broken down by chemical means) or **compounds** (two or more different elements chemically bonded together, like H_{2}O). A mixture is two or more substances physically mixed, not chemically bonded. A **homogeneous** mixture has uniform composition throughout (a **solution**, like salt water). A **heterogeneous** mixture has uneven composition and you can see the parts. A **suspension** has large particles that settle over time and can be filtered out; a **colloid** has medium-sized particles that do not settle.\n\n**Physical vs. chemical change.** A **physical change** does not change what the substance is (melting, cutting, crushing, dissolving). In a **chemical change**, a new substance forms with different properties (burning, rusting, baking). The 5 signs of a chemical change are color change, precipitation, gas production, temperature change, and changes in characteristic properties (odor, light). Add the word **unpredicted** to each sign: mixing paint, shaking a soda, and boiling water show colors, bubbles, or heat, but no new substance forms.\n\n**Density.** Density is the amount of mass per unit of volume: **D = m/v**, in g/mL or g/cm^{3} (1 mL = 1 cm^{3}). Water is 1.00 g/mL; less dense objects float and more dense objects sink. Mass changes with sample size, but density does not, so density can identify a substance. Find volume with **water displacement** (record, drop, record, subtract) or with **L × W × H** for a regular solid.\n\n**Worked example 1:** A metal sample has a mass of 82.8 g. It raises the water in a cylinder from 40.0 mL to 52.0 mL. Volume = 52.0 mL − 40.0 mL = 12.0 mL = 12.0 cm^{3}. D = m/v = 82.8 g ÷ 12.0 cm^{3} = **6.90 g/cm^{3}**. On the table, zinc is 6.90 g/cm^{3}, so the sample is zinc.\n\n**Worked example 2:** A liquid has a density of 1.18 g/mL. What is the mass of 750.0 mL? m = D × v = 1.18 g/mL × 750.0 mL = **885 g**. The mL cancel, leaving grams.\n\n**Worked example 3:** Butter is melted in a pan and then heated until it burns. Melting is a phase change, so the butter is still butter: **physical**. Burning makes black smoke and new substances: **chemical**.\n\n**Watch out for:** flipping the formula to v/m, using the final water level instead of the change, forgetting to subtract the empty cylinder's mass, calling every bubble or color change \"chemical,\" and calling a compound like water a mixture.",
+    "prompts": [
+      "Classify each as an element, compound, homogeneous mixture, or heterogeneous mixture, and explain one: helium, carbon dioxide, sweet tea, vegetable soup.",
+      "Hot chocolate powder stirred into hot milk seems to disappear. Is this a physical or chemical change? Use the word \"unpredicted\" or \"new substance\" in your answer.",
+      "A rock has a mass of 54.0 g and raises the water in a graduated cylinder from 30.0 mL to 50.0 mL. Write the formula, show your setup, and give the density with units.",
+      "A block of wood has a density of 0.85 g/cm^{3}. Will it sink or float in water? Explain using numbers."
+    ],
+    "targets": ["U1.LT4"]
+  }
+}

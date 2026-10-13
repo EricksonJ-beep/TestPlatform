@@ -3,25 +3,26 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Check, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Eye, Lightbulb, X } from "lucide-react";
 import { cn } from "cn";
 import type { Answer } from "@/lib/grading";
 import type { PracticeFeedback } from "@/lib/practice";
-import type { PracticeProgress } from "@/lib/practice-rules";
+import { HINT_AFTER_MISSES, type PracticeProgress } from "@/lib/practice-rules";
 import type { PracticeRunnerPayload } from "@/lib/queries/practice";
 import { RichText } from "@/components/rich-text";
 import { StimulusPanel } from "@/components/stimulus/stimulus-panel";
 import { TargetChip } from "@/components/targets/target-chip";
 import { Button } from "@/components/ui/button";
 import { AnswerInput, isAnswered } from "../../attempt/[attemptId]/answer-input";
-import { answerPractice, startBuiltPractice, startPractice } from "../actions";
+import { answerPractice, revealPractice, startBuiltPractice, startPractice } from "../actions";
 
 type Answered = { answer: Answer; feedback: PracticeFeedback };
 
 /**
  * The practice screen (PLAN.md §3.7): the calm test layout, but each answer is
- * checked on the spot and shown with the explanation. One answer per question;
- * unlimited attempts of the set.
+ * checked on the spot, Apps Script style (Jon, Oct 13 2026): a miss means try
+ * again, the hint shows after three misses, and Show answer reveals the key
+ * and explanation any time. Unlimited attempts of the set.
  */
 export function PracticeRunner({ payload }: { payload: PracticeRunnerPayload }) {
   const router = useRouter();
@@ -30,7 +31,7 @@ export function PracticeRunner({ payload }: { payload: PracticeRunnerPayload }) 
   const [answered, setAnswered] = useState<Record<string, Answered>>(payload.answered);
   const [progress, setProgress] = useState<PracticeProgress>(payload.progress);
   const [draft, setDraft] = useState<Record<string, Answer>>({});
-  const firstOpen = questions.findIndex((q) => !answered[q.id]);
+  const firstOpen = questions.findIndex((q) => !answered[q.id]?.feedback.closed);
   const [idx, setIdx] = useState(firstOpen === -1 ? 0 : firstOpen);
   const [summary, setSummary] = useState(!!attempt.completedAt || progress.complete);
   const [checking, setChecking] = useState(false);
@@ -48,20 +49,32 @@ export function PracticeRunner({ payload }: { payload: PracticeRunnerPayload }) 
   }, [payload.fontScale]);
 
   const q = questions[idx];
-  const done = q ? answered[q.id] : undefined;
-  const current: Answer = done ? done.answer : (draft[q?.id ?? ""] ?? null);
+  const entry = q ? answered[q.id] : undefined;
+  const done = entry?.feedback.closed ? entry : undefined;
+  const current: Answer = done ? done.answer : (draft[q?.id ?? ""] ?? entry?.answer ?? null);
+  // The same wrong answer twice is not a new try.
+  const unchanged = !!entry && JSON.stringify(entry.answer) === JSON.stringify(current);
 
-  async function check() {
+  async function send(kind: "check" | "reveal") {
     if (!q || done) return;
     setChecking(true);
     setError(null);
-    const r = await answerPractice(attempt.id, q.id, current);
+    const r =
+      kind === "check"
+        ? await answerPractice(attempt.id, q.id, current)
+        : await revealPractice(attempt.id, q.id);
     setChecking(false);
     if (!r.ok) {
       setError(r.error);
       return;
     }
-    setAnswered((prev) => ({ ...prev, [q.id]: { answer: current, feedback: r.data.feedback } }));
+    setAnswered((prev) => ({
+      ...prev,
+      [q.id]: {
+        answer: kind === "check" ? current : (prev[q.id]?.answer ?? null),
+        feedback: r.data.feedback,
+      },
+    }));
     setProgress(r.data.progress);
     if (r.data.completed) router.refresh();
   }
@@ -78,8 +91,6 @@ export function PracticeRunner({ payload }: { payload: PracticeRunnerPayload }) 
       setError(r.error);
     }
   }
-
-  const correctCount = Object.values(answered).filter((a) => a.feedback.isCorrect === true).length;
 
   return (
     <div
@@ -130,11 +141,11 @@ export function PracticeRunner({ payload }: { payload: PracticeRunnerPayload }) 
               <div className="rounded-lg bg-success-soft py-3">
                 <dt className="text-xs text-success-foreground">Correct</dt>
                 <dd className="text-2xl font-semibold text-success-foreground tabular">
-                  {correctCount}
+                  {progress.correct}
                 </dd>
               </div>
               <div className="rounded-lg bg-brand-soft py-3">
-                <dt className="text-xs text-brand-deep">Answered</dt>
+                <dt className="text-xs text-brand-deep">Done</dt>
                 <dd className="text-2xl font-semibold text-brand-deep tabular">
                   {progress.answered} / {total}
                 </dd>
@@ -151,7 +162,7 @@ export function PracticeRunner({ payload }: { payload: PracticeRunnerPayload }) 
                 ? payload.custom
                   ? "Nice work. Practice again for a new set of questions on the same targets, or build a different one."
                   : "This counts as a completed practice set. Try it again any time; your best score is what your teacher sees."
-                : "Finish every question to complete the set."}
+                : "Get every question right, or show its answer, to complete the set."}
             </p>
             <div className="flex flex-wrap gap-2">
               {progress.complete ? (
@@ -248,7 +259,7 @@ export function PracticeRunner({ payload }: { payload: PracticeRunnerPayload }) 
                   onChange={(a) => setDraft((d) => ({ ...d, [q.id]: a }))}
                 />
               </div>
-              {done ? <Feedback fb={done.feedback} /> : null}
+              {entry ? <Feedback fb={entry.feedback} /> : null}
             </article>
 
             <div className="flex flex-wrap items-center gap-2">
@@ -264,15 +275,28 @@ export function PracticeRunner({ payload }: { payload: PracticeRunnerPayload }) 
               </Button>
               <div className="ml-auto flex gap-2">
                 {!done ? (
-                  <Button
-                    type="button"
-                    size="lg"
-                    disabled={checking || !isAnswered(current)}
-                    onClick={() => void check()}
-                    data-check
-                  >
-                    {checking ? "Checking…" : "Check answer"}
-                  </Button>
+                  <>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="lg"
+                      disabled={checking}
+                      onClick={() => void send("reveal")}
+                      data-reveal
+                    >
+                      <Eye data-icon="inline-start" aria-hidden />
+                      Show answer
+                    </Button>
+                    <Button
+                      type="button"
+                      size="lg"
+                      disabled={checking || !isAnswered(current) || unchanged}
+                      onClick={() => void send("check")}
+                      data-check
+                    >
+                      {checking ? "Checking…" : entry ? "Check again" : "Check answer"}
+                    </Button>
+                  </>
                 ) : idx < total - 1 ? (
                   <Button type="button" size="lg" onClick={() => setIdx((i) => i + 1)} data-next>
                     Next
@@ -292,12 +316,14 @@ export function PracticeRunner({ payload }: { payload: PracticeRunnerPayload }) 
             >
               <ol className="flex flex-wrap gap-1.5">
                 {questions.map((x, i) => {
-                  const a = answered[x.id];
+                  const touched = answered[x.id];
+                  const a = touched?.feedback.closed ? touched : undefined;
+                  const trying = !!touched && !a;
                   return (
                     <li key={x.id}>
                       <button
                         type="button"
-                        aria-label={`Question ${i + 1}${a ? (a.feedback.isCorrect ? ", correct" : a.feedback.isCorrect === false ? ", incorrect" : ", answered") : ""}`}
+                        aria-label={`Question ${i + 1}${a ? (a.feedback.revealed ? ", answer shown" : a.feedback.isCorrect ? ", correct" : a.feedback.isCorrect === false ? ", incorrect" : ", answered") : trying ? ", still trying" : ""}`}
                         aria-current={i === idx ? "step" : undefined}
                         onClick={() => setIdx(i)}
                         className={cn(
@@ -309,7 +335,9 @@ export function PracticeRunner({ payload }: { payload: PracticeRunnerPayload }) 
                               : a.feedback.isCorrect === false
                                 ? "bg-coral-soft text-[#B93E27]"
                                 : "bg-brand-soft text-brand-deep"
-                            : "bg-card text-muted-foreground"
+                            : trying
+                              ? "bg-warning-soft text-warning-foreground"
+                              : "bg-card text-muted-foreground"
                         )}
                       >
                         {i + 1}
@@ -329,6 +357,7 @@ export function PracticeRunner({ payload }: { payload: PracticeRunnerPayload }) 
 }
 
 function Feedback({ fb }: { fb: PracticeFeedback }) {
+  if (!fb.closed) return <TryAgain fb={fb} />;
   const tone =
     fb.isCorrect === true
       ? "border-success/40 bg-success-soft/50"
@@ -339,12 +368,25 @@ function Feedback({ fb }: { fb: PracticeFeedback }) {
     <section
       className={cn("mt-4 flex flex-col gap-2 rounded-lg border px-4 py-3 text-sm", tone)}
       aria-live="polite"
-      data-feedback={fb.isCorrect === null ? "manual" : fb.isCorrect ? "correct" : "incorrect"}
+      data-feedback={
+        fb.revealed
+          ? "revealed"
+          : fb.isCorrect === null
+            ? "manual"
+            : fb.isCorrect
+              ? "correct"
+              : "incorrect"
+      }
     >
       <p className="flex items-center gap-2 font-medium">
-        {fb.isCorrect === true ? (
+        {fb.revealed ? (
+          <>
+            <Eye className="size-4 text-[#B93E27]" aria-hidden /> Here is the answer
+          </>
+        ) : fb.isCorrect === true ? (
           <>
             <Check className="size-4 text-success-foreground" aria-hidden /> Correct
+            {fb.misses > 0 ? ` after ${fb.misses + 1} tries` : ""}
             {fb.pointsPossible > 1 ? ` · ${fb.pointsEarned} of ${fb.pointsPossible} points` : ""}
           </>
         ) : fb.isCorrect === false ? (
@@ -373,8 +415,41 @@ function Feedback({ fb }: { fb: PracticeFeedback }) {
           <RichText text={fb.explanation} />
         </p>
       ) : null}
-      {fb.note && fb.isCorrect === false ? (
+      {fb.note && fb.isCorrect === false && !fb.revealed ? (
         <p className="text-xs text-muted-foreground">{fb.note}</p>
+      ) : null}
+    </section>
+  );
+}
+
+/** A miss on an open question: try again, with the hint once it unlocks. */
+function TryAgain({ fb }: { fb: PracticeFeedback }) {
+  const left = HINT_AFTER_MISSES - fb.misses;
+  return (
+    <section
+      className="mt-4 flex flex-col gap-2 rounded-lg border border-warning/40 bg-warning-soft/50 px-4 py-3 text-sm"
+      aria-live="polite"
+      data-feedback="try-again"
+    >
+      <p className="flex items-center gap-2 font-medium">
+        <X className="size-4 text-warning-foreground" aria-hidden /> Not quite. Change your answer
+        and check again.
+        {fb.pointsEarned ? ` (${fb.pointsEarned} of ${fb.pointsPossible} points so far)` : ""}
+      </p>
+      {fb.note ? <p className="text-xs text-muted-foreground">{fb.note}</p> : null}
+      {fb.hint ? (
+        <p className="flex gap-2 rounded-md bg-card px-3 py-2" data-hint>
+          <Lightbulb className="mt-0.5 size-4 shrink-0 text-warning-foreground" aria-hidden />
+          <span>
+            <span className="font-medium">Hint: </span>
+            <RichText text={fb.hint} />
+          </span>
+        </p>
+      ) : left > 0 ? (
+        <p className="text-xs text-muted-foreground">
+          {fb.misses} {fb.misses === 1 ? "try" : "tries"} so far. A hint shows after{" "}
+          {HINT_AFTER_MISSES}, if your teacher wrote one.
+        </p>
       ) : null}
     </section>
   );

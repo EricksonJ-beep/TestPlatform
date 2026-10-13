@@ -15,15 +15,15 @@ vi.mock("@/db", async () => {
 
 import { and, eq } from "drizzle-orm";
 import { db, schema } from "@/db";
-import type { PoolQuestion } from "@/lib/assessments/serve";
 import { applyPack, listPacks } from "./content-packs";
 import { listCustomPracticeOptions, startCustomPractice } from "./custom-practice";
-import { dealCustomPractice } from "./custom-practice-rules";
+import { dealCustomPractice, type CustomDealQuestion } from "./custom-practice-rules";
 
-const q = (id: string, targetIds: string[]): PoolQuestion => ({
+const q = (id: string, targetIds: string[], difficulty = 3): CustomDealQuestion => ({
   questionId: id,
   points: 1,
   stimulusId: null,
+  difficulty,
   targetIds,
 });
 const seeded =
@@ -39,7 +39,7 @@ describe("dealCustomPractice", () => {
     ["B", Array.from({ length: 20 }, (_, i) => q(`b${i}`, ["B"]))],
     ["C", [q("c0", ["C"]), q("c1", ["C"])]],
   ]);
-  const count = (hand: PoolQuestion[], t: string) =>
+  const count = (hand: CustomDealQuestion[], t: string) =>
     hand.filter((h) => h.targetIds.includes(t)).length;
 
   it("spreads the hand evenly and hands a short target's share to the others", () => {
@@ -63,6 +63,12 @@ describe("dealCustomPractice", () => {
       avoid,
     });
     expect(hand.every((h) => !avoid.has(h.questionId))).toBe(true);
+  });
+
+  it("balances easy, medium, and hard within a target and serves easy first", () => {
+    const mixed = Array.from({ length: 30 }, (_, i) => q(`m${i}`, ["M"], [1, 3, 4][i % 3]));
+    const hand = dealCustomPractice(new Map([["M", mixed]]), 10, { rng: seeded(9) });
+    expect(hand.map((h) => h.difficulty)).toEqual([1, 1, 1, 3, 3, 3, 3, 4, 4, 4]);
   });
 
   it("deals a question tagged to two picked targets once", () => {

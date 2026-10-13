@@ -14,7 +14,12 @@ import {
 } from "@/lib/authz";
 import { logActivity } from "@/lib/activity-log";
 import { customPracticeTitle, startCustomPractice } from "@/lib/custom-practice";
-import { answerPracticeQuestion, completeActivity, startPracticeAttempt } from "@/lib/practice";
+import {
+  answerPracticeQuestion,
+  completeActivity,
+  revealPracticeAnswer,
+  startPracticeAttempt,
+} from "@/lib/practice";
 
 const answerSchema = z
   .discriminatedUnion("kind", [
@@ -72,7 +77,33 @@ export const startPractice = withAuthz(async (practiceSetId: string) => {
   }
 });
 
-/** Answer one question and get instant feedback. One answer per question per attempt. */
+/** Log a finished practice set; the error the student sees when a question isn't theirs. */
+async function afterPracticeChange<T extends { completed: boolean }>(
+  access: { userId: string; attempt: { id: string; practiceSetId: string | null } },
+  run: () => Promise<T>
+): Promise<T> {
+  try {
+    const r = await run();
+    if (r.completed) {
+      await logActivity({
+        userId: access.userId,
+        kind: "practice_completed",
+        detail: { title: await attemptTitle(access.attempt.id, access.attempt.practiceSetId) },
+      });
+      revalidate();
+    }
+    return r;
+  } catch (err) {
+    if (err instanceof Error && err.message === "not on attempt")
+      throw new ActionError("That question isn't on this attempt.", 400);
+    throw err;
+  }
+}
+
+/**
+ * Check one answer and get feedback. A miss leaves the question open to try
+ * again (hint after three); a closed question returns its feedback unchanged.
+ */
 export const answerPractice = withAuthz(
   async (attemptId: string, questionId: string, rawAnswer: unknown) => {
     const access = await requirePracticeAttemptAccess(attemptId);
@@ -80,24 +111,19 @@ export const answerPractice = withAuthz(
     if (access.attempt.completedAt) throw new ActionError("This attempt is finished.", 409);
     const parsed = answerSchema.safeParse(rawAnswer);
     if (!parsed.success) throw new ActionError("Couldn't read that answer.", 400);
-    try {
-      const r = await answerPracticeQuestion(attemptId, questionId, parsed.data);
-      if (r.completed) {
-        await logActivity({
-          userId: access.userId,
-          kind: "practice_completed",
-          detail: { title: await attemptTitle(access.attempt.id, access.attempt.practiceSetId) },
-        });
-        revalidate();
-      }
-      return r;
-    } catch (err) {
-      if (err instanceof Error && err.message === "not on attempt")
-        throw new ActionError("That question isn't on this attempt.", 400);
-      throw err;
-    }
+    return afterPracticeChange(access, () =>
+      answerPracticeQuestion(attemptId, questionId, parsed.data)
+    );
   }
 );
+
+/** Show the answer and explanation; the question closes as not correct. */
+export const revealPractice = withAuthz(async (attemptId: string, questionId: string) => {
+  const access = await requirePracticeAttemptAccess(attemptId);
+  if (access.as !== "student") throw new ActionError("Students only.", 403);
+  if (access.attempt.completedAt) throw new ActionError("This attempt is finished.", 409);
+  return afterPracticeChange(access, () => revealPracticeAnswer(attemptId, questionId));
+});
 
 async function attemptTitle(attemptId: string, practiceSetId: string | null) {
   if (practiceSetId) {

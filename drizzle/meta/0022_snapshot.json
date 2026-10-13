@@ -1,5 +1,5 @@
 {
-  "id": "898432c5-aa5f-44df-8a00-d4b90d485c9b",
+  "id": "d7b07a36-23d3-4b24-b7ed-fafd5dd3490e",
   "prevId": "006ebbfb-9155-4c70-a5c5-b029db799fb9",
   "version": "7",
   "dialect": "postgresql",
@@ -3053,19 +3053,7 @@
           "name": "practice_set_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
-        },
-        "course_id": {
-          "name": "course_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "target_ids": {
-          "name": "target_ids",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "question_set": {
           "name": "question_set",
@@ -3156,21 +3144,6 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
-        },
-        "practice_attempts_course_idx": {
-          "name": "practice_attempts_course_idx",
-          "columns": [
-            {
-              "expression": "course_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
         }
       },
       "foreignKeys": {
@@ -3199,30 +3172,12 @@
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
-        },
-        "practice_attempts_course_id_courses_id_fk": {
-          "name": "practice_attempts_course_id_courses_id_fk",
-          "tableFrom": "practice_attempts",
-          "tableTo": "courses",
-          "columnsFrom": [
-            "course_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
-      "checkConstraints": {
-        "practice_attempts_source": {
-          "name": "practice_attempts_source",
-          "value": "\"practice_attempts\".\"practice_set_id\" is not null or \"practice_attempts\".\"course_id\" is not null"
-        }
-      },
+      "checkConstraints": {},
       "isRLSEnabled": false
     },
     "public.practice_set_questions": {
@@ -3623,13 +3578,6 @@
         },
         "is_archived": {
           "name": "is_archived",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "open_practice": {
-          "name": "open_practice",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
@@ -4283,6 +4231,12 @@
         },
         "explanation": {
           "name": "explanation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hint": {
+          "name": "hint",
           "type": "text",
           "primaryKey": false,
           "notNull": false

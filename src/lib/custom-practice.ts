@@ -9,8 +9,11 @@
  */
 import { and, asc, eq, inArray, isNotNull } from "drizzle-orm";
 import { db, schema } from "@/db";
-import type { PoolQuestion } from "@/lib/assessments/serve";
-import { clampPracticeSize, dealCustomPractice } from "@/lib/custom-practice-rules";
+import {
+  clampPracticeSize,
+  dealCustomPractice,
+  type CustomDealQuestion,
+} from "@/lib/custom-practice-rules";
 import { serveQuestions } from "@/lib/practice";
 
 export type CustomPracticeTarget = { id: string; code: string; title: string; available: number };
@@ -25,12 +28,13 @@ export type CustomPracticeCourse = { id: string; name: string; units: CustomPrac
 async function openQuestionsByTarget(
   courseId: string,
   targetIds?: string[]
-): Promise<Map<string, PoolQuestion[]>> {
+): Promise<Map<string, CustomDealQuestion[]>> {
   const rows = await db
     .select({
       questionId: schema.questions.id,
       points: schema.questions.points,
       stimulusId: schema.questions.stimulusId,
+      difficulty: schema.questions.difficulty,
       targetId: schema.questionTargets.learningTargetId,
     })
     .from(schema.questions)
@@ -60,7 +64,7 @@ async function openQuestionsByTarget(
   const all = new Map<string, string[]>();
   for (const r of rows)
     (all.get(r.questionId) ?? all.set(r.questionId, []).get(r.questionId)!).push(r.targetId);
-  const out = new Map<string, PoolQuestion[]>();
+  const out = new Map<string, CustomDealQuestion[]>();
   const seen = new Set<string>();
   for (const r of rows) {
     const k = `${r.targetId}:${r.questionId}`;
@@ -70,6 +74,7 @@ async function openQuestionsByTarget(
       questionId: r.questionId,
       points: r.points,
       stimulusId: r.stimulusId,
+      difficulty: r.difficulty,
       targetIds: all.get(r.questionId)!,
     };
     (out.get(r.targetId) ?? out.set(r.targetId, []).get(r.targetId)!).push(q);

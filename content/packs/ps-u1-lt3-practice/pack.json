@@ -1,0 +1,26 @@
+{
+  "name": "ps-u1-lt3-practice",
+  "revision": 2,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science A",
+  "unit": "Unit 1 · Introduction to Physical Science",
+  "bank": "PS · U1.LT3 · Practice",
+  "practiceSet": {
+    "title": "U1.LT3 Practice: Dimensional Analysis & Scientific Notation",
+    "description": "Practice converting units with the 5 steps and writing numbers in scientific notation; use the Unit Relationships given in each question.",
+    "drawCount": 10,
+    "targets": ["U1.LT3"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U1.LT3 Relearning: Dimensional Analysis & Scientific Notation",
+    "content": "**What you need to be able to do:** I can convert numbers into different units (dimensional analysis) and use scientific notation.\n\n**Think of it like trading money.** Four quarters and one dollar are the same amount of money, just counted in different units. When you trade 8 quarters for dollars, you know 4 quarters = 1 dollar, so you get 2 dollars. You did not gain or lose money; only the unit changed. Converting units works the same way.\n\n**Dimensional analysis** is a way to change from one set of units to another. A **Unit Relationship** is the amount of one unit being equal to another, like 1 ft = 12 in. A **conversion factor** is that relationship written as a fraction, like 12 in / 1 ft. Because the top and bottom are the same amount, a conversion factor is **equal to one**, so multiplying by it changes the units but not the amount. Use the reference sheet for the Unit Relationships; you do not have to memorize them. Exact numbers like 12 in = 1 ft have infinite sig figs, so they never limit your answer.\n\n**The 5 steps:** 1) **Identify**: given units on the left, wanted units on the right. 2) **Conversion Factors**: find the Unit Relationship. 3) **Set Up**: insert factors so units cancel (**Top vs Bottom**: the unit you have goes on the bottom of the factor; for a rate like ft/s, the s is already on the bottom of the given, so it goes on top of its factor). 4) **Calculate**: multiply the tops and divide by the bottoms. 5) **Sig Figs and Label**: no naked numbers!\n\n**Scientific notation** is digits with a decimal point after the first digit, followed by × 10 to a power. The exponent is **+** if you started with a big number (bigger than 1) and **−** if you started with a small number (less than 1). Keep the same sig figs: 101,000 = 1.01 × 10^{5}.\n\n**Worked example 1:** Convert 3.40 lb to kg. Unit Relationship: 1 kg = 2.205 lb. Set Up: 3.40 lb × (1 kg / 2.205 lb). Lb is on the bottom, so it cancels. Calculate: 3.40 ÷ 2.205 = 1.542. Sig Figs and Label: 3.40 has 3 sig figs, so the answer is **1.54 kg**.\n\n**Worked example 2:** Convert 1.50 ft to cm. There is no ft = cm relationship, so plan a chain: ft → in → cm. Set Up: 1.50 ft × (12 in / 1 ft) × (2.54 cm / 1 in). Feet cancel, then inches cancel. Calculate: 1.50 × 12 × 2.54 = 45.72. Answer: **45.7 cm**.\n\n**Worked example 3:** Write 0.000752 in scientific notation. Move the decimal 4 places to the right to get 7.52. The starting number is small, so the exponent is negative: **7.52 × 10^{-4}**. Going the other way, 6.1 × 10^{3} has a positive exponent, so move the decimal 3 places right: **6,100**.\n\n**Watch out for:** flipping the conversion factor (if the unit you started with is on top, it will not cancel); dividing when you should multiply; giving the wrong sign on the exponent; and leaving off the unit or copying every digit from the calculator.",
+    "prompts": [
+      "Convert 5.8 kg to lb. Write the Unit Relationship (1 kg = 2.205 lb) first, then show your setup, your answer, and the unit.",
+      "Convert 2.0 gal to cups using 1 gal = 4 qt and 1 qt = 4 cups. Show the picket fence and explain how you knew which unit went on the bottom of each factor.",
+      "Write 0.00419 in scientific notation and explain how you knew whether the exponent is positive or negative.",
+      "Write 8.2 × 10^{5} in standard notation. Explain which way you moved the decimal and why."
+    ],
+    "targets": ["U1.LT3"]
+  }
+}

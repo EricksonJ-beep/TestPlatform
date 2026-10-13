@@ -106,8 +106,10 @@ Two kinds of published content live in the student's **Practice** tab, both tagg
 
 **Practice sets** (questions)
 - You build and **publish** curated sets per target/topic from the bank (or a pool)
-- Always visible to enrolled students; unlimited attempts; instant feedback with explanations; not graded
-- **Completion** = every question in the set answered once. Best % is tracked for you and shown to the student.
+- Always visible to enrolled students; unlimited attempts; not graded
+- **Checking, Apps Script style** (Oct 13, 2026): a wrong check says "not quite" and the student tries again (no key shown); the question's **hint** shows after the **3rd miss**; **Show answer** reveals the key + explanation any time and closes the question as not correct. A right check closes it with the explanation.
+- A set can **deal from a bank or pool** (a fresh hand each attempt, unseen questions first), balanced **3 easy : 4 medium : 3 hard** and served easy → hard.
+- **Completion** = every question in the set closed (right, or its answer shown). Best % counts only questions right before a reveal, and is tracked for you and shown to the student.
 
 **Relearning activities** (learning, not testing)
 - A teacher-published item tagged to a target, one of: **video** (YouTube or upload), **reading** (rich text page you write or paste), **worksheet** (one of Jon's Apps Script interactive worksheets — see §3.7a), **external link** (a Google Doc, Slides, EdPuzzle, etc.), or **guided notes** (a page with 2–5 short-response prompts).
@@ -126,7 +128,7 @@ Jon's interactive worksheets (Apps Script web apps: per-problem Check with unlim
 
 **Completion = final submit received** (any score), matching the completion-not-score rule. A per-assignment option can require ≥N% on the worksheet if Jon ever wants it. Bloom also stores cards-correct and total checks from the payload so the relearning monitor can show "worksheet: 12/15 correct, 41 checks, hint used on 3."
 
-**Going forward, every new worksheet is built Bloom-ready:** LT label in each section title, webhook block filled in, and registered in Bloom the same day it's posted to Classroom.
+**Going forward (Oct 13, 2026): new practice is built in Bloom, not Apps Script** — per-target banks dealt by practice sets with Apps Script–style checking (§3.7), so there is nothing to deploy and register. Worksheets already registered keep working through the webhook. See `docs/ps-practice-banks-plan.md`.
 
 **As retake gates:** for each *required* target, the student must complete **at least one relearning activity and at least one practice set** tagged to that target (any of them by default; you can pin specific ones per assignment). Optional targets the student opts into follow the same gates. This is why "Suggested before your retake" appears on the student home — the platform shows exactly which items would satisfy the gate.
 
@@ -280,7 +282,7 @@ A website alone **cannot** fully lock a device; true lockdown needs installed so
 
 **Identity & orgs:** `users` (role) · `organizations` · `courses` · `classes` · `enrollments`
 **Standards:** `learning_targets` · `standards` (framework, code)
-**Content:** `question_banks` (owner, sharing) · `questions` (type, stem, media, difficulty, bloom, explanation, version, **stimulus_id** nullable, **grading_config** JSONB for numeric mode/tolerance/unit, **template_id** nullable for generated variants) · `question_options` · `question_targets` (many-to-many) · `question_pools` · `pool_questions` · `media_assets` · **`stimuli`** (owner, kind: text|image|video|audio, content/media ref, title) · **`question_templates`** (owner, stem template, variables JSONB with ranges/steps, answer expression, unit)
+**Content:** `question_banks` (owner, sharing) · `questions` (type, stem, media, difficulty, bloom, explanation, **hint** (practice, after 3 misses), version, **stimulus_id** nullable, **grading_config** JSONB for numeric mode/tolerance/unit, **template_id** nullable for generated variants) · `question_options` · `question_targets` (many-to-many) · `question_pools` · `pool_questions` · `media_assets` · **`stimuli`** (owner, kind: text|image|video|audio, content/media ref, title) · **`question_templates`** (owner, stem template, variables JSONB with ranges/steps, answer expression, unit)
 **Assessments:** `assessments` (**type**: practice/formative/summative; attempt policy; review mode) · `assessment_sections` · `assessment_questions` (question OR pool ref, order, points; questions sharing a `stimulus_id` are kept contiguous and the stimulus renders once) · `practice_sets` (or assessments with type=practice)
 **Delivery:** `assignments` (assessment ↔ class, window, code, time limit, attempts allowed, review mode, **retake threshold** default 80) · `attempts` (student, assignment, number, **scope**: full or list of target ids, version/question set served, status, score, started/finished) · `responses` (attempt ↔ question, answer, auto score, manual score, flags) · `attempt_target_scores` (attempt ↔ learning target: points earned / possible, percent) · `assignment_final_scores` (student ↔ assignment: per-target best + combined total, recomputed after each attempt)
 
@@ -350,7 +352,8 @@ Repo, Next.js + Tailwind + shadcn scaffold, Neon project + Drizzle schema/migrat
 **Parked — reviewed, NOT approved (do not build unless Jon says so):** categorize/bucket questions · show-your-work drawing · audio response · file-upload response · word bank for fill-in-blank · build-a-test-from-existing-tests · AI rubric scoring of written responses · time-per-question analytics · per-distractor feedback · teacher-pace mode · certificates · email reminders · student self-registration.
 | Student login = | Email + password (Auth.js Credentials + bcrypt); Google later if wanted |
 | Infrastructure = | **Neon + Drizzle + Auth.js + Cloudflare R2 + Vercel** (decided Sept 21, 2026; replaces Supabase — free-tier auto-pause and slot limits) |
-| Practice source = | Curated sets you build and publish, plus student-built practice by unit and learning target from banks you open for practice (Oct 13, 2026) |
+| Practice source = | Curated sets you build and publish; since Oct 13, 2026 built in Bloom from per-target banks (about 50 questions per learning target), not Apps Script; plus student-built practice by unit and learning target from banks you open for practice (Oct 13, 2026) |
+| Practice checking = | Apps Script style: try again after a miss, hint after 3 misses, Show answer any time; complete when every question is closed; deals balanced 3:4:3 easy/medium/hard |
 | Sharing at launch = | You + one physical science colleague, shared bank |
 | Skyward = | Track highest + CSV export; no direct integration in v1 |
 | Formative attempts = | Default 3, configurable per assignment |
@@ -378,7 +381,9 @@ Keep PLAN.md in the repo root and update the decisions log as you go — it's Cl
 Template: `question_import_template.csv` (also `question_import_template.xlsx` with dropdowns + an Instructions sheet). One question per row. Claude Code's importer must accept exactly this format.
 
 **Columns (in order):**
-`external_id, course, unit, topic, learning_target, standard, pool, type, stem, stimulus_ref, stimulus_text, stimulus_image_url, stimulus_video_url, option_a, option_b, option_c, option_d, option_e, option_f, correct, tolerance, tolerance_mode, unit, points, difficulty, bloom, grading, explanation, image_url, video_url, tags`
+`external_id, course, unit, topic, learning_target, standard, pool, type, stem, stimulus_ref, stimulus_text, stimulus_image_url, stimulus_video_url, option_a, option_b, option_c, option_d, option_e, option_f, correct, tolerance, tolerance_mode, unit, points, difficulty, bloom, grading, explanation, hint, image_url, video_url, tags`
+
+`hint` (optional) is shown in practice after the third miss.
 
 **Required:** `course, unit, learning_target, type, stem`, and `correct` (except `matching`, `extended_response`). Missing required → row rejected with a clear error; import continues for other rows and shows a summary.
 

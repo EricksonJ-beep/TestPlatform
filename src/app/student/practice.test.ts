@@ -43,7 +43,7 @@ import {
 } from "@/app/app/practice/actions";
 import { saveAnswer, startAttempt, submitAttempt } from "./actions";
 import { saveCorrection, submitCorrections } from "./corrections/actions";
-import { answerPractice, finishActivity, startPractice } from "./practice/actions";
+import { answerPractice, finishActivity, revealPractice, startPractice } from "./practice/actions";
 
 const ids = {
   teacher: "",
@@ -156,6 +156,7 @@ beforeAll(async () => {
           type: "multiple_choice",
           stem: `LT${i + 1} q${n}`,
           explanation: `Because LT${i + 1} says so.`,
+          hint: `Reread LT${i + 1}.`,
           points: 1,
         })
         .returning();
@@ -335,7 +336,7 @@ describe("Ticket 1.13: practice sets and relearning activities as retake gates",
     expect(await gate()).toMatchObject({ activityOk: true, practiceOk: false, unlocked: false });
   });
 
-  it("the practice set gives instant feedback, completes when every question is answered, and opens the gate", async () => {
+  it("the practice set checks Apps Script style, completes when every question is closed, and opens the gate", async () => {
     asUser(ids.student, "student");
     const { attemptId, resumed } = await ok(startPractice(ids.set));
     expect(resumed).toBe(false);
@@ -349,32 +350,56 @@ describe("Ticket 1.13: practice sets and relearning activities as retake gates",
       ids.q[lt4()].find((x) => x.id === s.questionId)!
     );
 
-    const first = await ok(
-      answerPractice(attemptId, q1.id, { kind: "choice", optionId: q1.wrong })
-    );
+    // A miss keeps the question open and hides the key, the explanation, and option feedback.
+    const miss = { kind: "choice", optionId: q1.wrong } as const;
+    const first = await ok(answerPractice(attemptId, q1.id, miss));
     expect(first.feedback).toMatchObject({
       isCorrect: false,
-      pointsEarned: 0,
-      correctAnswer: "Right",
-      explanation: "Because LT4 says so.",
-      optionFeedback: ["Not that one."],
+      closed: false,
+      misses: 1,
+      correctAnswer: null,
+      explanation: null,
+      optionFeedback: [],
+      hint: null,
     });
-    expect(first.progress).toMatchObject({ answered: 1, total: 3, complete: false });
-    // One answer per question: a second answer returns the first's feedback.
-    const again = await ok(
+    expect(first.progress).toMatchObject({ answered: 0, total: 3, complete: false });
+    await ok(answerPractice(attemptId, q1.id, miss));
+    // The third miss unlocks the hint.
+    const third = await ok(answerPractice(attemptId, q1.id, miss));
+    expect(third.feedback).toMatchObject({ misses: 3, closed: false, hint: "Reread LT4." });
+    // Then a right answer closes it with the explanation.
+    const fixed = await ok(
       answerPractice(attemptId, q1.id, { kind: "choice", optionId: q1.right })
     );
-    expect(again.feedback.isCorrect).toBe(false);
+    expect(fixed.feedback).toMatchObject({
+      isCorrect: true,
+      closed: true,
+      misses: 3,
+      explanation: "Because LT4 says so.",
+    });
+    expect(fixed.progress).toMatchObject({ answered: 1, correct: 1 });
+    // A closed question never changes.
+    const again = await ok(answerPractice(attemptId, q1.id, miss));
+    expect(again.feedback.isCorrect).toBe(true);
     await fails(
       answerPractice(attemptId, ids.q[lt4()][0].id, { kind: "choice", optionId: null }),
       400
     );
 
     expect(await gate()).toMatchObject({ practiceOk: false });
-    await ok(answerPractice(attemptId, q2.id, { kind: "choice", optionId: q2.right }));
+    // Show answer closes a question as not correct, with the key and explanation.
+    const shown = await ok(revealPractice(attemptId, q2.id));
+    expect(shown.feedback).toMatchObject({
+      revealed: true,
+      closed: true,
+      isCorrect: false,
+      correctAnswer: "Right",
+      explanation: "Because LT4 says so.",
+    });
     const last = await ok(answerPractice(attemptId, q3.id, { kind: "choice", optionId: q3.right }));
     expect(last).toMatchObject({ completed: true, progress: { complete: true, percent: 66.7 } });
     await fails(answerPractice(attemptId, q3.id, { kind: "choice", optionId: q3.right }), 409);
+    await fails(revealPractice(attemptId, q3.id), 409);
 
     expect(await gate()).toMatchObject({
       correctionsOk: true,

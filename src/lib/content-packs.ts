@@ -13,6 +13,10 @@
  * the adding for me"): `activity` names an interactive page Bloom hosts under
  * public/activities/ (or a video / link), the learning targets it satisfies by
  * code, and whether it is published. Such a pack needs no bank or CSV.
+ *
+ * Practice packs (Jon, Oct 13 2026: a bank of about 50 per learning target):
+ * `practiceSet` publishes a set that deals from the pack's bank, and the
+ * activity can be a reading or guided notes written right in the pack.
  */
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
@@ -24,6 +28,12 @@ import { commitImport } from "@/lib/import/question-import";
 
 export type PackDefinition = {
   name: string;
+  /**
+   * Bump to ship corrections to a pack that already applied (Jon, Oct 13 2026).
+   * Each revision applies once: questions update in place by external_id (new
+   * versions), and the set and activity are found by title and updated.
+   */
+  revision?: number;
   teacherEmail: string;
   course: string;
   /**
@@ -60,14 +70,33 @@ export type PackDefinition = {
    * when the course does not have it yet.
    */
   targets?: { unit: string; code: string; title: string; description?: string }[];
+  /** A practice set that deals a fresh hand from the pack's bank each attempt. */
+  practiceSet?: {
+    title: string;
+    description?: string;
+    /** Questions per attempt; the deal balances easy, medium, and hard. */
+    drawCount: number;
+    /** Learning-target codes in this course; unknown codes are reported, not created. */
+    targets: string[];
+    /** Default true; a published set shows in the student Practice tab. */
+    published?: boolean;
+  };
   /** A relearning activity to create for the teacher in this course. */
   activity?: {
-    /** Defaults to "interactive": a page under public/activities/ or a full https link. */
-    kind?: "interactive" | "video" | "link";
+    /**
+     * Defaults to "interactive": a page under public/activities/ or a full
+     * https link. "reading" and "guided_notes" carry their text in `content`.
+     */
+    kind?: "interactive" | "video" | "link" | "reading" | "guided_notes";
     title: string;
-    url: string;
+    /** Required for interactive, video, and link. */
+    url?: string;
     /** Shown to students before they start (the editor's "Instructions for students"). */
     instructions?: string;
+    /** The reading itself (Bloom rich text; blank lines split paragraphs). Wins over `instructions`. */
+    content?: string;
+    /** Guided notes only: 2–5 prompts the student answers. */
+    prompts?: string[];
     /** Learning-target codes in this course, e.g. ["U2"]; unknown codes are reported, not created. */
     targets: string[];
     /** Default true; a published activity shows in the student Practice tab. */
@@ -81,6 +110,11 @@ export type PackOutcome =
   | { name: string; status: "skipped"; reason: string };
 
 const key = (s: string) => s.trim().toLowerCase();
+
+/** The name a pack's application is recorded under: revision 1 keeps the bare name. */
+export function appliedName(def: Pick<PackDefinition, "name" | "revision">): string {
+  return def.revision && def.revision > 1 ? `${def.name}@r${def.revision}` : def.name;
+}
 
 /** Every pack folder under content/packs, in name order. */
 export function listPacks(root = join(process.cwd(), "content", "packs")): PackDefinition[] {
@@ -174,7 +208,7 @@ export async function applyPack(
 
   const renamed = await syncNames(def, teacher.id);
   const done = await db.query.contentPacks.findFirst({
-    where: eq(schema.contentPacks.name, def.name),
+    where: eq(schema.contentPacks.name, appliedName(def)),
   });
   if (done) return { name: def.name, status: "already_applied", renamed };
   const course = await db.query.courses.findFirst({
@@ -191,10 +225,22 @@ export async function applyPack(
   if (def.targets?.length) summary.targets = await upsertTargets(def.targets, course.id);
   if (def.bank)
     Object.assign(summary, await applyQuiz(def, def.bank, teacher.id, course.id, root, errors));
+  if (def.practiceSet) {
+    const bankId = summary.bankId as string | undefined;
+    if (bankId)
+      summary.practiceSet = await applyPracticeSet(
+        def.practiceSet,
+        bankId,
+        teacher.id,
+        course.id,
+        errors
+      );
+    else errors.push("practiceSet needs the pack's bank; no set made");
+  }
   if (def.activity)
     summary.activity = await applyActivity(def.activity, teacher.id, course.id, errors);
   summary.errors = errors;
-  await db.insert(schema.contentPacks).values({ name: def.name, summary });
+  await db.insert(schema.contentPacks).values({ name: appliedName(def), summary });
   return { name: def.name, status: "applied", summary };
 }
 
@@ -386,6 +432,80 @@ async function applyQuiz(
   };
 }
 
+/** Course targets matching the listed codes; unknown codes are reported. */
+async function resolveTargets(
+  codes: string[],
+  courseId: string,
+  errors: string[]
+): Promise<string[]> {
+  const targets = await db.query.learningTargets.findMany({
+    columns: { id: true, code: true },
+    where: eq(schema.learningTargets.courseId, courseId),
+  });
+  const wanted = codes.map(key);
+  for (const code of codes)
+    if (!targets.some((t) => key(t.code) === key(code)))
+      errors.push(`learning target "${code}" not found in the course; not tagged`);
+  return targets.filter((t) => wanted.includes(key(t.code))).map((t) => t.id);
+}
+
+/**
+ * The practice half of a pack: a set that deals `drawCount` from the bank.
+ * Reuses the teacher's set in this course with the same title, pointing it at
+ * the bank; publishes only when a target is tagged, so the set lands where
+ * the retake gates look for it.
+ */
+async function applyPracticeSet(
+  ps: NonNullable<PackDefinition["practiceSet"]>,
+  bankId: string,
+  teacherId: string,
+  courseId: string,
+  errors: string[]
+): Promise<Record<string, unknown>> {
+  const targetIds = await resolveTargets(ps.targets, courseId, errors);
+  const published = ps.published ?? true;
+  if (published && !targetIds.length)
+    errors.push("no learning target matched, so the practice set stays a draft");
+  const canPublish = published && targetIds.length > 0;
+  const existing = await db.query.practiceSets.findFirst({
+    columns: { id: true },
+    where: and(
+      eq(schema.practiceSets.ownerId, teacherId),
+      eq(schema.practiceSets.courseId, courseId),
+      sql`lower(${schema.practiceSets.title}) = ${key(ps.title)}`
+    ),
+  });
+  const values = {
+    title: ps.title,
+    description: ps.description ?? null,
+    bankId,
+    poolId: null,
+    worksheetId: null,
+    drawCount: ps.drawCount,
+    ...(canPublish ? { isPublished: true } : {}),
+  };
+  let practiceSetId: string;
+  if (existing) {
+    practiceSetId = existing.id;
+    await db
+      .update(schema.practiceSets)
+      .set(values)
+      .where(eq(schema.practiceSets.id, practiceSetId));
+  } else {
+    const [row] = await db
+      .insert(schema.practiceSets)
+      .values({ ...values, ownerId: teacherId, courseId, isPublished: canPublish })
+      .returning({ id: schema.practiceSets.id });
+    practiceSetId = row.id;
+  }
+  if (targetIds.length)
+    await db
+      .insert(schema.practiceSetTargets)
+      .values(targetIds.map((learningTargetId) => ({ practiceSetId, learningTargetId })))
+      .onConflictDoNothing();
+  return { practiceSetId, reused: Boolean(existing), published: canPublish };
+}
+
 /**
  * The activity half of a pack. Reuses the teacher's activity in this course
  * that already carries the title or (for a page) the same address, so a draft
@@ -400,32 +520,32 @@ async function applyActivity(
 ): Promise<Record<string, unknown>> {
   const kind = act.kind ?? "interactive";
   const published = act.published ?? true;
-  const targets = await db.query.learningTargets.findMany({
-    columns: { id: true, code: true },
-    where: eq(schema.learningTargets.courseId, courseId),
-  });
-  const wanted = act.targets.map(key);
-  const targetIds = targets.filter((t) => wanted.includes(key(t.code))).map((t) => t.id);
-  for (const code of act.targets)
-    if (!targets.some((t) => key(t.code) === key(code)))
-      errors.push(`learning target "${code}" not found in the course; not tagged`);
+  const targetIds = await resolveTargets(act.targets, courseId, errors);
   if (published && !targetIds.length) {
     errors.push("no learning target matched, so the activity stays a draft");
   }
   const canPublish = published && targetIds.length > 0;
+  const url = act.url ?? null;
+  const content = act.content ?? act.instructions ?? null;
+  const prompts =
+    kind === "guided_notes"
+      ? (act.prompts ?? []).map((prompt, i) => ({ id: `p${i + 1}`, prompt }))
+      : null;
 
   const existing = await db.query.relearningActivities.findFirst({
     columns: { id: true },
     where: and(
       eq(schema.relearningActivities.ownerId, teacherId),
       eq(schema.relearningActivities.courseId, courseId),
-      or(
-        sql`lower(${schema.relearningActivities.title}) = ${key(act.title)}`,
-        and(
-          eq(schema.relearningActivities.kind, kind),
-          eq(schema.relearningActivities.url, act.url)
-        )
-      )
+      url
+        ? or(
+            sql`lower(${schema.relearningActivities.title}) = ${key(act.title)}`,
+            and(
+              eq(schema.relearningActivities.kind, kind),
+              eq(schema.relearningActivities.url, url)
+            )
+          )
+        : sql`lower(${schema.relearningActivities.title}) = ${key(act.title)}`
     ),
   });
   let activityId: string;
@@ -436,8 +556,9 @@ async function applyActivity(
       .set({
         title: act.title,
         kind,
-        url: act.url,
-        content: act.instructions ?? null,
+        url,
+        content,
+        prompts,
         ...(canPublish ? { isPublished: true } : {}),
       })
       .where(eq(schema.relearningActivities.id, activityId));
@@ -449,8 +570,9 @@ async function applyActivity(
         courseId,
         kind,
         title: act.title,
-        url: act.url,
-        content: act.instructions ?? null,
+        url,
+        content,
+        prompts,
         isPublished: canPublish,
       })
       .returning({ id: schema.relearningActivities.id });

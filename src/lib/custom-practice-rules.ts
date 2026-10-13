@@ -6,7 +6,14 @@
  * Pure rules: how many questions a student may ask for, and how a hand is
  * dealt across the targets they picked.
  */
-import { drawFromPool, type PoolQuestion } from "@/lib/assessments/serve";
+import {
+  dealByDifficulty,
+  difficultyBand,
+  drawFromPool,
+  type PoolQuestion,
+} from "@/lib/assessments/serve";
+
+export type CustomDealQuestion = PoolQuestion & { difficulty: number };
 
 /** The lengths a student can pick; the deal stops early when the targets run out. */
 export const CUSTOM_PRACTICE_SIZES = [5, 10, 20, 30] as const;
@@ -21,18 +28,20 @@ export function clampPracticeSize(n: number): number {
  * Deal `count` questions across the picked targets. Rule: every target gets an
  * even share (the remainder goes to targets chosen at random), a target that
  * runs short hands its leftover share to the others, within a target the draw
+ * balances easy, medium, and hard like a practice set (dealByDifficulty) and
  * prefers questions the student hasn't seen (`avoid`), a question tagged to two
- * picked targets is dealt once, and the hand is shuffled so targets interleave.
+ * picked targets is dealt once, and the hand is served easy → medium → hard,
+ * shuffled within each band so targets interleave.
  */
 export function dealCustomPractice(
-  byTarget: Map<string, PoolQuestion[]>,
+  byTarget: Map<string, CustomDealQuestion[]>,
   count: number,
   opts: { rng: () => number; avoid?: Set<string> }
-): PoolQuestion[] {
+): CustomDealQuestion[] {
   const targets = [...byTarget.keys()];
   if (count <= 0 || targets.length === 0) return [];
   const taken = new Set<string>();
-  const out: PoolQuestion[] = [];
+  const out: CustomDealQuestion[] = [];
   const left = (t: string) => (byTarget.get(t) ?? []).filter((q) => !taken.has(q.questionId));
 
   // Even shares, remainder to random targets.
@@ -43,11 +52,11 @@ export function dealCustomPractice(
   // Deal shares; whatever a short target could not fill goes round again.
   let owed = 0;
   for (const t of targets) {
-    const hand = drawFromPool(left(t), shares.get(t)!, {
+    const hand = dealByDifficulty(left(t), shares.get(t)!, {
       drawStimulusGroups: false,
       rng: opts.rng,
       avoid: opts.avoid,
-    });
+    }) as CustomDealQuestion[];
     for (const q of hand) taken.add(q.questionId);
     out.push(...hand);
     owed += shares.get(t)! - hand.length;
@@ -64,14 +73,19 @@ export function dealCustomPractice(
         drawStimulusGroups: false,
         rng: opts.rng,
         avoid: opts.avoid,
-      });
+      }) as CustomDealQuestion[];
       if (!q) continue;
       taken.add(q.questionId);
       out.push(q);
       owed--;
     }
   }
-  return shuffle(out, opts.rng);
+  return (["easy", "medium", "hard"] as const).flatMap((band) =>
+    shuffle(
+      out.filter((q) => difficultyBand(q.difficulty) === band),
+      opts.rng
+    )
+  );
 }
 
 function shuffle<T>(arr: T[], rng: () => number): T[] {

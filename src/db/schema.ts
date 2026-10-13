@@ -391,6 +391,8 @@ export const questions = pgTable(
     type: questionType("type").notNull(),
     stem: text("stem").notNull(),
     explanation: text("explanation"),
+    /** Shown in practice after the third miss (Jon, Oct 13 2026: Apps Script–style checking). */
+    hint: text("hint"),
     points: integer("points").default(1).notNull(),
     difficulty: integer("difficulty").default(3).notNull(),
     bloom: bloomLevel("bloom"),
@@ -1122,7 +1124,7 @@ export const practiceAttempts = pgTable(
     maxScore: doublePrecision("max_score"),
     percent: doublePrecision("percent"),
     startedAt: timestamp("started_at", { withTimezone: true }).defaultNow().notNull(),
-    /** Completion = every question answered once. */
+    /** Completion = every question closed: answered correctly or its answer revealed. */
     completedAt: timestamp("completed_at", { withTimezone: true }),
     ...timestamps,
   },
