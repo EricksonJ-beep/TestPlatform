@@ -7,8 +7,8 @@ import { listAssessments } from "@/lib/queries/assessments";
 import { listUnitsForTeacher } from "@/lib/queries/courses";
 import { focusShelves, groupByUnit } from "@/lib/unit-shelves";
 import { EmptyState } from "@/components/empty-state";
-import { UnitBoard } from "@/components/app/unit-board";
-import { placeAssessment } from "./actions";
+import { KindBoard } from "@/components/app/kind-board";
+import { autoOrderAssessmentColumn, placeAssessmentInColumn } from "./actions";
 import { NewAssessmentDialog } from "./new-assessment-dialog";
 import { TYPE_STYLE } from "./type-badge";
 
@@ -29,20 +29,13 @@ export default async function AssessmentsPage() {
         <Link
           href={`/app/assessments/${a.id}`}
           draggable={false}
-          className="flex h-full flex-col gap-2 rounded-lg border border-border bg-card p-4 pl-9 transition-colors outline-none hover:border-brand/50 focus-visible:ring-3 focus-visible:ring-ring/50"
+          className="flex h-full flex-col gap-1.5 rounded-lg border border-border bg-card px-3 py-2.5 pl-7 transition-colors outline-none hover:border-brand/50 focus-visible:ring-3 focus-visible:ring-ring/50"
         >
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="text-base leading-tight">{a.title}</h3>
-            <span
-              className={`shrink-0 rounded-md px-2 py-0.5 text-xs font-medium ${TYPE_STYLE[a.type]}`}
-            >
+          <h3 className="text-sm leading-snug font-medium">{a.title}</h3>
+          <p className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground tabular">
+            <span className={`rounded-md px-1.5 py-0.5 font-medium ${TYPE_STYLE[a.type]}`}>
               {a.type}
             </span>
-          </div>
-          <p className="text-sm text-muted-foreground tabular">
-            {a.sections} {a.sections === 1 ? "section" : "sections"}
-          </p>
-          <p className="mt-auto text-xs text-muted-foreground">
             {a.isPublished ? "Published" : "Draft"}
             {a.assignments > 0 ? ` · assigned ${a.assignments}×` : ""}
           </p>
@@ -83,7 +76,7 @@ export default async function AssessmentsPage() {
           />
         </div>
       ) : board ? (
-        <UnitBoard
+        <KindBoard
           // Keyed on its cards: the board keeps drag state locally, so a server change
           // (a card put in this course, a new card) remounts it with the fresh cards.
           key={`${board.courseId ?? "none"}:${board.shelves.flatMap((s) => s.items.map((i) => i.id)).join(",")}`}
@@ -91,7 +84,8 @@ export default async function AssessmentsPage() {
           orphans={focused ? orphans : []}
           adoptInto={focused && current ? { type: "assessment", course: current } : undefined}
           noun="assessment"
-          place={placeAssessment}
+          place={placeAssessmentInColumn}
+          autoOrder={autoOrderAssessmentColumn}
         />
       ) : null}
     </div>

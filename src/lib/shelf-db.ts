@@ -53,3 +53,50 @@ export async function placeOnShelf(
     await db.update(t).set({ sortOrder: i++ }).where(eq(t.id, rowId));
   }
 }
+
+/**
+ * Persist a drop into a unit's type column (Jon, Oct 13 2026; src/lib/bank-kinds.ts):
+ * the unit as placeOnShelf, the item's type for good, and the column's order.
+ * Ids in `orderedIds` that are not the owner's, or not in the same course and
+ * unit as the moved item, are ignored.
+ */
+export async function placeInKindColumn(
+  table: ShelfTable,
+  ownerId: string,
+  id: string,
+  unitId: string | null,
+  kind: string,
+  orderedIds: string[]
+): Promise<void> {
+  const t = table as typeof schema.questionBanks;
+  await placeOnShelf(table, ownerId, id, unitId, [id]);
+  await db.update(t).set({ kind }).where(eq(t.id, id));
+  const [moved] = await db
+    .select({ courseId: t.courseId, unitId: t.unitId })
+    .from(t)
+    .where(eq(t.id, id));
+  const ids = Array.from(new Set([...orderedIds.map(String), id]));
+  const mine = await db
+    .select({ id: t.id, courseId: t.courseId, unitId: t.unitId })
+    .from(t)
+    .where(and(inArray(t.id, ids), eq(t.ownerId, ownerId)));
+  const allowed = new Set(
+    mine.filter((r) => r.courseId === moved.courseId && r.unitId === moved.unitId).map((r) => r.id)
+  );
+  let i = 0;
+  for (const rowId of ids) {
+    if (!allowed.has(rowId)) continue;
+    await db.update(t).set({ kindOrder: i++ }).where(eq(t.id, rowId));
+  }
+}
+
+/** Hand a column back to automatic order. The owner's rows only. */
+export async function clearKindOrder(table: ShelfTable, ownerId: string, ids: string[]) {
+  const t = table as typeof schema.questionBanks;
+  const list = ids.map(String).slice(0, 500);
+  if (list.length)
+    await db
+      .update(t)
+      .set({ kindOrder: null })
+      .where(and(inArray(t.id, list), eq(t.ownerId, ownerId)));
+}

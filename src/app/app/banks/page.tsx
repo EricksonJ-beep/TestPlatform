@@ -7,8 +7,8 @@ import { listMyBanks } from "@/lib/queries/banks";
 import { listUnitsForTeacher } from "@/lib/queries/courses";
 import { focusShelves, groupByUnit } from "@/lib/unit-shelves";
 import { EmptyState } from "@/components/empty-state";
-import { UnitBoard } from "@/components/app/unit-board";
-import { placeBank } from "./actions";
+import { KindBoard } from "@/components/app/kind-board";
+import { autoOrderColumn, placeBankInColumn } from "./actions";
 import { NewBankDialog } from "./new-bank-dialog";
 
 export const metadata: Metadata = { title: "Question banks" };
@@ -30,25 +30,18 @@ export default async function BanksPage({ searchParams }: PageProps<"/app/banks"
         <Link
           href={`/app/banks/${b.id}`}
           draggable={false}
-          className="flex h-full flex-col gap-2 rounded-lg border border-border bg-card p-4 pl-9 transition-colors outline-none hover:border-brand/50 focus-visible:ring-3 focus-visible:ring-ring/50"
+          className="flex h-full flex-col gap-1.5 rounded-lg border border-border bg-card px-3 py-2.5 pl-7 transition-colors outline-none hover:border-brand/50 focus-visible:ring-3 focus-visible:ring-ring/50"
         >
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="text-base leading-tight">{b.name}</h3>
+          <h3 className="text-sm leading-snug font-medium">{b.name}</h3>
+          <p className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground tabular">
+            {b.questions} {b.questions === 1 ? "question" : "questions"}
             {b.isArchived ? (
-              <span className="shrink-0 rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-                Archived
-              </span>
+              <span className="rounded-md bg-muted px-1.5 py-0.5 font-medium">Archived</span>
             ) : b.sharedWith > 0 ? (
-              <span className="shrink-0 rounded-md bg-brand-soft px-2 py-0.5 text-xs font-medium text-brand-deep">
+              <span className="rounded-md bg-brand-soft px-1.5 py-0.5 font-medium text-brand-deep">
                 Shared · {b.sharedWith}
               </span>
             ) : null}
-          </div>
-          {b.description ? (
-            <p className="line-clamp-2 text-sm text-muted-foreground">{b.description}</p>
-          ) : null}
-          <p className="mt-auto text-xs text-muted-foreground tabular">
-            {b.questions} {b.questions === 1 ? "question" : "questions"}
           </p>
         </Link>
       ),
@@ -93,7 +86,7 @@ export default async function BanksPage({ searchParams }: PageProps<"/app/banks"
           />
         </div>
       ) : board ? (
-        <UnitBoard
+        <KindBoard
           // Keyed on its cards: the board keeps drag state locally, so a server change
           // (a card put in this course, a new card) remounts it with the fresh cards.
           key={`${board.courseId ?? "none"}:${board.shelves.flatMap((s) => s.items.map((i) => i.id)).join(",")}`}
@@ -101,7 +94,8 @@ export default async function BanksPage({ searchParams }: PageProps<"/app/banks"
           orphans={focused ? orphans : []}
           adoptInto={focused && current ? { type: "question_bank", course: current } : undefined}
           noun="bank"
-          place={placeBank}
+          place={placeBankInColumn}
+          autoOrder={autoOrderColumn}
         />
       ) : null}
     </div>
