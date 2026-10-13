@@ -1,10 +1,11 @@
 {
   "name": "ps-u1-lt3-practice",
-  "revision": 2,
+  "revision": 3,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science A",
   "unit": "Unit 1 · Introduction to Physical Science",
   "bank": "PS · U1.LT3 · Practice",
+  "openPractice": true,
   "practiceSet": {
     "title": "U1.LT3 Practice: Dimensional Analysis & Scientific Notation",
     "description": "Practice converting units with the 5 steps and writing numbers in scientific notation; use the Unit Relationships given in each question.",

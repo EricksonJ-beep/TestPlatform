@@ -1,0 +1,27 @@
+{
+  "name": "ps-u2-lt4-practice",
+  "revision": 2,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science A",
+  "unit": "Unit 2 · Atomic Structure",
+  "bank": "PS · U2.LT4 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U2.LT4 Practice: Using the Periodic Table",
+    "description": "Practice using an element's group and period to find valence electrons and energy levels, sort metals, nonmetals, and metalloids, name the groups, and identify elements from clues.",
+    "drawCount": 10,
+    "targets": ["U2.LT4"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U2.LT4 Relearning: Using the Periodic Table",
+    "content": "**What you need to be able to do:** I can use an element's location on the periodic table to predict its structure and its properties.\n\n**Think of an apartment building.** The floor you live on tells how high up you are, and everyone in the same column of apartments has the same floor plan. The periodic table works the same way. An element's **row** tells how many energy levels (floors) its electron cloud has. Its **column** tells its \"floor plan\": how many valence electrons it has. Elements with the same floor plan live alike, so they have similar properties.\n\n**Periods** are the horizontal rows. The period number = the number of **energy levels** (shells). There are 7 periods. **Groups** (families) are the vertical columns. They tell the number of **valence electrons**, the electrons in the outermost energy level. Group 1 = 1, Group 2 = 2, then **skip the transition metals in Groups 3–12**, so Group 13 = 3 up to Group 18 = 8, **with the exception of helium** (2). Because elements in the same group have the same number of valence electrons, **elements in the same group have similar chemical properties.**\n\n**Metals, nonmetals, metalloids.** The **staircase** (zig-zag) line splits the table. **Metals** are to the left: shiny, silvery solids, good conductors of heat and electricity, malleable and ductile. **Nonmetals** are to the right (plus hydrogen): gases or dull, brittle solids and poor conductors. **Metalloids** sit on the line (B, Si, Ge, As, Sb, Te): solids and semi-conductors, with physical properties like metals and chemical properties like nonmetals.\n\n**Group names.** Group 1 = **alkali metals** (the most reactive metals; hydrogen is in Group 1 because it has 1 valence electron, but it is not an alkali metal). Group 2 = **alkaline earth metals**. Groups 3–12 = **transition metals**. Group 17 = **halogens** (the most reactive nonmetals). Group 18 = **noble gases** (nonreactive, because they are already chemically stable). **Reactivity:** for metals, reactivity **increases** as you move down the group. For nonmetals, reactivity **decreases** as you move down the group.\n\n**Worked example 1:** Sulfur is in Group 16, Period 3. Step 1: Group 16 → skip the transition metals → 6 valence electrons. Step 2: Period 3 → 3 energy levels. Step 3: Fill from the inside out: 2-8-6. Step 4: It is right of the staircase, so it is a nonmetal: a poor conductor. Answer: 6 valence electrons, 3 energy levels, 2-8-6, nonmetal.\n\n**Worked example 2:** Identify the element: \"I am a halogen with 4 energy levels.\" Step 1: Halogen → Group 17. Step 2: 4 energy levels → Period 4. Step 3: Group 17, Period 4 is bromine. Answer: bromine (Br), with 7 valence electrons.\n\n**Worked example 3:** Which is more reactive, magnesium (Group 2, Period 3) or calcium (Group 2, Period 4)? Step 1: Both are alkaline earth metals. Step 2: For metals, reactivity increases as you move down the group. Step 3: Calcium is lower. Answer: calcium is more reactive (that matches the reactivity lab).\n\n**Watch out for:** mixing up groups (valence electrons) and periods (energy levels), counting Groups 3–12 when you find valence electrons, giving helium 8 valence electrons, calling hydrogen an alkali metal, putting metals on the right side, and flipping the reactivity trend for nonmetals.",
+    "prompts": [
+      "Phosphorus is in Group 15, Period 3. How many valence electrons and energy levels does it have? Name the location that told you each one.",
+      "Explain why lithium and potassium behave in similar ways, but lithium and fluorine do not.",
+      "Identify the element: \"I am a noble gas with 4 energy levels.\" Show how you used each clue.",
+      "Iodine (Period 5) and chlorine (Period 3) are both halogens. Which is more reactive? Use the reactivity trend in your answer."
+    ],
+    "targets": ["U2.LT4"]
+  }
+}

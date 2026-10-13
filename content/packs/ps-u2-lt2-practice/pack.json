@@ -1,0 +1,27 @@
+{
+  "name": "ps-u2-lt2-practice",
+  "revision": 2,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science A",
+  "unit": "Unit 2 · Atomic Structure",
+  "bank": "PS · U2.LT2 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U2.LT2 Practice: Parts of the Atom",
+    "description": "Practice describing protons, neutrons, and electrons, counting the particles in an atom, identifying elements, and writing Bohr arrangements.",
+    "drawCount": 10,
+    "targets": ["U2.LT2"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U2.LT2 Relearning: Parts of the Atom",
+    "content": "**What you need to be able to do:** I can describe the parts of an atom and use the periodic table to figure out what any element is made of.\n\n**Think of a football stadium.** If an atom were a stadium, the nucleus would be a marble sitting on the 50-yard line. That tiny marble holds almost all of the mass. The rest of the stadium, all that space around it, is the electron cloud. So the **mass** is in the nucleus and the **volume** is in the electron cloud.\n\n**The three particles.** A **proton** (p⁺) is positive, lives in the nucleus, and has a mass of 1 amu. Protons give the atom its **identity**. A **neutron** (n⁰) has no charge, lives in the nucleus, and also has a mass of 1 amu. An **electron** (e⁻) is negative, lives in the **electron cloud**, and has a mass of about 0 amu. Protons and neutrons are made of **quarks**, the smallest known particles. Electrons are not.\n\n**Three forces.** Opposite charges attract and like charges repel. (1) The (+) nucleus and the (−) electron cloud attract, which holds the atom together. (2) Electrons repel each other, which gives the electron cloud its volume, like strangers spreading out in an elevator. (3) Protons repel each other, so an insane amount of energy holds the nucleus together.\n\n**The numbers.** The **atomic number** = number of protons; it identifies the element. The **mass number** = protons + neutrons, and it is **not on the periodic table**. The decimal in each box is the **average atomic mass** of all the isotopes. If no mass number is given, **round the average atomic mass** to get the mass number of the most common isotope. Then: **p⁺ = atomic #**, **n⁰ = mass # − atomic #**, and **e⁻ = p⁺** when the atom is neutral.\n\n**Bohr models.** Shells (energy levels) fill **from the inside out**: 2 in the first shell, 8 in the second, 8 in the third. Write the arrangement like 2-8-1.\n\n**Worked example 1:** Sodium (Na) has atomic number 11 and an average atomic mass of 22.990. Step 1: p⁺ = atomic # = 11. Step 2: round 22.990 to get the mass number, 23. Step 3: n⁰ = 23 − 11 = 12. Step 4: neutral, so e⁻ = 11. Step 5: fill the shells: 2, then 8, then 1 left over = 2-8-1. Answer: 11 protons, 12 neutrons, 11 electrons, arrangement 2-8-1.\n\n**Worked example 2:** An atom has mass number 11 and 6 neutrons. What element is it? Step 1: neutrons = mass # − atomic #, so atomic # = mass # − neutrons. Step 2: 11 − 6 = 5. Step 3: atomic number 5 is boron. Answer: boron, with 5 protons and 5 electrons.\n\n**Worked example 3:** Describe the Bohr model of a neutral argon atom (atomic number 18). Step 1: 18 protons, so 18 electrons. Step 2: the first shell takes 2 (16 left). Step 3: the second shell takes 8 (8 left). Step 4: the third shell takes the last 8. Answer: 2 electrons in the first shell, 8 in the second, and 8 in the third, or 2-8-8.\n\n**Watch out for:** adding electrons into the mass number (they are about 0 amu), doing atomic # − mass # backwards, thinking neutrons balance the charge (protons and electrons do that), looking for the mass number on the periodic table, and putting more than 2 electrons in the first shell.",
+    "prompts": [
+      "Oxygen (O) has atomic number 8 and an average atomic mass of 15.999. Find the protons, neutrons, and electrons in the most common isotope and show each step.",
+      "An atom has a mass number of 14 and 7 neutrons. What element is it? Show how you found the atomic number.",
+      "Phosphorus has atomic number 15. Describe its Bohr model in words and write it like 2-8-1.",
+      "Use the football stadium analogy to explain where an atom's mass is and where its volume is."
+    ],
+    "targets": ["U2.LT2"]
+  }
+}

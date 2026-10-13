@@ -1,10 +1,11 @@
 {
   "name": "ps-u1-lt1-practice",
-  "revision": 2,
+  "revision": 3,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science A",
   "unit": "Unit 1 · Introduction to Physical Science",
   "bank": "PS · U1.LT1 · Practice",
+  "openPractice": true,
   "practiceSet": {
     "title": "U1.LT1 Practice: Lab Equipment and the Scientific Method",
     "description": "Practice naming lab tools and safety rules, finding variables, writing hypotheses, and analyzing experiments.",

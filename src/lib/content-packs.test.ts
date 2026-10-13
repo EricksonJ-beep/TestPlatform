@@ -49,9 +49,15 @@ beforeAll(async () => {
     .insert(schema.courses)
     .values({ ownerId: t.id, name: "Physical Science A" })
     .returning();
+  await db.insert(schema.units).values([
+    { courseId: ps.id, name: "Unit 1 · Introduction to Physical Science", sortOrder: 0 },
+    { courseId: ps.id, name: "Unit 2 · Atomic Structure", sortOrder: 1 },
+  ]);
   await db
-    .insert(schema.units)
-    .values({ courseId: ps.id, name: "Unit 1 · Introduction to Physical Science", sortOrder: 0 });
+    .insert(schema.learningTargets)
+    .values(
+      [1, 2, 3, 4].map((n) => ({ courseId: ps.id, code: `U2.LT${n}`, title: `Unit 2 target ${n}` }))
+    );
   await db
     .insert(schema.learningTargets)
     .values(
@@ -95,9 +101,9 @@ describe("content packs", () => {
   });
   it("applies each pack once: bank, questions with repo-hosted pictures, published assessment, assignment", async () => {
     const first = await applyAllPacks();
-    // Physical Science Unit 1 practice packs (Oct 13 2026): 50 questions, a set, and notes each.
-    for (const n of [1, 2, 3, 4]) {
-      const out = first.find((o) => o.name === `ps-u1-lt${n}-practice`)!;
+    // Physical Science Units 1–2 practice packs (Oct 13 2026): 50 questions, a set, and notes each.
+    for (const name of [1, 2].flatMap((u) => [1, 2, 3, 4].map((n) => `ps-u${u}-lt${n}-practice`))) {
+      const out = first.find((o) => o.name === name)!;
       expect(out.status).toBe("applied");
       if (out.status === "applied")
         expect(out.summary).toMatchObject({
@@ -174,7 +180,7 @@ describe("content packs", () => {
       .select()
       .from(schema.learningTargets)
       .where(eq(schema.learningTargets.courseId, ps.id));
-    expect(psTargets).toHaveLength(4); // no stray targets created
+    expect(psTargets).toHaveLength(8); // U1 and U2 targets only: no stray targets created
     expect(
       psQs.filter((q) => q.mediaUrl === "/quiz-images/ps-u1-test-form-b/ruler_q12.png")
     ).toHaveLength(1);
@@ -184,7 +190,10 @@ describe("content packs", () => {
         (t) => t.learningTargetId === target.id && psQs.some((q) => q.id === t.questionId)
       );
       expect(mine).toHaveLength(
-        { "U1.LT1": 9, "U1.LT2": 7, "U1.LT3": 8, "U1.LT4": 8 }[target.code]!
+        // The Form B retake covers Unit 1 only.
+        ({ "U1.LT1": 9, "U1.LT2": 7, "U1.LT3": 8, "U1.LT4": 8 } as Record<string, number>)[
+          target.code
+        ] ?? 0
       );
     }
     const formBAssessment = (await db.query.assessments.findFirst({
