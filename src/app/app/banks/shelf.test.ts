@@ -24,7 +24,7 @@ import { listMyBanks } from "@/lib/queries/banks";
 import { listAssessments } from "@/lib/queries/assessments";
 import { listUnitsForTeacher } from "@/lib/queries/courses";
 import { groupByUnit } from "@/lib/unit-shelves";
-import { placeBank } from "./actions";
+import { autoOrderColumn, placeBank, placeBankInColumn } from "./actions";
 import { placeAssessment } from "../assessments/actions";
 
 const ids = {
@@ -155,5 +155,36 @@ describe("placeAssessment", () => {
       ok: false,
       status: 403,
     });
+  });
+});
+
+describe("bank type columns (Oct 13 2026)", () => {
+  it("dropping a bank in a column sets its unit, its type, and the column order", async () => {
+    asUser(ids.owner);
+    const r = await placeBankInColumn(ids.c, ids.u2, "retake", [ids.c, ids.a]);
+    expect(r.ok).toBe(true);
+    const rows = await db.query.questionBanks.findMany({
+      where: (t, { inArray }) => inArray(t.id, [ids.a, ids.c]),
+    });
+    const c = rows.find((x) => x.id === ids.c)!;
+    expect(c).toMatchObject({ unitId: ids.u2, kind: "retake", kindOrder: 0 });
+    const a = rows.find((x) => x.id === ids.a)!;
+    // a is only reordered when it sits in the same unit as the moved bank.
+    expect(a.kindOrder).toBe(a.unitId === ids.u2 ? 1 : null);
+  });
+
+  it("refuses an unknown type and a stranger's bank; Auto-order clears only the owner's", async () => {
+    asUser(ids.owner);
+    expect((await placeBankInColumn(ids.c, ids.u2, "homework", [])).ok).toBe(false);
+    asUser(ids.stranger);
+    expect((await placeBankInColumn(ids.c, ids.u2, "quiz", [])).ok).toBe(false);
+    expect((await autoOrderColumn([ids.c])).ok).toBe(true);
+    let c = await db.query.questionBanks.findFirst({ where: eq(schema.questionBanks.id, ids.c) });
+    expect(c!.kindOrder).toBe(0);
+    asUser(ids.owner);
+    await autoOrderColumn([ids.c]);
+    c = await db.query.questionBanks.findFirst({ where: eq(schema.questionBanks.id, ids.c) });
+    expect(c!.kindOrder).toBeNull();
+    expect(c!.kind).toBe("retake");
   });
 });

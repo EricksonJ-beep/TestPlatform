@@ -169,6 +169,13 @@
       "when": 1791912106174,
       "tag": "0023_student_built_practice",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1791920921127,
+      "tag": "0024_bank_kinds",
+      "breakpoints": true
     }
   ]
 }

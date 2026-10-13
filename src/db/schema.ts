@@ -306,6 +306,14 @@ export const questionBanks = pgTable(
      * own. Off by default so test and retake banks never leak.
      */
     openPractice: boolean("open_practice").default(false).notNull(),
+    /**
+     * Column on the Question banks page (Jon, Oct 13 2026): practice / quiz /
+     * test / retake / other. Null = read from the name (src/lib/bank-kinds.ts);
+     * dragging a card into a column sets it.
+     */
+    kind: text("kind"),
+    /** The teacher's order inside that column; null = automatic (by learning target, then name). */
+    kindOrder: integer("kind_order"),
     ...timestamps,
   },
   (t) => [index("question_banks_owner_idx").on(t.ownerId)]
