@@ -1,0 +1,26 @@
+{
+  "name": "ps-u2-lt3-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science A",
+  "unit": "Unit 2 · Atomic Structure",
+  "bank": "PS · U2.LT3 · Practice",
+  "practiceSet": {
+    "title": "U2.LT3 Practice: Isotopes and Isotope Notation",
+    "description": "Practice defining isotopes, reading and writing hyphen and nuclear notation, counting protons, neutrons, and electrons, and finding the most common isotope.",
+    "drawCount": 10,
+    "targets": ["U2.LT3"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U2.LT3 Relearning: Isotopes and Isotope Notation",
+    "content": "**What you need to be able to do:** I can explain what isotopes are and use isotope notation to describe them.\n\n**Think of two backpacks of the same model.** Same brand, same color, same name tag. One has 2 textbooks inside and the other has 4. One is heavier, but it is still the same backpack with the same name tag. Isotopes work the same way: the **protons** are the name tag (they give the atom its identity), and the **neutrons** are the extra books (they add mass but do not change what the atom is). Isotopes are like identical twins who don't weigh exactly the same.\n\n**Isotopes** are atoms of the same element with different numbers of neutrons. **What stays the same:** the number of protons, the **atomic number**, and (in a neutral atom) the number of electrons. Because the electrons are the same, isotopes react the same way. **What changes:** the number of neutrons, so the **mass number** (protons + neutrons) changes too.\n\n**Hyphen notation** is element name – mass number, like potassium-40 or C-12. **Nuclear notation** puts the mass number on top and the atomic number on the bottom, to the left of the symbol: $^{40}_{19}\\text{K}$. The bottom number can be left off ($^{40}\\text{K}$) because the symbol already tells you the atomic number. **Counting:** p⁺ = atomic number; n⁰ = mass number − atomic number; e⁻ = p⁺ if the atom is neutral.\n\n**Average atomic mass** is the decimal number on the periodic table. It is a weighted average of all of the element's isotopes, so it is **closest to the mass number of the most common isotope**. When no mass number is given, round the average atomic mass. Our notes also say an isotope is most stable when the numbers of p⁺ and n⁰ are the same, and an unstable nucleus comes from too many or too few neutrons.\n\n**Worked example 1:** Write potassium-40 in nuclear notation and count its particles (K, atomic number 19). Step 1: The mass number is the number after the dash, 40. Step 2: Put 40 on top and 19 on the bottom: $^{40}_{19}\\text{K}$. Step 3: p⁺ = 19. Step 4: n⁰ = 40 − 19 = 21. Step 5: e⁻ = 19 (neutral). Answer: 19 protons, 21 neutrons, 19 electrons.\n\n**Worked example 2:** Are $^{6}_{3}\\text{Li}$ and lithium-7 isotopes? Step 1: Both are lithium, atomic number 3, so both have 3 protons. Step 2: Neutrons: 6 − 3 = 3 and 7 − 3 = 4. Step 3: Same protons, different neutrons. Answer: yes, they are isotopes of lithium.\n\n**Worked example 3:** Magnesium (Mg, atomic number 12) has an average atomic mass of 24.305. Find its most common isotope. Step 1: Round 24.305 to 24; that is the mass number. Step 2: Hyphen notation: magnesium-24. Nuclear notation: $^{24}_{12}\\text{Mg}$. Step 3: n⁰ = 24 − 12 = 12. Answer: magnesium-24, with 12 neutrons.\n\n**Watch out for:** writing the atomic number on top; using the number of neutrons in the hyphen name instead of the mass number; thinking a new top number makes a new element (only the bottom number, the protons, does that); thinking isotopes have different protons; and mixing up the whole-number mass number with the decimal average atomic mass.",
+    "prompts": [
+      "Explain why carbon-12 and carbon-13 are still the same element. Use the words protons and neutrons.",
+      "An isotope of sulfur (S, atomic number 16) has 17 neutrons. Write it in hyphen notation and in nuclear notation, and show how you found the mass number.",
+      "Neon's average atomic mass is 20.180. Which isotope of neon is most common? Write it in both notations and give its numbers of protons, neutrons, and electrons.",
+      "Are argon-40 (atomic number 18) and potassium-40 (atomic number 19) isotopes of each other? Explain using protons and neutrons."
+    ],
+    "targets": ["U2.LT3"]
+  }
+}

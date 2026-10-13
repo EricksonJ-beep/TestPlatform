@@ -1,0 +1,26 @@
+{
+  "name": "ps-u2-lt1-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science A",
+  "unit": "Unit 2 · Atomic Structure",
+  "bank": "PS · U2.LT1 · Practice",
+  "practiceSet": {
+    "title": "U2.LT1 Practice: Timeline of Atomic Models",
+    "description": "Practice the scientists, dates, experiments, and models on the atomic timeline, and how each discovery changed the model.",
+    "drawCount": 10,
+    "targets": ["U2.LT1"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U2.LT1 Relearning: Timeline of Atomic Models",
+    "content": "**What you need to be able to do:** I can create a timeline showing the major scientists, their dates, and how each one changed the atomic model.\n\n**Think of your phone.** Your first phone did its job, but each new version fixed something the old one couldn't do. Nobody threw out the idea of a phone; they kept what worked and improved the rest. The atomic model works the same way: **new experiments build on old ideas and sometimes replace them.** Every model so far was wrong in some way, but each one was better than the one before it.\n\n**The timeline:**\n- **400 BC, Democritus:** first to name the atom (*atomos* = indivisible). No experiments, just reasoning.\n- **1803, John Dalton:** **Solid Sphere Model**. The atom is a solid sphere that can't get any smaller.\n- **1869, Dmitri Mendeleev:** first periodic table, organized by **atomic mass**.\n- **1904, JJ Thomson:** **Plum Pudding Model**. Evidence: the **cathode ray tube**. The atom is divisible: a positive sphere with negative particles embedded throughout (like chips in cookie dough). **No nucleus.**\n- **1911, Ernest Rutherford:** **Nuclear Model**. Evidence: the **gold foil experiment**. The mass and positive charge are in a small, dense nucleus, with electrons around it. The atom is mostly empty space.\n- **1913, Niels Bohr:** **Bohr Model**. Electrons travel in **fixed orbits** around the nucleus.\n- **1913, Henry Moseley:** each element has a unique number of protons (**atomic number**); he arranged the periodic table that way.\n- **1926, Schrödinger & Heisenberg:** **Electron Cloud Model**. Electrons are in shells, but there are **no fixed orbits**.\n\n**What each step changed:** Solid Sphere → Plum Pudding: the atom is divisible and has negative particles. Plum Pudding → Nuclear: the mass and positive charge are packed into a dense nucleus. Nuclear → Bohr: electrons travel in fixed orbits. Bohr → Electron Cloud: shells, but no fixed orbits.\n\n**Worked example 1:** Put Nuclear, Solid Sphere, Electron Cloud, Plum Pudding, and Bohr in order. Step 1: The atom had to be split before anyone could find a center, so Solid Sphere (1803) comes before Plum Pudding (1904). Step 2: A nucleus came next: Nuclear (1911). Step 3: Electrons got fixed orbits around that nucleus: Bohr (1913). Step 4: Fixed orbits were removed: Electron Cloud (1926). **Answer:** Solid Sphere, Plum Pudding, Nuclear, Bohr, Electron Cloud.\n\n**Worked example 2:** How many years passed between Dalton's Solid Sphere Model and Rutherford's Nuclear Model? Step 1: Dalton = 1803, Rutherford = 1911. Step 2: Subtract the earlier year from the later year: 1911 − 1803 = 108. **Answer:** 108 years.\n\n**Worked example 3:** Out of about 10,000 particles fired at gold foil, about 9,950 passed straight through and about 2 bounced straight back. What model does this support? Step 1: Most passed through, so the atom is mostly empty space. Step 2: A few bounced back, so they hit something small, dense, and positive. Step 3: A dense positive center is a nucleus. **Answer:** Rutherford's Nuclear Model (1911), which replaced Plum Pudding.\n\n**Watch out for:** giving the Plum Pudding Model a nucleus (it has none); swapping Mendeleev (atomic **mass**) and Moseley (atomic **number**); mixing up Bohr (**fixed orbits**) and Electron Cloud (**no fixed orbits**); and forgetting that Bohr and Moseley share 1913.",
+    "prompts": [
+      "Make a timeline of the five atomic models. For each one, write the scientist, the year, and one sentence about what the model says.",
+      "Explain how the gold foil experiment changed the Plum Pudding Model. Use the words nucleus, dense, and empty space.",
+      "Mendeleev and Moseley both arranged the periodic table. Explain what each one used to order the elements and which one today's table follows.",
+      "Explain why scientists keep changing the atomic model. Use one example from the timeline."
+    ],
+    "targets": ["U2.LT1"]
+  }
+}

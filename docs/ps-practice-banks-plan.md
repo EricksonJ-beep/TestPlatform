@@ -73,7 +73,7 @@ When a set deals from a bank, draw across difficulty bands (1–2 easy, 3 medium
 
 ### Ticket P5 · Content: one batch per unit
 
-Progress: **Unit 1 ✅** (merged Oct 13 2026, PR #25; packs `ps-u1-lt1..4-practice`, revision 2 after an independent key audit). **Unit 2** in progress.
+Progress: **Unit 1 ✅** (merged Oct 13 2026, PR #25; packs `ps-u1-lt1..4-practice`, revision 2 after an independent key audit). **Unit 2 ✅** (packs `ps-u2-lt1..4-practice`, audited before first push).
 
 Lessons from Unit 1:
 - Vercel **preview builds use the live database**, and the build step applies migrations and packs. Pushing a pack to any branch puts it in front of students before merge. Check a batch before its first push.
