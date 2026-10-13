@@ -135,6 +135,7 @@ export async function createAttempt(input: {
       questionSet,
       startedAt: now,
       dueAt,
+      lastActiveAt: now,
     })
     .returning({ id: schema.attempts.id });
   return { attemptId: attempt.id, number, dueAt };

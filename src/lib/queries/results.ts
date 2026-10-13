@@ -19,6 +19,10 @@ export type GradebookAttempt = {
   startedAt: Date;
   submittedAt: Date | null;
   tabSwitches: number;
+  /** Paused, or idle long enough to be (Finish later, Oct 13 2026). */
+  paused: boolean;
+  /** When the student asked to be let back in to finish; null otherwise. */
+  askedAt: Date | null;
   /** Target codes a targeted retake covered; null for a full attempt. */
   scopeCodes: string[] | null;
   pendingManual: number;
@@ -82,6 +86,8 @@ export async function getGradebook(assignmentId: string): Promise<GradebookRow[]
       startedAt: schema.attempts.startedAt,
       submittedAt: schema.attempts.submittedAt,
       tabSwitches: schema.attempts.tabSwitches,
+      paused: sql<boolean>`(attempts.status = 'in_progress' and (attempts.paused_at is not null or attempts.last_active_at < now() - interval '10 minutes'))`,
+      askedAt: schema.attempts.resumeRequestedAt,
       scope: schema.attempts.scope,
       pendingManual: sql<number>`(select count(*)::int from ${schema.responses} r where r.attempt_id = attempts.id and r.auto_score is null and r.manual_score is null)`,
       correctionsTotal: sql<number>`(select count(*)::int from ${schema.corrections} c where c.attempt_id = attempts.id)`,

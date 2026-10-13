@@ -2,7 +2,7 @@
  * Attempt reads: what the test screen needs (sanitized), what grading needs
  * (full), and the teacher's results view. Callers pass the guards first.
  */
-import { and, asc, desc, eq, inArray, ne } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, ne, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import type { QuestionType, ServedQuestion } from "@/db/types";
 import { seededRng } from "@/lib/assessments/serve";
@@ -70,6 +70,8 @@ export type RunnerPayload = {
     startedAt: Date;
     dueAt: Date | null;
     tabSwitches: number;
+    /** Answered before a pause; shown read-only (Finish later, Oct 13 2026). */
+    lockedQuestionIds: string[];
   };
   assignment: {
     id: string;
@@ -156,6 +158,7 @@ export async function getRunnerPayload(attemptId: string): Promise<RunnerPayload
       startedAt: attempt.startedAt,
       dueAt: attempt.dueAt,
       tabSwitches: attempt.tabSwitches,
+      lockedQuestionIds: attempt.lockedQuestionIds ?? [],
     },
     assignment: {
       id: asg.id,
@@ -349,4 +352,54 @@ export async function listStudentAttempts(assignmentId: string, studentId: strin
       )
     )
     .orderBy(desc(schema.attempts.number));
+}
+
+export type PausedView = {
+  attemptId: string;
+  assignmentId: string;
+  title: string;
+  teacherName: string;
+  answered: number;
+  total: number;
+  reason: string | null;
+  pausedAt: Date;
+  remainingMs: number | null;
+  askedAt: Date | null;
+};
+
+/** What a paused test's screen shows: never the questions (Finish later, Oct 13 2026). */
+export async function getPausedView(attemptId: string): Promise<PausedView | null> {
+  const [row] = await db
+    .select({
+      attemptId: schema.attempts.id,
+      assignmentId: schema.attempts.assignmentId,
+      title: schema.assessments.title,
+      teacherFirst: schema.users.firstName,
+      teacherLast: schema.users.lastName,
+      questionSet: schema.attempts.questionSet,
+      reason: schema.attempts.pauseReason,
+      pausedAt: schema.attempts.pausedAt,
+      remainingMs: schema.attempts.remainingMs,
+      askedAt: schema.attempts.resumeRequestedAt,
+      answered: sql<number>`(select count(*)::int from ${schema.responses} r where r.attempt_id = ${schema.attempts.id} and r.answer is not null)`,
+    })
+    .from(schema.attempts)
+    .innerJoin(schema.assignments, eq(schema.attempts.assignmentId, schema.assignments.id))
+    .innerJoin(schema.assessments, eq(schema.assignments.assessmentId, schema.assessments.id))
+    .innerJoin(schema.users, eq(schema.assignments.ownerId, schema.users.id))
+    .where(eq(schema.attempts.id, attemptId))
+    .limit(1);
+  if (!row || !row.pausedAt) return null;
+  return {
+    attemptId: row.attemptId,
+    assignmentId: row.assignmentId,
+    title: row.title,
+    teacherName: `${row.teacherFirst} ${row.teacherLast}`,
+    answered: row.answered,
+    total: row.questionSet.length,
+    reason: row.reason,
+    pausedAt: row.pausedAt,
+    remainingMs: row.remainingMs,
+    askedAt: row.askedAt,
+  };
 }

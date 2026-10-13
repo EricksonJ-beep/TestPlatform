@@ -7,6 +7,13 @@ import { db, schema } from "@/db";
 import { logActivity } from "@/lib/activity-log";
 import { canStartAttempt, startReasonText } from "@/lib/assignments";
 import { createAttempt, finalizeAttempt } from "@/lib/attempts";
+import {
+  pauseAttempt,
+  resumeAttempt,
+  resumeCodeValid,
+  settleAttempt,
+  touchAttempt,
+} from "@/lib/attempt-pause";
 import { correctionsClear } from "@/lib/corrections";
 import { setOptIn } from "@/lib/gates";
 import { getCorrectionsSummary, latestFinishedAttemptId } from "@/lib/queries/corrections";
@@ -63,6 +70,9 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
     ),
   });
   if (open) {
+    // Finish later (Oct 13 2026): an idle or window-closed attempt pauses rather than ending;
+    // a paused one opens on its paused screen, where the resume code reopens it.
+    if (await settleAttempt(open.id, now)) return { attemptId: open.id, resumed: true };
     if (open.dueAt && open.dueAt.getTime() + GRACE_MS < now.getTime()) {
       await finalizeAttempt(open.id, open.dueAt);
     } else {
@@ -271,21 +281,34 @@ export const setRetakeOptIn = withAuthz(
   }
 );
 
-// Rule: only the attempt's own student may write to it, only while in progress, only before the deadline (+ grace).
+// Rule: only the attempt's own student may write to it, only while in progress and not paused, only before the deadline (+ grace).
 async function writableAttempt(access: AttemptAccess) {
   const attemptId = access.attempt.id;
   assertOwnStudentRow(access, access.attempt);
+  const now = new Date();
+  const paused = await settleAttempt(attemptId, now);
   const attempt = await db.query.attempts.findFirst({
-    columns: { id: true, status: true, dueAt: true, questionSet: true, assignmentId: true },
+    columns: {
+      id: true,
+      status: true,
+      dueAt: true,
+      questionSet: true,
+      assignmentId: true,
+      lockedQuestionIds: true,
+    },
     where: eq(schema.attempts.id, attemptId),
   });
   if (!attempt) throw new ActionError("Not found.", 404);
   if (attempt.status !== "in_progress")
     throw new ActionError("This attempt is already submitted.", 409);
-  if (attempt.dueAt && attempt.dueAt.getTime() + GRACE_MS < Date.now())
+  if (paused) throw new ActionError(PAUSED, 423);
+  if (attempt.dueAt && attempt.dueAt.getTime() + GRACE_MS < now.getTime())
     throw new ActionError("Time is up.", 409);
+  await touchAttempt(attemptId, now);
   return { access, attempt };
 }
+
+const PAUSED = "This test is paused. Your teacher's resume code opens it again.";
 
 /** Autosave one answer. The answer is stored as given; nothing is graded until submit. */
 export const saveAnswer = withAuthz(
@@ -293,6 +316,8 @@ export const saveAnswer = withAuthz(
     const { attempt } = await writableAttempt(await requireAttemptAccess(attemptId));
     if (!attempt.questionSet.some((q) => q.questionId === questionId))
       throw new ActionError("That question isn't on this attempt.", 400);
+    if ((attempt.lockedQuestionIds ?? []).includes(questionId))
+      throw new ActionError("That answer was locked when the test paused.", 409);
     const parsed = answerSchema.safeParse(rawAnswer);
     if (!parsed.success) throw new ActionError("Couldn't read that answer.", 400);
     const answeredAt = new Date();
@@ -339,15 +364,19 @@ export const recordTabSwitch = withAuthz(async (attemptId: string) => {
  * Submit: grades with the pure library and writes every score server-side.
  * Accepted after the deadline too (that's the autosubmit), but never twice.
  */
-export const submitAttempt = withAuthz(async (attemptId: string) => {
+export const submitAttempt = withAuthz(async (attemptId: string, auto = false) => {
   const access = await requireAttemptAccess(attemptId);
   assertOwnStudentRow(access, access.attempt);
+  // The countdown's autosubmit at a window's close pauses instead (Finish later, Oct 13 2026);
+  // a student who presses Submit themselves still submits.
+  if (auto && (await settleAttempt(attemptId))) throw new ActionError(PAUSED, 423);
   const attempt = await db.query.attempts.findFirst({
-    columns: { status: true, dueAt: true, assignmentId: true, number: true },
+    columns: { status: true, dueAt: true, assignmentId: true, number: true, pausedAt: true },
     where: eq(schema.attempts.id, attemptId),
   });
   if (!attempt) throw new ActionError("Not found.", 404);
   if (attempt.status !== "in_progress") throw new ActionError("Already submitted.", 409);
+  if (attempt.pausedAt) throw new ActionError(PAUSED, 423);
   const now = new Date();
   const submittedAt = attempt.dueAt && attempt.dueAt < now ? attempt.dueAt : now;
   const score = await finalizeAttempt(attemptId, submittedAt);
@@ -372,4 +401,65 @@ export const submitAttempt = withAuthz(async (attemptId: string) => {
     totalPossible: score.totalPossible,
     pendingManual: score.pendingManual,
   };
+});
+
+/**
+ * Finish later (Jon, Oct 13 2026): the student pauses their own test. Answers
+ * so far are saved and locked, the clock stops, and the questions stay hidden
+ * until the teacher's resume code (or the teacher's OK) opens it again.
+ */
+export const finishLater = withAuthz(async (attemptId: string) => {
+  const { attempt } = await writableAttempt(await requireAttemptAccess(attemptId));
+  await pauseAttempt(attemptId, new Date(), "student");
+  revalidate(attempt.assignmentId);
+  return { assignmentId: attempt.assignmentId };
+});
+
+/** The test page's "still working" signal (sent only after real activity); pauses an idle test. */
+export const attemptHeartbeat = withAuthz(async (attemptId: string) => {
+  const access = await requireAttemptAccess(attemptId);
+  assertOwnStudentRow(access, access.attempt);
+  const now = new Date();
+  if (await settleAttempt(attemptId, now)) return { paused: true };
+  await db
+    .update(schema.attempts)
+    .set({ lastActiveAt: now })
+    .where(and(eq(schema.attempts.id, attemptId), eq(schema.attempts.status, "in_progress")));
+  return { paused: false };
+});
+
+/** Reopen a paused test with the teacher's resume code (good for one class period). */
+export const resumeWithCode = withAuthz(async (attemptId: string, code: string) => {
+  const access = await requireAttemptAccess(attemptId);
+  assertOwnStudentRow(access, access.attempt);
+  const asg = await db.query.assignments.findFirst({
+    columns: { ownerId: true },
+    where: eq(schema.assignments.id, access.attempt.assignmentId),
+  });
+  if (!asg) throw new ActionError("Not found.", 404);
+  if (!(await resumeCodeValid(asg.ownerId, String(code ?? ""))))
+    throw new ActionError("That code isn't right, or it has run out. Ask your teacher.", 400, {
+      code: ["That code isn't right, or it has run out. Ask your teacher."],
+    });
+  if (!(await resumeAttempt(attemptId))) throw new ActionError("This test isn't paused.", 409);
+  revalidate(access.attempt.assignmentId);
+  return { attemptId };
+});
+
+/** Ask the teacher to let you finish (they see it on the Results page). */
+export const askToFinish = withAuthz(async (attemptId: string) => {
+  const access = await requireAttemptAccess(attemptId);
+  assertOwnStudentRow(access, access.attempt);
+  await db
+    .update(schema.attempts)
+    .set({ resumeRequestedAt: new Date() })
+    .where(
+      and(
+        eq(schema.attempts.id, attemptId),
+        eq(schema.attempts.status, "in_progress"),
+        isNotNull(schema.attempts.pausedAt)
+      )
+    );
+  revalidate(access.attempt.assignmentId);
+  return { asked: true };
 });

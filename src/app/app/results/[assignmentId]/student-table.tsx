@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/table";
 import { TONE } from "./corrections-progress";
 import { DeleteAttemptButton } from "./delete-attempt-button";
+import { LetContinueButton } from "./let-continue-button";
 import { UnlockButton } from "./unlock-button";
 
 const fmt = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(1));
@@ -211,6 +212,11 @@ function StudentRows({
               {s.attempts.map((t) => (
                 <AttemptChip key={t.id} attempt={t} best={t.id === s.bestAttemptId} />
               ))}
+              {s.attempts
+                .filter((t) => t.status === "in_progress" && t.paused)
+                .map((t) => (
+                  <LetContinueButton key={`lc:${t.id}`} attemptId={t.id} asked={!!t.askedAt} />
+                ))}
               {awaitingRequest ? (
                 <Badge className="bg-warning-soft text-warning-foreground">Retake requested</Badge>
               ) : null}
@@ -285,11 +291,17 @@ function AttemptChip({ attempt: t, best }: { attempt: GradebookAttempt; best: bo
   if (t.status === "in_progress")
     return (
       <span
-        className="inline-flex items-center gap-1 rounded-md border border-dashed border-border px-1.5 py-0.5 text-xs text-muted-foreground tabular"
+        className={cn(
+          "inline-flex items-center gap-1 rounded-md border border-dashed px-1.5 py-0.5 text-xs tabular",
+          t.paused
+            ? "border-brand/50 bg-brand-soft text-brand-deep"
+            : "border-border text-muted-foreground"
+        )}
         data-attempt={t.number}
         data-in-progress
+        data-paused={t.paused || undefined}
       >
-        {t.number} · in progress
+        {t.number} · {t.paused ? "paused" : "in progress"}
       </span>
     );
   const scored = t.score !== null && t.maxScore !== null;

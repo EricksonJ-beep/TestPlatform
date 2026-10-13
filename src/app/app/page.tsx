@@ -14,6 +14,7 @@ import { ClassGlance } from "@/components/app/class-glance";
 import { CourseCards } from "@/components/app/course-cards";
 import { ActivityFeed } from "@/components/app/activity-feed";
 import { MetricCard } from "@/components/app/metric-card";
+import { ResumeCodeButton } from "@/components/app/resume-code-button";
 import { RetakeRequests } from "@/components/app/retake-requests";
 import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
@@ -46,15 +47,18 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6">
-      <div>
-        <h1 className="text-2xl">
-          {greeting()}, {session.firstName}
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {attention === 0
-            ? "Nothing is waiting on you right now."
-            : `${attention} ${attention === 1 ? "thing needs" : "things need"} your attention.`}
-        </p>
+      <div className="flex flex-wrap items-start gap-3">
+        <div className="mr-auto">
+          <h1 className="text-2xl">
+            {greeting()}, {session.firstName}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {attention === 0
+              ? "Nothing is waiting on you right now."
+              : `${attention} ${attention === 1 ? "thing needs" : "things need"} your attention.`}
+          </p>
+        </div>
+        <ResumeCodeButton />
       </div>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">

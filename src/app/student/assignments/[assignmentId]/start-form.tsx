@@ -12,6 +12,7 @@ export function StartForm({
   assignmentId,
   needsCode,
   resume,
+  paused = false,
   timeLimitMinutes,
   label = "Start",
   intro,
@@ -19,6 +20,8 @@ export function StartForm({
   assignmentId: string;
   needsCode: boolean;
   resume: boolean;
+  /** The in-progress attempt is paused: it opens with the teacher's resume code. */
+  paused?: boolean;
   timeLimitMinutes: number | null;
   /** Button text for retakes ("Start retake"). */
   label?: string;
@@ -38,14 +41,19 @@ export function StartForm({
         );
       }}
     >
-      {resume ? (
+      {resume && paused ? (
+        <p className="text-sm">
+          Your test is paused. Your answers are saved and locked. You&apos;ll need your
+          teacher&apos;s resume code in class to finish it.
+        </p>
+      ) : resume ? (
         <p className="text-sm">You have an attempt in progress. Your answers are saved.</p>
       ) : intro ? (
         <div className="text-sm">{intro}</div>
       ) : (
         <p className="text-sm">
           {timeLimitMinutes
-            ? `The clock starts when you press Start and runs for ${timeLimitMinutes} minutes, even if you leave.`
+            ? `The clock starts when you press Start and runs for ${timeLimitMinutes} minutes. Out of class time? Press Finish later and the clock stops.`
             : "Take your time. Every answer saves as you go."}
         </p>
       )}
