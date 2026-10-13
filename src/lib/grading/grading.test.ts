@@ -155,6 +155,11 @@ describe("numeric", () => {
   it("parses numbers with units, commas, fractions, and exponents", () => {
     expect(parseNumericInput("15 m/s")).toEqual({ value: 15, unit: "m/s" });
     expect(parseNumericInput("15m/s")).toEqual({ value: 15, unit: "m/s" });
+    expect(parseNumericInput("1.01 x 10^5")).toEqual({ value: 101000, unit: "" });
+    expect(parseNumericInput("9.8×10^-3 g")).toEqual({ value: 0.0098, unit: "g" });
+    expect(parseNumericInput("3.1 X 10^(-4)")).toEqual({ value: 0.00031, unit: "" });
+    expect(parseNumericInput("6.02*10^23")?.value).toBeCloseTo(6.02e23, -20);
+    expect(parseNumericInput("5 x 2")).toEqual({ value: 5, unit: "x 2" });
     expect(parseNumericInput("1,500")).toEqual({ value: 1500, unit: "" });
     expect(parseNumericInput("3/4")).toEqual({ value: 0.75, unit: "" });
     expect(parseNumericInput("-2.5e3 J")).toEqual({ value: -2500, unit: "J" });

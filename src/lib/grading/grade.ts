@@ -175,11 +175,16 @@ const normUnit = (u: string) =>
     .join("/");
 
 /**
- * Parse "15", "15 m/s", "15m/s", "1,500", "-2.5e3", "3/4". Returns the number and
- * any trailing unit text. Unit-aware matching happens in gradeNumeric.
+ * Parse "15", "15 m/s", "15m/s", "1,500", "-2.5e3", "3/4", and scientific
+ * notation the way students type it: "1.01 x 10^5", "9.8×10^-3". Returns the
+ * number and any trailing unit text. Unit-aware matching happens in gradeNumeric.
  */
 export function parseNumericInput(raw: string): { value: number; unit: string } | null {
-  const s = raw.trim().replace(/,/g, "").replace(/^\+/, "");
+  const s = raw
+    .trim()
+    .replace(/,/g, "")
+    .replace(/^\+/, "")
+    .replace(/^(-?(?:\d+\.?\d*|\.\d+))\s*[x×*]\s*10\s*\^\s*\(?\s*([+-]?\d+)\s*\)?/i, "$1e$2");
   // Fractions first, so "3/4" is a value rather than 3 with the unit "/4".
   const m = s.match(/^(-?\d+\/\d+|-?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?)\s*(.*)$/i);
   if (!m) return null;
