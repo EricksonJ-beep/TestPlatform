@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   computeFinalScore,
+  correctionsCapOn,
   gradeResponse,
   parseNumericInput,
   retakeTargets,
@@ -447,6 +448,24 @@ describe("final score: highest counts", () => {
       percent: 50,
       basis: "best_attempt",
     });
+  });
+
+  it("correctionsCapOn: formatives with the cap on, never in a CVTC course (Jon, Oct 13 2026)", () => {
+    expect(correctionsCapOn({ type: "formative", correctionsCap: true, cvtcRules: false })).toBe(
+      true
+    );
+    expect(correctionsCapOn({ type: "formative", correctionsCap: true, cvtcRules: null })).toBe(
+      true
+    );
+    expect(correctionsCapOn({ type: "formative", correctionsCap: true, cvtcRules: true })).toBe(
+      false
+    );
+    expect(correctionsCapOn({ type: "formative", correctionsCap: false, cvtcRules: false })).toBe(
+      false
+    );
+    expect(correctionsCapOn({ type: "summative", correctionsCap: true, cvtcRules: false })).toBe(
+      false
+    );
   });
 
   it("formative: best attempt by total; later attempt wins ties; practice same", () => {

@@ -121,7 +121,9 @@ export function AssignmentsTable({
                     <span>{a.retakeThreshold}% threshold</span>
                     {a.retakeWaitHours ? <span>{a.retakeWaitHours} h between attempts</span> : null}
                     {a.retakesNeedUnlock ? <span>Retakes need your OK</span> : null}
-                    {a.assessmentType === "formative" && a.correctionsCap ? (
+                    {a.cvtcRules && a.assessmentType !== "practice" ? (
+                      <span>CVTC rules · retakes only</span>
+                    ) : a.assessmentType === "formative" && a.correctionsCap ? (
                       <span>
                         Corrections cap
                         {a.retakeWindowDays ? ` · ${a.retakeWindowDays}-day retake window` : ""}

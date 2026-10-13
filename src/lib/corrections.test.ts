@@ -19,6 +19,19 @@ const items = [
 ];
 
 describe("questionsNeedingCorrection", () => {
+  it("CVTC rules (Jon, Oct 13 2026): nothing is ever owed, formative or summative", () => {
+    for (const type of ["formative", "summative"] as const)
+      expect(
+        questionsNeedingCorrection({
+          type,
+          items,
+          targetPercents: { lt1: 50, lt2: 14 },
+          threshold: 80,
+          cvtcRules: true,
+        })
+      ).toEqual([]);
+  });
+
   it("formative: every missed question, partial credit included, pending excluded", () => {
     expect(
       questionsNeedingCorrection({

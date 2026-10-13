@@ -54,10 +54,12 @@ async function loadScope(attemptId: string): Promise<Scope | null> {
       reviewMode: schema.assignments.reviewMode,
       retakeThreshold: schema.assignments.retakeThreshold,
       className: schema.classes.name,
+      cvtcRules: schema.courses.cvtcRules,
     })
     .from(schema.assignments)
     .innerJoin(schema.assessments, eq(schema.assignments.assessmentId, schema.assessments.id))
     .innerJoin(schema.classes, eq(schema.assignments.classId, schema.classes.id))
+    .leftJoin(schema.courses, eq(schema.assessments.courseId, schema.courses.id))
     .where(eq(schema.assignments.id, attempt.assignmentId))
     .limit(1);
   if (!asg) return null;
@@ -102,6 +104,8 @@ async function loadScope(attemptId: string): Promise<Scope | null> {
           targetPercents,
           threshold: asg.retakeThreshold,
           optedInTargetIds: optedIn.map((o) => o.learningTargetId),
+          // CVTC rules (Jon, Oct 13 2026): corrections are never owed in such a course.
+          cvtcRules: !!asg.cvtcRules,
         });
   return {
     attempt: {
@@ -112,7 +116,14 @@ async function loadScope(attemptId: string): Promise<Scope | null> {
       assignmentId: attempt.assignmentId,
       questionSet: attempt.questionSet,
     },
-    assignment: asg,
+    assignment: {
+      id: asg.id,
+      title: asg.title,
+      type: asg.type,
+      reviewMode: asg.reviewMode,
+      retakeThreshold: asg.retakeThreshold,
+      className: asg.className,
+    },
     needed,
     responses: byQ,
     targetPercents,

@@ -33,9 +33,13 @@ export default async function StudentAssignmentPage({
   const attemptsLeft =
     a.attemptsAllowed === null ? null : Math.max(0, a.attemptsAllowed - a.attemptsUsed);
   const c = a.corrections;
-  // With teacher unlocks on, corrections are optional and never block (Jon, Oct 1 2026).
+  // Corrections hold the page only where the rule says they come first: never with teacher
+  // unlocks on (Jon, Oct 1 2026) or in a CVTC course (Oct 13 2026); the same rule as the card.
   const correctionsBlock =
-    !a.retakesNeedUnlock && !!c && c.state !== "approved" && c.state !== "none";
+    (a.correctionsRule === "gate" || a.correctionsRule === "to_full") &&
+    !!c &&
+    c.state !== "approved" &&
+    c.state !== "none";
   const retaking = a.state === "retake_required" || a.state === "retake_available";
   // A paused or unfinished test stays reachable after the window closes (Finish later, Oct 13 2026).
   const canStart =
@@ -115,9 +119,9 @@ export default async function StudentAssignmentPage({
               ? "Your corrections are in. Your teacher will approve them or send them back."
               : c.state === "returned"
                 ? "Your teacher sent your corrections back. Revise and resubmit to unlock your next attempt."
-                : a.state === "corrections_optional"
-                  ? `Corrections are optional on this quiz. Finish them on attempt ${c.attemptNumber} to raise your score to 100%.`
-                  : a.type === "formative" && a.correctionsCap
+                : a.state === "corrections_to_full"
+                  ? `Correct ${c.remaining} missed ${c.remaining === 1 ? "question" : "questions"} on attempt ${c.attemptNumber} to raise your score to 100%. That's the way up at your score; there's no retake.`
+                  : a.type === "formative" && a.correctionsCap && c.attemptNumber === 1
                     ? `Correct ${c.remaining} missed ${c.remaining === 1 ? "question" : "questions"} on attempt ${c.attemptNumber} to bring this quiz up to ${a.retakeThreshold}%${attemptsLeft === null || attemptsLeft > 0 ? ", then retake it to go higher" : ""}.`
                     : `Correct ${c.remaining} missed ${c.remaining === 1 ? "question" : "questions"} on attempt ${c.attemptNumber}${attemptsLeft === null || attemptsLeft > 0 ? " to unlock your next attempt" : ""}.`}
           </span>
@@ -210,7 +214,13 @@ export default async function StudentAssignmentPage({
             ? "This assignment has closed."
             : a.state === "done" && a.retake && a.retake.plan.required.length === 0
               ? "All targets proficient. Nothing more to do here."
-              : "You've used every attempt."}
+              : attemptsLeft === 0
+                ? "You've used every attempt."
+                : a.retakeWindowClosed
+                  ? "Retakes on this quiz have closed."
+                  : a.final?.basis === "corrections_to_full"
+                    ? "Your corrections raised this quiz to 100%. Nothing more to do here."
+                    : "Nothing more to do here."}
         </p>
       )}
 

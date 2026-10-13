@@ -19,7 +19,8 @@ export type CorrectableItem = {
  * summative only on missed questions inside the targets being retaken (targets
  * below the threshold on this attempt, plus any the student opted into — Ticket
  * 1.12 supplies those). Practice never needs corrections. A question still
- * waiting for a manual grade is not "missed" yet.
+ * waiting for a manual grade is not "missed" yet. In a course with CVTC rules
+ * (Jon, Oct 13 2026: "corrections earn no credit, retakes only") nothing is.
  */
 export function questionsNeedingCorrection(input: {
   type: "practice" | "formative" | "summative";
@@ -29,8 +30,10 @@ export function questionsNeedingCorrection(input: {
   threshold: number;
   /** Extra targets being retaken by choice (optional retakes). */
   optedInTargetIds?: string[];
+  /** The assessment's course has CVTC rules on. */
+  cvtcRules?: boolean;
 }): string[] {
-  if (input.type === "practice") return [];
+  if (input.type === "practice" || input.cvtcRules) return [];
   const missed = input.items.filter((i) => i.earned !== null && i.earned < i.points);
   if (input.type === "formative") return missed.map((i) => i.questionId);
   const retaking = new Set(input.optedInTargetIds ?? []);

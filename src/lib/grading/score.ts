@@ -216,6 +216,19 @@ function cappedFormative(
   };
 }
 
+/**
+ * Whether the corrections cap runs on an assignment: formatives with the cap on, except in a
+ * course with CVTC rules (Jon, Oct 13 2026), where corrections earn no credit at all and the
+ * cap's retake window goes with it.
+ */
+export function correctionsCapOn(input: {
+  type: "practice" | "formative" | "summative";
+  correctionsCap: boolean;
+  cvtcRules: boolean | null | undefined;
+}): boolean {
+  return input.type === "formative" && input.correctionsCap && !input.cvtcRules;
+}
+
 /** Under the cap, the ceiling corrections lift attempt 1 to: the threshold below it, 100 at or above. */
 export function correctionsCeiling(firstPercent: number, threshold: number): number {
   return firstPercent < threshold ? threshold : 100;

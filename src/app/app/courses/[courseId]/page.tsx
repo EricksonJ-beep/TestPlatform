@@ -5,6 +5,7 @@ import { ChevronLeft, FileText } from "lucide-react";
 import { isAuthzError, requireOwner } from "@/lib/authz";
 import { getCourseDetail } from "@/lib/queries/courses";
 import { CourseHeader } from "./course-header";
+import { CvtcToggle } from "./cvtc-toggle";
 import { PoolsPanel } from "./pools-panel";
 import { TargetsPanel } from "./targets-panel";
 import { UnitsPanel } from "./units-panel";
@@ -41,6 +42,8 @@ export default async function CoursePage({ params }: PageProps<"/app/courses/[co
           <FileText className="size-4" aria-hidden /> Shared stimuli
         </Link>
       </div>
+
+      <CvtcToggle courseId={course.id} on={course.cvtcRules} />
 
       <div className="grid gap-4 lg:grid-cols-[1fr_1.4fr]">
         <div className="flex flex-col gap-4">

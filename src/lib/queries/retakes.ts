@@ -6,7 +6,7 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { recomputeGates } from "@/lib/gates";
-import { planRetake, type GateFlags, type RetakePlan } from "@/lib/retakes";
+import { gateOpen, planRetake, type GateFlags, type RetakePlan } from "@/lib/retakes";
 
 export type RetakeTarget = {
   id: string;
@@ -36,9 +36,11 @@ export async function getRetakeStatus(
       threshold: schema.assignments.retakeThreshold,
       optionalRetakes: schema.assignments.optionalRetakes,
       attemptsAllowed: schema.assignments.attemptsAllowed,
+      cvtcRules: schema.courses.cvtcRules,
     })
     .from(schema.assignments)
     .innerJoin(schema.assessments, eq(schema.assignments.assessmentId, schema.assessments.id))
+    .leftJoin(schema.courses, eq(schema.assessments.courseId, schema.courses.id))
     .where(eq(schema.assignments.id, assignmentId))
     .limit(1);
   if (!asg || asg.type !== "summative") return null;
@@ -83,18 +85,26 @@ export async function getRetakeStatus(
     .map((t) => {
       const g = gateBy.get(t.id);
       const percent = final.perTarget[t.id].percent;
+      const required = percent < asg.threshold;
+      const optedIn = g?.optedIn ?? false;
+      // CVTC rules (Jon, Oct 13 2026): corrections are never owed, even on gate rows written
+      // before the course turned the rules on.
+      const flags: GateFlags = {
+        correctionsOk: asg.cvtcRules ? true : (g?.correctionsOk ?? false),
+        activityOk: g?.activityOk ?? false,
+        practiceOk: g?.practiceOk ?? false,
+      };
       return {
         id: t.id,
         code: t.code,
         title: t.title,
         percent,
-        required: percent < asg.threshold,
-        optedIn: g?.optedIn ?? false,
+        required,
+        optedIn,
         gate: {
-          correctionsOk: g?.correctionsOk ?? false,
-          activityOk: g?.activityOk ?? false,
-          practiceOk: g?.practiceOk ?? false,
-          unlocked: !!g?.unlockedAt,
+          ...flags,
+          unlocked:
+            !!g?.unlockedAt || (!!asg.cvtcRules && (required || optedIn) && gateOpen(flags)),
         },
       };
     });
