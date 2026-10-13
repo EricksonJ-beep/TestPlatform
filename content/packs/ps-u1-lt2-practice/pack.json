@@ -1,10 +1,11 @@
 {
   "name": "ps-u1-lt2-practice",
-  "revision": 2,
+  "revision": 3,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science A",
   "unit": "Unit 1 · Introduction to Physical Science",
   "bank": "PS · U1.LT2 · Practice",
+  "openPractice": true,
   "practiceSet": {
     "title": "U1.LT2 Practice: Measurement, Sig Figs, and Percent Error",
     "description": "Practice reading tools with the smallest division rule, judging accuracy and precision, using sig figs, and calculating averages and percent error.",

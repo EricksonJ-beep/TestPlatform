@@ -1,10 +1,11 @@
 {
   "name": "ps-u2-lt3-practice",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science A",
   "unit": "Unit 2 · Atomic Structure",
   "bank": "PS · U2.LT3 · Practice",
+  "openPractice": true,
   "practiceSet": {
     "title": "U2.LT3 Practice: Isotopes and Isotope Notation",
     "description": "Practice defining isotopes, reading and writing hyphen and nuclear notation, counting protons, neutrons, and electrons, and finding the most common isotope.",

@@ -1,10 +1,11 @@
 {
   "name": "ps-u2-lt1-practice",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science A",
   "unit": "Unit 2 · Atomic Structure",
   "bank": "PS · U2.LT1 · Practice",
+  "openPractice": true,
   "practiceSet": {
     "title": "U2.LT1 Practice: Timeline of Atomic Models",
     "description": "Practice the scientists, dates, experiments, and models on the atomic timeline, and how each discovery changed the model.",
