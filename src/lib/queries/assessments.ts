@@ -16,6 +16,8 @@ export type AssessmentSummary = {
   courseName: string | null;
   unitId: string | null;
   sortOrder: number;
+  kind: string | null;
+  kindOrder: number | null;
   isPublished: boolean;
   sections: number;
   assignments: number;
@@ -32,6 +34,8 @@ export async function listAssessments(teacherId: string): Promise<AssessmentSumm
       courseName: schema.courses.name,
       unitId: schema.assessments.unitId,
       sortOrder: schema.assessments.sortOrder,
+      kind: schema.assessments.kind,
+      kindOrder: schema.assessments.kindOrder,
       isPublished: schema.assessments.isPublished,
       sections: sql<number>`(select count(*)::int from ${schema.assessmentSections} s where s.assessment_id = ${schema.assessments.id})`,
       assignments: sql<number>`(select count(*)::int from ${schema.assignments} a where a.assessment_id = ${schema.assessments.id})`,

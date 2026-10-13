@@ -12,6 +12,8 @@ export type BankSummary = {
   courseName: string | null;
   unitId: string | null;
   sortOrder: number;
+  kind: string | null;
+  kindOrder: number | null;
   questions: number;
   sharedWith: number;
   createdAt: Date;
@@ -32,6 +34,8 @@ export async function listMyBanks(
       courseName: schema.courses.name,
       unitId: schema.questionBanks.unitId,
       sortOrder: schema.questionBanks.sortOrder,
+      kind: schema.questionBanks.kind,
+      kindOrder: schema.questionBanks.kindOrder,
       questions: count(schema.questions.id),
       createdAt: schema.questionBanks.createdAt,
       isArchived: schema.questionBanks.isArchived,

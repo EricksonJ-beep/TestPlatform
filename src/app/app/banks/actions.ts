@@ -16,7 +16,8 @@ import {
 } from "@/lib/ai/extract-questions";
 import { extractedToRecords } from "@/lib/ai/to-records";
 import { listTargets } from "@/lib/queries/courses";
-import { placeOnShelf } from "@/lib/shelf-db";
+import { isBankKind } from "@/lib/bank-kinds";
+import { clearKindOrder, placeInKindColumn, placeOnShelf } from "@/lib/shelf-db";
 
 const bankSchema = z.object({
   name: z.string().trim().min(1, "Give the bank a name.").max(120),
@@ -277,3 +278,33 @@ export const placeBank = withAuthz(
     return { ok: true };
   }
 );
+
+/**
+ * Drop a bank into a unit's type column (Jon, Oct 13 2026: Practice / Quiz /
+ * Test / Retake columns he can arrange). Owner only. The bank takes the
+ * column's type for good, and the column keeps the order given.
+ */
+export const placeBankInColumn = withAuthz(
+  async (bankId: string, unitId: string | null, kind: string, orderedIds: string[]) => {
+    const session = await requireOwner({ type: "question_bank", id: bankId });
+    if (!isBankKind(kind)) throw new ActionError("Unknown bank type.", 400);
+    await placeInKindColumn(
+      schema.questionBanks,
+      session.userId,
+      bankId,
+      unitId,
+      kind,
+      orderedIds ?? []
+    );
+    revalidatePath("/app/banks");
+    return { ok: true };
+  }
+);
+
+/** Hand a column back to automatic order (by learning target, then name). Owner's banks only. */
+export const autoOrderColumn = withAuthz(async (bankIds: string[]) => {
+  const session = await requireTeacher();
+  await clearKindOrder(schema.questionBanks, session.userId, bankIds ?? []);
+  revalidatePath("/app/banks");
+  return { ok: true };
+});

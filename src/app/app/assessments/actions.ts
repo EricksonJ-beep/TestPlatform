@@ -6,7 +6,8 @@ import { z } from "zod";
 import { db, schema } from "@/db";
 import { ActionError, requireOwner, requireShared, requireTeacher, withAuthz } from "@/lib/authz";
 import { ownsCourse, rememberCourse } from "@/lib/current-course";
-import { placeOnShelf } from "@/lib/shelf-db";
+import { isBankKind } from "@/lib/bank-kinds";
+import { clearKindOrder, placeInKindColumn, placeOnShelf } from "@/lib/shelf-db";
 
 const uuid = z.string().uuid();
 function fieldErrors(error: z.ZodError): Record<string, string[]> {
@@ -597,3 +598,29 @@ export const placeAssessment = withAuthz(
     return { ok: true };
   }
 );
+
+/** Drop an assessment into a unit's type column, as on the banks page (Jon, Oct 13 2026). Owner only. */
+export const placeAssessmentInColumn = withAuthz(
+  async (assessmentId: string, unitId: string | null, kind: string, orderedIds: string[]) => {
+    const session = await requireOwner({ type: "assessment", id: assessmentId });
+    if (!isBankKind(kind)) throw new ActionError("Unknown column.", 400);
+    await placeInKindColumn(
+      schema.assessments,
+      session.userId,
+      assessmentId,
+      unitId,
+      kind,
+      orderedIds ?? []
+    );
+    revalidatePath("/app/assessments");
+    return { ok: true };
+  }
+);
+
+/** Hand a column back to automatic order. Owner's assessments only. */
+export const autoOrderAssessmentColumn = withAuthz(async (assessmentIds: string[]) => {
+  const session = await requireTeacher();
+  await clearKindOrder(schema.assessments, session.userId, assessmentIds ?? []);
+  revalidatePath("/app/assessments");
+  return { ok: true };
+});
