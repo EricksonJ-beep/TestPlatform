@@ -1,0 +1,27 @@
+{
+  "name": "bio-u5-lt4-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "unit": "Unit 5 · Cell Growth & Division",
+  "bank": "Bio · U5.LT4 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U5.LT4 Practice: Cancer and Cell Division",
+    "description": "Practice what cancer is and how it relates to the cell cycle: checkpoints, proto-oncogenes and tumor suppressor genes, apoptosis, benign and malignant tumors, metastasis, carcinogens and risk factors, treatments, and the chicken stomach cell data.",
+    "drawCount": 10,
+    "targets": ["U5.LT4"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U5.LT4 Relearning: Cancer and Cell Division",
+    "content": "**What you need to be able to do:** I can define cancer and the relationship to cell division.\n\n**Think of the cell cycle as a car.** **Proto-oncogenes** are the **gas pedal**: they tell the cell to divide. **Tumor suppressor genes** are the **brakes**: they tell the cell to slow down or stop. **Checkpoints** are inspection stops along the road. Cancer happens when the gas pedal gets stuck, the brakes fail, or the inspections are skipped, and the car can't stop.\n\n**What cancer is.** Cancer is a disease of **uncontrolled cell growth and division**. It is a disease of the **cell cycle**: cancer cells keep going through interphase and mitosis over and over, when normal cells would stop.\n\n**How normal cells stay in control.** Normal cells divide only when the body needs new cells (growth and repair). At **checkpoints**, the cell is checked to make sure the DNA was copied correctly and the cell is ready to divide. If the DNA is damaged, the cell stops to repair it, or it destroys itself by **apoptosis** (programmed cell death). Cells can divide, differentiate, or die.\n\n**How control breaks.** A **mutation** (a change in DNA) in a cell cycle gene can turn a proto-oncogene into an **oncogene** (a stuck gas pedal) or break a **tumor suppressor gene** like **p53** (failed brakes). Usually several mutations must build up, which is why cancer is more common as people age, but young people can get cancer too. **Carcinogens** cause mutations: **tobacco smoke, UV rays (sun and tanning beds), and too much radiation**. You can **lower your risk**: don't smoke or vape, wear sunscreen, eat healthy, and exercise. Regular checkups don't prevent cancer, but they help find it early.\n\n**Tumors.** A **tumor** is a mass of extra cells. A **benign** tumor stays in one place and does not spread (but can still press on organs). A **malignant** tumor is cancer: it invades nearby tissue and can **metastasize**, meaning cells break away, travel through the blood or lymph, and form new tumors in other organs.\n\n**Treatments.** **Surgery** removes the tumor. **Chemotherapy** uses drugs that kill fast-dividing cells all over the body (so hair and stomach cells are hit too). **Radiation therapy** aims high-energy rays at the tumor to damage its DNA. Finding cancer early, before it spreads, makes it much easier to treat.\n\n**Worked example 1 (made-up numbers):** Suppose normal skin cells spend 1,380 minutes in interphase and 60 minutes dividing (mitosis and cytokinesis), and skin cancer cells spend 330 minutes in interphase and 30 minutes dividing. How many times faster do the cancer cells finish a cycle? Step 1: Normal total = 1,380 + 60 = 1,440 minutes. Step 2: Cancer total = 330 + 30 = 360 minutes. Step 3: 1,440 ÷ 360 = 4. **Answer:** the cancer cells finish a cycle 4 times faster, mostly because they rush through interphase. Use the same steps on the chicken stomach cell data from the Time for Mitosis lab.\n\n**Worked example 2:** A tumor is found in a patient's colon, and the same cancer cells are found in the liver. Step 1: The cells are now far from where they started, so they spread. Step 2: Spreading is metastasis, which only malignant tumors do. **Answer:** the tumor is malignant and has metastasized.\n\n**Worked example 3:** A classmate says, \"Only people who smoke get cancer.\" Step 1: Smoking is a big risk factor because tobacco smoke contains carcinogens. Step 2: But other carcinogens, like UV rays and too much radiation, also cause mutations, and some mutations happen by chance when DNA is copied. **Answer:** the claim is not accurate. Smoking raises the risk a lot, but people who never smoke can get cancer too.\n\n**Watch out for:** saying all tumors are cancer (benign tumors are not); mixing up oncogenes (stuck gas pedal) and tumor suppressor genes (brakes); saying cancer cells divide by meiosis (they divide by mitosis, nonstop); thinking cancer cells skip interphase (they just go through it fast); and saying nothing can lower cancer risk.",
+    "prompts": [
+      "Use the car analogy to explain what happens in a cancer cell when (a) a proto-oncogene mutates into an oncogene and (b) a tumor suppressor gene is damaged.",
+      "Explain the difference between a benign tumor and a malignant tumor, and describe what happens during metastasis.",
+      "Explain why cancer is called a disease of the cell cycle. Connect your answer to what you learned about mitosis and checkpoints.",
+      "List three carcinogens or risk factors and one way to lower the risk from each."
+    ],
+    "targets": ["U5.LT4"]
+  }
+}

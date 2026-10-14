@@ -1,0 +1,27 @@
+{
+  "name": "bio-u5-lt3-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "unit": "Unit 5 · Cell Growth & Division",
+  "bank": "Bio · U5.LT3 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U5.LT3 Practice: Karyotypes and Inheritance",
+    "description": "Practice building and reading karyotypes: autosomes and sex chromosomes, determining sex, trisomy and monosomy, nondisjunction, Down, Turner, Klinefelter, Edwards, Patau, and cri-du-chat syndromes, and how sex is inherited.",
+    "drawCount": 10,
+    "targets": ["U5.LT3"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U5.LT3 Relearning: Karyotypes and Inheritance",
+    "content": "**What you need to be able to do:** I can design a karyotype to demonstrate inheritance patterns.\n\n**Think of sorting socks after laundry.** You match each sock with its partner by size, color, and pattern, then line the pairs up. A karyotype does the same with chromosomes: it matches each chromosome with its partner and lines up the pairs, so it is easy to spot one that is **extra, missing, or broken**.\n\n**What a karyotype is.** A karyotype is an arrangement of a cell's chromosome pairs, **numbered from largest to smallest**. Humans have **22 pairs of autosomes** (pairs 1–22, the same in males and females) plus **1 pair of sex chromosomes** (pair 23, always placed last) = **23 pairs, 46 chromosomes**.\n\n**How one is made.** Cells come from **drawing blood** or from **amniotic fluid** (before birth). The chromosomes are **stained**, which gives each one its own **banding pattern**, and photographed (usually in metaphase, when they are coiled tight). Then the homologous pairs are matched by **size, banding pattern, and centromere position** and arranged in order.\n\n**Determining sex.** **XX = female, XY = male.** The **Y** makes a person male, so anyone with a Y is male and anyone without one is female. The X is medium-large; the Y is very small.\n\n**When something goes wrong.** **Nondisjunction** is when chromosomes fail to separate properly during meiosis. If one pair fails to separate, one gamete gets an extra copy of that chromosome (n + 1) and another gets no copy of it (n − 1). After fertilization this gives a **trisomy** (three copies, 2n + 1 = 47) or a **monosomy** (one copy, 2n − 1 = 45). Because the zygote copies itself by mitosis, every cell in the body has the change.\n- **Down syndrome:** trisomy 21\n- **Edwards syndrome:** trisomy 18\n- **Patau syndrome:** trisomy 13\n- **Turner syndrome:** a female missing an X (X0 instead of XX; 45 chromosomes)\n- **Klinefelter syndrome:** a male with an extra X (XXY; 47 chromosomes)\n- **Cri-du-chat syndrome:** part of chromosome 5 is deleted (still 46 chromosomes)\n\nKaryotypes can be written as the total, then the sex chromosomes, then any extra: **47, XX, +21** is a female with Down syndrome. Turner syndrome is written **45, X** (one X and no second sex chromosome, the X0 from the list above), and Klinefelter syndrome is **47, XXY**. Remember the project rule: a **chromosomal disorder** is shown with a **karyotype**; a disorder caused by a **gene mutation** (like sickle cell) needs a **Punnett square or pedigree**, because one gene is too small to see.\n\n**Inheritance of sex.** Mom (XX) always gives an X. Dad (XY) gives an X or a Y, so **the sperm decides**. A Punnett square for XX × XY gives 2 XX : 2 XY, a **50%** chance of a girl or boy for every baby.\n\n**Worked example 1:** A karyotype has 22 normal autosome pairs, plus X, X, and Y. Step 1: Count the sex chromosomes: 3, so there is an extra. Step 2: There is a Y, so the person is male. Step 3: XXY is Klinefelter syndrome. **Answer:** a male with Klinefelter syndrome, 47 chromosomes.\n\n**Worked example 2:** Because of nondisjunction, a sperm has 24 chromosomes, including two copies of chromosome 13. It fertilizes a normal egg. Step 1: Zygote = 23 + 24 = 47. Step 2: Chromosome 13: one from the egg + two from the sperm = three. **Answer:** trisomy 13 (Patau syndrome), 47 chromosomes in every cell.\n\n**Worked example 3:** A sperm made with no sex chromosome fertilizes a normal egg (X). Step 1: Sex chromosomes = X from the egg only (X0). Step 2: No Y, so female. **Answer:** Turner syndrome, 45 chromosomes.\n\n**Watch out for:** calling the sex chromosomes the largest pair (they are just placed last); saying Down syndrome is a monosomy (it is a trisomy); deciding sex by counting X's instead of looking for a Y; thinking 46 always means normal (a deletion keeps the count at 46); and using a karyotype for a one-gene disorder.",
+    "prompts": [
+      "Describe the steps for building a karyotype from a cut-out chromosome sheet, from getting the cells to analyzing the finished karyotype.",
+      "A karyotype shows three copies of chromosome 21 and XY. Identify the person's sex and condition, and explain how nondisjunction caused it.",
+      "Make a Punnett square for a mother (XX) and a father (XY). Explain which parent decides the baby's sex and what the chance of a boy is.",
+      "Explain why karyotypes are useful in medicine. Give two situations when a doctor might order one."
+    ],
+    "targets": ["U5.LT3"]
+  }
+}

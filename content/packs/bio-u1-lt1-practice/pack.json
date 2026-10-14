@@ -1,0 +1,27 @@
+{
+  "name": "bio-u1-lt1-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "unit": "Unit 1 · The Science of Biology",
+  "bank": "Bio · U1.LT1 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U1.LT1 Practice: Design a Controlled Experiment",
+    "description": "Practice naming the independent variable, dependent variable, constants, control group, and experimental group in fresh experiments, writing testable If..., then... hypotheses, and spotting design flaws.",
+    "drawCount": 10,
+    "targets": ["U1.LT1"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U1.LT1 Relearning: Design a Controlled Experiment",
+    "content": "**What you need to be able to do:** I can design a scientific experiment that includes a control group, experimental group, constants, independent variable and dependent variable.\n\n**Think of a fair race.** To find out which of two pairs of shoes is faster, the same runner has to run the same track on the same day. If one run is uphill in the rain, you will never know whether the shoes or the hill made the difference. A controlled experiment is a fair race: **only one thing changes**, everything else stays the same, and you measure what happens.\n\n**The scientific method:** Make observations → Find the problem → Gather information → Create a hypothesis → Design an experiment → Experiment → Analyze data → Make a conclusion.\n\n**Independent variable (IV):** the variable that is deliberately changed (\"I change\"). Change only ONE.\n\n**Dependent variable (DV):** the variable that is measured to show the results. Its value depends on the IV.\n\n**Constants:** things kept the same to increase accuracy, in BOTH the control group and the experimental group.\n\n**Control group:** the group that remains unchanged to serve as a comparison: the **baseline**. It usually gets none of the IV, or the normal conditions.\n\n**Experimental group:** the group modified to observe the effects of the IV.\n\n**Hypothesis:** a proposed explanation that must be **testable**. Write it as a specific statement (not a question) that includes both the IV and the DV: **If** (the IV changes), **then** (this will happen to the DV). Example: \"If plants get more light, then they will grow taller.\" Data can **support or refute** a hypothesis. Both results are useful.\n\n**Observations:** **quantitative** = a quantity, a number or measurement (the frog is 12 cm long). **Qualitative** = a quality, a description (the leaf is bright green).\n\n**Make it reliable:** test many subjects in each group (sample size) and repeat your trials, so one odd result can't fool you.\n\n**Worked example 1:** Mason soaks radish seeds in water with 0 g, 2 g, or 4 g of salt and counts how many sprout in 5 days. Step 1: What does he change? The amount of salt, so that is the **IV**. Step 2: What does he measure? The number of seeds that sprout, so that is the **DV**. Step 3: Which group gets none of the IV? The 0 g seeds are the **control group**; the 2 g and 4 g seeds are **experimental groups**. Step 4: What else must match? The type of seed, the number of seeds per dish, the amount of water, the temperature, and the light are **constants**. Step 5: Hypothesis: \"If the amount of salt increases, then fewer radish seeds will sprout.\"\n\n**Worked example 2:** Wisconsin lakes are normally about 12 °C in spring. Scientists raise walleye eggs at 12 °C, 16 °C, and 20 °C to see whether warmer water lowers hatching. Which is the control group? Step 1: The control is the unchanged baseline. Step 2: Here \"unchanged\" means normal lake conditions, not 0 °C. **Answer:** the 12 °C eggs are the control group; the 16 °C and 20 °C eggs are experimental groups.\n\n**Worked example 3:** Ava tests whether a new soap kills more bacteria. On Monday she swabs her kitchen counter before and after using the new soap. On Friday she swabs the bathroom sink before and after using regular soap. What is wrong? Step 1: List everything that is different: the soap, the surface, and the day. Step 2: Three things changed, so she can't tell which one caused a difference. **Fix:** test both soaps on the same kind of surface on the same day, and keep everything else constant.\n\n**Watch out for:** mixing up the IV and DV (the DV is what you measure at the end); changing more than one variable; forgetting a control group; thinking the control group is always \"zero\" (sometimes it is the normal conditions); writing a hypothesis as a question or leaving out the DV; and thinking a refuted hypothesis means the experiment failed.",
+    "prompts": [
+      "Design an experiment to test whether the amount of sunlight affects how tall sunflower seedlings grow. Name your IV, your DV, three constants, your control group, and your experimental group(s).",
+      "Write a hypothesis for your sunflower experiment using If..., then.... Label the IV and the DV in your hypothesis.",
+      "Explain why a controlled experiment changes only one variable at a time. Use the words constant and control group.",
+      "Brayden feeds a new fish food to one guppy and regular food to another guppy, then measures their lengths after a month. Describe two ways to make his experiment more reliable."
+    ],
+    "targets": ["U1.LT1"]
+  }
+}

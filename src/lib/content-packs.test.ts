@@ -15,13 +15,14 @@ vi.mock("@/db", async () => {
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { applyAllPacks, applyPack, listPacks } from "./content-packs";
 
 const ids = { teacher: "", course: "", cls: "" };
 let ps: { id: string };
 let bio: { id: string };
+let bioB: { id: string };
 let bioUnit2: { id: string };
 
 beforeAll(async () => {
@@ -93,17 +94,33 @@ beforeAll(async () => {
     );
   // Jon's Biology A course is seeded with named units and per-unit codes (scripts/courses/biology.ts).
   [bio] = await db.insert(schema.courses).values({ ownerId: t.id, name: "Biology A" }).returning();
-  [bioUnit2] = await db
-    .insert(schema.units)
-    .values({ courseId: bio.id, name: "Unit 2 · Biochemistry", sortOrder: 1 })
-    .returning();
-  await db.insert(schema.learningTargets).values(
-    [
-      ["U2.LT1", "Atoms, molecules, and bonds"],
-      ["U2.LT4", "The four macromolecules"],
-      ["U2.LT5", "Enzymes"],
-    ].map(([code, title]) => ({ courseId: bio.id, unitId: bioUnit2.id, code, title }))
-  );
+  // Biology A carries Units 1–4 and Biology B Units 5–8, every target seeded (Biology practice packs, Oct 14 2026).
+  [bioB] = await db.insert(schema.courses).values({ ownerId: t.id, name: "Biology B" }).returning();
+  const bioUnits: [string, string, number][] = [
+    [bio.id, "Unit 1 · The Science of Biology", 4],
+    [bio.id, "Unit 2 · Biochemistry", 5],
+    [bio.id, "Unit 3 · Cell Structure and Function", 4],
+    [bio.id, "Unit 4 · Cell Energy", 4],
+    [bioB.id, "Unit 5 · Cell Growth & Division", 4],
+    [bioB.id, "Unit 6 · Genetics & Human Heredity", 3],
+    [bioB.id, "Unit 7 · DNA, RNA and Protein Synthesis", 4],
+    [bioB.id, "Unit 8 · Kingdoms", 5],
+  ];
+  for (const [i, [courseId, name, count]] of bioUnits.entries()) {
+    const [unit] = await db
+      .insert(schema.units)
+      .values({ courseId, name, sortOrder: i % 4 })
+      .returning();
+    if (i === 1) bioUnit2 = unit;
+    await db.insert(schema.learningTargets).values(
+      Array.from({ length: count }, (_, n) => ({
+        courseId,
+        unitId: unit.id,
+        code: `U${i + 1}.LT${n + 1}`,
+        title: `Unit ${i + 1} target ${n + 1}`,
+      }))
+    );
+  }
   const [cls] = await db
     .insert(schema.classes)
     .values({ ownerId: t.id, courseId: course.id, name: "Anatomy · 5th Hour" })
@@ -144,6 +161,26 @@ describe("content packs", () => {
           errors: [],
         });
     }
+    // Biology A and B practice packs (Oct 14 2026): 50 questions, a set, and notes for each of the 33 targets.
+    const bioCounts = [4, 5, 4, 4, 4, 3, 4, 5];
+    for (const name of bioCounts.flatMap((count, u) =>
+      Array.from({ length: count }, (_, n) => `bio-u${u + 1}-lt${n + 1}-practice`)
+    )) {
+      const out = first.find((o) => o.name === name)!;
+      expect(out?.status, name).toBe("applied");
+      if (out.status === "applied")
+        expect(out.summary).toMatchObject({
+          questions: 50,
+          practiceSet: { published: true },
+          activity: { published: true },
+          errors: [],
+        });
+    }
+    const bioTargetCount = await db
+      .select()
+      .from(schema.learningTargets)
+      .where(inArray(schema.learningTargets.courseId, [bio.id, bioB.id]));
+    expect(bioTargetCount).toHaveLength(33); // practice packs land on seeded targets; none created
     const skin = first.find((o) => o.name === "anatomy-u2-lab-quiz-integumentary")!;
     expect(skin.status).toBe("applied");
     if (skin.status !== "applied") throw new Error("unreachable");
@@ -263,7 +300,7 @@ describe("content packs", () => {
       .select()
       .from(schema.learningTargets)
       .where(eq(schema.learningTargets.unitId, bioUnit2.id));
-    expect(bioTargets).toHaveLength(3); // the seeded U2 targets only; no stray targets
+    expect(bioTargets).toHaveLength(5); // the seeded U2 targets only; no stray targets
     const carbAssessment = (await db.query.assessments.findFirst({
       where: eq(schema.assessments.title, "Unit 2 Quiz: Carbohydrates"),
     }))!;
@@ -308,7 +345,9 @@ describe("content packs", () => {
       const mine = bctTagged.filter(
         (t) => t.learningTargetId === target.id && bctQs.some((q) => q.id === t.questionId)
       );
-      expect(mine).toHaveLength({ "U2.LT1": 8, "U2.LT4": 20, "U2.LT5": 4 }[target.code]!);
+      expect(mine).toHaveLength(
+        ({ "U2.LT1": 8, "U2.LT4": 20, "U2.LT5": 4 } as Record<string, number>)[target.code] ?? 0
+      );
     }
     const bctAssessment = (await db.query.assessments.findFirst({
       where: eq(schema.assessments.title, "Unit 2 Test: Biochemistry"),

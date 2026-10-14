@@ -1,0 +1,27 @@
+{
+  "name": "bio-u4-lt2-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "unit": "Unit 4 · Cell Energy",
+  "bank": "Bio · U4.LT2 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U4.LT2 Practice: Aerobic vs. Anaerobic Respiration",
+    "description": "Practice comparing aerobic respiration with lactic acid and alcoholic fermentation: oxygen, location in the cell, ATP per glucose, products, and real-life examples from exercise and food.",
+    "drawCount": 10,
+    "targets": ["U4.LT2"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U4.LT2 Relearning: Aerobic vs. Anaerobic Respiration",
+    "content": "**What you need to be able to do:** I can compare and contrast aerobic and anaerobic respiration.\n\n**Think of a spare tire.** The little donut spare in a car's trunk keeps you rolling when a tire goes flat, but only slowly and only for a short way. **Fermentation** is your cells' spare tire. When oxygen runs out, it keeps a little ATP coming, but it can't take you far, and it leaves a mess behind.\n\n**Aerobic vs. anaerobic.** **Aerobic** means **with oxygen**. **Anaerobic** means **without oxygen**. Both start the same way: glucose diffuses into the cell and **glycolysis** breaks it into **pyruvate** in the **cytoplasm**.\n\n**With oxygen (aerobic):** pyruvate goes into the **mitochondria** for the Krebs cycle and electron transport chain. C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + **36 ATP**. Most organisms, including plants and animals, use it.\n\n**Without oxygen (anaerobic):** pyruvate **stays in the cytoplasm** and goes into fermentation. It makes only **2 ATP** per glucose.\n\n**Lactic acid fermentation:** happens in **muscle cells** and some bacteria. Pyruvate → **lactic acid**. C₆H₁₂O₆ → 2C₃H₆O₃ + 2 ATP. Lactic acid causes **muscle fatigue** and the **burning** feeling, and it is broken down later when oxygen returns. Bacteria use it to make **yogurt**. No CO₂ is made.\n\n**Alcoholic fermentation:** happens in **yeast**. Pyruvate → **ethanol** (alcohol) + **carbon dioxide**. C₆H₁₂O₆ → 2C₂H₅OH + 2CO₂ + 2 ATP. It is used in **bread making**: the CO₂ bubbles make the dough rise, and most of the ethanol evaporates in the oven.\n\n**Side by side:** Oxygen? Aerobic yes, anaerobic no. Where? Aerobic: cytoplasm, then mitochondria. Anaerobic: cytoplasm only. ATP per glucose? 36 vs. 2. Products? Aerobic: CO₂, water, ATP. Lactic acid fermentation: lactic acid, ATP. Alcoholic fermentation: ethanol, CO₂, ATP. Alike: both break down glucose, both make ATP, and both start with glycolysis.\n\n**Worked example 1:** In the Muscle Fatigue Lab, Maya squeezed a clothespin for ten 20-second trials with no rest. Her counts were 44, 41, 38, 35, 33, 31, 29, 28, 26, and 25. Explain. Step 1: Her finger muscles used oxygen faster than her blood could deliver it. Step 2: They switched to lactic acid fermentation. Step 3: Lactic acid built up, so her muscles fatigued and her squeezes dropped. After rest, oxygen returns and the lactic acid is broken down.\n\n**Worked example 2:** How much more ATP does aerobic respiration make? Step 1: Per glucose, 36 ÷ 2 = **18 times** as much. Step 2: For 4 glucose: aerobic 4 × 36 = 144 ATP, anaerobic 4 × 2 = 8 ATP. Step 3: 144 − 8 = **136 more ATP**.\n\n**Worked example 3:** Noah puts yeast, sugar, and warm water in a zip-top bag, presses out most of the air, and seals it. Over half an hour the bag puffs up. Step 1: Once the little oxygen left inside is used up, the yeast can't do aerobic respiration. Step 2: Yeast do alcoholic fermentation. Step 3: That makes ethanol and CO₂, and the CO₂ gas puffs up the bag.\n\n**Watch out for:** saying lactic acid fermentation makes CO₂ (it doesn't); saying humans make ethanol (yeast do); thinking anaerobic is 'better' because it doesn't need oxygen (it makes only 2 ATP and causes fatigue); forgetting both start with glycolysis; and putting anaerobic respiration in the mitochondria (it stays in the cytoplasm).",
+    "prompts": [
+      "Make a table comparing aerobic and anaerobic respiration: whether it needs oxygen, location in the cell, reactants, products, ATP produced, and one example of each.",
+      "Explain why your muscle cells switch to anaerobic respiration during intense exercise and why your legs burn.",
+      "Give three differences between lactic acid fermentation and alcoholic fermentation.",
+      "Explain why aerobic respiration is better for your body than anaerobic respiration. Use ATP numbers in your answer."
+    ],
+    "targets": ["U4.LT2"]
+  }
+}

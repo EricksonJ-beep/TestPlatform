@@ -1,0 +1,27 @@
+{
+  "name": "bio-u7-lt2-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "unit": "Unit 7 · DNA, RNA and Protein Synthesis",
+  "bank": "Bio · U7.LT2 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U7.LT2 Practice: DNA Replication",
+    "description": "Practice when and where DNA is copied, the jobs of helicase, primase, DNA polymerase, ligase, and their helpers, leading and lagging strands, proofreading, the semiconservative model, and writing complementary strands.",
+    "drawCount": 10,
+    "targets": ["U7.LT2"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U7.LT2 Relearning: DNA Replication",
+    "content": "**What you need to be able to do:** I can model and explain the process of DNA replication.\n\n**Think of a construction crew copying a building.** Each worker has one job, and the order matters. One worker opens things up, one holds them open, one marks where to start, one builds, and one glues the pieces together. DNA replication uses a crew of enzymes the same way.\n\n**When, where, and why.** DNA is copied **before a cell divides**, during the **S (synthesis) phase of interphase**, in the **nucleus**. Each new cell needs a complete, identical copy so the body can **grow and develop, replace dead cells, and repair injuries**.\n\n**Getting started.** Replication begins at **origins of replication**. The DNA opens into **replication bubbles**, with a Y-shaped **replication fork** at each end. Bacteria have one bubble; human chromosomes have many, so a chromosome is copied in about 8 hours instead of about 33 days.\n\n**The crew.** **Helicase** unzips the DNA by breaking the weak **hydrogen bonds** between the bases. **Single-strand binding proteins** hold the separated strands apart. **Topoisomerase** relieves the twisting stress ahead of the fork. **Primase** lays down a short **RNA primer** so building can start. **DNA polymerase** adds complementary nucleotides (A across from T, C across from G). **Ligase** joins the pieces together.\n\n**Leading and lagging strands.** DNA polymerase can only add to the **3' end**, so new strands are always built **5' to 3'**. Because the strands are antiparallel, the **leading strand** is built in one continuous piece **toward** the fork, but the **lagging strand** is built in short pieces called **Okazaki fragments**, **away** from the fork. **Ligase** seals the Okazaki fragments into one strand.\n\n**Proofreading.** DNA polymerase checks its work. It makes about 1 error in 10,000 bases, but after proofreading the error rate is about **1 in 1 billion**. An error that is missed becomes a **mutation**.\n\n**Semiconservative.** Each original (parental) strand is a **template** for a new strand. So each new DNA molecule has **one original strand and one new strand** (\"semi\" = half, \"conservative\" = kept). The two new molecules are identical to the original.\n\n**Worked example 1:** The template strand is 5'-CGTATG-3'. Write the new strand. Step 1: Pair each base: C→G, G→C, T→A, A→T, T→A, G→C, which gives GCATAC. Step 2: The new strand runs the opposite way. **Answer:** 3'-GCATAC-5'.\n\n**Worked example 2:** A cell's primase stops working. Predict what happens. Step 1: Primase makes the RNA primer. Step 2: DNA polymerase can't start a new strand without a primer. Step 3: So no new strands can be started. **Answer:** Replication can't happen, even though helicase can still unzip the DNA.\n\n**Worked example 3:** A DNA molecule has 500 base pairs. How many new nucleotides are used when it replicates once? Step 1: Two new strands are built, one on each original strand. Step 2: Each new strand is 500 nucleotides long. Step 3: 2 × 500. **Answer:** 1,000 new nucleotides; the two original strands are kept, not rebuilt.\n\n**Watch out for:** putting U in a new DNA strand; mixing up helicase (unzips), DNA polymerase (builds), and ligase (joins); forgetting that the new strand's 5' and 3' labels are opposite the template's; thinking \"semiconservative\" means only half of the DNA is copied; and thinking replication happens during mitosis instead of the S phase.",
+    "prompts": [
+      "The template strand is 3'-TTAGCCAT-5'. Write the new strand and label its 5' and 3' ends.",
+      "Make a table with two columns, Enzyme and Job, for helicase, single-strand binding proteins, topoisomerase, primase, DNA polymerase, and ligase.",
+      "Explain why DNA replication is called semiconservative. Use the words parental strand, new strand, and template.",
+      "Explain why the lagging strand is built in Okazaki fragments while the leading strand is built in one piece."
+    ],
+    "targets": ["U7.LT2"]
+  }
+}

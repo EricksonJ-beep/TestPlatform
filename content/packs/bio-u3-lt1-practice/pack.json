@@ -1,0 +1,27 @@
+{
+  "name": "bio-u3-lt1-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "unit": "Unit 3 · Cell Structure and Function",
+  "bank": "Bio · U3.LT1 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U3.LT1 Practice: Cell Theory",
+    "description": "Practice the three parts of the cell theory and the two modern additions, the scientists who built it (Hooke, Leeuwenhoek, Schleiden, Schwann, Virchow), and applying the theory to new observations, viruses, and spontaneous generation.",
+    "drawCount": 10,
+    "targets": ["U3.LT1"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U3.LT1 Relearning: Cell Theory",
+    "content": "**What you need to be able to do:** I can explain the components of the modern cell theory.\n\n**Think of LEGO bricks.** Every LEGO build, from a tiny car to a giant castle, is made of bricks, and a single brick is the smallest piece that still \"counts\" as LEGO. Living things work the same way: **every living thing is built from cells, and the cell is the smallest piece that is alive.** Here the LEGO picture breaks down: new bricks come from a factory, but **a new cell can only be made when a cell that already exists divides in two.**\n\n**The three parts of the cell theory:**\n1. **All living things are made of cells** (one cell, like a bacterium, or trillions, like you).\n2. **The cell is the basic unit of structure and function of life.** It is the smallest unit that can carry out all life processes on its own.\n3. **All cells come from pre-existing cells.** A new cell is made when an existing cell divides.\n\n**The modern cell theory adds two more:** **cells contain genetic information (DNA, RNA)** that is copied and passed on when cells divide, and **all cells are similar in composition** (cells share the same basic parts: a cell membrane, cytoplasm, ribosomes, and DNA).\n\n**The scientists, in order:**\n- **1665, Robert Hooke:** looked at thin slices of **cork** and named the boxes **cells**. Cork is dead, so he saw only empty cell walls.\n- **1670s, Anton van Leeuwenhoek:** ground strong lenses and was the first to see **living** single-celled organisms swimming in pond water.\n- **1838, Matthias Schleiden:** all **plants** are made of cells.\n- **1839, Theodor Schwann:** all **animals** are made of cells. (Schleiden + Schwann = all living things are made of cells.)\n- **1855, Rudolf Virchow:** **all cells come from pre-existing cells.** This replaced **spontaneous generation**, the old idea that life can come from nonliving matter.\n\nNone of this was possible without the **microscope**: cells are too small to see with your eyes alone. The idea became a theory because many scientists **replicated** the observations and got the same results.\n\n**Viruses:** a virus has genetic material but is **not made of a cell**, so by the cell theory it is not considered living.\n\n**Worked example 1:** A lizard loses the tip of its tail, and over the next few weeks a new tail tip grows back. Which part of the cell theory explains this? Step 1: The question is about where NEW cells came from. Step 2: Cells still in the stump of the tail divided to make them. Step 3: New cells from old cells is the third part. **Answer:** All cells come from pre-existing cells.\n\n**Worked example 2:** A student says, \"Bacteria have no nucleus, so they break the cell theory.\" Step 1: Check each part. Is a bacterium made of a cell? Yes. Can that one cell carry out life processes? Yes. Did it come from another bacterium dividing? Yes. Step 2: No part of the theory says cells need a nucleus. **Answer:** The student is wrong; bacteria fit the cell theory.\n\n**Worked example 3:** Put Virchow, Hooke, Schwann, Leeuwenhoek, and Schleiden in order. Step 1: Cells had to be seen first: Hooke (1665), then living cells: Leeuwenhoek (1670s). Step 2: Then scientists said what is made of cells: plants, Schleiden (1838), then animals, Schwann (1839). Step 3: Last came where cells come from: Virchow (1855). **Answer:** Hooke, Leeuwenhoek, Schleiden, Schwann, Virchow.\n\n**Watch out for:** saying the cell theory requires a nucleus or a cell wall (bacteria have no nucleus, animal cells have no wall); thinking Hooke saw living cells (cork is dead); swapping Schleiden (**plants**) and Schwann (**animals**); calling viruses living because they have DNA; and believing cells can form from nonliving matter (spontaneous generation).",
+    "prompts": [
+      "Write the three parts of the cell theory in your own words. Then add the two parts the modern cell theory includes.",
+      "Make a timeline of Hooke, Leeuwenhoek, Schleiden, Schwann, and Virchow. For each one, write the year and one sentence about what he added.",
+      "Explain why a virus is not considered living according to the cell theory, even though it has genetic material.",
+      "A bacterium splits into two bacteria. Explain which part of the cell theory this shows and what old idea it goes against."
+    ],
+    "targets": ["U3.LT1"]
+  }
+}

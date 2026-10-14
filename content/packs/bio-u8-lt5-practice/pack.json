@@ -1,0 +1,28 @@
+{
+  "name": "bio-u8-lt5-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "unit": "Unit 8 · Kingdoms",
+  "bank": "Bio · U8.LT5 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U8.LT5 Practice: Kingdom Plantae",
+    "description": "Practice describing plants: their characteristics, nonvascular vs. vascular, the 4 groups (bryophytes, seedless vascular, gymnosperms, angiosperms), monocots vs. dicots, roots, leaves, xylem, phloem, stomata, and tree ID.",
+    "drawCount": 10,
+    "targets": ["U8.LT5"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U8.LT5 Relearning: Kingdom Plantae",
+    "content": "**What you need to be able to do:** I can give a general description of the organisms in the Kingdom Plantae.\n\n**Think of plant groups like phones over the years.** Each new model keeps the old features and adds one more. Mosses are the flip phone: just the basics, no plumbing. Ferns add **vascular tissue** (plumbing). Gymnosperms add **seeds**. Angiosperms add **flowers and fruit**.\n\n**General description.** Plants are **multicellular, eukaryotic, photosynthetic, and autotrophic** (they make their own food). Their cell walls are made of **cellulose**. There are nearly **400,000 species**; the coastal redwood is the tallest vascular plant.\n\n**Nonvascular vs. vascular.** The major groups are separated by the absence or presence of **vascular tissue**: **xylem** carries **water**, and **phloem** carries **food (sugar)**.\n\n**The 4 groups:**\n- **Bryophytes (nonvascular):** mosses, liverworts, hornworts. They lack xylem and phloem, have no true roots, stems, or leaves, depend on water for reproduction, reproduce with **spores**, and are small plants growing low to the ground.\n- **Seedless vascular plants:** ferns, horsetails, and whisk ferns. They have vascular tissue (most have true roots, stems, and leaves) but still reproduce with **spores**.\n- **Gymnosperms** (\"naked seed\"): conifers such as pines, spruces, firs, cedars, hemlocks, and yews. They are **cone-bearing**, have no flowers, keep their seeds naked on cones, are usually **evergreen**, and are a major source of timber and paper.\n- **Angiosperms:** the **flowering plants**. Flowers produce **fruit**, and the seeds are enclosed inside. Most angiosperm trees in Wisconsin are deciduous. The two big classes are **eudicots (about 69%)** and **monocots (about 28%)**.\n\n**Monocot vs. dicot:**\n- **Monocot:** one cotyledon (seed leaf), parallel veins, flower parts in 3s, secondary growth rare, root vascular bundles in a ring, stem bundles **scattered**, fibrous roots.\n- **Dicot:** two cotyledons, netted veins, flower parts in 4s and 5s, secondary growth, root xylem forms an **X**, stem bundles in a **ring**, taproot.\n\n**Plant structures.** **Roots** anchor the plant, absorb water and nutrients, and store food (carrots). Root types: **taproot** (one deep main root; dicots), **fibrous** (highly branched and shallow; monocots), and **adventitious** (grow from other structures, like corn's prop roots). **Leaves** have a waxy **cuticle** that reduces water loss and **stomata** (openings for gases) controlled by **guard cells**. Leaf types by habitat: **xerophytic** (dry), **mesophytic** (moderate water), **hydrophytic** (water). Plants need 17 essential elements; the **Big Three** are nitrogen, phosphorus, and potassium.\n\n**Tree ID.** Leaf arrangement: **alternate** (one leaf per node), **opposite** (two per node; MADOG = Maple, Ash, Dogwood), **whorled** (three or more). **Simple** leaves are one piece; **compound** leaves are made of leaflets (pinnately, bipinnately, or palmately). Conifer needles can be **fascicled** (bundles of 2–5 in a sheath), **clustered**, **linear**, or **scale-like**.\n\n**Worked example 1:** A plant has xylem and phloem and makes seeds on cones. Which group? Step 1: Xylem and phloem mean it is vascular. Step 2: Seeds rule out ferns. Step 3: Cones, not fruit, mean gymnosperm. **Answer:** a gymnosperm (like a white pine).\n\n**Worked example 2:** A seedling has leaves with parallel veins. Predict its flowers and stem. Step 1: Parallel veins mean monocot. Step 2: Monocot flower parts come in 3s. Step 3: Monocot stems have scattered vascular bundles. **Answer:** flower parts in 3s and scattered bundles (like corn or grass).\n\n**Worked example 3:** Why are mosses never tall? Step 1: Mosses are nonvascular. Step 2: Without xylem, water can't be moved far up a plant. Step 3: They also depend on water for reproduction. **Answer:** they stay small, low to the ground, and in moist places.\n\n**Watch out for:** mixing up xylem (water) and phloem (food); thinking all plants make seeds (ferns and mosses use spores); saying gymnosperm seeds are in fruit (they're naked on cones); swapping monocot and dicot traits (mono = one cotyledon, parallel veins, 3s, scattered bundles); and thinking stomata are on roots.",
+    "prompts": [
+      "Describe the Kingdom Plantae in 2–3 sentences. Use the words multicellular, eukaryotic, autotrophic, and cellulose.",
+      "Make a table of the 4 plant groups. For each, tell whether it has vascular tissue, whether it uses spores or seeds, and give an example.",
+      "List five differences between monocots and dicots.",
+      "Explain what xylem, phloem, stomata, and the cuticle each do.",
+      "Describe the three types of roots and give an example of each."
+    ],
+    "targets": ["U8.LT5"]
+  }
+}

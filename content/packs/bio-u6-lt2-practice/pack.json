@@ -1,0 +1,27 @@
+{
+  "name": "bio-u6-lt2-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "unit": "Unit 6 · Genetics & Human Heredity",
+  "bank": "Bio · U6.LT2 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U6.LT2 Practice: Complex Inheritance",
+    "description": "Practice identifying and solving crosses for incomplete dominance, codominance, ABO blood types (multiple alleles), sex-linked traits, and polygenic traits.",
+    "drawCount": 10,
+    "targets": ["U6.LT2"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U6.LT2 Relearning: Complex Inheritance",
+    "content": "**What you need to be able to do:** I can identify complex patterns of inheritance and predict the outcome of complex inheritance crosses.\n\n**Think of game day.** In simple dominance, one allele \"wins\" and hides the other. Complex patterns are different. **Incomplete dominance** is like mixing Badger red paint with white paint: you get pink, a blend. **Codominance** is like a \"house divided\" jersey sewn half Packers green and half Brewers blue: both colors show up fully, side by side, and neither one blends into the other.\n\n**Incomplete dominance:** the heterozygote is a blend in between the two homozygous forms. In snapdragons, RR = red, WW = white, and RW = pink. Because the heterozygote has its own look, the genotype ratio and the phenotype ratio match: RW × RW gives 1 red : 2 pink : 1 white. There is no 3:1 here.\n\n**Codominance:** both alleles show fully in the heterozygote. Roan cattle (C^{R}C^{W}) have red hairs and white hairs, and speckled chickens (BW) have black feathers and white feathers. Nothing is blended.\n\n**Multiple alleles (ABO blood type):** a gene can have more than two alleles in the population, but each person still has only two. Blood type has three alleles: A, B, and O. A and B are codominant to each other, and both are dominant over O. Use the two-letter system: **Type A = AA or AO**, **Type B = BB or BO**, **Type AB = AB**, and **Type O = OO**. Type O is the universal donor, and type AB is the universal receiver.\n\n**Sex-linked (X-linked) traits:** the gene is on the X chromosome but not on the Y. Always write the sex chromosomes: X^{H}X^{H} (normal female), X^{H}X^{h} (carrier female), X^{h}X^{h} (affected female), X^{H}Y (normal male), and X^{h}Y (affected male). A male has only one X, like a car with only one headlight: if that bulb burns out, there is no backup. So males show X-linked recessive traits more often, and males can't be carriers. Sons get their X from their mother, and daughters get one X from each parent. Examples: red-green colorblindness, hemophilia, and Duchenne muscular dystrophy.\n\n**Polygenic traits:** many genes add together to control one trait, like height, skin color, and eye color. Instead of a few categories, you get a smooth range that makes a bell-shaped curve, and the environment (like nutrition) can change the phenotype too.\n\n**Worked example 1 (incomplete dominance):** In Andalusian chickens (a different breed from the speckled chickens above), BB = black, WW = white, and BW = blue. Cross a blue chicken with a black chicken (BW × BB). Step 1: Put B and W across the top and B and B down the side. Step 2: The boxes are BB, BW, BB, BW. **Answer:** 50% black and 50% blue. No white chicks are possible, because the black parent has no W.\n\n**Worked example 2 (blood type):** Mom is type A, but her father was type O. Dad is type AB. Step 1: Mom got an O from her father, so she is AO. Dad must be AB. Step 2: AO × AB → AA, AB, AO, BO. **Answer:** type A (AA and AO) = 50%, type AB = 25%, and type B (BO) = 25%. No child can be type O, because Dad has no O.\n\n**Worked example 3 (sex-linked):** For colorblindness, B = normal vision and b = colorblind. A carrier woman (X^{B}X^{b}) has children with a man with normal vision (X^{B}Y). Step 1: Put Mom's X^{B} and X^{b} down the side and Dad's X^{B} and Y across the top. Step 2: The boxes are X^{B}X^{B}, X^{B}X^{b}, X^{B}Y, and X^{b}Y. Step 3: Sort them. The daughters are X^{B}X^{B} and X^{B}X^{b} (none colorblind, half carriers), and the sons are X^{B}Y and X^{b}Y. **Answer:** 50% of the sons are colorblind, 0% of the daughters, and 25% of all the children.\n\n**Watch out for:** calling a blend \"codominance\" (blend = incomplete dominance, both showing = codominance); using a 3:1 ratio for an incomplete or codominant cross; forgetting that type A and type B people can carry O (AO and BO); leaving the X and Y off sex-linked genotypes; giving the Y chromosome an allele; and answering for all the children when the question asks only about sons or only about daughters.",
+    "prompts": [
+      "Compare incomplete dominance and codominance. Give one example of each, and describe what the heterozygote looks like in each example.",
+      "A type A woman whose father is type O has children with a type A man whose mother is type O. Write both genotypes, show the Punnett square, and give the chance of each blood type.",
+      "A man with hemophilia (X^{h}Y) has children with a woman who is a carrier (X^{H}X^{h}). Show the Punnett square, then give the chance that a son has hemophilia and the chance that a daughter has hemophilia.",
+      "Explain why human height shows a smooth range instead of a few separate categories. Use the word polygenic, and explain how the environment can also play a part."
+    ],
+    "targets": ["U6.LT2"]
+  }
+}

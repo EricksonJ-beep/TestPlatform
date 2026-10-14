@@ -1,0 +1,27 @@
+{
+  "name": "bio-u3-lt3-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "unit": "Unit 3 · Cell Structure and Function",
+  "bank": "Bio · U3.LT3 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U3.LT3 Practice: Model of Cell Structure",
+    "description": "Practice the structure and job of each organelle, plant vs. animal cells, the protein pathway, cell analogies (factory, city, school), and building and fixing cell models.",
+    "drawCount": 10,
+    "targets": ["U3.LT3"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U3.LT3 Relearning: Model of Cell Structure",
+    "content": "**What you need to be able to do:** I can create a model that shows understanding of basic cell structure.\n\n**Think of a factory** (like the cell analogy project). The **nucleus** is the manager's office that holds the blueprints (DNA). **Ribosomes** are the workers who build the product (proteins). The **rough ER** is the assembly line, the **Golgi apparatus** is the shipping department, **lysosomes** are the clean-up crew, **mitochondria** are the power plant, **vacuoles** are the storage warehouse, the **cytoskeleton** is the steel frame, and the **cell membrane** is the security gate. A plant factory adds **solar panels (chloroplasts)** and a **brick outer wall (cell wall)**.\n\n**The organelles (\"little organs\") and their jobs:**\n- **Nucleus:** control center; contains the cell's DNA; surrounded by the **nuclear envelope**. The **nucleolus** in its center makes ribosomes.\n- **Ribosomes:** assemble proteins (protein synthesis), following the codes from the nucleus. Free floating or attached to the rough ER.\n- **Rough ER:** internal membrane system with ribosomes on it; makes and moves proteins.\n- **Smooth ER:** no ribosomes; makes lipids (phospholipids, steroids) and detoxifies drugs and poisons (lots of it in liver cells).\n- **Golgi apparatus:** proteins from the rough ER move here to be modified, sorted, and packaged, then stored or sent out of the cell (secreted).\n- **Lysosomes:** the \"clean-up crew\"; small sacs of enzymes that break down lipids, carbohydrates, proteins, and old organelles.\n- **Vacuoles:** storage of water, salts, proteins, and carbohydrates.\n- **Mitochondria:** convert energy from food into usable ATP; cellular respiration happens here.\n- **Chloroplasts:** photosynthesis (make sugar); found in plant cells (and algae), never in animal cells.\n- **Cytoskeleton:** network of protein filaments (microtubules, microfilaments); supports the cell, keeps its shape, moves things, helps in cell division.\n- **Cilia** (small hairs) and **flagella** (long whip): movement.\n- **Cell membrane:** phospholipid bilayer; regulates what enters and leaves; protects and supports.\n- **Cell wall:** outside the cell membrane in plants, algae, fungi, and bacteria; in plants it is made of cellulose; support and protection.\n- **Cytoplasm:** gel-like material inside the membrane that holds the organelles (not an organelle; the cytosol is 70 to 90% water).\n\n**Plant vs. animal:** plant cells have a **rigid cell wall** (plus a membrane), **chloroplasts**, and **one large central vacuole** for water and support. Animal cells have a **cell membrane only**, **no chloroplasts**, and **many small vacuoles**.\n\n**Worked example 1:** How does a cell make a protein and send it out? Step 1: The **nucleus** holds the instructions (DNA). Step 2: A **ribosome** on the rough ER assembles the protein. Step 3: The **rough ER** moves it along. Step 4: The **Golgi** modifies, sorts, and packages it. Step 5: It leaves through the **cell membrane**.\n\n**Worked example 2:** A student's plant cell model has a nucleus, mitochondria, and a cell membrane. What is missing? Step 1: List the plant-only features: cell wall, chloroplasts, large central vacuole. Step 2: Check the model: none of them are there. **Answer:** add a cell wall outside the membrane, chloroplasts, and a large central vacuole. Right now it is an animal cell.\n\n**Worked example 3:** White blood cells swallow and digest bacteria all day. Which organelle should they have lots of? Step 1: Digesting takes enzymes that break things down. Step 2: Lysosomes are sacs of digestive enzymes (the clean-up crew). **Answer:** lysosomes. A cell's parts match its job.\n\n**Watch out for:** saying the cell wall controls what enters (that is the membrane); forgetting that plant cells have a membrane inside the wall; putting chloroplasts or a cell wall in an animal cell; calling the cytoplasm an organelle; mixing up rough ER (ribosomes, proteins) and smooth ER (lipids, detox); and mixing up cilia (short hairs) and flagella (long whip).",
+    "prompts": [
+      "For each organelle, write one line with its job and whether it is found in plant cells, animal cells, or both (example: Mitochondria – make ATP from food – both).",
+      "Pick a business, school, or city. Write a cell analogy that matches at least six organelles to its parts, and explain each match.",
+      "On paper, draw a plant cell and an animal cell side by side. In the box, name the three structures only the plant cell has and describe where each one sits in the cell.",
+      "Trace the path of a protein from the nucleus to the outside of the cell. Name each organelle and its job along the way."
+    ],
+    "targets": ["U3.LT3"]
+  }
+}
