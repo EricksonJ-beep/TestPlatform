@@ -593,9 +593,23 @@ export function buildStudentToDo(input: {
       });
   const byId = new Map(input.assignments.map((a) => [a.id, a]));
   const urgency = byUrgency(rows, byId);
+  // Jon, Oct 14 2026: corrections are "almost like an advertisement… especially when they got
+  // below an 80 percent", so below-the-line scores lead the corrections rows, lowest first.
+  const lift = (r: ToDoRow) => {
+    const a = r.kind === "corrections" && r.assignmentId ? byId.get(r.assignmentId) : undefined;
+    if (!a) return [1, 0] as const;
+    const pct = a.firstPercent ?? 0;
+    return [pct < a.retakeThreshold ? 0 : 1, pct] as const;
+  };
   const todo = rows
     .filter((r) => r.group === "todo")
-    .sort((x, y) => TODO_ORDER.indexOf(x.kind) - TODO_ORDER.indexOf(y.kind) || urgency(x, y));
+    .sort(
+      (x, y) =>
+        TODO_ORDER.indexOf(x.kind) - TODO_ORDER.indexOf(y.kind) ||
+        lift(x)[0] - lift(y)[0] ||
+        lift(x)[1] - lift(y)[1] ||
+        urgency(x, y)
+    );
   const higher = rows.filter((r) => r.group === "higher").sort(urgency);
   const waiting = rows
     .filter((r) => r.group === "waiting")

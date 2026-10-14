@@ -102,15 +102,15 @@ const violaCarbs = a("Unit 2 Quiz: Carbohydrates", {
 const summary = (r: ToDoRow) => [r.kind, r.title];
 
 describe("the student to-do list", () => {
-  it("Viola: two corrections rows, most recently closed first, counted", () => {
-    const list = buildStudentToDo({ assignments: [violaLt1, violaCarbs] });
+  it("Viola: two corrections rows, lowest score first (Jon: below 80 leads), counted", () => {
+    const list = buildStudentToDo({ assignments: [violaCarbs, violaLt1] });
     expect(list.headline).toBe("You have 2 things to do.");
     expect(list.count).toBe(2);
     expect(list.todo.map(summary)).toEqual([
-      ["corrections", "Unit 2 Quiz: Carbohydrates"],
       ["corrections", "Unit 2 LT1 Quiz"],
+      ["corrections", "Unit 2 Quiz: Carbohydrates"],
     ]);
-    expect(list.todo[0]).toMatchObject({
+    expect(list.todo[1]).toMatchObject({
       why: "Correct 5 missed questions to raise your score from 50% to 80%.",
       // Hide scores in the teacher's panel: her 50% goes, the row still says what it's for.
       whyWithoutScores: "Correct 5 missed questions to raise your score to 80%.",
@@ -118,7 +118,7 @@ describe("the student to-do list", () => {
       when: null,
       action: { kind: "link", label: "Do corrections", href: "/student/corrections/att-carbs" },
     });
-    expect(list.todo[1].why).toBe(
+    expect(list.todo[0].why).toBe(
       "Correct 3 missed questions to raise your score from 40% to 80%."
     );
     expect(list.higher).toEqual([]);

@@ -25,6 +25,7 @@ import type { RosterRow } from "@/lib/queries/classes";
 import { removeStudent, resetStudentPassword, startViewAs } from "../actions";
 import { AccommodationsDialog } from "./accommodations-dialog";
 import { PasswordReveal } from "./password-reveal";
+import { RenameDialog } from "./rename-dialog";
 
 function formatDate(d: Date | null): string {
   if (!d) return "Never";
@@ -133,6 +134,7 @@ export function Roster({ classId, roster }: { classId: string; roster: RosterRow
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="inline-flex gap-1">
+                    <RenameDialog classId={classId} row={row} />
                     <Button
                       size="sm"
                       variant="outline"
