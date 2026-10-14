@@ -1,0 +1,13 @@
+{
+  "name": "bio-u2-quiz-ph",
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "unit": "Unit 2 · Biochemistry",
+  "bank": "Bio · Unit 2 Quiz: pH",
+  "assessment": {
+    "title": "pH Quiz — Biology",
+    "type": "formative",
+    "instructions": "Fifteen questions on pH, acids, and bases: the pH scale, H⁺ ions, buffers, and how pH affects enzymes. Questions 6–9 use a picture or graph."
+  },
+  "assign": []
+}
