@@ -1,0 +1,27 @@
+{
+  "name": "bio-u3-lt4-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "unit": "Unit 3 · Cell Structure and Function",
+  "bank": "Bio · U3.LT4 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U3.LT4 Practice: Cellular Transport",
+    "description": "Practice classifying passive transport (diffusion, facilitated diffusion, osmosis) and active transport (pumps, endocytosis, exocytosis), the structure of the selectively permeable membrane, hypertonic, hypotonic, and isotonic solutions in animal and plant cells, and osmosis lab data.",
+    "drawCount": 10,
+    "targets": ["U3.LT4"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U3.LT4 Relearning: Cellular Transport",
+    "content": "**What you need to be able to do:** I can classify and describe the forms of cellular transport.\n\n**Think of riding a bike.** Coasting downhill takes no effort; that is **passive transport**, where molecules move from **high to low concentration** (down the concentration gradient) with **no energy**. Pedaling uphill takes work; that is **active transport**, where the cell spends **ATP** to move molecules from **low to high concentration** (against the gradient).\n\n**The cell membrane** (plasma membrane) separates the inside of the cell from the outside and is essential for **homeostasis** (maintaining an internal balance). It is a **phospholipid bilayer** with proteins and cholesterol embedded in it. It is **selectively permeable** (semi-permeable): small molecules (H₂O, CO₂, O₂) pass through easily, but large molecules (proteins, starch) and charged particles (ions like Na⁺ and Cl⁻) can't cross on their own.\n\n**Passive transport (no energy):**\n- **Diffusion:** molecules move from high to low concentration. It is faster at higher **temperature** and with **smaller molecules**. It continues until **equilibrium**, when molecules still move but there is no net change.\n- **Facilitated diffusion:** high to low through **transport proteins**. **Channel proteins** have a pore; **carrier proteins** change shape.\n- **Osmosis:** diffusion of **water** across a membrane, from more water (low solute) to less water (high solute). (Kool-Aid: water is the **solvent**; sugar and mix are the **solutes**.)\n\n**Solutions (compare the outside to the cell):**\n- **Isotonic:** same solute concentration; **no net movement** of water.\n- **Hypotonic:** less solute outside; water moves **into** the cell. Animal cells swell and burst (**cytolysis**). Plant cells get firm (turgor pressure), and the **cell wall** keeps them from bursting.\n- **Hypertonic:** more solute outside; water moves **out of** the cell. Cells shrink; in a plant cell the membrane pulls away from the wall (**plasmolysis**) and the plant wilts.\n\n**Active transport (uses ATP):** **pumps** such as the **sodium-potassium pump** (critical for nerve impulses) move ions against the gradient. **Endocytosis** brings large particles in by folding the membrane into a vesicle (phagocytosis = \"cell eating\"). **Exocytosis** sends materials out when a vesicle fuses with the membrane.\n\n**Worked example 1:** A cell is 97% water, and the solution around it is 88% water. Step 1: Find the solute in each: the cell is 100 − 97 = 3% solute, and the solution is 100 − 88 = 12% solute. Step 2: Compare the outside to the cell: 12% > 3%, so the solution is **hypertonic**. Step 3: Water moves toward the higher solute, so it moves **out of** the cell. **Answer:** hypertonic; the cell loses water and shrinks.\n\n**Worked example 2:** Classify the transport: chloride ions (Cl⁻) leave a lung cell through a channel protein, moving from high to low concentration. Step 1: High to low means no energy is needed, so it is passive. Step 2: A protein is helping the ions across. **Answer:** facilitated diffusion.\n\n**Worked example 3:** A potato core goes from 25.0 g to 22.0 g after soaking in salt water. Find the % change in mass. Step 1: final − initial = 22.0 − 25.0 = −3.0 g. Step 2: −3.0 ÷ 25.0 × 100 = −12%. **Answer:** −12% (it is a loss, so keep the negative sign); water moved out of the core by osmosis.\n\n**Watch out for:** naming the solution from the cell's point of view (hyper-/hypo-/isotonic describe the solution **outside**); saying water moves toward less solute (it moves toward **more** solute); thinking molecules stop moving at equilibrium; thinking facilitated diffusion uses energy (it is passive); thinking plant cells burst in pure water; and dividing by the final mass instead of the initial mass in % change.",
+    "prompts": [
+      "For each of these, write whether it is passive or active and whether it uses energy: diffusion, facilitated diffusion, osmosis, the sodium-potassium pump, endocytosis, and exocytosis. For the first four, also say which way molecules move (high to low or low to high).",
+      "Describe what happens to a red blood cell and to a plant cell in an isotonic, a hypotonic, and a hypertonic solution. Say which way water moves each time.",
+      "Explain why the cell membrane is called selectively permeable. Name two things that cross it easily and two that need help.",
+      "A perch from a northern Wisconsin lake is placed in the Atlantic Ocean. Explain what happens to its cells using the words hypertonic and osmosis."
+    ],
+    "targets": ["U3.LT4"]
+  }
+}

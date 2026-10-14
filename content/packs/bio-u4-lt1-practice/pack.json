@@ -1,0 +1,27 @@
+{
+  "name": "bio-u4-lt1-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "unit": "Unit 4 · Cell Energy",
+  "bank": "Bio · U4.LT1 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U4.LT1 Practice: Cellular Respiration",
+    "description": "Practice the cellular respiration equation, its reactants and products, ATP, the mitochondria, and the steps from glycolysis to the electron transport chain.",
+    "drawCount": 10,
+    "targets": ["U4.LT1"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U4.LT1 Relearning: Cellular Respiration",
+    "content": "**What you need to be able to do:** I can explain what cellular respiration is including reactants and products.\n\n**Think of a car engine.** A car burns gasoline with oxygen from the air and gives off exhaust. Your cells do something similar: they break down glucose (the fuel) using oxygen and give off carbon dioxide and water (the exhaust). But instead of turning wheels, the energy is used to charge up tiny rechargeable batteries called **ATP**.\n\n**What it is.** **Cellular respiration** is the process cells use to break down glucose (food) to make ATP. It happens in **all** living organisms, plants included. It is **not** the same as breathing: breathing (in the lungs) brings in oxygen and gets rid of carbon dioxide; cellular respiration happens inside cells, mostly in the **mitochondria**, the powerhouse of the cell.\n\n**The equation.** Glucose + Oxygen → Carbon dioxide + Water + Energy (ATP). Balanced: **C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + 36 ATP**.\n\n**Reactants (left of the arrow):** **glucose**, a simple carbohydrate (sugar) we get from food, and **oxygen**, which comes from breathing. **Products (right of the arrow):** **carbon dioxide**, which is exhaled and used by plants for photosynthesis; **water**; and **ATP** (adenosine triphosphate), the energy cells use. The respiration equation is the **reverse** of photosynthesis.\n\n**ATP is like a rechargeable battery.** When a phosphate breaks off, ATP → ADP + P and energy comes out. Energy from glucose recharges it: ADP + P → ATP. Cells spend ATP to move muscles, run active transport, and grow and repair.\n\n**Getting glucose to the cell.** Food (like pizza) is digested into glucose, absorbed through the villi of the small intestine into the blood, carried to a body cell, and moves into the cell by **diffusion**.\n\n**The steps of aerobic respiration:** (1) Glucose diffuses into the cell. (2) **Glycolysis** (breakdown of glucose) splits glucose into **pyruvate** in the **cytoplasm**, making 2 ATP. (3) Pyruvate goes into the **mitochondria**. (4) The **Krebs cycle** (citric acid cycle) produces **NADH and FADH₂**, which carry H⁺ (and electrons) to the next step, and gives off CO₂. (5) The **electron transport chain** uses that H⁺ to convert **ADP → ATP**. This stage makes the **most** ATP, and it is where oxygen is used.\n\n**Worked example 1:** Laila wrote: Glucose + oxygen → carbon dioxide + ATP. Is anything missing? Step 1: Check the reactants. Glucose comes from food and oxygen comes from breathing, so the left side is right. Step 2: Check the products. Carbon dioxide is exhaled and ATP is the energy, but cellular respiration also makes water. Step 3: Add it. **Answer:** Glucose + oxygen → carbon dioxide + water + ATP.\n\n**Worked example 2:** A muscle cell breaks down 2 glucose aerobically. How many O₂ does it use, and how many H₂O does it make? Step 1: The balanced equation shows 6O₂ for each glucose, so 2 × 6 = **12 O₂**. Step 2: It also shows 6H₂O for each glucose, so 2 × 6 = **12 H₂O**. Step 3: The same idea works for any molecule in the equation: multiply the amount for one glucose by the number of glucose.\n\n**Worked example 3:** Mia fills two bottles with yeast, sugar, and water and stretches a balloon over each one. One bottle sits in warm water and the other in ice water. After 20 minutes, the warm bottle's balloon is much bigger. Why? Step 1: What gas fills the balloon? Carbon dioxide, a product of breaking down sugar. Step 2: A bigger balloon means more CO₂ was made. Step 3: More CO₂ means the warm yeast broke down sugar faster. **Answer:** the yeast in warm water had a higher rate of respiration than the yeast in ice water.\n\n**Watch out for:** calling breathing 'cellular respiration'; swapping O₂ and CO₂ in the equation; saying plants don't do cellular respiration (they do, in their mitochondria); putting glycolysis in the mitochondria (it happens in the cytoplasm); and forgetting that the electron transport chain makes the most ATP.",
+    "prompts": [
+      "Write the word equation and the balanced chemical equation for cellular respiration. Label the reactants and the products.",
+      "Explain the difference between breathing and cellular respiration. Use the words lungs, mitochondria, oxygen, and carbon dioxide.",
+      "List the steps of aerobic respiration in order, and write where in the cell each step happens.",
+      "Explain why ATP is like a rechargeable battery. Use the words ATP, ADP, phosphate, and energy."
+    ],
+    "targets": ["U4.LT1"]
+  }
+}

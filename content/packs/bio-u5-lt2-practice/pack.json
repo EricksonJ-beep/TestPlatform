@@ -1,0 +1,27 @@
+{
+  "name": "bio-u5-lt2-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "unit": "Unit 5 · Cell Growth & Division",
+  "bank": "Bio · U5.LT2 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U5.LT2 Practice: Meiosis",
+    "description": "Practice diploid and haploid, homologous chromosomes, the stages of Meiosis I and II, crossing over and independent assortment, chromosome number math (2n → n), and comparing meiosis with mitosis.",
+    "drawCount": 10,
+    "targets": ["U5.LT2"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U5.LT2 Relearning: Meiosis",
+    "content": "**What you need to be able to do:** I can model meiosis and discuss its importance in sexual reproduction.\n\n**Think of shuffling a deck of cards.** Before dealing, you shuffle, so every hand gets a different mix of cards. Meiosis shuffles the chromosomes you got from your mom and dad, so **every gamete gets a different mix**. That is why brothers and sisters from the same parents don't look exactly alike.\n\n**Why we need meiosis.** Body cells are **diploid (2n)**: two sets of chromosomes, one from each parent (46, or 23 pairs, in humans). Gametes (sperm and egg) must be **haploid (n)**, with one set (23). At **fertilization**, n + n = 2n: 23 + 23 = 46 in the **zygote**. If gametes kept all 46, the chromosome number would double every generation. Meiosis happens only in **germ cells** in the reproductive organs (testes and ovaries).\n\n**Homologous chromosomes** are a matching pair, one from mom and one from dad, with the same genes. They are not the same as sister chromatids, which are identical copies made in the S phase.\n\n**Interphase:** the DNA is copied **once**. Then the cell divides **twice**.\n\n**Meiosis I (splits up the pairs):**\n- **Prophase I:** homologous chromosomes pair up, and **crossing over** happens: they swap pieces of DNA.\n- **Metaphase I:** homologous **pairs** line up in the middle. Which side each pair faces is random: **independent assortment**.\n- **Anaphase I:** homologous chromosomes are pulled apart. Each one is still X-shaped.\n- **Telophase I:** **two haploid cells** form.\n\n**Meiosis II (splits up the chromatids, like mitosis):** Prophase II, Metaphase II (chromosomes line up one by one, not in pairs), **Anaphase II (sister chromatids separate)**, and Telophase II. Result: **four unique haploid cells**.\n\n**Mitosis vs meiosis:** Mitosis = 1 division, 2 identical diploid cells, body cells, for growth and repair. Meiosis = 2 divisions, 4 unique haploid cells, reproductive organs, for making gametes. Both copy DNA in interphase first and use spindle fibers.\n\n**Worked example 1:** A horse has 2n = 64. How many chromosomes are in its gametes? Step 1: Gametes are haploid (n). Step 2: n = 64 ÷ 2. **Answer:** 32. A horse zygote has 32 + 32 = 64 again.\n\n**Worked example 2:** A species has 30 chromosomes in each body cell. What is true after Meiosis I? Step 1: Meiosis I separates the homologous pairs, so each cell gets one of each pair. Step 2: 30 ÷ 2 = 15. Step 3: One set means haploid. **Answer:** two haploid cells with 15 chromosomes each, and each chromosome is still X-shaped until Meiosis II.\n\n**Worked example 3:** Start with a cell where 2n = 6 (three pairs). Step 1: After interphase, 6 X-shaped chromosomes. Step 2: Meiosis I separates the pairs: 2 cells, each with 3 X-shaped chromosomes. Step 3: Meiosis II separates the sister chromatids: **4 cells, each with 3 single chromosomes (n = 3)**.\n\n**Watch out for:** saying the DNA is copied again between Meiosis I and II (it isn't); mixing up when pairs separate (Anaphase I) and when sister chromatids separate (Anaphase II); calling the cells after Meiosis I diploid (they are already haploid); confusing homologous chromosomes with sister chromatids; and saying meiosis makes identical cells (the four cells are all different).",
+    "prompts": [
+      "Draw meiosis for a cell with 2n = 6. Show the cells at the end of Meiosis I and Meiosis II, and label the chromosome number at each stage.",
+      "Explain how crossing over and independent assortment are like shuffling a deck of cards, and why this makes siblings look different.",
+      "Make a comparison chart for mitosis and meiosis: number of divisions, number of daughter cells, chromosome number, identical or unique, where it happens, and purpose.",
+      "A student says, \"If meiosis didn't exist, we could still reproduce.\" Explain the problem this would cause after a few generations. Use chromosome numbers in your answer."
+    ],
+    "targets": ["U5.LT2"]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "bio-u7-lt3-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "unit": "Unit 7 · DNA, RNA and Protein Synthesis",
+  "bank": "Bio · U7.LT3 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U7.LT3 Practice: Protein Synthesis",
+    "description": "Practice the central dogma, DNA vs RNA, transcription and translation, codons, anticodons, start and stop codons, and using a codon chart to go from DNA to mRNA to protein.",
+    "drawCount": 10,
+    "targets": ["U7.LT3"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U7.LT3 Relearning: Protein Synthesis",
+    "content": "**What you need to be able to do:** I can illustrate how proteins are synthesized.\n\n**Think of a cookbook in the library.** The master cookbook (DNA) can't leave the library (the nucleus). So you copy one recipe onto a card (**transcription** makes mRNA), carry the card to the kitchen (a **ribosome**), and the cook reads it three letters at a time while helpers (tRNA) bring each ingredient (amino acids) in order (**translation**). The finished dish is the protein.\n\n**The central dogma:** **DNA → RNA → Protein.**\n\n**RNA vs DNA.** RNA is **single-stranded**, its sugar is **ribose** (not deoxyribose), and it has **uracil (U) instead of thymine (T)**. DNA stays in the nucleus; mRNA can leave. The three kinds of RNA: **mRNA** (messenger) carries DNA's message to the ribosome, **tRNA** (transfer) brings amino acids to the ribosome, and **rRNA** (ribosomal) is part of the ribosome.\n\n**Transcription (DNA → mRNA), in the nucleus.** **RNA polymerase** binds at the **promoter** (\"start\" region), unwinds the DNA, and adds complementary RNA nucleotides along the **template strand**: DNA A → mRNA **U**, T → A, C → G, G → C. It stops at the \"stop\" signal and lets go, and the mRNA goes to a ribosome. The mRNA matches the other DNA strand, the **sense strand**, except it has U in place of T.\n\n**Translation (mRNA → protein), at a ribosome in the cytoplasm.** The ribosome reads the mRNA in **codons**, groups of **3 bases**. Each **tRNA** has an **anticodon** that pairs with a codon, and it carries one **amino acid**. Translation starts at the **start codon AUG (Met)**. The amino acids bond together one by one until a **stop codon (UAA, UAG, or UGA)**, then the protein is released into the cytoplasm. Translation needs **mRNA, tRNA, ribosomes, and amino acids**.\n\n**The codon chart.** There are **20 amino acids** and **64 codons**, so most amino acids have more than one codon. The chart is for **mRNA codons**: always transcribe DNA first, and change an anticodon to its codon before you look it up. Nearly all living things use the same code.\n\n**Worked example 1:** Chart: AUG = Met, GAU = Asp, CCA = Pro, UGA = Stop. What protein does the DNA template 3'-TAC-CTA-GGT-ACT-5' code for? Step 1: Transcribe each triplet: TAC→AUG, CTA→GAU, GGT→CCA, ACT→UGA. Step 2: Translate: AUG = Met, GAU = Asp, CCA = Pro, UGA = stop. **Answer:** Met-Asp-Pro.\n\n**Worked example 2:** What tRNA anticodons pair with the mRNA AUG-GAU-CCA? Step 1: Pair each base using A–U and C–G. Step 2: AUG→UAC, GAU→CUA, CCA→GGU. **Answer:** UAC, CUA, GGU.\n\n**Worked example 3:** An mRNA has 18 bases from the start codon through the stop codon. How many amino acids are in the protein? Step 1: 18 ÷ 3 = 6 codons. Step 2: The stop codon doesn't add an amino acid: 6 − 1. **Answer:** 5 amino acids.\n\n**Watch out for:** writing T in mRNA (use U); looking up DNA triplets or anticodons on the codon chart; translating past a stop codon; starting before the start codon; counting \"Stop\" as an amino acid; and mixing up where each step happens (transcription in the nucleus, translation at a ribosome).",
+    "prompts": [
+      "Draw a flow chart of protein synthesis using these words: nucleus, DNA, RNA polymerase, mRNA, ribosome, tRNA, anticodon, codon, amino acid, protein.",
+      "Chart: AUG = Met, CAU = His, UUC = Phe, UAA = Stop. Transcribe and translate the DNA template 3'-TAC-GTA-AAG-ATT-5'. Show the mRNA and the amino acids.",
+      "List three differences between DNA and RNA.",
+      "Explain the difference between a codon and an anticodon, and where each one is found."
+    ],
+    "targets": ["U7.LT3"]
+  }
+}

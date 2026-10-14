@@ -1,0 +1,28 @@
+{
+  "name": "bio-u8-lt3-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "unit": "Unit 8 · Kingdoms",
+  "bank": "Bio · U8.LT3 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U8.LT3 Practice: Kingdom Protista",
+    "description": "Practice describing protists: eukaryotic, mostly one-celled, plant-like (algae), animal-like (protozoans grouped by how they move), and fungus-like (slime and water molds), plus how they feed, reproduce, help us, and cause disease.",
+    "drawCount": 10,
+    "targets": ["U8.LT3"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U8.LT3 Relearning: Kingdom Protista",
+    "content": "**What you need to be able to do:** I can give a general description of the organisms in the Kingdom Protista.\n\n**Think of the junk drawer in your kitchen.** Batteries, rubber bands, a birthday candle, a screwdriver: nothing in it matches, but each thing ended up there because it didn't fit in any other drawer. The Kingdom Protista is biology's junk drawer. A protist is a **eukaryote** (its cells have a nucleus) that is **not a plant, an animal, or a fungus**. That's why protists are so different from each other.\n\n**General description.** Protists are **eukaryotic**. **Most are unicellular**, but some form simple multicellular structures or colonies (kelp, Volvox). There are about **65,000 species**. **Most are heterotrophic, some are autotrophic, and some are both** (Euglena). Most live in water or very moist places. Most reproduce asexually by **binary fission** (splitting in two); some reproduce sexually by **conjugation** (two cells join and exchange genetic material).\n\n**Three main types**, named for the kingdom each one acts like:\n- **Plant-like protists = algae.** They have chloroplasts and make their own food (autotrophs). Algae are classified by **color and structure**: green, red, brown (kelp), and golden (diatoms). All algae have chlorophyll; other pigments can hide the green. Also plant-like: **dinoflagellates** (fire algae with two flagella; some glow; some kinds cause **red tides**) and **Euglena** (chloroplasts + flagellum + eyespot; an autotroph in light, a heterotroph in the dark). Single-celled floating algae are **phytoplankton**, the base of ocean food chains and the source of about half of Earth's oxygen.\n- **Animal-like protists = protozoans** (\"first animals\"). One-celled heterotrophs that can move, **classified by how they move**: **sarcodines** (amoeba) use **pseudopods** (\"false feet\") and engulf food by **phagocytosis**; **ciliates** (paramecium) use **cilia**, short hairs that beat in waves; **flagellates** use long, whip-like **flagella**; **sporozoans** (Plasmodium) have **no movement**, are always parasites, and reproduce by spores. Food is digested in a **food vacuole**, a membrane-bound sac with digestive enzymes.\n- **Fungus-like protists = slime molds and water molds.** Heterotrophs with unique life cycles. **Slime molds** live on damp soil and rotting logs and spend part of their life as a moving, amoeba-like feeder and part as a stationary reproductive stage. **Water molds** are branching filaments, sometimes seen as white fuzz on sick aquarium fish.\n\n**Protists and disease.** **Malaria:** Plasmodium needs two hosts, a person and the **Anopheles mosquito**, and it hides inside red blood cells. **Amoebic dysentery:** an amoeba from contaminated food or water. **Cryptosporidium:** the 1993 Milwaukee outbreak from contaminated drinking water. **African sleeping sickness:** caused by a flagellate.\n\n**Worked example 1:** A one-celled organism with a nucleus has chloroplasts, one flagellum, and a red eyespot. What is it? Step 1: One cell with a nucleus rules out bacteria (no nucleus) and plants and animals (many-celled); chloroplasts rule out fungi, so it's a protist. Step 2: Chloroplasts mean it makes its own food, so it is plant-like. Step 3: Chloroplasts plus a flagellum and an eyespot fit **Euglena**. **Answer:** a plant-like protist, Euglena.\n\n**Worked example 2:** A protozoan glides in smooth, straight lines and has an oral groove. Which group? Step 1: Protozoans are classified by how they move. Step 2: Smooth, straight movement comes from many cilia beating together (pseudopods flow; a flagellum gives a zig-zag). Step 3: The oral groove is where a paramecium's cilia sweep in food. **Answer:** a ciliate (paramecium).\n\n**Worked example 3:** Why do bed nets help stop malaria? Step 1: Plasmodium can't move on its own. Step 2: It almost always reaches a new person through the bite of an Anopheles mosquito. Step 3: Nets block the bite, so the life cycle breaks. **Answer:** no bite, no new infection.\n\n**Watch out for:** calling protists bacteria (protists have a nucleus); saying all protists are one-celled (kelp isn't) or all are heterotrophs (algae aren't); mixing up cilia (short and many) with flagella (long and whip-like); thinking sporozoans swim (they can't move); thinking red and brown algae have no chlorophyll; and confusing slime molds and water molds with true fungi.",
+    "prompts": [
+      "Describe the Kingdom Protista in 3–4 sentences. Use the words eukaryotic, unicellular, heterotrophic, and autotrophic.",
+      "Make a table of the three types of protists. For each type, tell how it gets food and give one example.",
+      "List the four groups of protozoans. For each, tell how it moves and give an example.",
+      "Explain how Plasmodium gets from one person to another, and why insecticide-treated bed nets help prevent malaria.",
+      "Give two ways protists help people or ecosystems and two ways they can harm us."
+    ],
+    "targets": ["U8.LT3"]
+  }
+}

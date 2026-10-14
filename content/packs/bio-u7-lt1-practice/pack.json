@@ -1,0 +1,27 @@
+{
+  "name": "bio-u7-lt1-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "unit": "Unit 7 · DNA, RNA and Protein Synthesis",
+  "bank": "Bio · U7.LT1 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U7.LT1 Practice: DNA Structure",
+    "description": "Practice the parts of a nucleotide, the double helix, base pairing (A–T, C–G), hydrogen bonds, purines and pyrimidines, antiparallel 5' and 3' ends, the scientists behind the model, and Chargaff's rule percent problems.",
+    "drawCount": 10,
+    "targets": ["U7.LT1"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U7.LT1 Relearning: DNA Structure",
+    "content": "**What you need to be able to do:** I can describe the structure of DNA and the double helix model.\n\n**Think of a zipper.** A zipper has two sides, and each side has a row of teeth. The teeth only lock with the right partner, and they come apart easily when you pull the slider, but the two sides themselves never fall apart. DNA works the same way: two strong sides (the **backbone**) with \"teeth\" in the middle (the **bases**) that only lock with the right partner and can be unzipped.\n\n**What DNA is.** DNA = **deoxyribonucleic acid**, a nucleic acid. It is the **molecule of heredity**: it controls traits by holding the instructions for making **proteins**. The code is the **order of the bases**.\n\n**Nucleotides.** DNA is built from repeating units called **nucleotides**. Each nucleotide has three parts: (1) a **phosphate group**, (2) a **5-carbon sugar** called **deoxyribose**, and (3) a **nitrogenous base** (A, T, C, or G). The base is attached to the sugar. Only the base changes from one nucleotide to the next.\n\n**The double helix.** DNA is two strands twisted into a **double helix**, like a twisted ladder. The **sides** (\"legs of the ladder\") are alternating **sugar and phosphate**, held together by strong covalent bonds. The **rungs** are **base pairs**, held together in the middle by **weak hydrogen bonds**. Weak is good: the strands have to unzip to be copied.\n\n**Base-pairing rules (Chargaff's rule).** **A pairs with T** (2 hydrogen bonds) and **G pairs with C** (3 hydrogen bonds). So in any double-stranded DNA sample, **A = T** and **G = C**. **Purines** are the double-ring bases (**A and G**); **pyrimidines** are the single-ring bases (**T and C**). Every pair is one purine + one pyrimidine, so every rung is the same width.\n\n**5' and 3' ends.** The carbons in deoxyribose are numbered **1' to 5'**. One end of a strand is the 5' end, the other is the 3' end. The two strands run in opposite directions (**antiparallel**): one runs 5' to 3', and its partner runs 3' to 5'.\n\n**Who figured it out.** Early scientists thought **protein** carried hereditary information because proteins are more complex (20 amino acids). **Erwin Chargaff** measured the bases and found A = T and G = C. **Rosalind Franklin** took **X-ray diffraction photographs** of DNA. **Watson and Crick** used her X-ray images to build the first double helix model (1953). **Maurice Wilkins** shared the 1962 Nobel Prize with Watson and Crick.\n\n**Worked example 1:** A DNA sample is 30% adenine. What percent is cytosine? Step 1: A = T, so T = 30%. Step 2: A + T = 60%, so G + C = 100 − 60 = 40%. Step 3: G = C, so split it in half: 40 ÷ 2 = 20%. **Answer:** 20% cytosine.\n\n**Worked example 2:** One strand is 5'-ATTGCA-3'. What is its partner strand? Step 1: Pair each base: A→T, T→A, T→A, G→C, C→G, A→T, which gives TAACGT. Step 2: The strands are antiparallel, so flip the end labels. **Answer:** 3'-TAACGT-5'.\n\n**Worked example 3:** A DNA segment has 3 A–T pairs and 5 G–C pairs. How many hydrogen bonds hold it together? Step 1: A–T pairs have 2 bonds: 3 × 2 = 6. Step 2: G–C pairs have 3 bonds: 5 × 3 = 15. Step 3: Add: 6 + 15. **Answer:** 21 hydrogen bonds.\n\n**Watch out for:** putting uracil (U) in DNA (U is only in RNA); pairing A with G or T with C; mixing up which pair has 3 hydrogen bonds (G–C); thinking Chargaff's rule means every base is 25%; forgetting to split what is left in half in a percent problem; and mixing up the sides (sugar and phosphate) with the rungs (base pairs).",
+    "prompts": [
+      "Describe one nucleotide: name its three parts and tell how they are connected (you can sketch it on paper first). Then explain which parts make the sides of the DNA ladder and which part makes the rungs.",
+      "A DNA sample is 24% guanine. Find the percent of cytosine, adenine, and thymine. Show each step.",
+      "Explain why it is useful that the bonds between the bases are weak hydrogen bonds. Which bonds in DNA are stronger?",
+      "Describe what Chargaff, Rosalind Franklin, and Watson and Crick each contributed to our model of DNA."
+    ],
+    "targets": ["U7.LT1"]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "bio-u2-lt2-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "unit": "Unit 2 · Biochemistry",
+  "bank": "Bio · U2.LT2 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U2.LT2 Practice: Water's Structure and Properties",
+    "description": "Practice water's polarity and hydrogen bonds, and how they cause cohesion, surface tension, adhesion, capillary action, high specific heat, dissolving, and floating ice.",
+    "drawCount": 10,
+    "targets": ["U2.LT2"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U2.LT2 Relearning: Water's Structure and Properties",
+    "content": "**What you need to be able to do:** I can explain how water's structure gives it unique properties that support life.\n\n**Think of a bar magnet.** A water molecule is like a tiny magnet with two ends: the oxygen end is slightly negative and the two hydrogen ends are slightly positive. Dump a box of tiny magnets on a table and they grab onto each other. Water molecules do the same thing, and that grabbing explains almost everything special about water.\n\n**Polarity.** Water (H₂O) is a **polar molecule**. Oxygen pulls the shared electrons closer to itself, so the oxygen end is slightly **negative (−)** and the hydrogen ends are slightly **positive (+)**. The molecule is bent (about 104.5°). It is still neutral overall; its charge is just unevenly spread.\n\n**Hydrogen bonds.** The (+) hydrogen of one water molecule is attracted to the (−) oxygen of another. That weak attraction is a **hydrogen bond**. Each water molecule can bond to up to 4 neighbors. Hydrogen bonds are much weaker than the covalent bonds inside each molecule, but there are so many of them that together they are powerful. **Every property below comes from polarity and hydrogen bonding.**\n\n**The properties.**\n- **Cohesion:** water sticks to water. It creates **surface tension**, a stretchy skin on the surface: water striders walk on ponds and drops bead up.\n- **Adhesion:** water sticks to other surfaces, like glass or a paper towel.\n- **Capillary action:** adhesion and cohesion together pull water up narrow tubes, even against gravity. This helps water climb a plant stem or a paper towel.\n- **High specific heat:** water absorbs a lot of heat before its temperature changes. Oceans steady Earth's climate, ponds stay steady for fish, your body temperature stays steady, and sweat carries heat away from your skin.\n- **Universal solvent:** polar water pulls apart other polar and ionic substances, like salt and sugar. Blood carries dissolved nutrients. Nonpolar things like oil don't dissolve.\n- **Ice floats:** when water freezes, hydrogen bonds lock the molecules into an open pattern, so ice is **less dense** than liquid water. Floating ice insulates the lake below, so fish survive the winter.\n\n**Worked example 1:** A steel needle can rest on top of water, but it sinks if you push it under. Why? Step 1: Steel is denser than water, so the needle isn't floating because it is light. Step 2: Water molecules at the surface are hydrogen-bonded to each other (cohesion), which makes surface tension. Step 3: Set down gently, the needle doesn't break that skin; pushed under, it breaks through. **Answer:** surface tension from cohesion holds the needle up.\n\n**Worked example 2:** On a sunny afternoon, the concrete deck around a pool is too hot to stand on, but the pool water is still cool. Why? Step 1: Both got the same sunlight. Step 2: Water has a high specific heat, so it absorbs a lot of heat with only a small temperature change. Step 3: Concrete has a much lower specific heat, so the same heat raises its temperature a lot. **Answer:** water's high specific heat keeps the pool's temperature steady.\n\n**Worked example 3:** Why does salt dissolve in water but oil doesn't? Step 1: Salt is made of ions, Na⁺ and Cl⁻. Step 2: Water's charged ends surround each ion and pull it out of the crystal. Step 3: Oil is nonpolar (no charged ends), so water molecules stick to each other instead of to the oil, and the oil stays in its own layer. **Answer:** polar water dissolves polar and ionic substances, not nonpolar ones.\n\n**Watch out for:** mixing up cohesion (water to water) and adhesion (water to something else); thinking high specific heat means water heats up fast (it heats up slowly); calling hydrogen bonds the bonds inside a water molecule (those are covalent); saying water has a full charge like an ion (it is neutral overall, just polar); and thinking ice floats because of air bubbles (it's the open hydrogen-bond pattern).",
+    "prompts": [
+      "Describe how two neighboring water molecules line up to form a hydrogen bond: which end of each molecule is slightly positive, which is slightly negative, and which atom of one molecule faces which atom of the other. (Sketch it on paper first if that helps.)",
+      "Explain the difference between cohesion and adhesion, and describe how they work together in capillary action. Give one example from a plant.",
+      "Choose two properties of water and explain how each one helps living things survive.",
+      "Explain why ice floats and why that matters for fish in a Wisconsin lake in January."
+    ],
+    "targets": ["U2.LT2"]
+  }
+}

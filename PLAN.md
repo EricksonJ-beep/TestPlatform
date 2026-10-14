@@ -128,7 +128,7 @@ Jon's interactive worksheets (Apps Script web apps: per-problem Check with unlim
 
 **Completion = final submit received** (any score), matching the completion-not-score rule. A per-assignment option can require ≥N% on the worksheet if Jon ever wants it. Bloom also stores cards-correct and total checks from the payload so the relearning monitor can show "worksheet: 12/15 correct, 41 checks, hint used on 3."
 
-**Going forward (Oct 13, 2026): new practice is built in Bloom, not Apps Script** — per-target banks dealt by practice sets with Apps Script–style checking (§3.7), so there is nothing to deploy and register. Worksheets already registered keep working through the webhook. See `docs/ps-practice-banks-plan.md`.
+**Going forward (Oct 13, 2026): new practice is built in Bloom, not Apps Script** — per-target banks dealt by practice sets with Apps Script–style checking (§3.7), so there is nothing to deploy and register. Worksheets already registered keep working through the webhook. See `docs/ps-practice-banks-plan.md` and, for Biology (Oct 14, 2026), `docs/bio-practice-banks-plan.md`.
 
 **As retake gates:** for each *required* target, the student must complete **at least one relearning activity and at least one practice set** tagged to that target (any of them by default; you can pin specific ones per assignment). Optional targets the student opts into follow the same gates. This is why "Suggested before your retake" appears on the student home — the platform shows exactly which items would satisfy the gate.
 

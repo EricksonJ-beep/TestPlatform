@@ -1,0 +1,27 @@
+{
+  "name": "bio-u3-lt2-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "unit": "Unit 3 · Cell Structure and Function",
+  "bank": "Bio · U3.LT2 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U3.LT2 Practice: Prokaryotic vs. Eukaryotic Cells",
+    "description": "Practice comparing prokaryotic and eukaryotic cells: the nucleus, membrane-bound organelles, size, ribosomes, DNA shape and location, unicellular vs. multicellular, and classifying new cells and organisms.",
+    "drawCount": 10,
+    "targets": ["U3.LT2"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U3.LT2 Relearning: Prokaryotic vs. Eukaryotic Cells",
+    "content": "**What you need to be able to do:** I can compare and contrast prokaryotic and eukaryotic cells.\n\n**Think of a studio apartment and a house.** In a studio apartment, the kitchen, bed, and couch all share one room. That is a **prokaryote**: everything floats together in the cytoplasm. A house has walls that split it into rooms for different jobs. That is a **eukaryote**: membranes wrap the nucleus and organelles into separate compartments.\n\n**Prokaryotic cells (\"pro means no\"):** **no nucleus**; the genetic material is **free in the cytoplasm** as a **single circular loop** of DNA. **No membrane-bound organelles.** Small (a typical bacterium is about **2 µm**) and simple. **Always unicellular.** Example: **bacteria**. Many have a cell wall, and they reproduce by splitting in two (**binary fission**).\n\n**Eukaryotic cells:** a **nucleus** holds the DNA as several **linear chromosomes**. **Numerous membrane-bound organelles** such as mitochondria, ER, Golgi body, and lysosomes. Larger (often 10 to 100 µm or more) and **more complex**. Can be **unicellular or multicellular**. Examples: **animals, plants, fungi, protists**.\n\n**Both have:** a **cell membrane**, **cytoplasm**, **ribosomes** (every cell has to make proteins), and **DNA**. Ribosomes are not membrane-bound, which is why prokaryotes can have them. Prokaryotic ribosomes are smaller than eukaryotic ribosomes, which lets some antibiotics target bacteria without harming you.\n\n**Worked example 1:** A cell taken from the human gut is about 2 µm long. It has ribosomes and one loop of DNA, but no nucleus. Classify it. Step 1: Look for a nucleus first; it is the deciding feature. Step 2: No nucleus means prokaryote. Step 3: Living inside a human doesn't make it a human cell, and ribosomes don't help decide, because every cell has them. **Answer:** a prokaryote (a bacterium).\n\n**Worked example 2:** A paramecium is one cell with a nucleus. Step 1: Nucleus, so eukaryote. Step 2: One cell, so unicellular. **Answer:** a unicellular eukaryote. Being single-celled does not make something a prokaryote.\n\n**Worked example 3:** A bacterium is 2 µm long and a cheek cell is 60 µm across. How many times larger is the cheek cell? Step 1: \"How many times larger\" means divide. Step 2: 60 µm ÷ 2 µm = 30. **Answer:** about 30 times larger.\n\n**Watch out for:** thinking all single-celled organisms are prokaryotes (yeast and amoebas are eukaryotes); thinking prokaryotes have no ribosomes or no DNA (they have both); thinking a cell wall means \"plant\" (bacteria and fungi have walls too); and giving bacteria mitochondria or a nucleus in a model.",
+    "prompts": [
+      "Fill in a Venn diagram in words. List what goes in each part: Prokaryotes only: ... Eukaryotes only: ... Both: ... Include the nucleus, membrane-bound organelles, ribosomes, DNA shape, cell membrane, size, and examples.",
+      "Explain the memory trick \"pro means no.\" What two things does a prokaryote NOT have?",
+      "A cell has a nucleus and a cell wall but no chloroplasts. Classify it as prokaryotic or eukaryotic and name the kind of organism it could come from. Explain each step.",
+      "Explain why a single-celled organism is not always a prokaryote. Give an example."
+    ],
+    "targets": ["U3.LT2"]
+  }
+}

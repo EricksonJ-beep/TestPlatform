@@ -1,0 +1,27 @@
+{
+  "name": "bio-u2-lt3-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "unit": "Unit 2 · Biochemistry",
+  "bank": "Bio · U2.LT3 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U2.LT3 Practice: pH, Acids, and Bases",
+    "description": "Practice the pH scale, acids, bases, and neutral solutions, H⁺ and OH⁻, the 10× rule, buffers and blood pH, and how pH affects enzymes and other living things.",
+    "drawCount": 10,
+    "targets": ["U2.LT3"]
+  },
+  "activity": {
+    "kind": "guided_notes",
+    "title": "U2.LT3 Relearning: pH, Acids, and Bases",
+    "content": "**What you need to be able to do:** I can define pH and describe how acids and bases affect living things.\n\n**Think of a golf score.** In golf, a lower score means a better round. pH works backwards the same way: a **lower pH means MORE hydrogen ions (H⁺)**, so a stronger acid.\n\n**What pH is.** pH (\"power of hydrogen\") is a **0–14 scale** that measures the concentration of **hydrogen ions (H⁺)** in a solution.\n- **Acid:** pH **below 7**. Releases H⁺ in water. Tastes sour (lemons, vinegar), reacts with some metals, turns pH paper red or orange. Example: stomach acid.\n- **Neutral:** pH **7**. Equal H⁺ and OH⁻. Example: pure water.\n- **Base (alkaline):** pH **above 7**. Releases OH⁻ in water. Tastes bitter, feels slippery (soap), neutralizes acids, turns pH paper blue or purple. Examples: baking soda, antacids.\n\nNever taste or touch chemicals to identify them in lab. That's what pH paper and the LabQuest probe are for. The probe is more precise; pH paper is quick and cheap.\n\n**Each step is 10×.** The pH scale works like the earthquake (Richter) scale. Each whole step is a **10× change** in H⁺. One step = 10×, two steps = 10 × 10 = 100×, three steps = 1,000×. A drop from pH 7 to pH 3 means 10,000× more H⁺. Adding water to an acid only moves the pH toward 7; it never turns an acid into a base.\n\n**Life needs a narrow pH range.**\n- **Blood** must stay between **pH 7.35 and 7.45**. Below 7.35 is **acidosis** (confusion, fatigue, trouble breathing); above 7.45 is **alkalosis** (muscle twitching, cramps, dizziness). Your kidneys and lungs work nonstop to keep it there. Keeping steady conditions inside the body is **homeostasis**.\n- **Enzymes** are proteins with a precise shape, and each works best at its own pH: pepsin near pH 2 in the stomach, amylase near pH 7 in the mouth, trypsin near pH 8 in the small intestine. The wrong pH bends the enzyme's shape, so it stops working.\n- **Buffers** resist changes in pH. Your blood's main buffer is **bicarbonate (HCO₃⁻)**, the same chemical in baking soda: extra acid? Bicarbonate grabs the H⁺. Extra base? The buffer releases H⁺. A buffer is like a car's shock absorbers: the bumps still come, but the ride stays smooth.\n- **Ecosystems:** ocean pH has dropped from about 8.2 to 8.1 (a little more than 0.1) as it absorbs CO₂, which means about 30% more H⁺, which makes calcium carbonate shells harder to build. Acid rain and runoff can lower the pH of lakes and streams, harming fish eggs and insects.\n\n**Worked example 1:** How many times more acidic is pH 5 than pH 8? Step 1: Count the steps: 8 − 5 = 3. Step 2: Each step is 10×, so multiply three 10s: 10 × 10 × 10. **Answer:** 1,000 times more acidic (not 3 times!).\n\n**Worked example 2:** A patient's blood pH is 7.3. What is wrong, and how does a buffer help? Step 1: Normal blood is 7.35–7.45. Step 2: 7.3 is below 7.35, so the blood is too acidic: acidosis. Step 3: Bicarbonate grabs extra H⁺, which pushes the pH back up toward normal. **Answer:** acidosis; the bicarbonate buffer absorbs the extra H⁺.\n\n**Worked example 3:** Trout eggs hatch well at pH 7 but poorly at pH 5. How much more acidic is pH 5 water, and why might the eggs fail? Step 1: 7 − 5 = 2 steps, so 10 × 10 = 100 times more H⁺. Step 2: The developing fish depend on enzymes and other proteins with precise shapes. Step 3: That much extra acid changes their shapes, so they stop working. **Answer:** 100 times more acidic, enough to stop the proteins the eggs need to develop.\n\n**Watch out for:** thinking a higher pH means more acid (lower pH = more H⁺); subtracting instead of multiplying by 10s (pH 9 vs. pH 11 is 100×, not 2×); thinking adding water turns an acid into a base (it only moves the pH toward 7); thinking bases have zero H⁺ (they just have more OH⁻ than H⁺); and thinking a buffer stops pH from changing at all (it keeps the change small).",
+    "prompts": [
+      "Draw a pH scale from 0 to 14. Label acid, neutral, and base, show which end has more H⁺ and which has more OH⁻, and place blood, stomach acid, pure water, and drain cleaner on it.",
+      "Explain why a solution at pH 2 has 10,000 times more H⁺ than a solution at pH 6, not 4 times more. Use the earthquake (Richter) analogy.",
+      "Your blood must stay between pH 7.35 and 7.45. Explain how bicarbonate acts as a buffer to keep it there, and name what happens if blood pH goes too low or too high.",
+      "Explain why pepsin, which works best near pH 2, stops working when it reaches the small intestine at pH 8. Use the word shape."
+    ],
+    "targets": ["U2.LT3"]
+  }
+}
