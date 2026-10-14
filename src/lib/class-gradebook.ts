@@ -22,6 +22,8 @@ export type CellKind =
   // Testing now
   | "taking"
   | "paused"
+  // Left open with the time used up: submitted when they come back (quiet)
+  | "out_of_time"
   // Student owes
   | "missing"
   | "not_started"
@@ -48,6 +50,7 @@ export const CELL_ORDER: CellKind[] = [
   "check_activity",
   "taking",
   "paused",
+  "out_of_time",
   "missing",
   "not_started",
   "corrections_needed",
@@ -76,6 +79,7 @@ export const CELL_GROUP: Record<CellKind, CellGroup> = {
   check_activity: "your_move",
   taking: "testing",
   paused: "testing",
+  out_of_time: "quiet",
   missing: "owes",
   not_started: "owes",
   corrections_needed: "owes",
@@ -121,8 +125,17 @@ export type CellInput = {
   /** The student's own card (`deriveCardState`). */
   card: CardState;
   attemptsUsed: number;
-  /** The open attempt, if any: paused (`currentPause`), asked to finish, and how far along. */
-  live: { paused: boolean; asked: boolean; answered: number; total: number } | null;
+  /**
+   * The open attempt, if any: paused (`currentPause`), asked to finish, out of time (`outOfTime`:
+   * the time limit ran out first, so nobody is in it), and how far along.
+   */
+  live: {
+    paused: boolean;
+    asked: boolean;
+    outOfTime?: boolean;
+    answered: number;
+    total: number;
+  } | null;
   /** A current retake request (`staleRequest` says it isn't a leftover). */
   requested: boolean;
   /** Correction sets on this student's attempts waiting for the teacher's approval. */
@@ -201,7 +214,8 @@ function studentKind(input: CellInput): { kind: CellKind; closed: boolean } | nu
 /**
  * Rule (research notes C, Jon's decisions 2–5): one tag per cell, the first that applies in
  * `CELL_ORDER`. The teacher's moves (asked to finish, a current retake request, corrections to
- * check, answers to grade, an activity to check off) and testing now (taking it, paused) sit on
+ * check, answers to grade, an activity to check off) and testing now (taking it, paused; an open
+ * test whose time ran out first is "Time's up · not submitted", quiet, never Taking it) sit on
  * top of the student's own card state, which supplies the rest: Missing (closed, never started),
  * Not started, the corrections and relearning states (even on a closed test), Retake needed,
  * Ready (needs your OK, not asked), Can retake, Corrections → 100%, Unlocked (approved but still
@@ -211,7 +225,16 @@ function studentKind(input: CellInput): { kind: CellKind; closed: boolean } | nu
 export function cellTag(input: CellInput): CellTag {
   const applies = new Map<CellKind, boolean>();
   if (input.live)
-    applies.set(input.live.paused ? (input.live.asked ? "asked" : "paused") : "taking", false);
+    applies.set(
+      input.live.paused
+        ? input.live.asked
+          ? "asked"
+          : "paused"
+        : input.live.outOfTime
+          ? "out_of_time"
+          : "taking",
+      false
+    );
   if (input.requested) applies.set("request", false);
   if (input.correctionsToCheck > 0) applies.set("check_corrections", false);
   if (input.toGrade > 0) applies.set("to_grade", false);
@@ -278,6 +301,8 @@ function unlockedText(b: RequestBlocker | null, fmt: TagFormat): string {
       return "test not open yet";
     case "no_attempts_left":
       return "no tries left";
+    case "no_retake":
+      return "no retake at their score";
     case "gates":
       return "relearning not done";
     case "nothing_selected":
@@ -305,6 +330,8 @@ export function tagLabel(tag: CellTag, fmt: TagFormat = CENTRAL): string {
         : "Taking it";
     case "paused":
       return "Paused";
+    case "out_of_time":
+      return "Time's up · not submitted";
     case "missing":
       return "Missing";
     case "not_started":

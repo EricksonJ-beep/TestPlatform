@@ -25,12 +25,14 @@ export function placeLabel(p: ClassPlace): string {
 // Retake requests
 // ---------------------------------------------------------------------------
 
-export type StaleReason = "setting_off" | "taken" | "not_next" | "no_attempts";
+export type StaleReason = "left_class" | "setting_off" | "taken" | "not_next" | "no_attempts";
 
 /**
  * Rule (research notes A3): a request is current only when it asks for the student's next try
- * (attempts used + 1) on a test that still says "Retakes need my OK" and still has that try.
- * Anything else is a leftover: approving it would unlock nothing useful, so it gets Clear.
+ * (attempts used + 1) on a test that still says "Retakes need my OK" and still has that try, from
+ * a student still in the test's class (moving a student to another period keeps their requests,
+ * and Approve and Decline only work for an enrolled student). Anything else is a leftover:
+ * approving it would unlock nothing useful, so it gets Clear.
  */
 export function staleRequest(input: {
   attemptNumber: number;
@@ -38,7 +40,10 @@ export function staleRequest(input: {
   used: number;
   retakesNeedUnlock: boolean;
   attemptsAllowed: number | null;
+  /** The student is still enrolled in the assignment's class. */
+  enrolled: boolean;
 }): StaleReason | null {
+  if (!input.enrolled) return "left_class";
   if (!input.retakesNeedUnlock) return "setting_off";
   if (input.attemptNumber <= input.used) return "taken";
   if (input.attemptNumber !== input.used + 1) return "not_next";
@@ -48,6 +53,7 @@ export function staleRequest(input: {
 }
 
 export const STALE_TEXT: Record<StaleReason, string> = {
+  left_class: "No longer in this class.",
   setting_off: "This test no longer needs your OK for a retake.",
   taken: "Already took that try.",
   not_next: "That is no longer their next try.",
@@ -55,7 +61,7 @@ export const STALE_TEXT: Record<StaleReason, string> = {
 };
 
 export type RequestBlocker =
-  | { reason: "not_open" | "closed" | "no_attempts_left" }
+  | { reason: "not_open" | "closed" | "no_attempts_left" | "no_retake" }
   | { reason: "wait"; at: Date }
   | { reason: "window_closed"; at: Date }
   | { reason: Exclude<RetakeBlocker, "no_attempts"> };
@@ -103,6 +109,7 @@ export const BLOCKER_LINE: Record<RequestBlocker["reason"], string> = {
   no_attempts_left: "They have no tries left.",
   wait: "Can start after",
   window_closed: "The retake window closed",
+  no_retake: "No retake at their score: corrections raise it to 100%.",
   gates: "Their relearning checklist isn't done yet.",
   nothing_selected: "Every target is proficient; they have to pick a target to retake.",
 };

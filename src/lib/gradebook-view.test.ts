@@ -10,6 +10,7 @@ import {
   phoneLine,
   rightNow,
   scoreText,
+  studentPanelItems,
   timeLeft,
   whoChip,
 } from "./gradebook-view";
@@ -59,6 +60,7 @@ const attempt = (a: Partial<ClassGradebookAttempt> = {}): ClassGradebookAttempt 
   tabSwitches: 0,
   pendingManual: 0,
   paused: false,
+  outOfTime: false,
   dueAt: null,
   askedAt: null,
   scopeCodes: null,
@@ -253,6 +255,18 @@ describe("gradebookView", () => {
       gradebookView(b, { ...DEFAULT_FILTERS, onlyOwing: true }).rows.map((r) => r.student.id)
     ).toEqual(["cho", "eli"]);
   });
+  it("the student panel lists the columns the grid shows, so its count matches the row", () => {
+    const b = book();
+    const row = gradebookView(b, DEFAULT_FILTERS).rows.find((r) => r.student.id === "cho")!;
+    const panel = studentPanelItems(b, "cho", DEFAULT_FILTERS)!;
+    expect(panel.toDo.map((x) => x.column.title)).toEqual(["Unit 3 Test", "Cell Quiz"]);
+    expect(panel.toDo).toHaveLength(row.toDo);
+    expect(panel.total).toBe(2);
+    // With Practice on, the practice set they haven't started shows (and counts) there too.
+    const all = studentPanelItems(b, "cho", { showPractice: true })!;
+    expect(all.toDo.map((x) => x.column.title)).toEqual(["Unit 3 Test", "Cell Quiz", "Practice"]);
+    expect(studentPanelItems(b, "nobody", DEFAULT_FILTERS)).toBeNull();
+  });
   it("writes the phone line", () => {
     const v = gradebookView(book(), DEFAULT_FILTERS);
     expect(phoneLine(v.rows[1])).toBe("Cho, L: 2 to do");
@@ -272,6 +286,21 @@ describe("rightNow", () => {
       { attemptId: "open2", title: "Cell Quiz", attemptNumber: 2, asked: true, answered: 3 },
     ]);
     expect(timeLeft(live.testing[0].dueAt, NOW)).toBe("18 min left");
+  });
+  it("leaves out a test whose time ran out with nobody in it (the live stamp's testing rule)", () => {
+    const gb = book();
+    const eliTest = gb.rows[2].cells[0];
+    eliTest.attempts = eliTest.attempts.map((a) =>
+      a.id === "open1" ? { ...a, dueAt: hours(-30), outOfTime: true } : a
+    );
+    eliTest.tag = tag({
+      live: { paused: false, asked: false, outOfTime: true, answered: 14, total: 25 },
+    });
+    const live = rightNow(gb);
+    expect(live.testing).toEqual([]);
+    expect(live.paused.map((r) => r.attemptId)).toEqual(["open2"]);
+    expect(whoChip(eliTest.tag)).toBeNull();
+    expect(isToDo(eliTest.tag)).toBe(false);
   });
   it("time left", () => {
     expect(timeLeft(null, NOW)).toBeNull();

@@ -12,6 +12,8 @@ vi.mock("@/db", async () => {
 
 import { db, schema } from "@/db";
 import {
+  activityLine,
+  activityScore,
   describeActivity,
   listClassActivity,
   listRecentActivity,
@@ -140,6 +142,16 @@ describe("activity log", () => {
         detail: { attemptNumber: 2, percent: 79.6 },
       })
     ).toBe("Submitted attempt 2 on Lab Quiz: Skin · 80%");
+    // "Hide scores" on the Dashboard (decision 6) drops the score and keeps the line.
+    const submitted = {
+      ...base,
+      kind: "attempt_submitted" as const,
+      detail: { attemptNumber: 2, percent: 79.6 },
+    };
+    expect(activityLine(submitted)).toBe("Submitted attempt 2 on Lab Quiz: Skin");
+    expect(activityScore(submitted)).toBe(" · 80%");
+    expect(activityScore({ ...submitted, detail: { percent: null } })).toBeNull();
+    expect(activityScore({ ...base, kind: "attempt_started", detail: { percent: 50 } })).toBeNull();
     expect(
       describeActivity({ ...base, kind: "attempt_submitted", detail: { percent: null } })
     ).toBe("Submitted attempt on Lab Quiz: Skin");

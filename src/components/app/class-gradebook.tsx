@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useSyncExternalStore, useTransition } from "react";
+import { useState, useTransition } from "react";
 import {
   ArrowUp,
   Check,
@@ -45,6 +45,7 @@ import { Input } from "@/components/ui/input";
 import { pickDashboardClass } from "@/app/app/actions";
 import { LetContinueButton } from "@/app/app/results/[assignmentId]/let-continue-button";
 import { GradebookPanel, type PanelTarget } from "./gradebook-panel";
+import { setHideScores, useHideScores } from "./hide-scores";
 import { TagPill, TONE_CLASS } from "./gradebook-tag";
 
 const KEY: { tone: CellTone; label: string }[] = [
@@ -55,34 +56,6 @@ const KEY: { tone: CellTone; label: string }[] = [
   { tone: "muted", label: "Quiet" },
   { tone: "success", label: "Done" },
 ];
-
-// "Hide scores" is remembered per browser (Jon, Oct 13 2026, decision 6: for the projector);
-// useSyncExternalStore keeps the server render (scores shown) and the browser's choice in sync.
-const HIDE_KEY = "bloom.gradebook.hideScores";
-const listeners = new Set<() => void>();
-function subscribe(cb: () => void) {
-  listeners.add(cb);
-  window.addEventListener("storage", cb);
-  return () => {
-    listeners.delete(cb);
-    window.removeEventListener("storage", cb);
-  };
-}
-function readHidden(): boolean {
-  try {
-    return localStorage.getItem(HIDE_KEY) === "1";
-  } catch {
-    return false;
-  }
-}
-function writeHidden(value: boolean) {
-  try {
-    localStorage.setItem(HIDE_KEY, value ? "1" : "0");
-  } catch {
-    /* private mode etc. */
-  }
-  listeners.forEach((cb) => cb());
-}
 
 // ---------------------------------------------------------------------------
 // The section
@@ -197,9 +170,13 @@ function PeriodChips({
             setPicked(c.id);
             setError(null);
             start(async () => {
+              // The action revalidates /app, which already re-renders this page with the new
+              // period; a second refresh on top would render it all twice.
               const r = await pickDashboardClass(c.id);
-              if (!r.ok) setError(r.error);
-              router.refresh();
+              if (!r.ok) {
+                setError(r.error);
+                router.refresh();
+              }
             });
           }}
         >
@@ -214,7 +191,7 @@ function PeriodChips({
 function GradebookBody({ gb }: { gb: ClassGradebook }) {
   const [filters, setFilters] = useState<GradebookFilters>(DEFAULT_FILTERS);
   const [panel, setPanel] = useState<PanelTarget | null>(null);
-  const hideScores = useSyncExternalStore(subscribe, readHidden, () => false);
+  const hideScores = useHideScores();
   const view = gradebookView(gb, filters);
   const live = rightNow(gb);
   const set = (patch: Partial<GradebookFilters>) => setFilters((f) => ({ ...f, ...patch }));
@@ -329,6 +306,7 @@ function GradebookBody({ gb }: { gb: ClassGradebook }) {
           type="button"
           role="switch"
           aria-checked={hideScores}
+          title="Hides every score on the Dashboard (the gradebook, Needs you and Recent activity) for the projector; status tags stay."
           data-hide-scores
           className={cn(
             "inline-flex items-center gap-1 rounded-md border px-2 py-0.5 font-medium",
@@ -336,7 +314,7 @@ function GradebookBody({ gb }: { gb: ClassGradebook }) {
               ? "border-brand bg-brand-soft text-brand-deep"
               : "border-border text-muted-foreground hover:text-foreground"
           )}
-          onClick={() => writeHidden(!hideScores)}
+          onClick={() => setHideScores(!hideScores)}
         >
           <EyeOff className="size-3.5" aria-hidden />
           Hide scores
@@ -400,7 +378,13 @@ function GradebookBody({ gb }: { gb: ClassGradebook }) {
         ) : null}
       </ul>
 
-      <GradebookPanel gb={gb} target={panel} hideScores={hideScores} onTarget={setPanel} />
+      <GradebookPanel
+        gb={gb}
+        target={panel}
+        hideScores={hideScores}
+        showPractice={filters.showPractice}
+        onTarget={setPanel}
+      />
     </>
   );
 }

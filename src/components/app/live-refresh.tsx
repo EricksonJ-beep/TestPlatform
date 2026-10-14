@@ -19,12 +19,22 @@ const TITLE: Record<LiveState, string> = {
  * 45 minutes without a click, key or scroll, and starts again on the next one. `version` is the
  * stamp the server read just before it read the page, so nothing between the two is missed.
  */
-export function LiveRefresh({ classId, version }: { classId: string | null; version: string }) {
+export function LiveRefresh({
+  classId,
+  feed = "",
+  version,
+}: {
+  classId: string | null;
+  /** The page's Recent activity filter as query text (`feedQuery`), so the stamp matches the feed. */
+  feed?: string;
+  version: string;
+}) {
   const router = useRouter();
   const [refreshing, startRefresh] = useTransition();
   const [on, setOn] = useState(true);
   const [state, setState] = useState<LiveState>("live");
   const known = useRef(version);
+  const feedRef = useRef(feed);
   const busy = useRef(false);
   const lastUse = useRef(0);
   const check = useRef<() => void>(() => undefined);
@@ -32,6 +42,9 @@ export function LiveRefresh({ classId, version }: { classId: string | null; vers
   useEffect(() => {
     known.current = version;
   }, [version]);
+  useEffect(() => {
+    feedRef.current = feed;
+  }, [feed]);
   useEffect(() => {
     busy.current = refreshing;
   }, [refreshing]);
@@ -50,10 +63,12 @@ export function LiveRefresh({ classId, version }: { classId: string | null; vers
       setState(s);
       if (s !== "live" || busy.current) return;
       try {
-        const r = await fetch(
-          `/api/dashboard/version${classId ? `?class=${encodeURIComponent(classId)}` : ""}`,
-          { cache: "no-store" }
-        );
+        const q = new URLSearchParams(feedRef.current);
+        if (classId) q.set("class", classId);
+        const qs = q.toString();
+        const r = await fetch(`/api/dashboard/version${qs ? `?${qs}` : ""}`, {
+          cache: "no-store",
+        });
         if (!r.ok || cancelled) return;
         const next = ((await r.json()) as { version?: string }).version;
         if (next && next !== known.current) {

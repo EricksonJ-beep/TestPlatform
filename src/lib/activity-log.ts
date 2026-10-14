@@ -79,6 +79,25 @@ export type ActivityRow = {
 export function describeActivity(
   row: Pick<ActivityRow, "kind" | "assignmentTitle" | "detail">
 ): string {
+  return `${activityLine(row)}${activityScore(row) ?? ""}`;
+}
+
+/**
+ * The score an event carries, as " · 80%" (a submitted attempt that was auto-graded); null when
+ * none. Kept apart from the line so "Hide scores" on the Dashboard (Jon, Oct 13 2026, decision 6:
+ * the Dashboard is the projector view) can drop it.
+ */
+export function activityScore(row: Pick<ActivityRow, "kind" | "detail">): string | null {
+  const p = row.detail.percent;
+  return row.kind === "attempt_submitted" && p !== null && p !== undefined
+    ? ` · ${Math.round(p)}%`
+    : null;
+}
+
+/** The event's line without its score (`activityScore`), e.g. "Submitted attempt 2 on Lab Quiz". */
+export function activityLine(
+  row: Pick<ActivityRow, "kind" | "assignmentTitle" | "detail">
+): string {
   const d = row.detail;
   const on = row.assignmentTitle ? ` on ${row.assignmentTitle}` : "";
   const test = row.assignmentTitle ?? "a test";
@@ -94,9 +113,7 @@ export function describeActivity(
         ? `Started retake (try ${d.attemptNumber})${on}`
         : `Started attempt${n}${on}`;
     case "attempt_submitted":
-      return `Submitted attempt${n}${on}${
-        d.percent !== null && d.percent !== undefined ? ` · ${Math.round(d.percent)}%` : ""
-      }`;
+      return `Submitted attempt${n}${on}`;
     case "corrections_submitted":
       return `Submitted corrections${on}${d.approved ? " (auto-approved)" : ""}`;
     case "practice_completed":
@@ -274,4 +291,32 @@ export async function listRecentActivity(
     .orderBy(desc(schema.activityLog.createdAt))
     .limit(opts.limit ?? 30);
   return rows.map(shape);
+}
+
+/**
+ * When the newest event the Dashboard's Recent activity would show happened (epoch ms; 0 when
+ * none), for the live stamp: the same class rule (`inClasses`, one class or all the teacher's),
+ * the same `since` and the same kind groups as the feed, so a login with Logins off, an event in
+ * another class, or a student's work for another teacher never forces a refresh (Oct 13 2026).
+ */
+export async function newestActivityAt(
+  where: { classId: string } | { teacherId: string },
+  opts: Pick<ActivityReadOptions, "since" | "groups">
+): Promise<number> {
+  const classes =
+    "classId" in where
+      ? [where.classId]
+      : sql`(select c.id from ${schema.classes} c where c.owner_id = ${where.teacherId})`;
+  const [row] = await db
+    .select({ at: sql<Date | string | null>`max(${schema.activityLog.createdAt})` })
+    .from(schema.activityLog)
+    .leftJoin(schema.assignments, eq(schema.activityLog.assignmentId, schema.assignments.id))
+    .where(
+      and(
+        inClasses(classes),
+        opts.since ? gte(schema.activityLog.createdAt, opts.since) : undefined,
+        inGroups(opts.groups)
+      )
+    );
+  return row?.at ? new Date(row.at).getTime() : 0;
 }

@@ -265,8 +265,13 @@ describe("correctionsRule (Jon, Oct 13 2026)", () => {
     );
   });
   it("teacher unlocks keep corrections optional (Oct 1); CVTC rules mean none, for every type", () => {
-    expect(correctionsRule({ ...f, retakesNeedUnlock: true, firstPercent: 85 })).toBe("optional");
+    // Decision 2 makes no exception for unlocks: at or above the line under the cap it is still
+    // corrections → 100%, never "optional" (this used to read "optional").
+    expect(correctionsRule({ ...f, retakesNeedUnlock: true, firstPercent: 85 })).toBe("to_full");
     expect(correctionsRule({ ...f, retakesNeedUnlock: true, firstPercent: 50 })).toBe("optional");
+    expect(
+      correctionsRule({ ...f, capped: false, retakesNeedUnlock: true, firstPercent: 85 })
+    ).toBe("optional");
     for (const type of ["formative", "summative"] as const)
       for (const retakesNeedUnlock of [false, true])
         expect(

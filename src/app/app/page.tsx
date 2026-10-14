@@ -1,5 +1,5 @@
 import { requireOwner, requireTeacher } from "@/lib/authz";
-import { feedGroups, parseFeedFilter } from "@/lib/activity-filter";
+import { feedGroups, feedQuery, parseFeedFilter } from "@/lib/activity-filter";
 import { listClassActivity, listRecentActivity } from "@/lib/activity-log";
 import { currentResumeCode } from "@/lib/attempt-pause";
 import { periodLabel } from "@/lib/class-focus";
@@ -10,6 +10,7 @@ import { getNeedsYou } from "@/lib/queries/dashboard";
 import { getDashboardVersion } from "@/lib/queries/dashboard-version";
 import { ClassGradebookSection } from "@/components/app/class-gradebook";
 import { LiveRefresh } from "@/components/app/live-refresh";
+import { HideScoresScope } from "@/components/app/hide-scores";
 import { NeedsYouChips, NeedsYouInbox } from "@/components/app/needs-you";
 import { RecentActivity } from "@/components/app/recent-activity";
 import { ResumeCodeHeader } from "@/components/app/resume-code-button";
@@ -43,8 +44,8 @@ export default async function DashboardPage({ searchParams }: PageProps<"/app">)
   if (cls) await requireOwner({ type: "class", id: cls.id });
   // The live stamp is read before the page's data, so a change landing in between is caught by
   // the next poll instead of being missed.
-  const version = await getDashboardVersion(session.userId, cls?.id ?? null);
   const filter = parseFeedFilter(await searchParams, !!cls);
+  const version = await getDashboardVersion(session.userId, cls?.id ?? null, new Date(), filter);
   const feed = {
     since: daysAgo(filter.days),
     groups: feedGroups(filter),
@@ -60,8 +61,9 @@ export default async function DashboardPage({ searchParams }: PageProps<"/app">)
   ]);
   const counts = needsYouCounts(inbox);
 
+  // "Hide scores" (decision 6) covers the whole page: the gradebook, Needs you, Recent activity.
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-6">
+    <HideScoresScope className="mx-auto flex max-w-6xl flex-col gap-6">
       <div className="flex flex-wrap items-start gap-3">
         <div className="mr-auto">
           <h1 className="text-2xl">
@@ -86,7 +88,13 @@ export default async function DashboardPage({ searchParams }: PageProps<"/app">)
         classes={focus.classes}
         currentClassId={cls?.id ?? null}
         gradebook={gradebook}
-        live={<LiveRefresh classId={cls?.id ?? null} version={version} />}
+        live={
+          <LiveRefresh
+            classId={cls?.id ?? null}
+            feed={feedQuery(filter, !!cls)}
+            version={version}
+          />
+        }
       />
 
       <RecentActivity
@@ -96,6 +104,6 @@ export default async function DashboardPage({ searchParams }: PageProps<"/app">)
         classId={cls?.id ?? null}
         classLabel={cls ? periodLabel(cls) : null}
       />
-    </div>
+    </HideScoresScope>
   );
 }

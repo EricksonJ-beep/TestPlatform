@@ -118,7 +118,9 @@ export default async function StudentAssignmentPage({
             {c.state === "submitted"
               ? "Your corrections are in. Your teacher will approve them or send them back."
               : c.state === "returned"
-                ? "Your teacher sent your corrections back. Revise and resubmit to unlock your next attempt."
+                ? a.correctionsRule === "to_full"
+                  ? "Your teacher sent your corrections back. Revise and resubmit to raise this quiz to 100%."
+                  : "Your teacher sent your corrections back. Revise and resubmit to unlock your next attempt."
                 : a.state === "corrections_to_full"
                   ? `Correct ${c.remaining} missed ${c.remaining === 1 ? "question" : "questions"} on attempt ${c.attemptNumber} to raise your score to 100%. That's the way up at your score; there's no retake.`
                   : a.type === "formative" && a.correctionsCap && c.attemptNumber === 1

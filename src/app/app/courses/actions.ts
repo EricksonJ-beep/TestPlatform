@@ -1,11 +1,10 @@
 "use server";
 
-import { and, asc, eq, inArray, max, ne, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, max, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { z } from "zod";
 import { db, schema } from "@/db";
-import { recomputeFinalScore } from "@/lib/attempts";
 import {
   ActionError,
   requireContentAccess,
@@ -14,6 +13,7 @@ import {
   withAuthz,
 } from "@/lib/authz";
 import { CURRENT_COURSE_COOKIE, ownsCourse, rememberCourse } from "@/lib/current-course";
+import { recomputeCourseRules } from "@/lib/cvtc";
 
 const uuid = z.string().uuid();
 const name = (label: string, maxLen = 80) =>
@@ -94,29 +94,21 @@ async function assertUniqueCourseName(ownerId: string, courseName: string, excep
 
 /**
  * CVTC rules on a course (Jon, Oct 13 2026: "corrections earn no credit, retakes only"). Owner
- * only. Every counting score on the course's assignments is recomputed on the spot, so a
- * corrections lift comes off (or back) with the switch, and the retake gates follow.
+ * only. The scores the switch can change on the course's tests are recomputed on the spot, a few
+ * at a time (`recomputeCourseRules`: capped formatives' counting scores, summatives' relearning
+ * gates), so a corrections lift comes off (or back) with the switch. The rule lives on the test's
+ * course, so classes of teachers it is shared with follow it too and are recomputed with it.
+ * Saving the same value again re-runs the recompute, which finishes one that stopped part way.
  */
 export const setCourseCvtcRules = withAuthz(async (courseId: string, on: boolean) => {
   await requireOwner({ type: "course", id: courseId });
   const cvtcRules = on === true;
   await db.update(schema.courses).set({ cvtcRules }).where(eq(schema.courses.id, courseId));
-  const pairs = await db
-    .selectDistinct({
-      assignmentId: schema.attempts.assignmentId,
-      studentId: schema.attempts.studentId,
-    })
-    .from(schema.attempts)
-    .innerJoin(schema.assignments, eq(schema.attempts.assignmentId, schema.assignments.id))
-    .innerJoin(schema.assessments, eq(schema.assignments.assessmentId, schema.assessments.id))
-    .where(
-      and(eq(schema.assessments.courseId, courseId), ne(schema.attempts.status, "in_progress"))
-    );
-  for (const p of pairs) await recomputeFinalScore(p.assignmentId, p.studentId);
   revalidateCourse(courseId);
+  const recomputed = await recomputeCourseRules(courseId);
   revalidatePath("/app/results", "layout");
   revalidatePath("/student", "layout");
-  return { cvtcRules, recomputed: pairs.length };
+  return { cvtcRules, recomputed };
 });
 
 /** Remember the current course in a cookie. Only the owner's own courses are accepted. */

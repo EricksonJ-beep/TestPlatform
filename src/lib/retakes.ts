@@ -147,10 +147,11 @@ export const BLOCKER_TEXT: Record<RetakeBlocker, string> = {
  * `startAttempt` so the two never disagree (Jon, Oct 13 2026):
  *   "none"     CVTC rules on the course: corrections earn no credit and are never owed; the only
  *              way up is a retake.
+ *   "to_full"  capped formative with attempt 1 at or above the threshold: the student is directed
+ *              to corrections, an approved set lifts the score to 100, and no retake is offered,
+ *              with or without "Retakes need my OK" (decision 2 makes no exception for it).
  *   "optional" "Retakes need my OK" (Jon, Oct 1 2026): corrections stay open but never gate; the
  *              teacher's unlock is the only gate.
- *   "to_full"  capped formative with attempt 1 at or above the threshold: the student is directed
- *              to corrections, an approved set lifts the score to 100, and no retake is offered.
  *   "gate"     everything else (PLAN.md §4): the last attempt's corrections come before the next
  *              attempt; under the cap, attempt 1's approved set lifts the score to the threshold
  *              and a retake is the way higher.
@@ -168,9 +169,9 @@ export function correctionsRule(input: {
   threshold: number;
 }): CorrectionsRule {
   if (input.type === "practice" || input.cvtcRules) return "none";
-  if (input.retakesNeedUnlock) return "optional";
   if (input.capped && input.firstPercent !== null && input.firstPercent >= input.threshold)
     return "to_full";
+  if (input.retakesNeedUnlock) return "optional";
   return "gate";
 }
 

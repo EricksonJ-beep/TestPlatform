@@ -255,7 +255,8 @@ export const undoRetakeApproval = withAuthz(async (assignmentId: string, student
 
 /**
  * Clear a leftover retake request (Jon, Oct 13 2026, dashboard plan): one that is no longer the
- * student's next try, or sits on a test that no longer needs the teacher's OK (`staleRequest`).
+ * student's next try, sits on a test that no longer needs the teacher's OK, or comes from a
+ * student no longer in the test's class (`staleRequest`).
  * Nothing else ever deletes those. A current request is refused here: Decline is the way to say
  * no to it, and it asks first.
  */
@@ -272,7 +273,7 @@ export const clearRetakeRequest = withAuthz(async (assignmentId: string, request
     : undefined;
   if (!request || request.grantedAt) throw new ActionError("That request is already gone.", 404);
   const asg = await db.query.assignments.findFirst({
-    columns: { attemptsAllowed: true, retakesNeedUnlock: true },
+    columns: { classId: true, attemptsAllowed: true, retakesNeedUnlock: true },
     where: eq(schema.assignments.id, assignmentId),
   });
   const used = await db.$count(
@@ -282,7 +283,17 @@ export const clearRetakeRequest = withAuthz(async (assignmentId: string, request
       eq(schema.attempts.studentId, request.studentId)
     )
   );
-  if (asg && !staleRequest({ ...asg, attemptNumber: request.attemptNumber, used }))
+  // A student moved out of the class keeps their request, and Approve / Decline refuse them.
+  const enrolled = asg
+    ? (await db.$count(
+        schema.enrollments,
+        and(
+          eq(schema.enrollments.classId, asg.classId),
+          eq(schema.enrollments.studentId, request.studentId)
+        )
+      )) > 0
+    : false;
+  if (asg && !staleRequest({ ...asg, attemptNumber: request.attemptNumber, used, enrolled }))
     throw new ActionError("That request is still current. Approve or decline it.", 409);
   await db.delete(schema.attemptUnlocks).where(eq(schema.attemptUnlocks.id, request.id));
   revalidatePath("/app");

@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 import {
   activityGroup,
   FEED_GROUPS,
+  feedDay,
   feedGroups,
   feedHref,
   KIND_GROUP,
@@ -76,5 +77,14 @@ describe("the filter in the address", () => {
     for (const g of FEED_GROUPS) all = toggleKind(all, g);
     expect(all.kinds).toEqual([]);
     expect(parseFeedFilter({ kinds: FEED_GROUPS.join(",") }, true).kinds).toEqual([]);
+  });
+});
+
+describe("feedDay", () => {
+  it("files an evening event under its own day in Central time, not the UTC date", () => {
+    // Oct 13 8:30 PM CDT is 01:30 on Oct 14 in UTC.
+    expect(feedDay(new Date("2026-10-14T01:30:00Z"))).toBe("2026-10-13");
+    expect(feedDay(new Date("2026-10-14T13:00:00Z"))).toBe("2026-10-14");
+    expect(feedDay(new Date("2026-10-13T20:00:00Z"))).toBe("2026-10-13");
   });
 });

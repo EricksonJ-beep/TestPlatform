@@ -139,6 +139,14 @@ function matchesName(s: Student, find: string): boolean {
   );
 }
 
+/** Rule (decision 7): formative and summative columns always show; practice only when switched on. */
+export function columnShown(
+  c: Pick<ClassGradebookColumn, "type">,
+  f: Pick<GradebookFilters, "showPractice">
+): boolean {
+  return f.showPractice || c.type !== "practice";
+}
+
 /**
  * Rule (research notes C, "Filters"; decision 7): formative and summative columns always, practice
  * only when switched on; the chips count every student; then "only students who owe something",
@@ -146,7 +154,7 @@ function matchesName(s: Student, find: string): boolean {
  * most to do.
  */
 export function gradebookView(gb: ClassGradebook, f: GradebookFilters): GradebookView {
-  const keep = gb.columns.map((c) => f.showPractice || c.type !== "practice");
+  const keep = gb.columns.map((c) => columnShown(c, f));
   const columns = gb.columns.filter((_, i) => keep[i]);
   const chips = Object.fromEntries(WHO_CHIPS.map((c) => [c, 0])) as Record<WhoChip, number>;
   const all = gb.rows.map((r) => {
@@ -168,6 +176,32 @@ export function gradebookView(gb: ClassGradebook, f: GradebookFilters): Gradeboo
     rows.sort((a, b) => b.toDo - a.toDo || order.get(a.student.id)! - order.get(b.student.id)!);
   }
   return { columns, rows, chips, practiceColumns: gb.columns.length - columns.length };
+}
+
+export type PanelItem = { cell: ClassGradebookCell; column: ClassGradebookColumn };
+
+/**
+ * A student's panel (research notes C, "Clicks"): over the columns the grid shows (practice only
+ * when switched on, so the panel's "N to do" matches the row badge and the phone line), the cells
+ * that are to do, what waits on the teacher's optional OK or is being taken now, and how many are
+ * done. Null when the student isn't on the roster.
+ */
+export function studentPanelItems(
+  gb: ClassGradebook,
+  studentId: string,
+  f: Pick<GradebookFilters, "showPractice">
+): { toDo: PanelItem[]; other: PanelItem[]; done: number; total: number } | null {
+  const row = gb.rows.find((r) => r.student.id === studentId);
+  if (!row) return null;
+  const items = row.cells
+    .map((cell, i) => ({ cell, column: gb.columns[i] }))
+    .filter((x) => columnShown(x.column, f));
+  return {
+    toDo: items.filter((x) => isToDo(x.cell.tag)),
+    other: items.filter((x) => x.cell.tag.group === "your_ok" || x.cell.tag.group === "testing"),
+    done: items.filter((x) => x.cell.tag.kind === "done").length,
+    total: items.length,
+  };
 }
 
 /** "Cho, L": the phone list's short name. */
@@ -201,7 +235,9 @@ export type LiveRow = {
  * Rule (decision 5; research notes C, "Testing now"): everyone with an open attempt on any of the
  * class's tests, split into testing (active in the last 10 minutes) and paused (Finish later, idle,
  * or the window closed; `currentPause` decided it in the loader). Asked-to-finish students are
- * paused too; they also count in "Needs you". Whatever tag wins the cell, an open attempt shows here.
+ * paused too; they also count in "Needs you". Whatever tag wins the cell, an open attempt shows here,
+ * except one whose time ran out before it paused (`outOfTime`): nobody is testing in it, and it is
+ * submitted when they come back (the same rule as the live stamp's `testingNow`).
  */
 export function rightNow(gb: ClassGradebook): { testing: LiveRow[]; paused: LiveRow[] } {
   const testing: LiveRow[] = [];
@@ -209,7 +245,7 @@ export function rightNow(gb: ClassGradebook): { testing: LiveRow[]; paused: Live
   for (const row of gb.rows) {
     row.cells.forEach((cell, i) => {
       const open = cell.attempts.find((a) => a.id === cell.openAttemptId);
-      if (!open) return;
+      if (!open || open.outOfTime) return;
       const live: LiveRow = {
         student: row.student,
         assignmentId: cell.assignmentId,
@@ -330,6 +366,10 @@ export function cellSentence(
     if (open.paused)
       parts.push(
         `try ${open.number} is paused${progress ? ` at ${progress}` : ""}${open.askedAt ? "; they asked to finish" : ""}`
+      );
+    else if (open.outOfTime)
+      parts.push(
+        `try ${open.number} ran out of time${progress ? ` at ${progress}` : ""} and isn't submitted yet; it is submitted when they open it again`
       );
     else parts.push(`taking try ${open.number} now${progress ? `, ${progress}` : ""}`);
   }

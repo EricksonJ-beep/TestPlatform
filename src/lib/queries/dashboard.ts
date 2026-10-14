@@ -6,8 +6,8 @@
  * across ALL their courses, one row per thing, each naming its course · period. The rules for
  * which requests are current and what still blocks them live in `src/lib/needs-you.ts`.
  */
-import { and, asc, eq, isNull, ne, sql } from "drizzle-orm";
-import { alias } from "drizzle-orm/pg-core";
+import { and, asc, eq, inArray, isNull, ne, or, sql } from "drizzle-orm";
+import { alias, type AnyPgColumn } from "drizzle-orm/pg-core";
 import { db, schema } from "@/db";
 import { correctionsCapOn } from "@/lib/grading";
 import {
@@ -21,8 +21,8 @@ import {
 } from "@/lib/needs-you";
 import { currentPause, type PauseReason } from "@/lib/pause";
 import { listPendingVerifications, type PendingVerification } from "@/lib/queries/practice";
-import { getRetakeStatus } from "@/lib/queries/retakes";
 import { countUnmatchedEmails } from "@/lib/queries/worksheets";
+import { correctionsRule, planRetake, retakeTargets } from "@/lib/retakes";
 
 /** The course of the class (where the row happens), as opposed to the assessment's course. */
 const classCourse = alias(schema.courses, "class_course");
@@ -138,8 +138,10 @@ export type RetakeRequest = {
 /**
  * Pending retake requests on the teacher's assignments, oldest first (Jon, Oct 1 2026; Oct 13
  * 2026 for current vs leftover). A current request carries what would still block the start
- * after approval (wait time, retake window, closed, relearning gates), checked the way
- * `startAttempt` checks it.
+ * after approval (wait time, retake window, closed, no retake at their score, relearning gates),
+ * checked the way `startAttempt` checks it. Reads only: a summative's relearning gates come from
+ * the stored gate rows (a pair with none reads its gates shut, as in the class gradebook), never
+ * from `getRetakeStatus`, which writes missing rows; all of them in three batched reads.
  */
 export async function listRetakeRequests(
   teacherId: string,
@@ -166,11 +168,17 @@ export async function listRetakeRequests(
       retakesNeedUnlock: schema.assignments.retakesNeedUnlock,
       correctionsCap: schema.assignments.correctionsCap,
       retakeWindowDays: schema.assignments.retakeWindowDays,
+      retakeThreshold: schema.assignments.retakeThreshold,
+      optionalRetakes: schema.assignments.optionalRetakes,
       cvtcRules: assessmentCourse.cvtcRules,
+      enrolled: sql<boolean>`exists (select 1 from ${schema.enrollments} e where e.class_id = ${schema.assignments.classId} and e.student_id = ${u.studentId})`,
       used: sql<number>`(select count(*)::int from ${schema.attempts} a where ${mine})`,
       bestPercent: sql<
         number | null
       >`(select max(a.percent) from ${schema.attempts} a where ${mine} and a.status <> 'in_progress')`,
+      firstPercent: sql<
+        number | null
+      >`(select a.percent from ${schema.attempts} a where ${mine} and a.status <> 'in_progress' order by a.number asc limit 1)`,
       lastSubmittedAt: sql<
         Date | string | null
       >`(select max(a.submitted_at) from ${schema.attempts} a where ${mine} and a.status <> 'in_progress')`,
@@ -189,9 +197,8 @@ export async function listRetakeRequests(
     .where(and(eq(schema.assignments.ownerId, teacherId), isNull(u.grantedAt)))
     .orderBy(asc(u.requestedAt));
 
-  const out: RetakeRequest[] = [];
-  for (const r of rows) {
-    const stale = staleRequest(r);
+  const out = rows.map((r) => {
+    const stale = staleRequest({ ...r, enrolled: !!r.enrolled });
     let blocker: RequestBlocker | null = null;
     if (!stale) {
       // The cap's retake window applies only where the cap does (never in a CVTC course).
@@ -203,32 +210,110 @@ export async function listRetakeRequests(
         firstSubmittedAt: asDate(r.firstSubmittedAt),
         now,
       });
-      if (!blocker && r.type === "summative") {
-        const retake = await getRetakeStatus(r.assignmentId, r.studentId);
-        if (retake && !retake.plan.canStart && retake.plan.blocker)
-          blocker = {
-            reason:
-              retake.plan.blocker === "no_attempts" ? "no_attempts_left" : retake.plan.blocker,
-          };
-      }
+      // At or above the line under the cap, corrections are the way up and `startAttempt`
+      // refuses any retake (decision 2), so an approval would unlock nothing.
+      if (
+        !blocker &&
+        correctionsRule({
+          type: r.type,
+          capped,
+          retakesNeedUnlock: r.retakesNeedUnlock,
+          cvtcRules: !!r.cvtcRules,
+          firstPercent: r.firstPercent === null ? null : Number(r.firstPercent),
+          threshold: r.retakeThreshold,
+        }) === "to_full"
+      )
+        blocker = { reason: "no_retake" };
     }
-    out.push({
-      id: r.id,
-      assignmentId: r.assignmentId,
-      studentId: r.studentId,
-      firstName: r.firstName,
-      lastName: r.lastName,
-      title: r.title,
-      className: r.className,
-      place: toPlace(r),
-      attemptNumber: r.attemptNumber,
-      requestedAt: r.requestedAt,
-      bestPercent: r.bestPercent === null ? null : Number(r.bestPercent),
-      stale,
-      blocker,
-    });
+    return { r, stale, blocker };
+  });
+
+  // A current summative request with nothing else in the way: its relearning gates, read as stored.
+  const summatives = out.filter((x) => !x.stale && !x.blocker && x.r.type === "summative");
+  if (summatives.length) {
+    const key = (assignmentId: string, studentId: string) => `${assignmentId}:${studentId}`;
+    const pairsOf = (cols: { assignmentId: AnyPgColumn; studentId: AnyPgColumn }) =>
+      or(
+        ...summatives.map((x) =>
+          and(eq(cols.assignmentId, x.r.assignmentId), eq(cols.studentId, x.r.studentId))
+        )
+      );
+    const [finals, gates] = await Promise.all([
+      db
+        .select({
+          assignmentId: schema.assignmentFinalScores.assignmentId,
+          studentId: schema.assignmentFinalScores.studentId,
+          perTarget: schema.assignmentFinalScores.perTarget,
+        })
+        .from(schema.assignmentFinalScores)
+        .where(pairsOf(schema.assignmentFinalScores)),
+      db
+        .select({
+          assignmentId: schema.retakeGates.assignmentId,
+          studentId: schema.retakeGates.studentId,
+          learningTargetId: schema.retakeGates.learningTargetId,
+          optedIn: schema.retakeGates.optedIn,
+          correctionsOk: schema.retakeGates.correctionsOk,
+          activityOk: schema.retakeGates.activityOk,
+          practiceOk: schema.retakeGates.practiceOk,
+          unlockedAt: schema.retakeGates.unlockedAt,
+        })
+        .from(schema.retakeGates)
+        .where(pairsOf(schema.retakeGates)),
+    ]);
+    const targetIds = [...new Set(finals.flatMap((f) => Object.keys(f.perTarget)))];
+    const names = targetIds.length
+      ? await db
+          .select({
+            id: schema.learningTargets.id,
+            code: schema.learningTargets.code,
+            title: schema.learningTargets.title,
+            sortOrder: schema.learningTargets.sortOrder,
+          })
+          .from(schema.learningTargets)
+          .where(inArray(schema.learningTargets.id, targetIds))
+      : [];
+    const finalBy = new Map(finals.map((f) => [key(f.assignmentId, f.studentId), f]));
+    for (const x of summatives) {
+      const k = key(x.r.assignmentId, x.r.studentId);
+      const final = finalBy.get(k);
+      if (!final || Object.keys(final.perTarget).length === 0) continue;
+      const targets = retakeTargets({
+        perTarget: final.perTarget,
+        names,
+        gates: gates.filter((g) => key(g.assignmentId, g.studentId) === k),
+        threshold: x.r.retakeThreshold,
+        cvtcRules: !!x.r.cvtcRules,
+      });
+      const plan = planRetake({
+        targets,
+        threshold: x.r.retakeThreshold,
+        optionalRetakes: x.r.optionalRetakes,
+        attemptsUsed: x.r.used,
+        attemptsAllowed: x.r.attemptsAllowed,
+      });
+      if (!plan.canStart && plan.blocker)
+        x.blocker = {
+          reason: plan.blocker === "no_attempts" ? "no_attempts_left" : plan.blocker,
+        };
+    }
   }
-  return out;
+
+  return out.map(({ r, stale, blocker }) => ({
+    id: r.id,
+    assignmentId: r.assignmentId,
+    studentId: r.studentId,
+    firstName: r.firstName,
+    lastName: r.lastName,
+    title: r.title,
+    className: r.className,
+    place: toPlace(r),
+    attemptNumber: r.attemptNumber,
+    requestedAt: r.requestedAt,
+    bestPercent: r.bestPercent === null ? null : Number(r.bestPercent),
+    stale,
+    blocker,
+  }));
 }
 
 // ---------------------------------------------------------------------------

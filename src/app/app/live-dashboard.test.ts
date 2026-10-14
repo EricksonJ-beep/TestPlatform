@@ -21,9 +21,9 @@ vi.mock("@/db", async () => {
   return { db, schema, dbDriver: "pg" };
 });
 
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
-import { activityGroup, FEED_GROUPS } from "@/lib/activity-filter";
+import { activityGroup, FEED_GROUPS, parseFeedFilter } from "@/lib/activity-filter";
 import {
   describeActivity,
   listClassActivity,
@@ -388,7 +388,10 @@ describe("the stamp", () => {
         },
       ],
       ["the check-off", () => db.update(schema.activityCompletions).set({ teacherVerified: true })],
-      ["a student's login", () => logActivity({ userId: ids.ana, kind: "login" })],
+      [
+        "a student's practice (a class-less event the feed shows)",
+        () => logActivity({ userId: ids.ana, kind: "practice_completed", detail: { title: "S" } }),
+      ],
       [
         "a new student",
         async () => {
@@ -454,6 +457,87 @@ describe("the stamp", () => {
       .where(eq(schema.assignments.id, ids.asg6));
     const shut = await version(ids.bio3, t);
     expect(await version(ids.bio3, new Date(t.getTime() + 120_000))).not.toBe(shut);
+  });
+
+  it("follows the feed's filter: no logins unless shown, nothing from another class or a draft", async () => {
+    const classFeed = parseFeedFilter({}, true);
+    const withLogins = { ...classFeed, logins: true };
+    const stamp = (feed = classFeed) => getDashboardVersion(ids.jon, ids.bio3, new Date(), feed);
+    const before = await stamp();
+    const beforeLogins = await stamp(withLogins);
+    await logActivity({ userId: ids.ana, kind: "login" });
+    expect(await stamp()).toBe(before); // Logins are off by default, so the feed shows nothing new
+    expect(await stamp(withLogins)).not.toBe(beforeLogins);
+
+    // Ana's work in Biology 6th isn't "this class" (Biology 3rd); across all classes it is.
+    const all = { ...classFeed, scope: "all" as const };
+    const allBefore = await stamp(all);
+    await logActivity({ userId: ids.ana, kind: "attempt_submitted", assignmentId: ids.asg6 });
+    expect(await stamp()).toBe(before);
+    expect(await stamp(all)).not.toBe(allBefore);
+
+    // A saved draft changes no tag; another ping from an email already waiting changes no row.
+    const [anaAttempt] = await db
+      .select()
+      .from(schema.attempts)
+      .where(
+        and(eq(schema.attempts.studentId, ids.ana), eq(schema.attempts.assignmentId, ids.asg3))
+      );
+    await db.insert(schema.corrections).values({
+      attemptId: anaAttempt.id,
+      questionId: ids.q[2].id,
+      studentId: ids.ana,
+      correctAnswer: "Right",
+      explanation: "Draft",
+      status: "draft",
+    });
+    const ws = await db.query.worksheets.findFirst({
+      where: eq(schema.worksheets.scriptId, "script-1"),
+    });
+    await db.insert(schema.worksheetEvents).values({
+      worksheetId: ws!.id,
+      email: "stranger@x",
+      event: "progress",
+      occurredAt: new Date(),
+    });
+    expect(await stamp()).toBe(before);
+
+    // A code issued anywhere (a Results page) reaches the header on the projector.
+    as(ids.jon, "teacher");
+    await ok(getResumeCode(true));
+    expect(await stamp()).not.toBe(before);
+  });
+
+  it("moves when the clock alone changes a tag: a retake wait ends, the cap's window closes", async () => {
+    const [pair] = await db
+      .select({
+        first: sql<string>`min(${schema.attempts.submittedAt})`,
+        last: sql<string>`max(${schema.attempts.submittedAt})`,
+      })
+      .from(schema.attempts)
+      .where(
+        and(eq(schema.attempts.studentId, ids.ana), eq(schema.attempts.assignmentId, ids.asg3))
+      );
+    const first = new Date(pair.first).getTime();
+    const last = new Date(pair.last).getTime();
+    const H = 3_600_000;
+    // Days on, past the feed's span and every open test's pause: only the boundaries can differ.
+    const later = (ms: number) => version(ids.bio3, new Date(ms));
+    // "Retakes need my OK" with a 3-day wait: "Unlocked · after …" turns into a startable try.
+    await db
+      .update(schema.assignments)
+      .set({ retakesNeedUnlock: true, retakeWaitHours: 72 })
+      .where(eq(schema.assignments.id, ids.asg3));
+    expect(await later(last + 73 * H)).not.toBe(await later(last + 71 * H));
+    // The cap's 7-day window: the 48-hour "Retake by" mark appears, then the window closes.
+    expect(await later(first + 5 * 24 * H + H)).not.toBe(await later(first + 5 * 24 * H - H));
+    expect(await later(first + 7 * 24 * H + H)).not.toBe(await later(first + 7 * 24 * H - H));
+    // Between boundaries, nothing moves.
+    expect(await later(first + 6 * 24 * H)).toBe(await later(first + 6 * 24 * H + H));
+    await db
+      .update(schema.assignments)
+      .set({ retakesNeedUnlock: false, retakeWaitHours: 0 })
+      .where(eq(schema.assignments.id, ids.asg3));
   });
 });
 

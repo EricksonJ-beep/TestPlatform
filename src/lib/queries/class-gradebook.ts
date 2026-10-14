@@ -27,7 +27,7 @@ import {
 } from "@/lib/corrections";
 import { correctionsCapOn } from "@/lib/grading";
 import { requestBlocker, staleRequest, type RequestBlocker } from "@/lib/needs-you";
-import { currentPause } from "@/lib/pause";
+import { currentPause, outOfTime } from "@/lib/pause";
 import {
   planRetake,
   retakeTargets,
@@ -68,6 +68,8 @@ export type ClassGradebookAttempt = {
   pendingManual: number;
   /** An open attempt that is paused, stored or worked out (`currentPause`). */
   paused: boolean;
+  /** An open attempt whose time limit ran out before it paused (`outOfTime`): nobody is in it. */
+  outOfTime: boolean;
   /** An open attempt's deadline (time limit or the window's close); null with neither, or paused. */
   dueAt: Date | null;
   /** When the student pressed "Ask my teacher to let me finish". */
@@ -141,7 +143,15 @@ export type ClassGradebook = {
 const pairKey = (assignmentId: string, studentId: string) => `${assignmentId}:${studentId}`;
 /** A json aggregate as an object, whether the driver parsed it already or handed back text. */
 const fromJson = <T>(v: unknown): T => (typeof v === "string" ? JSON.parse(v) : v) as T;
-type ScoreJson = { questionId: string; autoScore: number | null; manualScore: number | null };
+/** A served item short of full credit, with its stored scores (`responded` = a response row exists). */
+type ItemJson = {
+  questionId: string;
+  learningTargetId: string | null;
+  points: number;
+  responded: boolean;
+  autoScore: number | null;
+  manualScore: number | null;
+};
 type CorrectionJson = { questionId: string; status: CorrectionStatus; reviewerNote: string | null };
 
 function groupBy<T>(rows: T[], key: (r: T) => string): Map<string, T[]> {
@@ -356,24 +366,27 @@ export async function getClassGradebook(
   const codeBy = new Map(targets.map((t) => [t.id, t.code]));
 
   // Wave 2: the latest finished attempt of each pair, where corrections can be owed (not practice,
-  // not a CVTC course), with what corrections scope reads: served items, stored scores, per-target
-  // percents, and the corrections themselves.
+  // not a CVTC course, not a perfect score), with what corrections scope reads: the served items
+  // that didn't earn full credit (only the three fields scope needs, never the whole question set,
+  // which this read would otherwise pull for every pair on every refresh) with their stored
+  // scores, per-target percents, and the corrections themselves.
   const asgBy = new Map(assignments.map((a) => [a.id, a]));
   const latestIds: string[] = [];
   for (const list of attemptsBy.values()) {
     const a = asgBy.get(list[0].assignmentId);
     if (!a || a.type === "practice" || a.cvtcRules) continue;
     const latest = list.filter((x) => x.status !== "in_progress").at(-1);
-    if (latest) latestIds.push(latest.id);
+    if (latest && !(latest.percent !== null && latest.percent >= 100)) latestIds.push(latest.id);
   }
   const details = latestIds.length
     ? await db
         .select({
           id: schema.attempts.id,
-          questionSet: schema.attempts.questionSet,
-          scores:
-            sql`(select coalesce(jsonb_agg(jsonb_build_object('questionId', r.question_id, 'autoScore', r.auto_score, 'manualScore', r.manual_score)), '[]'::jsonb) from ${schema.responses} r where r.attempt_id = attempts.id)`.mapWith(
-              fromJson<ScoreJson[]>
+          // Full credit can never be missed, so those items stay in the database; whether the
+          // rest are missed is still decided by `correctableItems` / `questionsNeedingCorrection`.
+          items:
+            sql`(select coalesce(jsonb_agg(jsonb_build_object('questionId', q->>'questionId', 'learningTargetId', q->>'learningTargetId', 'points', (q->>'points')::float8, 'responded', r.attempt_id is not null, 'autoScore', r.auto_score, 'manualScore', r.manual_score)), '[]'::jsonb) from jsonb_array_elements(attempts.question_set) q left join ${schema.responses} r on r.attempt_id = attempts.id and r.question_id::text = q->>'questionId' where coalesce(r.manual_score, r.auto_score, -1) < (q->>'points')::float8)`.mapWith(
+              fromJson<ItemJson[]>
             ),
           targetPercents:
             sql`(select coalesce(jsonb_object_agg(t.learning_target_id, t.percent), '{}'::jsonb) from ${schema.attemptTargetScores} t where t.attempt_id = attempts.id)`.mapWith(
@@ -419,8 +432,8 @@ export async function getClassGradebook(
       const needed = questionsNeedingCorrection({
         type: a.type,
         items: correctableItems(
-          detail.questionSet,
-          new Map(detail.scores.map((r) => [r.questionId, r]))
+          detail.items,
+          new Map(detail.items.filter((r) => r.responded).map((r) => [r.questionId, r]))
         ),
         targetPercents: detail.targetPercents,
         threshold: a.retakeThreshold,
@@ -481,6 +494,7 @@ export async function getClassGradebook(
 
     // The teacher's part: what the inbox counts for this pair, and who is testing now.
     const pause = open ? currentPause(open, a.closesAt, now) : null;
+    const timeUp = !!open && outOfTime(open, a.closesAt, now);
     const requested = pairUnlocks.some(
       (u) =>
         !u.grantedAt &&
@@ -489,6 +503,8 @@ export async function getClassGradebook(
           used,
           retakesNeedUnlock: a.retakesNeedUnlock,
           attemptsAllowed: a.attemptsAllowed,
+          // The roster is the class's enrollments, so every student here is in the class.
+          enrolled: true,
         }) === null
     );
     // Approved, but something else still stops the try (checked the way `startAttempt` checks).
@@ -539,6 +555,7 @@ export async function getClassGradebook(
         ? {
             paused: !!pause,
             asked: !!pause && !!open.resumeRequestedAt,
+            outOfTime: timeUp,
             answered: Math.min(open.answered, open.total),
             total: open.total,
           }
@@ -574,6 +591,7 @@ export async function getClassGradebook(
         tabSwitches: x.tabSwitches,
         pendingManual: x.status === "in_progress" ? 0 : x.pendingManual,
         paused: x.id === open?.id && !!pause,
+        outOfTime: x.id === open?.id && timeUp,
         dueAt: x.status === "in_progress" ? x.dueAt : null,
         askedAt: x.status === "in_progress" ? x.resumeRequestedAt : null,
         scopeCodes: x.scope ? x.scope.map((id) => codeBy.get(id) ?? "?") : null,

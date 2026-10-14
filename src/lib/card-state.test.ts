@@ -88,6 +88,25 @@ describe("deriveCardState (who owes what)", () => {
     expect(
       deriveCardState({ ...high, corrections: "approved", finalPercent: 100 }, now).state
     ).toBe("done");
+    // No retake is offered at or above the line, so there is no retake window to show either.
+    expect(deriveCardState(high, now)).toMatchObject({ retakeBy: null, windowClosed: false });
+    expect(deriveCardState({ ...high, firstSubmittedAt: ago(30) }, now)).toMatchObject({
+      state: "corrections_to_full",
+      retakeBy: null,
+      windowClosed: false,
+    });
+    // "Retakes need my OK" changes nothing there (decision 2): no "Request retake", no "optional".
+    expect(deriveCardState({ ...high, retakesNeedUnlock: true }, now)).toMatchObject({
+      rule: "to_full",
+      state: "corrections_to_full",
+      retakeBy: null,
+    });
+    expect(
+      deriveCardState(
+        { ...high, retakesNeedUnlock: true, corrections: "approved", finalPercent: 100 },
+        now
+      ).state
+    ).toBe("done");
     // "Retakes need my OK": corrections never hold the card; the unlock does.
     expect(deriveCardState({ ...base, retakesNeedUnlock: true }, now)).toMatchObject({
       rule: "optional",

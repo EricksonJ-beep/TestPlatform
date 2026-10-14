@@ -66,7 +66,10 @@ export type CardState = {
   /** The corrections cap as it applies here (`correctionsCapOn`). */
   capped: boolean;
   rule: CorrectionsRule;
-  /** Under the cap: the last moment a retake may start; null before attempt 1 or with no window. */
+  /**
+   * Under the cap: the last moment a retake may start; null before attempt 1, with no window, or
+   * at or above the threshold (`to_full`: no retake is offered there).
+   */
   retakeBy: Date | null;
   windowClosed: boolean;
 };
@@ -90,7 +93,12 @@ export function deriveCardState(input: CardInput, now: Date): CardState {
     firstPercent: input.firstPercent,
     threshold: input.retakeThreshold,
   });
-  const retakeBy = capped ? retakeWindowEnd(input.retakeWindowDays, input.firstSubmittedAt) : null;
+  // The window bounds a retake, so it means nothing where no retake is offered: at or above the
+  // threshold under the cap, corrections are the way up (decision 2).
+  const retakeBy =
+    capped && rule !== "to_full"
+      ? retakeWindowEnd(input.retakeWindowDays, input.firstSubmittedAt)
+      : null;
   const windowClosed = retakeBy !== null && now >= retakeBy;
   const cycle =
     input.attemptsUsed > 0 && !input.inProgress

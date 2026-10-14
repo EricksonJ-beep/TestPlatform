@@ -47,6 +47,7 @@ import {
   undoRetakeApproval,
   unlockNextAttempt,
 } from "@/app/app/results/actions";
+import { useHideScores } from "./hide-scores";
 
 const GROUPS: Record<
   NeedsYouGroup,
@@ -114,7 +115,17 @@ export function NeedsYouChips({ counts }: { counts: Record<NeedsYouGroup, number
 
 const name = (r: { firstName: string; lastName: string }) => `${r.firstName} ${r.lastName}`;
 
-/** Rows acted on here stay in view (as done, with Undo) after the server list drops them. */
+// Every action in this list revalidates /app, which re-renders the Dashboard in place.
+const NO_REFRESH = { refresh: false } as const;
+
+/**
+ * How long a row acted on here stays in view with its Undo. The live refresh never reloads the
+ * page, so without a limit approvals and check-offs would pile up all day, each Undo going stale
+ * once the student starts the try (Jon, Oct 13 2026: Approve and Check off have an Undo).
+ */
+const KEEP_MS = 5 * 60_000;
+
+/** Rows acted on here stay in view (as done, with Undo) for a while after the server list drops them. */
 function withKept<T>(
   live: T[],
   kept: Record<string, T>,
@@ -144,14 +155,21 @@ export function NeedsYouInbox({ inbox }: { inbox: NeedsYou }) {
   const activities = withKept(inbox.activities, keptActivities, activityKey, (r) =>
     time(r.completedAt)
   );
-  // Badges count what still needs the teacher; rows done here stay listed until the page reloads.
+  // Badges count what still needs the teacher; rows done here stay listed for KEEP_MS.
   const counts = needsYouCounts(inbox);
   const empty = counts.total === 0 && requests.done.size === 0 && activities.done.size === 0;
-  const keepRequest = (r: RetakeRequest) => setKeptRequests((p) => ({ ...p, [r.id]: r }));
   const forgetRequest = (id: string) =>
     setKeptRequests((p) => Object.fromEntries(Object.entries(p).filter(([k]) => k !== id)));
-  const keepActivity = (r: PendingVerification) =>
+  const forgetActivity = (key: string) =>
+    setKeptActivities((p) => Object.fromEntries(Object.entries(p).filter(([k]) => k !== key)));
+  const keepRequest = (r: RetakeRequest) => {
+    setKeptRequests((p) => ({ ...p, [r.id]: r }));
+    window.setTimeout(() => forgetRequest(r.id), KEEP_MS);
+  };
+  const keepActivity = (r: PendingVerification) => {
     setKeptActivities((p) => ({ ...p, [activityKey(r)]: r }));
+    window.setTimeout(() => forgetActivity(activityKey(r)), KEEP_MS);
+  };
 
   return (
     <Card data-needs-you>
@@ -329,7 +347,7 @@ function Where({
 
 function AskedRow({ r, onFailed }: { r: PausedAttempt; onFailed: (message: string) => void }) {
   const router = useRouter();
-  const { run, pending } = useAction();
+  const { run, pending } = useAction(NO_REFRESH);
   return (
     <Row
       data={{ "data-needs-asked": r.attemptId }}
@@ -393,12 +411,14 @@ function RequestRow({
   onApproved: () => void;
   onGone: () => void;
 }) {
-  const { run, pending, error } = useAction();
+  const { run, pending, error } = useAction(NO_REFRESH);
   const [confirming, setConfirming] = useState(false);
+  // "Hide scores" covers the whole Dashboard, this list included (decision 6: the projector).
+  const hideScores = useHideScores();
   const meta = (
     <>
       <Where assignmentId={r.assignmentId} title={r.title} place={r.place} />
-      {r.bestPercent !== null ? ` · best ${Math.round(r.bestPercent)}%` : ""}
+      {r.bestPercent !== null && !hideScores ? ` · best ${Math.round(r.bestPercent)}%` : ""}
       {r.requestedAt ? (
         <>
           {" "}
@@ -583,7 +603,7 @@ function ActivityRow({
   checked: boolean;
   onChecked: () => void;
 }) {
-  const { run, pending, error } = useAction();
+  const { run, pending, error } = useAction(NO_REFRESH);
   return (
     <Row
       data={{ "data-needs-activity": `${r.activityId}:${r.studentId}` }}

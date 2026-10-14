@@ -14,7 +14,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { cn } from "cn";
-import { cellMarks, cellSentence, isToDo } from "@/lib/gradebook-view";
+import { cellMarks, cellSentence, studentPanelItems, type PanelItem } from "@/lib/gradebook-view";
 import type {
   ClassGradebook,
   ClassGradebookAttempt,
@@ -56,11 +56,14 @@ export function GradebookPanel({
   gb,
   target,
   hideScores,
+  showPractice,
   onTarget,
 }: {
   gb: ClassGradebook;
   target: PanelTarget | null;
   hideScores: boolean;
+  /** The grid's Practice switch: the student panel lists the same columns the grid shows. */
+  showPractice: boolean;
   onTarget: (t: PanelTarget | null) => void;
 }) {
   // Keep showing the last panel while the sheet slides shut.
@@ -91,6 +94,7 @@ export function GradebookPanel({
           <StudentPanel
             gb={gb}
             row={row}
+            showPractice={showPractice}
             onCell={(assignmentId) =>
               onTarget({ kind: "cell", studentId: row.student.id, assignmentId })
             }
@@ -311,7 +315,8 @@ function UnlockControls({
   student: Student;
   unlock: UnlockState;
 }) {
-  const { run, pending, error } = useAction();
+  // Unlock, Decline and Take back all revalidate /app, which re-renders the Dashboard in place.
+  const { run, pending, error } = useAction({ refresh: false });
   const [confirming, setConfirming] = useState(false);
   const n = unlock.attemptNumber;
   return (
@@ -411,18 +416,15 @@ function UnlockControls({
 function StudentPanel({
   gb,
   row,
+  showPractice,
   onCell,
 }: {
   gb: ClassGradebook;
   row: ClassGradebook["rows"][number];
+  showPractice: boolean;
   onCell: (assignmentId: string) => void;
 }) {
-  const items = row.cells.map((cell, i) => ({ cell, column: gb.columns[i] }));
-  const toDo = items.filter((x) => isToDo(x.cell.tag));
-  const other = items.filter(
-    (x) => x.cell.tag.group === "your_ok" || x.cell.tag.group === "testing"
-  );
-  const done = items.filter((x) => x.cell.tag.kind === "done").length;
+  const { toDo, other, done, total } = studentPanelItems(gb, row.student.id, { showPractice })!;
   const s = row.student;
   return (
     <div className="flex flex-col gap-4 pb-6" data-student-panel={s.id}>
@@ -432,7 +434,7 @@ function StudentPanel({
         </SheetTitle>
         <SheetDescription>
           {gb.class.name} · {toDo.length ? `${toDo.length} to do` : "nothing to do"} · {done} of{" "}
-          {items.length} done
+          {total} done
         </SheetDescription>
       </SheetHeader>
       {toDo.length ? (
@@ -456,7 +458,7 @@ function PanelList({
   onCell,
 }: {
   title: string;
-  items: { cell: ClassGradebookCell; column: ClassGradebookColumn }[];
+  items: PanelItem[];
   onCell: (assignmentId: string) => void;
 }) {
   return (

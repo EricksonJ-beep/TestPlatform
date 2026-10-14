@@ -95,6 +95,15 @@ describe("cellTag precedence", () => {
     ).toMatchObject({ kind: "asked", needsYou: true });
     // Answers waiting from an earlier try still come before the live one.
     expect(cellTag(input({ card: inProgress, live, toGrade: 1 })).kind).toBe("to_grade");
+    // Time ran out with nobody in it: never Taking it, and nothing for anyone to do now.
+    expect(cellTag(input({ card: inProgress, live: { ...live, outOfTime: true } }))).toMatchObject({
+      kind: "out_of_time",
+      tone: "muted",
+      needsYou: false,
+    });
+    expect(label({ card: inProgress, live: { ...live, outOfTime: true } })).toBe(
+      "Time's up · not submitted"
+    );
   });
 
   it("names Missing, Not started and Opens before any attempt", () => {

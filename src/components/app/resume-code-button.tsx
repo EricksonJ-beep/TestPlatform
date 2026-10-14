@@ -56,12 +56,22 @@ export function ResumeCodeButton({ variant = "outline" }: { variant?: "outline" 
 /**
  * The Dashboard header's live resume code (Jon, Oct 13 2026, dashboard plan): the current code
  * and when it runs out, always in view, with Show big for the board and New code. With no code
- * running, one click gets one.
+ * running, one click gets one. A code issued anywhere else (a Results page, another tab) arrives
+ * with the next live refresh, and the header follows it.
  */
 export function ResumeCodeHeader({ initial }: { initial: Shown | null }) {
   const [shown, setShown] = useState<Shown | null>(initial);
   const [open, setOpen] = useState(false);
   const [expired, setExpired] = useState(false);
+  // Follow the server's code when it changes (set during render, React's "adjust state on a
+  // prop change" pattern, so the old code never flashes after a refresh).
+  const initialKey = initial ? `${initial.code}|${initial.expiresAt}` : "";
+  const [seenKey, setSeenKey] = useState(initialKey);
+  if (seenKey !== initialKey) {
+    setSeenKey(initialKey);
+    setShown(initial);
+    setExpired(false);
+  }
   const { run, pending, error } = useAction();
   const load = (fresh: boolean) =>
     run(getResumeCode(fresh), (d) => {

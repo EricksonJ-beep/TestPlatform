@@ -90,6 +90,25 @@ export function currentPause(
 }
 
 /**
+ * An open attempt whose time limit ran out before anything paused it ("out of time", `pausePoint`):
+ * nobody is testing in it any more, and it is submitted at its deadline the next time it is
+ * touched. The class gradebook tags it apart from Taking it (Jon, Oct 13 2026: Taking it means
+ * active in the last 10 minutes), and the live stamp's `testingNow` leaves it out the same way.
+ */
+export function outOfTime(
+  a: Pausable & { pauseReason: string | null },
+  closesAt: Date | null,
+  now: Date
+): boolean {
+  return (
+    a.status === "in_progress" &&
+    !!a.dueAt &&
+    a.dueAt.getTime() <= now.getTime() &&
+    !currentPause(a, closesAt, now)
+  );
+}
+
+/**
  * The time-limit minutes still owed when a test pauses because its window
  * closed. The stored deadline was capped at the close, so the time limit is
  * worked out again from the start (with the student's extra time). No time

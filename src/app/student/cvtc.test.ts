@@ -24,6 +24,7 @@ vi.mock("@/db", async () => {
 import { and, eq } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { finalizeAttempt } from "@/lib/attempts";
+import { settleCvtcLeftovers } from "@/lib/cvtc";
 import { listStudentAssignments } from "@/lib/queries/assignments";
 import { getCorrectionsSummary } from "@/lib/queries/corrections";
 import { getRetakeStatus } from "@/lib/queries/retakes";
@@ -376,5 +377,30 @@ describe("the course setting", () => {
     });
     const course = await db.query.courses.findFirst({ where: eq(schema.courses.id, ids.bio) });
     expect(course?.cvtcRules).toBe(false);
+    // Saving the same value again re-runs the recompute (it finishes one that stopped part way),
+    // and only the capped formatives and summatives it can change are counted.
+    expect(await ok(setCourseCvtcRules(ids.bio, false))).toMatchObject({
+      cvtcRules: false,
+      recomputed: 2,
+    });
+  });
+
+  it("after a deploy, settles scores lifted by corrections before the rules came on", async () => {
+    // As migration 0027 does: the rules come on with nothing recomputed.
+    await db.update(schema.courses).set({ cvtcRules: true }).where(eq(schema.courses.id, ids.bio));
+    expect(await finalOf(ids.bioQuiz, ids.s2)).toMatchObject({
+      basis: "corrections_to_threshold",
+    });
+    expect(await settleCvtcLeftovers()).toBe(2);
+    expect(await finalOf(ids.bioQuiz, ids.s2)).toMatchObject({
+      percent: 60,
+      basis: "best_attempt",
+    });
+    expect(await finalOf(ids.bioQuiz, ids.s1)).toMatchObject({
+      percent: 80,
+      basis: "best_attempt",
+    });
+    expect(await settleCvtcLeftovers()).toBe(0); // nothing left: cheap on every later deploy
+    await db.update(schema.courses).set({ cvtcRules: false }).where(eq(schema.courses.id, ids.bio));
   });
 });

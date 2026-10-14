@@ -1,6 +1,13 @@
 /** Finish later (Jon, Oct 13 2026): when an open test pauses, and the clock it keeps. */
 import { describe, expect, it } from "vitest";
-import { IDLE_PAUSE_MS, lockAnswered, pausePoint, remainingAtClose, resumedDueAt } from "./pause";
+import {
+  IDLE_PAUSE_MS,
+  lockAnswered,
+  outOfTime,
+  pausePoint,
+  remainingAtClose,
+  resumedDueAt,
+} from "./pause";
 
 const T = (min: number) => new Date(Date.UTC(2026, 9, 13, 9, 0) + min * 60_000);
 const attempt = (o: Partial<Parameters<typeof pausePoint>[0]> = {}) => ({
@@ -44,6 +51,26 @@ describe("pausePoint", () => {
   });
 
   it("uses a 10-minute idle window", () => expect(IDLE_PAUSE_MS).toBe(600_000));
+});
+
+describe("outOfTime", () => {
+  const open = (o: Partial<Parameters<typeof pausePoint>[0]> = {}) => ({
+    ...attempt(o),
+    pauseReason: null,
+  });
+  it("is an open test whose time limit ran out before anything paused it, for good", () => {
+    // A 20-minute quiz, last save at 9:19, laptop shut: the deadline (9:20) beats the idle point.
+    const quiz = open({ dueAt: T(20), lastActiveAt: T(19) });
+    expect(outOfTime(quiz, null, T(19))).toBe(false);
+    expect(outOfTime(quiz, null, T(21))).toBe(true);
+    expect(outOfTime(quiz, null, T(60 * 24))).toBe(true);
+  });
+  it("is never a paused test, a test with no clock, or a finished one", () => {
+    expect(outOfTime(open({ dueAt: T(40), lastActiveAt: T(5) }), null, T(60))).toBe(false); // idle first
+    expect(outOfTime(open({ pausedAt: T(6), dueAt: null }), null, T(60))).toBe(false);
+    expect(outOfTime(open({ dueAt: null }), null, T(8))).toBe(false);
+    expect(outOfTime(open({ status: "submitted", dueAt: T(10) }), null, T(60))).toBe(false);
+  });
 });
 
 describe("the clock", () => {

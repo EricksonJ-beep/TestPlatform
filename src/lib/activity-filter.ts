@@ -79,20 +79,34 @@ export function feedGroups(f: FeedFilter): FeedGroup[] {
   return [...(f.kinds.length ? f.kinds : FEED_GROUPS), ...(f.logins ? (["logins"] as const) : [])];
 }
 
-/** The Dashboard address for a filter; defaults are left out so a plain `/app` is the default. */
-export function feedHref(f: FeedFilter, hasClass: boolean): string {
+/** The filter as query text (`feed=all&kinds=tests,pauses&logins=1&days=3`); defaults left out. */
+export function feedQuery(f: FeedFilter, hasClass: boolean): string {
   const q = new URLSearchParams();
   if (hasClass && f.scope === "all") q.set("feed", "all");
   const kinds = FEED_GROUPS.filter((g) => f.kinds.includes(g));
   if (kinds.length && kinds.length < FEED_GROUPS.length) q.set("kinds", kinds.join(","));
   if (f.logins) q.set("logins", "1");
   if (f.days === 3) q.set("days", "3");
-  const s = q.toString();
-  return s ? `/app?${s.replace(/%2C/g, ",")}` : "/app";
+  return q.toString().replace(/%2C/g, ",");
+}
+
+/** The Dashboard address for a filter; defaults are left out so a plain `/app` is the default. */
+export function feedHref(f: FeedFilter, hasClass: boolean): string {
+  const s = feedQuery(f, hasClass);
+  return s ? `/app?${s}` : "/app";
 }
 
 /** The filter after pressing one kind chip. */
 export function toggleKind(f: FeedFilter, g: (typeof FEED_GROUPS)[number]): FeedFilter {
   const kinds = f.kinds.includes(g) ? f.kinds.filter((k) => k !== g) : [...f.kinds, g];
   return { ...f, kinds: kinds.length === FEED_GROUPS.length ? [] : kinds };
+}
+
+/**
+ * The day an event falls on for "Show 3 days" headings: the school's calendar day (Bloom's school
+ * time zone, as the gradebook's times are written), not the UTC date, which would file every
+ * event after 7 pm Central under the next day.
+ */
+export function feedDay(d: Date): string {
+  return d.toLocaleDateString("en-CA", { timeZone: "America/Chicago" });
 }

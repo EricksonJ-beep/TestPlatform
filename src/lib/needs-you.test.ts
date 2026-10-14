@@ -18,7 +18,13 @@ describe("placeLabel", () => {
 });
 
 describe("staleRequest", () => {
-  const base = { attemptNumber: 2, used: 1, retakesNeedUnlock: true, attemptsAllowed: 3 };
+  const base = {
+    attemptNumber: 2,
+    used: 1,
+    retakesNeedUnlock: true,
+    attemptsAllowed: 3,
+    enrolled: true,
+  };
   it("is current only for the next try on a test that still needs the teacher's OK", () => {
     expect(staleRequest(base)).toBeNull();
     expect(staleRequest({ ...base, attemptsAllowed: null })).toBeNull();
@@ -29,6 +35,8 @@ describe("staleRequest", () => {
     expect(staleRequest({ ...base, used: 3 })).toBe("taken");
     expect(staleRequest({ ...base, attemptNumber: 3 })).toBe("not_next");
     expect(staleRequest({ ...base, attemptsAllowed: 1 })).toBe("no_attempts");
+    // Moved to another period: Approve and Decline refuse a student who isn't in the class.
+    expect(staleRequest({ ...base, enrolled: false })).toBe("left_class");
   });
 });
 

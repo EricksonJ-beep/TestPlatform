@@ -18,10 +18,15 @@ export const TONE_CLASS: Record<CellTone, string> = {
   success: "bg-success-soft text-success-foreground",
 };
 
-/** The status tag as a pill; Missing is bold with an outline, Done carries a check. */
+/**
+ * The status tag as a pill; Missing is bold with an outline, Done carries a check. A narrow
+ * grid column cuts long tags short, so the full words are the pill's title.
+ */
 export function TagPill({ tag, className }: { tag: CellTag; className?: string }) {
+  const label = tagLabel(tag);
   return (
     <span
+      title={label}
       className={cn(
         "inline-flex max-w-full items-center gap-1 truncate rounded-md px-1.5 py-0.5 text-xs font-medium",
         TONE_CLASS[tag.tone],
@@ -31,7 +36,7 @@ export function TagPill({ tag, className }: { tag: CellTag; className?: string }
       data-tag={tag.kind}
     >
       {tag.kind === "done" ? <Check className="size-3 shrink-0" aria-hidden /> : null}
-      <span className="truncate">{tagLabel(tag)}</span>
+      <span className="truncate">{label}</span>
     </span>
   );
 }

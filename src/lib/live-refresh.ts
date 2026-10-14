@@ -14,7 +14,7 @@
  * - The page polls every 15 s while its tab is visible, and stops after 45 minutes without the
  *   teacher touching it (a click, a key, a scroll, or coming back to the tab starts it again).
  */
-import { currentPause, IDLE_PAUSE_MS } from "@/lib/pause";
+import { currentPause, IDLE_PAUSE_MS, outOfTime } from "@/lib/pause";
 
 export const POLL_MS = 15_000;
 export const LIVE_IDLE_MS = 45 * 60_000;
@@ -51,7 +51,7 @@ export function testingNow(rows: OpenAttemptLite[], now: Date): boolean {
     (r) =>
       r.status === "in_progress" &&
       !currentPause(r, r.closesAt, now) &&
-      (!r.dueAt || r.dueAt.getTime() > now.getTime()) &&
+      !outOfTime(r, r.closesAt, now) &&
       now.getTime() - (r.lastActiveAt ?? r.startedAt).getTime() < IDLE_PAUSE_MS
   );
 }

@@ -65,6 +65,14 @@ const ok = async <T>(
 const fails = async (p: Promise<{ ok: boolean; status?: number }>, status: number) =>
   expect(p).resolves.toMatchObject({ ok: false, status });
 const minutesAgo = (m: number) => new Date(Date.now() - m * 60_000);
+const courseOf = async (assignmentId: string) =>
+  (
+    await db
+      .select({ courseId: schema.assessments.courseId })
+      .from(schema.assignments)
+      .innerJoin(schema.assessments, eq(schema.assignments.assessmentId, schema.assessments.id))
+      .where(eq(schema.assignments.id, assignmentId))
+  )[0]?.courseId;
 const served = () => [
   { questionId: ids.mc, sectionId: ids.mc, learningTargetId: null, points: 1, order: 0 },
 ];
@@ -338,6 +346,27 @@ describe("Needs you", () => {
     expect((await getDashboardCounts(ids.other)).total).toBe(0);
   });
 
+  it("at or above the line under the cap there is no retake to approve (decision 2)", async () => {
+    const [calTry] = await db
+      .update(schema.attempts)
+      .set({ percent: 85 })
+      .where(
+        and(eq(schema.attempts.assignmentId, ids.bioQuiz), eq(schema.attempts.studentId, ids.cal))
+      )
+      .returning();
+    await db
+      .update(schema.assignments)
+      .set({ retakeWaitHours: 0 })
+      .where(eq(schema.assignments.id, ids.bioQuiz));
+    const cal = (await getNeedsYou(ids.teacher)).requests.find((r) => r.id === ids.calRequest)!;
+    expect(cal).toMatchObject({ stale: null, blocker: { reason: "no_retake" } });
+    await db.update(schema.attempts).set({ percent: 60 }).where(eq(schema.attempts.id, calTry.id));
+    await db
+      .update(schema.assignments)
+      .set({ retakeWaitHours: 24 })
+      .where(eq(schema.assignments.id, ids.bioQuiz));
+  });
+
   it("a closed test shows as the blocker on a current request", async () => {
     await db
       .update(schema.assignments)
@@ -415,6 +444,83 @@ describe("one-click actions", () => {
     expect((await getNeedsYou(ids.teacher)).requests[0].stale).toBe("setting_off");
     await ok(clearRetakeRequest(ids.bioQuiz, current.id));
     expect((await getNeedsYou(ids.teacher)).requests).toEqual([]);
+  });
+
+  it("a request from a student moved out of the class is a leftover that Clear removes", async () => {
+    // Cal took try 1 of the A&P quiz while in A&P 5th, asked for try 2, then moved periods
+    // (removing a student deletes only the enrollment).
+    const [ap5] = await db
+      .update(schema.assignments)
+      .set({ retakesNeedUnlock: true })
+      .where(eq(schema.assignments.id, ids.apQuiz))
+      .returning({ classId: schema.assignments.classId });
+    await db.insert(schema.enrollments).values({ classId: ap5.classId, studentId: ids.cal });
+    await attempt(ids.apQuiz, ids.cal, 1);
+    await db.insert(schema.attemptUnlocks).values({
+      assignmentId: ids.apQuiz,
+      studentId: ids.cal,
+      attemptNumber: 2,
+      requestedAt: new Date(),
+    });
+    expect(
+      (await getNeedsYou(ids.teacher)).requests.find((r) => r.assignmentId === ids.apQuiz)?.stale
+    ).toBeNull();
+    await db
+      .delete(schema.enrollments)
+      .where(
+        and(eq(schema.enrollments.classId, ap5.classId), eq(schema.enrollments.studentId, ids.cal))
+      );
+    const left = (await getNeedsYou(ids.teacher)).requests.find(
+      (r) => r.studentId === ids.cal && r.assignmentId === ids.apQuiz
+    )!;
+    expect(left.stale).toBe("left_class");
+    as(ids.teacher, "teacher");
+    await fails(unlockNextAttempt(ids.apQuiz, ids.cal), 404);
+    await ok(clearRetakeRequest(ids.apQuiz, left.id));
+    expect(
+      (await getNeedsYou(ids.teacher)).requests.some((r) => r.assignmentId === ids.apQuiz)
+    ).toBe(false);
+    await db
+      .update(schema.assignments)
+      .set({ retakesNeedUnlock: false })
+      .where(eq(schema.assignments.id, ids.apQuiz));
+  });
+
+  it("a summative request's relearning blocker is read from the stored gates; nothing is written", async () => {
+    // Ava finished the A&P test (one target below the line) and asked for try 2; no gate rows yet.
+    const [lt] = await db
+      .insert(schema.learningTargets)
+      .values({ courseId: (await courseOf(ids.apTest))!, code: "LT1", title: "Skin" })
+      .returning();
+    const [test] = await db
+      .update(schema.assignments)
+      .set({ retakesNeedUnlock: true })
+      .where(eq(schema.assignments.id, ids.apTest))
+      .returning();
+    const first = await attempt(test.id, ids.ava, 1, { percent: 50 });
+    await db.insert(schema.assignmentFinalScores).values({
+      assignmentId: test.id,
+      studentId: ids.ava,
+      perTarget: {
+        [lt.id]: { pointsEarned: 1, pointsPossible: 2, percent: 50, fromAttemptId: first },
+      },
+      totalEarned: 1,
+      totalPossible: 2,
+      percent: 50,
+      tier: 2,
+    });
+    await db.insert(schema.attemptUnlocks).values({
+      assignmentId: test.id,
+      studentId: ids.ava,
+      attemptNumber: 2,
+      requestedAt: new Date(),
+    });
+    const gatesNow = () =>
+      db.$count(schema.retakeGates, eq(schema.retakeGates.assignmentId, test.id));
+    const ava = (await getNeedsYou(ids.teacher)).requests.find((r) => r.studentId === ids.ava)!;
+    expect(ava).toMatchObject({ stale: null, blocker: { reason: "gates" } });
+    expect(await gatesNow()).toBe(0);
+    await db.delete(schema.attemptUnlocks).where(eq(schema.attemptUnlocks.assignmentId, test.id));
   });
 
   it("Let them continue and Check off clear their rows; Check off can be undone", async () => {

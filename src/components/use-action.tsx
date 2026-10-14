@@ -6,9 +6,12 @@ import type { ActionResult } from "@/lib/authz";
 
 /**
  * Runs a `withAuthz` server action from a client component: tracks pending state,
- * surfaces the error and field errors, refreshes server data on success.
+ * surfaces the error and field errors, refreshes server data on success. Pass
+ * `{ refresh: false }` where every action run already revalidates the page being
+ * viewed (a Server Function's revalidatePath updates it in place), so it isn't
+ * rendered twice; the Dashboard's rows and panels do (Oct 13 2026).
  */
-export function useAction() {
+export function useAction({ refresh = true }: { refresh?: boolean } = {}) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -22,14 +25,14 @@ export function useAction() {
           setError(null);
           setFieldErrors({});
           onSuccess?.(r.data);
-          router.refresh();
+          if (refresh) router.refresh();
         } else {
           setError(r.error);
           setFieldErrors(r.fieldErrors ?? {});
         }
       });
     },
-    [router]
+    [router, refresh]
   );
 
   const reset = useCallback(() => {

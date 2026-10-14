@@ -532,6 +532,32 @@ describe("getClassGradebook", () => {
     expect(new Set(Object.values(labels["Unit 4 quiz"]))).toEqual(new Set(["Opens Oct 15"]));
   });
 
+  it("never reads a test whose time ran out (and was left open) as Taking it", async () => {
+    const calLive = cellOf((await getClassGradebook(ids.cls))!, "Cal", "quiz").openAttemptId!;
+    const [before] = await db
+      .select({ dueAt: schema.attempts.dueAt, lastActiveAt: schema.attempts.lastActiveAt })
+      .from(schema.attempts)
+      .where(eq(schema.attempts.id, calLive));
+    // A 20-minute clock that ran out a minute after the last save: out of time, not idle-paused.
+    const lastSave = new Date(Date.now() - 2 * 60_000);
+    await db
+      .update(schema.attempts)
+      .set({ lastActiveAt: lastSave, dueAt: new Date(lastSave.getTime() + 60_000) })
+      .where(eq(schema.attempts.id, calLive));
+    try {
+      const nextDay = new Date(Date.now() + 86_400_000);
+      const gb = (await getClassGradebook(ids.cls, nextDay))!;
+      const cal = cellOf(gb, "Cal", "quiz");
+      expect(tagLabel(cal.tag)).toBe("Time's up · not submitted");
+      expect(cal.attempts.find((a) => a.id === calLive)).toMatchObject({
+        paused: false,
+        outOfTime: true,
+      });
+    } finally {
+      await db.update(schema.attempts).set(before).where(eq(schema.attempts.id, calLive));
+    }
+  });
+
   it("marks exactly the teacher's moves the Needs you inbox lists for this class", async () => {
     const gb = (await getClassGradebook(ids.cls))!;
     const inbox = await getNeedsYou(ids.teacher);
@@ -606,6 +632,13 @@ describe("getClassGradebook", () => {
       const sqls = spy.mock.calls.map((c) => String(c[0]).trim().toLowerCase());
       expect(sqls.length).toBeLessThanOrEqual(12);
       expect(sqls.every((q) => q.startsWith("select"))).toBe(true);
+      // Never the whole served question set of every attempt: only what corrections scope reads.
+      const results = await Promise.all(spy.mock.results.map((r) => r.value));
+      const fields = results.flatMap((r: { fields?: { name: string }[] }) =>
+        (r.fields ?? []).map((f) => f.name)
+      );
+      expect(fields.length).toBeGreaterThan(0);
+      expect(fields).not.toContain("question_set");
     } finally {
       spy.mockRestore();
     }
