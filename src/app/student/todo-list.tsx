@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { Check, Clock, Hourglass, ListTodo, Lock, TrendingUp, X } from "lucide-react";
+import { Hourglass, ListTodo, TrendingUp } from "lucide-react";
 import { cn } from "cn";
 import type { StudentToDo, ToDoGroup, ToDoRow } from "@/lib/student-home";
-import { TYPE_LABEL } from "@/lib/student-home";
-import { LocalTime } from "@/components/local-time";
+import { ToDoRowBody } from "@/components/todo-row";
 import { Button } from "@/components/ui/button";
 import { RequestRetakeButton } from "./assignments/[assignmentId]/request-retake-button";
 import { PhoneCollapsible } from "./phone-collapsible";
@@ -104,51 +103,7 @@ function Row({ r }: { r: ToDoRow }) {
       data-todo-kind={r.kind}
       data-assignment={r.assignmentId ?? undefined}
     >
-      <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-          <h3 className="text-base font-medium">{r.title}</h3>
-          {r.type ? (
-            <span className="rounded-md border border-border px-1.5 py-0.5 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
-              {TYPE_LABEL[r.type]}
-            </span>
-          ) : null}
-          {r.className ? (
-            <span className="text-xs text-muted-foreground">{r.className}</span>
-          ) : null}
-        </div>
-        {r.why ? <p className="text-sm">{r.why}</p> : null}
-        {r.note ? (
-          <p className="rounded-md bg-warning-soft px-2 py-1 text-sm text-warning-foreground">
-            Your teacher: “{r.note}”
-          </p>
-        ) : null}
-        {r.checklist.length ? (
-          <ul className="flex flex-col gap-0.5 text-xs" aria-label="Relearning checklist">
-            {r.checklist.map((t) => (
-              <li key={t.code} className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
-                <span className="font-medium tabular">{t.code}</span>
-                <Gate label="corrections" ok={t.corrections} />
-                <Gate label="activity" ok={t.activity} />
-                <Gate label="practice" ok={t.practice} />
-              </li>
-            ))}
-          </ul>
-        ) : null}
-        <Meta r={r} />
-        {r.progress ? (
-          <p className="flex items-center gap-2 text-xs text-muted-foreground tabular">
-            <span className="h-1.5 w-24 shrink-0 overflow-hidden rounded-full bg-muted" aria-hidden>
-              <span
-                className="block h-full bg-brand"
-                style={{
-                  width: `${r.progress.max > 0 ? (r.progress.value / r.progress.max) * 100 : 0}%`,
-                }}
-              />
-            </span>
-            {r.progress.label}
-          </p>
-        ) : null}
-      </div>
+      <ToDoRowBody r={r} />
       {a?.kind === "link" ? (
         <Button
           size="lg"
@@ -171,48 +126,5 @@ function Row({ r }: { r: ToDoRow }) {
         />
       ) : null}
     </li>
-  );
-}
-
-function Meta({ r }: { r: ToDoRow }) {
-  if (!r.when && !r.minutes && !r.needsCode) return null;
-  return (
-    <p className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
-      {r.when ? (
-        <span data-when>
-          {r.when.label} <LocalTime date={r.when.at} />
-        </span>
-      ) : null}
-      {r.minutes ? (
-        <span className="inline-flex items-center gap-1">
-          <Clock className="size-3.5" aria-hidden />
-          {r.minutes} min
-        </span>
-      ) : null}
-      {r.needsCode ? (
-        <span className="inline-flex items-center gap-1">
-          <Lock className="size-3.5" aria-hidden />
-          Code from your teacher
-        </span>
-      ) : null}
-    </p>
-  );
-}
-
-function Gate({ label, ok }: { label: string; ok: boolean }) {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-0.5",
-        ok ? "text-success-foreground" : "text-muted-foreground"
-      )}
-    >
-      {label}
-      {ok ? (
-        <Check className="size-3.5" aria-label="done" />
-      ) : (
-        <X className="size-3.5" aria-label="not yet" />
-      )}
-    </span>
   );
 }

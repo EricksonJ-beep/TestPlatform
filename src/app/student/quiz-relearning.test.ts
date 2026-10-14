@@ -323,11 +323,18 @@ beforeAll(async () => {
   await setClosed("carbs", true);
 });
 
-/** Every gradebook cell's card is exactly what the student's own home says (one shared rule). */
+/**
+ * Every gradebook cell's card is exactly what the student's own home says (one shared rule), and
+ * the student panel lists the same to-do as their home does for this class (one builder).
+ */
 async function expectGradebookAgrees() {
   const gb = (await getClassGradebook(ids.cls))!;
+  const inClass = new Set(gb.columns.map((c) => c.assignmentId));
   for (const row of gb.rows) {
     const cards = new Map((await listStudentAssignments(row.student.id)).map((c) => [c.id, c]));
+    expect(row.studentToDo, row.student.firstName).toEqual(
+      buildStudentToDo({ assignments: [...cards.values()].filter((c) => inClass.has(c.id)) })
+    );
     for (const c of row.cells) {
       const own = cards.get(c.assignmentId);
       const where = `${row.student.firstName} · ${c.assignmentId}`;

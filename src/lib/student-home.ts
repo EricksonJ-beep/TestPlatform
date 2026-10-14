@@ -7,11 +7,49 @@
  */
 import type { StudentAssignment, StudentCardState } from "@/lib/queries/assignments";
 import type { StudentActivity } from "@/lib/queries/practice";
+import type { RetakeStatus } from "@/lib/queries/retakes";
 import { PRACTICE_PASS_PERCENT, practiceOwed, targetList } from "@/lib/quiz-practice";
 
 // ---------------------------------------------------------------------------
 // The to-do list
 // ---------------------------------------------------------------------------
+
+/**
+ * What the to-do reads of one assignment: the student home passes its `StudentAssignment`; the
+ * teacher's class gradebook builds the same fields from its batched read, so the student panel
+ * lists exactly the rows the student sees (Jon, Oct 14 2026, docs/student-home-plan.md "Teacher
+ * side").
+ */
+export type ToDoAssignment = Pick<
+  StudentAssignment,
+  | "id"
+  | "title"
+  | "type"
+  | "className"
+  | "closesAt"
+  | "status"
+  | "state"
+  | "cycle"
+  | "attemptsAllowed"
+  | "attemptsUsed"
+  | "timeLimitMinutes"
+  | "needsCode"
+  | "nextAttemptAt"
+  | "retakesNeedUnlock"
+  | "retakeRequested"
+  | "reopenedUntil"
+  | "askCounts"
+  | "correctionsCap"
+  | "retakeThreshold"
+  | "correctionsRule"
+  | "retakeBy"
+  | "retakeWindowClosed"
+  | "firstPercent"
+  | "paused"
+  | "progress"
+  | "corrections"
+  | "quizPractice"
+> & { retake: Pick<RetakeStatus, "targets" | "plan"> | null };
 
 /** To do counts; "Want a higher score?" and "Waiting on your teacher" don't. */
 export type ToDoGroup = "todo" | "higher" | "waiting";
@@ -40,6 +78,14 @@ const TODO_ORDER: ToDoKind[] = [
   "retake",
   "ask",
   "start",
+];
+
+/** The plan's order for Waiting on your teacher: a grade, corrections, a request, an activity. */
+const WAITING_ORDER: ToDoKind[] = [
+  "awaiting_grade",
+  "corrections_submitted",
+  "retake_requested",
+  "activity_check",
 ];
 
 /** A row's one button: a link, or the request button ("Ask to retake", "Ask for a retake"). */
@@ -84,6 +130,15 @@ export type ToDoRow = {
   action: ToDoAction | null;
 };
 
+/**
+ * Hide scores (Jon, Oct 13 2026, decision 6) where the teacher's student panel shows these rows:
+ * a line that shows a percent ("raise your score from 40% to 80%", "Best so far: 60%") drops out;
+ * the rest of the row stays.
+ */
+export function showsScore(text: string): boolean {
+  return /\d%/.test(text);
+}
+
 export type StudentToDo = {
   todo: ToDoRow[];
   higher: ToDoRow[];
@@ -96,10 +151,10 @@ export type StudentToDo = {
 
 const pct = (n: number | null) => Math.round(n ?? 0);
 const plural = (n: number, one: string, many: string) => (n === 1 ? one : many);
-const assignmentHref = (a: StudentAssignment) => `/student/assignments/${a.id}`;
+const assignmentHref = (a: ToDoAssignment) => `/student/assignments/${a.id}`;
 
 /** The test's close as it stands for this student: a reopen (R5) or the assignment's own close. */
-function closeWhen(a: StudentAssignment): ToDoRow["when"] {
+function closeWhen(a: ToDoAssignment): ToDoRow["when"] {
   if (a.reopenedUntil) return { label: "Reopened for you until", at: a.reopenedUntil };
   return a.status !== "closed" && a.closesAt ? { label: "Closes", at: a.closesAt } : null;
 }
@@ -110,7 +165,7 @@ function closeWhen(a: StudentAssignment): ToDoRow["when"] {
  * threshold; otherwise they unlock the next attempt, or, on a closed test, come before asking to
  * retake (R4). Shared by the to-do row and My results, so the two say the same thing.
  */
-export function correctionsWhy(a: StudentAssignment): string | null {
+export function correctionsWhy(a: ToDoAssignment): string | null {
   const c = a.corrections;
   if (!c) return null;
   const lead = `Correct ${c.needed} missed ${plural(c.needed, "question", "questions")}`;
@@ -126,7 +181,7 @@ export function correctionsWhy(a: StudentAssignment): string | null {
 }
 
 /** What a retake step leads to: the retake itself, or asking for it (closed, or needs the OK). */
-export function retakeGoal(a: StudentAssignment): string {
+export function retakeGoal(a: ToDoAssignment): string {
   if (a.status === "closed") return "before you can ask to retake";
   return a.retakesNeedUnlock ? "before you can ask for a retake" : "to unlock your retake";
 }
@@ -138,7 +193,7 @@ export function retakeGoal(a: StudentAssignment): string {
  * whether "Ask to retake" counts (`askCounts`). An optional retake's steps sit in "Want a higher
  * score?".
  */
-function stepGroup(a: StudentAssignment): ToDoGroup {
+function stepGroup(a: ToDoAssignment): ToDoGroup {
   if (a.status !== "closed") return "todo";
   return a.type === "summative" && !!a.retake?.plan.required.length ? "todo" : "higher";
 }
@@ -150,10 +205,10 @@ type RowMaker = (
 
 type LinkMaker = (label: string, href: string, primary: boolean, what?: string) => ToDoAction;
 
-const requiredCodes = (a: StudentAssignment) =>
+const requiredCodes = (a: ToDoAssignment) =>
   a.retake ? a.retake.targets.filter((t) => t.required).map((t) => t.code) : [];
 
-function rowsFor(a: StudentAssignment, buildable: ReadonlySet<string>): ToDoRow[] {
+function rowsFor(a: ToDoAssignment, buildable: ReadonlySet<string>): ToDoRow[] {
   const row: RowMaker = (r) => ({
     key: `${r.kind}:${a.id}`,
     assignmentId: a.id,
@@ -363,7 +418,7 @@ function rowsFor(a: StudentAssignment, buildable: ReadonlySet<string>): ToDoRow[
 
 /** Quiz practice targets (R3), one row each, or a summative's relearning checklist. */
 function relearningRows(
-  a: StudentAssignment,
+  a: ToDoAssignment,
   buildable: ReadonlySet<string>,
   row: RowMaker,
   link: LinkMaker
@@ -424,11 +479,13 @@ function relearningRows(
 
 /**
  * Soonest deadline first (a reopen is the student's deadline), then tests with no deadline, then
- * closed tests, most recently closed first.
+ * closed tests, most recently closed first; ties by title, as on the Assessments tab, so the
+ * student's home and the teacher's student panel list them in the same order whatever order
+ * they were read in. One test's own rows (practice targets) keep their order.
  */
 function byUrgency(
   rows: ToDoRow[],
-  byId: Map<string, StudentAssignment>
+  byId: Map<string, ToDoAssignment>
 ): (x: ToDoRow, y: ToDoRow) => number {
   const order = new Map(rows.map((r, i) => [r.key, i]));
   const key = (r: ToDoRow): [number, number] => {
@@ -441,7 +498,9 @@ function byUrgency(
   return (x, y) => {
     const [bx, vx] = key(x);
     const [by, vy] = key(y);
-    return bx - by || vx - vy || order.get(x.key)! - order.get(y.key)!;
+    return (
+      bx - by || vx - vy || x.title.localeCompare(y.title) || order.get(x.key)! - order.get(y.key)!
+    );
   };
 }
 
@@ -453,11 +512,12 @@ function byUrgency(
  * a summative's relearning checklist, a required retake, asking to retake where the retake is
  * required (R6), and open tests not started. **Want a higher score?** (not counted): optional
  * retakes, asking for one, and the steps before an optional ask on a closed test. **Waiting on
- * your teacher** (not counted): a grade, corrections being checked, a retake request, an activity
- * to check off. Inside each kind, soonest deadline first, then most recently closed.
+ * your teacher** (not counted), in this order: a grade, corrections being checked, a retake
+ * request, an activity to check off. Inside each kind, soonest deadline first, then most recently
+ * closed, then by title.
  */
 export function buildStudentToDo(input: {
-  assignments: StudentAssignment[];
+  assignments: ToDoAssignment[];
   /** Relearning activities; the ones waiting for the teacher's check-off are listed. */
   activities?: Pick<StudentActivity, "id" | "title" | "state" | "courseName">[];
   /** Targets Build my practice can deal (`listCustomPracticeOptions`); others link to Practice. */
@@ -495,7 +555,9 @@ export function buildStudentToDo(input: {
     .filter((r) => r.group === "todo")
     .sort((x, y) => TODO_ORDER.indexOf(x.kind) - TODO_ORDER.indexOf(y.kind) || urgency(x, y));
   const higher = rows.filter((r) => r.group === "higher").sort(urgency);
-  const waiting = rows.filter((r) => r.group === "waiting").sort(urgency);
+  const waiting = rows
+    .filter((r) => r.group === "waiting")
+    .sort((x, y) => WAITING_ORDER.indexOf(x.kind) - WAITING_ORDER.indexOf(y.kind) || urgency(x, y));
   const count = todo.length;
   return {
     todo,

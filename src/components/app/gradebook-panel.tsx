@@ -9,12 +9,22 @@ import {
   ExternalLink,
   Flag,
   Hand,
+  Hourglass,
+  ListTodo,
   LockOpen,
   PenLine,
   RotateCcw,
+  TrendingUp,
 } from "lucide-react";
 import { cn } from "cn";
-import { cellMarks, cellSentence, studentPanelItems, type PanelItem } from "@/lib/gradebook-view";
+import {
+  cellMarks,
+  cellSentence,
+  studentPanel,
+  type PanelItem,
+  type StudentPanel as StudentPanelData,
+} from "@/lib/gradebook-view";
+import type { ToDoGroup, ToDoRow } from "@/lib/student-home";
 import type {
   ClassGradebook,
   ClassGradebookAttempt,
@@ -24,6 +34,7 @@ import type {
 } from "@/lib/queries/class-gradebook";
 import { BLOCKER_LINE } from "@/lib/needs-you";
 import { LocalTime } from "@/components/local-time";
+import { ToDoRowBody } from "@/components/todo-row";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -49,9 +60,9 @@ export type PanelTarget =
  * The gradebook's side panel (Jon, Oct 13 2026, research notes C, "Clicks"). A cell opens that
  * student and test: a plain sentence, the attempt chips, the matching actions (Let them continue,
  * Approve / Decline, Unlock try N / Take back, Review corrections, Grade) and links (Full results,
- * Relearning monitor, View attempt). Delete attempt is never offered here. A name opens everything
- * that student owes in this class. It reads the live gradebook, so after an action it shows the
- * refreshed cell.
+ * Relearning monitor, View attempt). Delete attempt is never offered here. A name opens the
+ * student's own to-do for this class (Jon, Oct 14 2026: the same list the student sees). It reads
+ * the live gradebook, so after an action it shows the refreshed cell.
  */
 export function GradebookPanel({
   gb,
@@ -96,9 +107,11 @@ export function GradebookPanel({
             gb={gb}
             row={row}
             showPractice={showPractice}
+            hideScores={hideScores}
             onCell={(assignmentId) =>
               onTarget({ kind: "cell", studentId: row.student.id, assignmentId })
             }
+            onClose={() => onTarget(null)}
           />
         ) : null}
       </SheetContent>
@@ -443,22 +456,32 @@ function UnlockControls({
 }
 
 /**
- * A student's panel: everything they owe in this class (the cells that are to do), what is
- * waiting on the teacher's optional OK, who is testing, and a link to their activity log.
+ * A student's panel (Jon, Oct 14 2026, docs/student-home-plan.md "Teacher side": "the student
+ * panel lists the same to-do the student sees"): the student's own list for this class, in their
+ * words and groups (To do, Want a higher score?, and their "Waiting on your teacher" as Waiting on
+ * you), each row with its cell's tag and a way into that cell; then what the teacher would still
+ * act on or watch that isn't on their list; and their activity log.
  */
 function StudentPanel({
   gb,
   row,
   showPractice,
+  hideScores,
   onCell,
+  onClose,
 }: {
   gb: ClassGradebook;
   row: ClassGradebook["rows"][number];
   showPractice: boolean;
+  hideScores: boolean;
   onCell: (assignmentId: string) => void;
+  onClose: () => void;
 }) {
-  const { toDo, other, done, total } = studentPanelItems(gb, row.student.id, { showPractice })!;
+  const p = studentPanel(gb, row.student.id, { showPractice })!;
   const s = row.student;
+  const groups = (["todo", "higher", "waiting"] as const).filter(
+    (g) => g === "todo" || p.list[g].length
+  );
   return (
     <div className="flex flex-col gap-4 pb-6" data-student-panel={s.id}>
       <SheetHeader className="pr-12">
@@ -466,21 +489,119 @@ function StudentPanel({
           {s.firstName} {s.lastName}
         </SheetTitle>
         <SheetDescription>
-          {gb.class.name} · {toDo.length ? `${toDo.length} to do` : "nothing to do"} · {done} of{" "}
-          {total} done
+          {gb.class.name} · {p.toDo ? `${p.toDo} to do` : "nothing to do"} · {p.done} of {p.total}{" "}
+          done
         </SheetDescription>
       </SheetHeader>
-      {toDo.length ? (
-        <PanelList title="To do" items={toDo} onCell={onCell} />
-      ) : (
-        <p className="px-4 text-sm text-success-foreground">Nothing owed in this class.</p>
-      )}
-      {other.length ? <PanelList title="Also" items={other} onCell={onCell} /> : null}
+      <section
+        className="flex flex-col gap-3 px-4"
+        aria-labelledby="student-todo-title"
+        data-student-todo={p.list.count}
+      >
+        <div>
+          <h3 id="student-todo-title" className="text-sm font-medium">
+            {s.firstName}&apos;s to-do
+          </h3>
+          <p className="text-xs text-muted-foreground">Their home says “{p.list.headline}”</p>
+        </div>
+        {groups.map((g) => (
+          <ToDoGroupList
+            key={g}
+            group={g}
+            rows={p.list[g]}
+            panel={p}
+            hideScores={hideScores}
+            onCell={onCell}
+            onClose={onClose}
+          />
+        ))}
+      </section>
+      {p.also.length ? (
+        <PanelList title="Not on their list" items={p.also} onCell={onCell} />
+      ) : null}
       <nav className="px-4 text-sm">
         <PanelLink href={`/app/classes/${gb.class.id}/activity?student=${s.id}`}>
           Activity log
         </PanelLink>
       </nav>
+    </div>
+  );
+}
+
+/** The student's group names, with "Waiting on your teacher" in the teacher's words. */
+const TODO_GROUP = {
+  todo: { title: "To do", icon: ListTodo, tone: "text-brand-deep" },
+  higher: { title: "Want a higher score?", icon: TrendingUp, tone: "text-success-foreground" },
+  waiting: { title: "Waiting on you", icon: Hourglass, tone: "text-muted-foreground" },
+} as const;
+
+function ToDoGroupList({
+  group,
+  rows,
+  panel,
+  hideScores,
+  onCell,
+  onClose,
+}: {
+  group: ToDoGroup;
+  rows: ToDoRow[];
+  panel: StudentPanelData;
+  hideScores: boolean;
+  onCell: (assignmentId: string) => void;
+  onClose: () => void;
+}) {
+  const g = TODO_GROUP[group];
+  return (
+    <div data-todo-group={group}>
+      <p className="mb-1 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+        <g.icon className={cn("size-3.5", g.tone)} aria-hidden />
+        {g.title}
+        <span className="font-normal tabular">· {rows.length}</span>
+      </p>
+      {rows.length ? (
+        <ul className="divide-y divide-border rounded-lg border border-border" aria-label={g.title}>
+          {rows.map((r) => {
+            const item = r.assignmentId ? panel.cells.get(r.assignmentId) : undefined;
+            return (
+              <li
+                key={r.key}
+                className="flex flex-col gap-2 px-3 py-2 sm:flex-row sm:items-start"
+                data-todo-kind={r.kind}
+                data-assignment={r.assignmentId ?? undefined}
+              >
+                <ToDoRowBody r={r} hideScores={hideScores} heading="h4" />
+                <div className="flex shrink-0 flex-wrap items-center gap-2 sm:flex-col sm:items-end">
+                  {item ? (
+                    <>
+                      <TagPill tag={item.cell.tag} />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        aria-label={`Open ${r.title}`}
+                        onClick={() => onCell(item.cell.assignmentId)}
+                      >
+                        Open
+                      </Button>
+                    </>
+                  ) : r.kind === "activity_check" ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      nativeButton={false}
+                      render={<a href="#needs-activities" onClick={onClose} />}
+                    >
+                      <Check data-icon="inline-start" aria-hidden />
+                      Check off in Needs you
+                    </Button>
+                  ) : null}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        <p className="text-sm text-success-foreground">Nothing to do in this class.</p>
+      )}
     </div>
   );
 }

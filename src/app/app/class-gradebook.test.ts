@@ -30,6 +30,8 @@ import { recomputeGatesForStudent } from "@/lib/gates";
 import { listStudentAssignments, type StudentAssignment } from "@/lib/queries/assignments";
 import { getClassGradebook, type ClassGradebook } from "@/lib/queries/class-gradebook";
 import { getNeedsYou } from "@/lib/queries/dashboard";
+import { getStudentPractice } from "@/lib/queries/practice";
+import { buildStudentToDo } from "@/lib/student-home";
 import { askToFinish, finishLater, requestRetake, startAttempt } from "../student/actions";
 import { saveCorrection, submitCorrections } from "../student/corrections/actions";
 import { approveCorrections } from "./results/corrections/actions";
@@ -472,6 +474,45 @@ describe("getClassGradebook", () => {
       }
     }
     expect(open).toBe(8 * 5); // five open tests; the other three are scheduled or closed
+  });
+
+  it("gives each student panel the to-do the student's own home lists for this class (Oct 14 2026)", async () => {
+    // The student's side first: reading it can write missing gate rows, which the gradebook
+    // then reads as stored.
+    const own = new Map<string, ReturnType<typeof buildStudentToDo>>();
+    // Every assignment in `ids.asg` is on this class (the other period's is `otherAsg`).
+    const inClass = new Set(Object.values(ids.asg));
+    for (const name of NAMES) {
+      const assignments = await listStudentAssignments(st(name));
+      const { activities } = await getStudentPractice(st(name), assignments);
+      own.set(
+        st(name),
+        buildStudentToDo({
+          assignments: assignments.filter((a) => inClass.has(a.id)),
+          activities: activities.filter((a) => a.courseName === "Biology"),
+        })
+      );
+    }
+    const gb = (await getClassGradebook(ids.cls))!;
+    for (const row of gb.rows)
+      expect(row.studentToDo, row.student.firstName).toEqual(own.get(row.student.id));
+    const list = (name: Name) => gb.rows.find((r) => r.student.id === st(name))!.studentToDo;
+    const kinds = (rows: { kind: string; title: string }[]) => rows.map((r) => [r.kind, r.title]);
+    // Ben: his corrections on the Cell quiz (one saved), the Osmosis quiz's, then his relearning
+    // on the Unit 3 test; his written answer waits for a grade.
+    expect(kinds(list("Ben").todo)).toContainEqual(["corrections", "Cell quiz"]);
+    expect(list("Ben").todo.find((r) => r.title === "Cell quiz")?.progress?.label).toBe(
+      "1 of 3 done"
+    );
+    expect(kinds(list("Ben").waiting)).toEqual([["awaiting_grade", "Lab write-up"]]);
+    // Gus's activity waits for the teacher's check-off on both sides.
+    expect(kinds(list("Gus").waiting)).toContainEqual(["activity_check", "Cell model"]);
+    // Dee's paused test is still hers to finish, in class.
+    expect(list("Dee").todo[0]).toMatchObject({
+      kind: "keep_going",
+      title: "Cell quiz",
+      why: "Paused. Finish it in class.",
+    });
   });
 
   it("tags each cell for the teacher, the first that applies winning", async () => {

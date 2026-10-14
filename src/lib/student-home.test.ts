@@ -7,6 +7,7 @@ import {
   closedCorrectionsCount,
   correctionsWhy,
   homeTab,
+  showsScore,
   type ToDoRow,
 } from "./student-home";
 
@@ -303,12 +304,13 @@ describe("the student to-do list", () => {
     });
     expect(list.count).toBe(0);
     expect(list.headline).toBe("You're all caught up.");
+    // In the plan's order (Oct 14 2026: one order for the home and the teacher's panel).
     expect(list.waiting.map(summary)).toEqual([
       ["awaiting_grade", "Essay quiz"],
       ["corrections_submitted", "Sugar quiz"],
       ["retake_requested", "Check-in"],
-      ["activity_check", "Osmosis video"],
       ["retake_requested", "Unit 2 LT1 Quiz"],
+      ["activity_check", "Osmosis video"],
     ]);
     expect(list.waiting[0].why).toBe(
       "Your teacher is grading your written answers. Your score shows up once they're done."
@@ -316,7 +318,7 @@ describe("the student to-do list", () => {
     expect(list.waiting[2].why).toBe(
       "You asked for attempt 2. Your teacher will approve it, usually in class."
     );
-    expect(list.waiting[4].why).toMatch(
+    expect(list.waiting[3].why).toMatch(
       /^You asked to retake this test\. If your teacher says yes/
     );
   });
@@ -484,6 +486,14 @@ describe("the student to-do list", () => {
       ],
     });
     expect([...list.todo, ...list.higher, ...list.waiting]).toEqual([]);
+  });
+  it("Hide scores on the teacher's panel: only the lines that show a percent drop out", () => {
+    expect(showsScore("Correct 3 missed questions to raise your score from 40% to 80%.")).toBe(
+      true
+    );
+    expect(showsScore("Best so far: 60%")).toBe(true);
+    expect(showsScore("Correct 3 missed questions to unlock attempt 2.")).toBe(false);
+    expect(showsScore("0 of 3 done")).toBe(false);
   });
 });
 

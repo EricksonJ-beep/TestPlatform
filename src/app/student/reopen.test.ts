@@ -32,6 +32,7 @@ import { listStudentAssignments } from "@/lib/queries/assignments";
 import { getClassGradebook } from "@/lib/queries/class-gradebook";
 import { listPausedAttempts, listRetakeRequests } from "@/lib/queries/dashboard";
 import { endOfNextSchoolDay } from "@/lib/reopen";
+import { buildStudentToDo } from "@/lib/student-home";
 import {
   clearRetakeRequest,
   letContinue,
@@ -141,11 +142,18 @@ async function correct(studentId: string, attemptId: string) {
   expect((await ok(submitCorrections(attemptId))).state).toBe("approved");
 }
 
-/** Every gradebook cell's card is exactly what the student's own home says (one shared rule). */
+/**
+ * Every gradebook cell's card is exactly what the student's own home says (one shared rule), and
+ * the student panel lists the same to-do as their home does for this class (one builder).
+ */
 async function expectGradebookAgrees() {
   const gb = await gradebook();
+  const inClass = new Set(gb.columns.map((c) => c.assignmentId));
   for (const row of gb.rows) {
     const cards = new Map((await listStudentAssignments(row.student.id)).map((c) => [c.id, c]));
+    expect(row.studentToDo, row.student.firstName).toEqual(
+      buildStudentToDo({ assignments: [...cards.values()].filter((c) => inClass.has(c.id)) })
+    );
     for (const c of row.cells) {
       const own = cards.get(c.assignmentId);
       const where = `${row.student.firstName} · ${c.assignmentId}`;
@@ -304,6 +312,38 @@ describe("Ask to retake (R4, R6)", () => {
     as(ids.yara, "student");
     await refused(requestRetake(ids.asg.tagged), 403, /^Practice U2\.LT1 first/);
     expect(await unlockRow(ids.yara, "tagged", 2)).toBeUndefined();
+  });
+
+  it("a request already made with practice owed: the inbox and the cell name the practice (R3)", async () => {
+    // A request from before the practice rule (asking now is refused, above).
+    await db.insert(schema.attemptUnlocks).values({
+      assignmentId: ids.asg.tagged,
+      studentId: ids.yara,
+      attemptNumber: 2,
+      requestedAt: new Date(),
+    });
+    const row = (await request(ids.yara, "tagged"))!;
+    expect(row).toMatchObject({
+      stale: null,
+      blocker: { reason: "practice", codes: ["U2.LT1"] },
+    });
+    // Closed: Approve would reopen it, so the row says until when.
+    expect(row.reopensUntil).toEqual(endOfNextSchoolDay(new Date()));
+    const { cell: c, column } = await cell(ids.yara, "tagged");
+    expect(tagLabel(c.tag, FMT)).toBe("Retake request");
+    expect(cellSentence(c, column, { hideScores: true, fmt: FMT })).toBe(
+      "Took try 1 Oct 15; corrections approved; needs 80% on practice for U2.LT1."
+    );
+    // Her own list (and the teacher's panel): the practice before asking, optional on a closed quiz.
+    const list = (await gradebook()).rows.find((r) => r.student.id === ids.yara)!.studentToDo;
+    expect(list.higher.map((r) => r.why)).toEqual([
+      "Practice U2.LT1: score 80% before you can ask to retake (you scored 40%).",
+    ]);
+    await expectGradebookAgrees();
+    // Decline: the leftover request is gone.
+    as(ids.teacher, "teacher");
+    await ok(revokeAttemptUnlock(ids.asg.tagged, ids.yara));
+    expect(await request(ids.yara, "tagged")).toBeUndefined();
   });
 
   it("corrections done: the closed quiz reads Ask to retake, the cap's window doesn't matter", async () => {

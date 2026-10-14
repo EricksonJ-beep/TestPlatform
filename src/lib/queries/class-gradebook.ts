@@ -10,13 +10,15 @@
  * rows are read as they are (`getRetakeStatus` can write them during a read, so it is never called
  * here), and paused tests are worked out in code (`currentPause`). Quiz relearning (Jon, Oct 14
  * 2026, R3) reads every class student's finished practice in one query and the targets' practice
- * content with their names. Callers pass requireOwner({ type: "class" }) first.
+ * content with their names. Each student's own to-do for the class (`buildStudentToDo`, the
+ * student home's builder) is made from the same rows. Callers pass requireOwner({ type: "class" })
+ * first.
  */
 import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { db, schema } from "@/db";
 import type { FinalBasis, PerTargetBest } from "@/db/schema";
-import { assignmentStatus, type AssignmentStatus } from "@/lib/assignments";
+import { assignmentStatus, nextAttemptAt, type AssignmentStatus } from "@/lib/assignments";
 import { deriveCardState, type StudentCardState } from "@/lib/card-state";
 import { cellTag, columnFooter, type CellTag, type ColumnFooter } from "@/lib/class-gradebook";
 import { correctionsClear, type SetSummary } from "@/lib/corrections";
@@ -35,6 +37,7 @@ import {
   type RetakePlan,
   type RetakeTarget,
 } from "@/lib/retakes";
+import { buildStudentToDo, type StudentToDo, type ToDoAssignment } from "@/lib/student-home";
 import { movedUp, startOfWeek } from "@/lib/tiers";
 
 export type ClassGradebookColumn = {
@@ -143,6 +146,11 @@ export type ClassGradebook = {
   rows: {
     student: { id: string; firstName: string; lastName: string };
     cells: ClassGradebookCell[];
+    /**
+     * The to-do the student's own home shows for this class's tests (Jon, Oct 14 2026: the
+     * student panel lists the same to-do the student sees), from the same builder.
+     */
+    studentToDo: StudentToDo;
   }[];
   generatedAt: Date;
 };
@@ -227,6 +235,8 @@ export async function getClassGradebook(
         opensAt: schema.assignments.opensAt,
         closesAt: schema.assignments.closesAt,
         attemptsAllowed: schema.assignments.attemptsAllowed,
+        timeLimitMinutes: schema.assignments.timeLimitMinutes,
+        accessCode: schema.assignments.accessCode,
         reviewMode: schema.assignments.reviewMode,
         retakeThreshold: schema.assignments.retakeThreshold,
         optionalRetakes: schema.assignments.optionalRetakes,
@@ -339,19 +349,24 @@ export async function getClassGradebook(
       .where(
         sql`${schema.learningTargets.id} in (select jsonb_object_keys(f.per_target)::uuid from ${schema.assignmentFinalScores} f join ${schema.assignments} a on a.id = f.assignment_id where a.class_id = ${classId}) or ${schema.learningTargets.id} in (select t.learning_target_id from ${schema.attemptTargetScores} t join ${schema.attempts} x on x.id = t.attempt_id join ${schema.assignments} a on a.id = x.assignment_id where a.class_id = ${classId})`
       ),
-    // Finished activities waiting for this teacher's check-off, with the targets they serve.
+    // Finished activities waiting for this teacher's check-off, with the targets they serve (and,
+    // for the student's to-do, their titles).
     db
       .select({
         studentId: schema.activityCompletions.studentId,
         activityId: schema.activityCompletions.activityId,
         learningTargetId: schema.activityTargets.learningTargetId,
+        title: schema.relearningActivities.title,
+        sortOrder: schema.relearningActivities.sortOrder,
+        courseId: schema.relearningActivities.courseId,
+        isPublished: schema.relearningActivities.isPublished,
       })
       .from(schema.activityCompletions)
       .innerJoin(
         schema.relearningActivities,
         eq(schema.activityCompletions.activityId, schema.relearningActivities.id)
       )
-      .innerJoin(
+      .leftJoin(
         schema.activityTargets,
         eq(schema.activityTargets.activityId, schema.relearningActivities.id)
       )
@@ -390,7 +405,10 @@ export async function getClassGradebook(
   const detailBy = await loadCorrectionScopes(latestIds);
   const week = startOfWeek(now);
 
-  const cellFor = (a: (typeof assignments)[number], studentId: string): ClassGradebookCell => {
+  const cellFor = (
+    a: (typeof assignments)[number],
+    studentId: string
+  ): { cell: ClassGradebookCell; todo: ToDoAssignment } => {
     const key = pairKey(a.id, studentId);
     const mine = attemptsBy.get(key) ?? [];
     const used = mine.length;
@@ -564,7 +582,7 @@ export async function getClassGradebook(
     const selected = new Set(retake?.plan.selected ?? []);
     const activitiesToCheck = new Set(
       (pendingBy.get(studentId) ?? [])
-        .filter((p) => selected.has(p.learningTargetId))
+        .filter((p) => p.learningTargetId !== null && selected.has(p.learningTargetId))
         .map((p) => p.activityId)
     ).size;
 
@@ -590,7 +608,41 @@ export async function getClassGradebook(
       opensAt: a.opensAt,
     });
 
-    return {
+    // The same assignment as the student's home reads it for their to-do (`listStudentAssignments`).
+    const waitUntil = nextAttemptAt(a.retakeWaitHours, lastSubmittedAt);
+    const todo: ToDoAssignment = {
+      id: a.id,
+      title: a.title,
+      type: a.type,
+      className: cls.name,
+      closesAt: a.closesAt,
+      status: card.status,
+      state: card.state,
+      cycle: card.cycle,
+      attemptsAllowed: a.attemptsAllowed,
+      attemptsUsed: used,
+      timeLimitMinutes: a.timeLimitMinutes,
+      needsCode: !!a.accessCode,
+      // The wait means nothing while the test is closed to the student (ask to retake).
+      nextAttemptAt: waitUntil && waitUntil > now && card.status === "open" ? waitUntil : null,
+      retakesNeedUnlock: a.retakesNeedUnlock,
+      retakeRequested: card.retakeRequested,
+      reopenedUntil: card.reopenedUntil,
+      askCounts: card.askCounts,
+      correctionsCap: card.capped,
+      retakeThreshold: a.retakeThreshold,
+      correctionsRule: card.rule,
+      retakeBy: card.retakeBy,
+      retakeWindowClosed: card.windowClosed,
+      firstPercent: finished[0]?.percent ?? null,
+      paused: !!pause,
+      progress: open ? { answered: Math.min(open.answered, open.total), total: open.total } : null,
+      corrections,
+      retake,
+      quizPractice: card.quizPractice,
+    };
+
+    const cell: ClassGradebookCell = {
       assignmentId: a.id,
       studentId,
       card: card.state,
@@ -627,12 +679,39 @@ export async function getClassGradebook(
       tabSwitches: Math.max(0, ...mine.map((x) => x.tabSwitches)),
       movedUpThisWeek: !!final && movedUp(final, week),
     };
+    return { cell, todo };
   };
 
-  const rows = roster.map((student) => ({
-    student,
-    cells: assignments.map((a) => cellFor(a, student.id)),
-  }));
+  // Activities the student finished that wait for the teacher's check-off, on the class's course,
+  // as the student's "Waiting on your teacher" lists them (the student's order: sort order, title).
+  const waitingActivities = (studentId: string) => [
+    ...new Map(
+      (pendingBy.get(studentId) ?? [])
+        .filter((p) => p.isPublished && !!cls.courseId && p.courseId === cls.courseId)
+        .sort((x, y) => x.sortOrder - y.sortOrder || x.title.localeCompare(y.title))
+        .map((p) => [
+          p.activityId,
+          {
+            id: p.activityId,
+            title: p.title,
+            state: "awaiting_teacher" as const,
+            courseName: cls.courseName,
+          },
+        ])
+    ).values(),
+  ];
+  const rows = roster.map((student) => {
+    const made = assignments.map((a) => cellFor(a, student.id));
+    return {
+      student,
+      cells: made.map((m) => m.cell),
+      // One builder (Jon, Oct 14 2026): the student panel lists what the student's home lists.
+      studentToDo: buildStudentToDo({
+        assignments: made.map((m) => m.todo),
+        activities: waitingActivities(student.id),
+      }),
+    };
+  });
   const columns: ClassGradebookColumn[] = assignments.map((a) => ({
     assignmentId: a.id,
     assessmentId: a.assessmentId,

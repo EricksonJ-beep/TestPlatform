@@ -10,6 +10,7 @@ import {
   phoneLine,
   rightNow,
   scoreText,
+  studentPanel,
   studentPanelItems,
   timeLeft,
   whoChip,
@@ -20,6 +21,7 @@ import type {
   ClassGradebookCell,
   ClassGradebookColumn,
 } from "./queries/class-gradebook";
+import { buildStudentToDo, type ToDoAssignment } from "./student-home";
 
 const NOW = new Date("2026-10-13T15:00:00Z");
 const hours = (h: number) => new Date(NOW.getTime() + h * 3_600_000);
@@ -122,6 +124,39 @@ const column = (c: Partial<ClassGradebookColumn> = {}): ClassGradebookColumn => 
   ...c,
 });
 const student = (id: string, firstName: string, lastName: string) => ({ id, firstName, lastName });
+/** One test as the student's to-do reads it (the loader builds these from its batched read). */
+const todoAsg = (a: Partial<ToDoAssignment>): ToDoAssignment => ({
+  id: "quiz",
+  title: "Cell Quiz",
+  type: "formative",
+  className: "Bio 2nd",
+  closesAt: null,
+  status: "open",
+  state: "not_started",
+  cycle: null,
+  attemptsAllowed: 3,
+  attemptsUsed: 0,
+  timeLimitMinutes: null,
+  needsCode: false,
+  nextAttemptAt: null,
+  retakesNeedUnlock: false,
+  retakeRequested: false,
+  reopenedUntil: null,
+  askCounts: false,
+  correctionsCap: true,
+  retakeThreshold: 80,
+  correctionsRule: "gate",
+  retakeBy: null,
+  retakeWindowClosed: false,
+  firstPercent: null,
+  paused: false,
+  progress: null,
+  corrections: null,
+  retake: null,
+  quizPractice: [],
+  ...a,
+});
+const nothingToDo = buildStudentToDo({ assignments: [] });
 
 /** Three students × (Unit test S, Cell quiz F, Practice P). */
 function book(): ClassGradebook {
@@ -141,6 +176,7 @@ function book(): ClassGradebook {
     rows: [
       {
         student: ada,
+        studentToDo: nothingToDo,
         cells: [
           cell({ assignmentId: "test", input: { requested: true } }),
           cell({ input: { card: card({ cycle: "done" }) } }),
@@ -149,6 +185,31 @@ function book(): ClassGradebook {
       },
       {
         student: cho,
+        // Her home: corrections on the quiz (1 of 4 done), then the unit test she hasn't started.
+        studentToDo: buildStudentToDo({
+          assignments: [
+            todoAsg({ id: "test", title: "Unit 3 Test", type: "summative" }),
+            todoAsg({
+              state: "corrections_needed",
+              cycle: "corrections_needed",
+              attemptsUsed: 1,
+              firstPercent: 40,
+              corrections: {
+                state: "needed",
+                needed: 4,
+                done: 1,
+                remaining: 3,
+                approved: 0,
+                returned: 0,
+                started: 1,
+                reviewerNote: null,
+                attemptId: "a1",
+                attemptNumber: 1,
+              },
+            }),
+            todoAsg({ id: "prac", title: "Practice", type: "practice" }),
+          ],
+        }),
         cells: [
           cell({ assignmentId: "test", input: notStarted, attemptsUsed: 0, attempts: [] }),
           cell({
@@ -162,6 +223,7 @@ function book(): ClassGradebook {
       },
       {
         student: eli,
+        studentToDo: nothingToDo,
         cells: [
           cell({
             assignmentId: "test",
@@ -273,6 +335,28 @@ describe("gradebookView", () => {
     expect(all.toDo.map((x) => x.column.title)).toEqual(["Unit 3 Test", "Cell Quiz", "Practice"]);
     expect(studentPanelItems(b, "nobody", DEFAULT_FILTERS)).toBeNull();
   });
+  it("the student panel lists the student's own to-do, and what isn't on it (Oct 14 2026)", () => {
+    const b = book();
+    const panel = studentPanel(b, "cho", DEFAULT_FILTERS)!;
+    // The list is the student's own (one builder), whatever the Practice switch says.
+    expect(panel.list).toBe(b.rows[1].studentToDo);
+    expect(panel.list.todo.map((r) => [r.kind, r.assignmentId])).toEqual([
+      ["corrections", "quiz"],
+      ["start", "prac"],
+      ["start", "test"],
+    ]);
+    expect(panel.list.todo[0].why).toBe(
+      "Correct 4 missed questions to raise your score from 40% to 80%."
+    );
+    expect(panel.cells.get("quiz")?.column.title).toBe("Cell Quiz");
+    // The header still counts the grid's to-do cells, so it matches the row badge.
+    expect(panel).toMatchObject({ toDo: 2, done: 0, total: 2, also: [] });
+    // Eli's list is empty; what the teacher still acts on or watches shows under "also".
+    const eli = studentPanel(b, "eli", DEFAULT_FILTERS)!;
+    expect(eli.list.count).toBe(0);
+    expect(eli.also.map((x) => x.column.title)).toEqual(["Unit 3 Test", "Cell Quiz"]);
+    expect(studentPanel(b, "nobody", DEFAULT_FILTERS)).toBeNull();
+  });
   it("writes the phone line", () => {
     const v = gradebookView(book(), DEFAULT_FILTERS);
     expect(phoneLine(v.rows[1])).toBe("Cho, L: 2 to do");
@@ -377,5 +461,31 @@ describe("one cell", () => {
     expect(cellSentence(reopened, column({ status: "closed" }), { hideScores: true, fmt })).toBe(
       "Took try 1 Oct 9; reopened through Oct 9."
     );
+    // Quiz practice still owed before the retake (Oct 14 2026, R3), with the best so far.
+    const target = (code: string, best: number | null, done = false) => ({
+      targetId: code,
+      code,
+      title: code,
+      scored: 40,
+      best,
+      done,
+    });
+    const practicing = cell({
+      cycle: "relearning",
+      quizPractice: [target("U2.LT1", 60), target("U2.LT2", 85, true), target("U2.LT3", null)],
+    });
+    expect(cellSentence(practicing, column(), { hideScores: false, fmt })).toBe(
+      "Took try 1 Oct 9 (62%); needs 80% on practice for U2.LT1 (best 60%) and U2.LT3."
+    );
+    expect(cellSentence(practicing, column(), { hideScores: true, fmt })).toBe(
+      "Took try 1 Oct 9; needs 80% on practice for U2.LT1 and U2.LT3."
+    );
+    // Only while practice is what stands before the retake (not with corrections still owed).
+    expect(
+      cellSentence({ ...practicing, cycle: "corrections_needed" }, column(), {
+        hideScores: true,
+        fmt,
+      })
+    ).toBe("Took try 1 Oct 9.");
   });
 });
