@@ -34,6 +34,7 @@ import {
 } from "@/lib/queries/results";
 import { getDashboardCounts, listRetakeRequests } from "@/lib/queries/dashboard";
 import { requestRetake } from "@/app/student/actions";
+import { saveCorrection, submitCorrections } from "@/app/student/corrections/actions";
 import {
   clearManualScore,
   deleteAttempt,
@@ -444,7 +445,23 @@ describe("teacher unlocks (retakes need my OK)", () => {
   it("a student's request queues on the dashboard until the teacher approves or declines it", async () => {
     asUser(ids.s2, "student");
     await fails(requestRetake(ids.assignment), 409); // Ava hasn't taken it yet
+    // Jon, Oct 14 2026 (decision 4: "To-do, then ask"): Maya's corrections come first, as they
+    // would without the setting. The cap is off here, since at her regraded 92% it would make
+    // corrections the way to 100% with no retake to ask for.
+    await db
+      .update(schema.assignments)
+      .set({ correctionsCap: false })
+      .where(eq(schema.assignments.id, ids.assignment));
     asUser(ids.s1, "student");
+    await fails(requestRetake(ids.assignment), 403);
+    await ok(
+      saveCorrection(ids.attempt, ids.essay1, {
+        correctAnswer: "Keeping internal conditions steady around a set point.",
+        explanation:
+          "I described homeostasis but left out the set point. The body corrects back toward it.",
+      })
+    );
+    await ok(submitCorrections(ids.attempt));
     expect(await ok(requestRetake(ids.assignment))).toEqual({ attemptNumber: 2 });
     expect(await ok(requestRetake(ids.assignment))).toEqual({ attemptNumber: 2 }); // idempotent
     // A request unlocks nothing on its own.
@@ -482,6 +499,10 @@ describe("teacher unlocks (retakes need my OK)", () => {
       .where(eq(schema.assignments.id, ids.assignment));
     asUser(ids.s1, "student");
     await fails(requestRetake(ids.assignment), 409);
+    await db
+      .update(schema.assignments)
+      .set({ correctionsCap: true })
+      .where(eq(schema.assignments.id, ids.assignment));
   });
 });
 

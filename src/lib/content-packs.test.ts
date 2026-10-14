@@ -357,6 +357,78 @@ describe("content packs", () => {
       isPublished: true,
       unitId: bioUnit2.id,
     });
+    // The Biology pH quiz (Oct 14 2026): 15 multiple choice on U2.LT3 in the author's order,
+    // pictures on items 6–9, answer key as written, options never shuffled.
+    const ph = first.find((o) => o.name === "bio-u2-quiz-ph")!;
+    expect(ph.status).toBe("applied");
+    if (ph.status === "applied")
+      expect(ph.summary).toMatchObject({
+        questions: 15,
+        unitId: bioUnit2.id,
+        assignedTo: [],
+        errors: [],
+      });
+    const phAssessment = (await db.query.assessments.findFirst({
+      where: eq(schema.assessments.title, "pH Quiz — Biology"),
+    }))!;
+    expect(phAssessment).toMatchObject({
+      type: "formative",
+      isPublished: true,
+      unitId: bioUnit2.id,
+      randomizeOptions: false,
+    });
+    const [phSection] = await db
+      .select()
+      .from(schema.assessmentSections)
+      .where(eq(schema.assessmentSections.assessmentId, phAssessment.id));
+    const phItems = await db
+      .select({
+        sortOrder: schema.assessmentQuestions.sortOrder,
+        question: schema.questions,
+      })
+      .from(schema.assessmentQuestions)
+      .innerJoin(schema.questions, eq(schema.questions.id, schema.assessmentQuestions.questionId))
+      .where(eq(schema.assessmentQuestions.sectionId, phSection.id))
+      .orderBy(schema.assessmentQuestions.sortOrder);
+    expect(phItems.map((i) => i.question.externalId)).toEqual(
+      Array.from({ length: 15 }, (_, i) => `BIO-PH-${String(i + 1).padStart(3, "0")}`)
+    );
+    expect(
+      phItems.map((i) => i.question.mediaUrl?.replace("/quiz-images/bio-u2-quiz-ph/", "") ?? null)
+    ).toEqual([
+      null,
+      null,
+      null,
+      null,
+      null,
+      "ph_scale_q6.png",
+      "indicator_strips_q7.png",
+      "ion_beakers_q8.png",
+      "enzyme_graph_q9.png",
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ]);
+    const phKey: string[] = [];
+    for (const { question } of phItems) {
+      const opts = await db
+        .select()
+        .from(schema.questionOptions)
+        .where(eq(schema.questionOptions.questionId, question.id))
+        .orderBy(schema.questionOptions.sortOrder);
+      expect(opts).toHaveLength(4);
+      phKey.push(opts.map((o, i) => (o.isCorrect ? "ABCD"[i] : "")).join(""));
+    }
+    expect(phKey.join("")).toBe("ABBADDCAABCDCBC");
+    const lt3 = bioTargets.find((t) => t.code === "U2.LT3")!;
+    expect(
+      bctTagged.filter(
+        (t) => t.learningTargetId === lt3.id && phItems.some((i) => i.question.id === t.questionId)
+      )
+    ).toHaveLength(15);
     // The osteon activity pack: no bank or CSV; it completes the hand-made draft (same page),
     // renames it, tags U2, and publishes it.
     const osteon = first.find((o) => o.name === "anatomy-u2-activity-osteon-labeling")!;

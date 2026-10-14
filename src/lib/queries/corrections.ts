@@ -150,6 +150,87 @@ export async function getCorrectionScope(attemptId: string) {
 }
 
 // ---------------------------------------------------------------------------
+// Batched scope (the class gradebook, the Needs you inbox)
+// ---------------------------------------------------------------------------
+
+/** A json aggregate as an object, whether the driver parsed it already or handed back text. */
+const fromJson = <T>(v: unknown): T => (typeof v === "string" ? JSON.parse(v) : v) as T;
+
+/** A served item short of full credit, with its stored scores (`responded` = a response row exists). */
+type ScopeItem = {
+  questionId: string;
+  learningTargetId: string | null;
+  points: number;
+  responded: boolean;
+  autoScore: number | null;
+  manualScore: number | null;
+};
+
+/** What corrections scope reads for one finished attempt, from one batched query. */
+export type CorrectionScopeRow = {
+  items: ScopeItem[];
+  targetPercents: Record<string, number>;
+  corrections: { questionId: string; status: CorrectionStatus; reviewerNote: string | null }[];
+};
+
+/**
+ * Corrections scope for many finished attempts in one query (the class gradebook, the Needs you
+ * inbox): the served items that didn't earn full credit (only the three fields scope needs, never
+ * the whole question set, which would otherwise be pulled for every pair on every refresh) with
+ * their stored scores, per-target percents, and the corrections themselves.
+ */
+export async function loadCorrectionScopes(
+  attemptIds: string[]
+): Promise<Map<string, CorrectionScopeRow>> {
+  if (attemptIds.length === 0) return new Map();
+  const rows = await db
+    .select({
+      id: schema.attempts.id,
+      // Full credit can never be missed, so those items stay in the database; whether the
+      // rest are missed is still decided by `correctableItems` / `questionsNeedingCorrection`.
+      items:
+        sql`(select coalesce(jsonb_agg(jsonb_build_object('questionId', q->>'questionId', 'learningTargetId', q->>'learningTargetId', 'points', (q->>'points')::float8, 'responded', r.attempt_id is not null, 'autoScore', r.auto_score, 'manualScore', r.manual_score)), '[]'::jsonb) from jsonb_array_elements(attempts.question_set) q left join ${schema.responses} r on r.attempt_id = attempts.id and r.question_id::text = q->>'questionId' where coalesce(r.manual_score, r.auto_score, -1) < (q->>'points')::float8)`.mapWith(
+          fromJson<ScopeItem[]>
+        ),
+      targetPercents:
+        sql`(select coalesce(jsonb_object_agg(t.learning_target_id, t.percent), '{}'::jsonb) from ${schema.attemptTargetScores} t where t.attempt_id = attempts.id)`.mapWith(
+          fromJson<Record<string, number>>
+        ),
+      corrections:
+        sql`(select coalesce(jsonb_agg(jsonb_build_object('questionId', c.question_id, 'status', c.status, 'reviewerNote', c.reviewer_note)), '[]'::jsonb) from ${schema.corrections} c where c.attempt_id = attempts.id)`.mapWith(
+          fromJson<CorrectionScopeRow["corrections"]>
+        ),
+    })
+    .from(schema.attempts)
+    .where(inArray(schema.attempts.id, attemptIds));
+  return new Map(rows.map(({ id, ...row }) => [id, row]));
+}
+
+/** A batched scope row's set, scoped exactly as `getCorrectionsSummary` scopes it. */
+export function scopeSummary(
+  row: CorrectionScopeRow,
+  input: {
+    type: "practice" | "formative" | "summative";
+    threshold: number;
+    optedInTargetIds: string[];
+    cvtcRules: boolean;
+  }
+): SetSummary {
+  const needed = questionsNeedingCorrection({
+    type: input.type,
+    items: correctableItems(
+      row.items,
+      new Map(row.items.filter((r) => r.responded).map((r) => [r.questionId, r]))
+    ),
+    targetPercents: row.targetPercents,
+    threshold: input.threshold,
+    optedInTargetIds: input.optedInTargetIds,
+    cvtcRules: input.cvtcRules,
+  });
+  return summarizeSet(needed, row.corrections);
+}
+
+// ---------------------------------------------------------------------------
 // Student form
 // ---------------------------------------------------------------------------
 

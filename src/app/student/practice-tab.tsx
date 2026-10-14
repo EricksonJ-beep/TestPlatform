@@ -3,7 +3,8 @@ import { Check, Layers, Lock, Shuffle, X } from "lucide-react";
 import { cn } from "cn";
 import { groupByUnit } from "@/lib/practice-groups";
 import type { CustomPracticeCourse } from "@/lib/custom-practice";
-import type { NeededTarget, StudentPractice } from "@/lib/queries/practice";
+import { PRACTICE_PASS_PERCENT, practiceSizeText } from "@/lib/quiz-practice";
+import type { NeededTarget, QuizNeededTarget, StudentPractice } from "@/lib/queries/practice";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { TargetChip } from "@/components/targets/target-chip";
@@ -11,8 +12,10 @@ import { ActivityCard, PracticeSetCard } from "./practice-cards";
 
 /**
  * The student's Practice tab (PLAN.md §5 screen 2): "Needed before your
- * retake" first, with a three-item checklist per target, then everything
- * published on their courses, always open, in the teacher's order.
+ * retake" first, for tests open to the student (Jon, Oct 14 2026): a
+ * summative's three-item checklist per target, and a quiz's missed targets to
+ * practise to 80% (R3); then everything published on their courses, always
+ * open, in the teacher's order.
  */
 export function PracticeTab({
   practice,
@@ -22,7 +25,10 @@ export function PracticeTab({
   /** Courses with questions open for "Build my practice" (Jon, Oct 13 2026). */
   buildable?: CustomPracticeCourse[];
 }) {
-  const { needed, sets, activities } = practice;
+  const { needed, quizNeeded, sets, activities } = practice;
+  const canBuild = new Set(
+    buildable.flatMap((c) => c.units.flatMap((u) => u.targets.map((t) => t.id)))
+  );
   const items = [
     ...activities.map((a) => ({ kind: "activity" as const, sortOrder: a.sortOrder, item: a })),
     ...sets.map((s) => ({ kind: "set" as const, sortOrder: s.sortOrder, item: s })),
@@ -38,7 +44,8 @@ export function PracticeTab({
       {needed.map((g) => (
         <section
           key={g.assignmentId}
-          className="rounded-lg border border-coral/40 bg-card"
+          id={`needed-${g.assignmentId}`}
+          className="scroll-mt-16 rounded-lg border border-coral/40 bg-card"
           aria-label={`Needed before your retake · ${g.title}`}
           data-needed={g.assignmentId}
         >
@@ -50,6 +57,27 @@ export function PracticeTab({
           <ul className="divide-y divide-border">
             {g.targets.map((t) => (
               <NeededRow key={t.id} t={t} />
+            ))}
+          </ul>
+        </section>
+      ))}
+
+      {quizNeeded.map((g) => (
+        <section
+          key={g.assignmentId}
+          id={`needed-${g.assignmentId}`}
+          className="scroll-mt-16 rounded-lg border border-coral/40 bg-card"
+          aria-label={`Needed before your retake · ${g.title}`}
+          data-needed={g.assignmentId}
+        >
+          <h2 className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2 text-sm font-medium">
+            <Lock className="size-4 text-[#B93E27]" aria-hidden />
+            Needed before your retake
+            <span className="font-normal text-muted-foreground">· {g.title}</span>
+          </h2>
+          <ul className="divide-y divide-border">
+            {g.targets.map((t) => (
+              <QuizNeededRow key={t.id} t={t} canBuild={canBuild.has(t.id)} />
             ))}
           </ul>
         </section>
@@ -143,6 +171,43 @@ function BuildCard({ course }: { course: CustomPracticeCourse }) {
         ))}
       </ul>
     </section>
+  );
+}
+
+/**
+ * A quiz's missed target (R3): score 80% on a practice of it, Build my practice (opened on the
+ * target) or a teacher's set tagged to it.
+ */
+function QuizNeededRow({ t, canBuild }: { t: QuizNeededTarget; canBuild: boolean }) {
+  return (
+    <li className="flex flex-col gap-2 px-4 py-3" data-needed-target={t.code}>
+      <div className="flex flex-col gap-2 text-sm sm:flex-row sm:items-center">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+          <TargetChip code={t.code} title={t.title} percent={t.scored} tone="required" />
+          <span className="text-muted-foreground tabular">
+            Score {PRACTICE_PASS_PERCENT}% {practiceSizeText(t.minQuestions)}
+            {t.best !== null ? ` · best so far ${Math.round(t.best)}%` : ""}
+          </span>
+        </div>
+        {canBuild ? (
+          <Button
+            className="h-11 w-full sm:h-8 sm:w-auto"
+            aria-label={`Build practice on ${t.code}`}
+            nativeButton={false}
+            render={<Link href={`/student/practice/build?target=${t.id}`} />}
+          >
+            Build practice
+          </Button>
+        ) : null}
+      </div>
+      {t.sets.length ? (
+        <ul className="flex flex-col gap-2">
+          {t.sets.map((s) => (
+            <PracticeSetCard key={`s:${s.id}`} s={s} compact />
+          ))}
+        </ul>
+      ) : null}
+    </li>
   );
 }
 

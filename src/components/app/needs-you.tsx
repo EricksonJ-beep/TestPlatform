@@ -34,7 +34,6 @@ import type {
   RetakeRequest,
 } from "@/lib/queries/dashboard";
 import type { PendingVerification } from "@/lib/queries/practice";
-import { EmptyState } from "@/components/empty-state";
 import { LocalTime } from "@/components/local-time";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -178,9 +177,20 @@ export function NeedsYouInbox({ inbox }: { inbox: NeedsYou }) {
           <Inbox className="size-4 text-coral-deep" aria-hidden />
           Needs you
         </CardTitle>
-        <p className="text-sm text-muted-foreground">
-          From all your courses; each row says which class it&apos;s in.
-        </p>
+        {/* Jon, Oct 14 2026: empty, the card shrinks to one line instead of a big blank box. */}
+        {empty ? (
+          <p
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground"
+            data-needs-you-empty
+          >
+            <CheckCircle2 className="size-4 shrink-0 text-success" aria-hidden />
+            Nothing is waiting on you. Retake requests, corrections, and grading land here.
+          </p>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            From all your courses; each row says which class it&apos;s in.
+          </p>
+        )}
         {notice ? (
           <p className="flex items-start gap-2 text-sm text-error-foreground" role="status">
             <span className="flex-1">{notice}</span>
@@ -194,15 +204,8 @@ export function NeedsYouInbox({ inbox }: { inbox: NeedsYou }) {
           </p>
         ) : null}
       </CardHeader>
-      <CardContent className="p-0">
-        {empty ? (
-          <EmptyState
-            icon={CheckCircle2}
-            title="Nothing is waiting on you."
-            description="Students asking to finish, retake requests, corrections, answers to grade, and activities to check off land here."
-            className="py-6"
-          />
-        ) : (
+      {empty ? null : (
+        <CardContent className="p-0">
           <div className="flex flex-col">
             <Group id="asked" count={counts.asked} rows={inbox.asked.length}>
               {inbox.asked.map((r) => (
@@ -248,8 +251,8 @@ export function NeedsYouInbox({ inbox }: { inbox: NeedsYou }) {
               <WorksheetRow emails={inbox.worksheetEmails} />
             </Group>
           </div>
-        )}
-      </CardContent>
+        </CardContent>
+      )}
     </Card>
   );
 }
@@ -390,6 +393,7 @@ function BlockerNote({ b }: { b: RequestBlocker }) {
     <p className="mt-0.5 inline-flex items-center gap-1 text-xs text-warning-foreground">
       <Clock className="size-3.5" aria-hidden />
       {BLOCKER_LINE[b.reason]}
+      {"codes" in b ? ` ${b.codes.join(", ")}.` : null}
       {"at" in b ? (
         <>
           {" "}
@@ -455,14 +459,31 @@ function RequestRow({
       who={name(r)}
       what={`try ${r.attemptNumber}`}
       meta={meta}
-      note={r.blocker ? <BlockerNote b={r.blocker} /> : null}
+      note={
+        <>
+          {/* Ask to retake on a closed test (Jon, Oct 14 2026, R4): Approve reopens it for them. */}
+          {r.reopensUntil && !approved ? (
+            <p className="mt-0.5 text-xs text-muted-foreground" data-reopens>
+              Closed · Approve reopens it for {r.firstName} through{" "}
+              <LocalTime date={r.reopensUntil} mode="date" />
+            </p>
+          ) : null}
+          {r.blocker ? <BlockerNote b={r.blocker} /> : null}
+        </>
+      }
       error={error}
       actions={
         approved ? (
           <>
             <span className="inline-flex items-center gap-1 text-xs text-success-foreground">
               <Check className="size-3.5" aria-hidden />
-              Try {r.attemptNumber} unlocked
+              {r.reopensUntil ? (
+                <>
+                  Reopened through <LocalTime date={r.reopensUntil} mode="date" />
+                </>
+              ) : (
+                <>Try {r.attemptNumber} unlocked</>
+              )}
             </span>
             <Button
               size="sm"

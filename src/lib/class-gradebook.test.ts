@@ -18,6 +18,10 @@ const card = (c: Partial<CardState>): CardState => ({
   rule: "gate",
   retakeBy: null,
   windowClosed: false,
+  quizPractice: [],
+  reopenedUntil: null,
+  retakeRequested: false,
+  askCounts: false,
   ...c,
 });
 const input = (i: Partial<CellInput>): CellInput => ({
@@ -62,7 +66,7 @@ describe("cellTag precedence", () => {
       requested: true,
       toGrade: 2,
       correctionsToCheck: 1,
-      corrections: { done: 3, needed: 8 },
+      corrections: { started: 3, needed: 8 },
     });
     expect(cellTag(busy)).toMatchObject({ kind: "request", group: "your_move", needsYou: true });
     expect(cellTag({ ...busy, requested: false }).kind).toBe("check_corrections");
@@ -72,7 +76,7 @@ describe("cellTag precedence", () => {
     });
     expect(label({ toGrade: 2 })).toBe("To grade (2)");
     expect(
-      label({ card: card({ cycle: "corrections_needed" }), corrections: { done: 3, needed: 8 } })
+      label({ card: card({ cycle: "corrections_needed" }), corrections: { started: 3, needed: 8 } })
     ).toBe("Corrections needed 3/8");
     expect(CELL_ORDER.indexOf("asked")).toBe(0);
     expect(CELL_ORDER.at(-1)).toBe("done");
@@ -121,7 +125,7 @@ describe("cellTag precedence", () => {
       cellTag(
         input({
           card: card({ ...closed, cycle: "corrections_needed" }),
-          corrections: { done: 0, needed: 3 },
+          corrections: { started: 0, needed: 3 },
         })
       )
     ).toMatchObject({ kind: "corrections_needed", closed: false, tone: "warning" });
@@ -186,6 +190,35 @@ describe("cellTag precedence", () => {
     });
     expect(label({ card: card({ cycle: "corrections_returned" }) })).toBe("Sent back");
     expect(label({ card: card({ cycle: "corrections_to_full" }) })).toBe("Corrections → 100%");
+  });
+
+  it("names a quiz's missed targets still to practise (Jon, Oct 14 2026, R3)", () => {
+    const quizPractice = [
+      { targetId: "lt1", code: "U2.LT1", title: "", scored: 40, best: 60, done: false },
+      { targetId: "lt2", code: "U2.LT2", title: "", scored: 60, best: 85, done: true },
+      { targetId: "lt3", code: "U2.LT3", title: "", scored: 20, best: null, done: false },
+    ].map((t) => ({ ...t, minQuestions: 5 }));
+    const relearning = card({ cycle: "relearning", quizPractice });
+    expect(cellTag(input({ card: relearning }))).toMatchObject({
+      kind: "relearning",
+      group: "owes",
+      needs: ["practice"],
+      practice: ["U2.LT1", "U2.LT3"],
+    });
+    expect(label({ card: relearning })).toBe("Relearning (needs: practice U2.LT1, U2.LT3)");
+    expect(
+      label({
+        card: card({ status: "closed", state: "closed", cycle: "relearning", quizPractice }),
+      })
+    ).toBe("Relearning (needs: practice U2.LT1, U2.LT3) · closed");
+    // Approved, but the student still owes their part (with "Retakes need my OK", decision 4).
+    const ok = card({ cycle: "retake_available" });
+    expect(label({ card: ok, unlockedBlocker: { reason: "corrections" } })).toBe(
+      "Unlocked · corrections not done"
+    );
+    expect(label({ card: ok, unlockedBlocker: { reason: "practice", codes: ["U2.LT1"] } })).toBe(
+      "Unlocked · practice U2.LT1 not done"
+    );
   });
 });
 

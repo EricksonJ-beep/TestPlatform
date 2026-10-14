@@ -10,6 +10,8 @@ import { and, desc, eq, gt, isNotNull, isNull } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { logActivity } from "@/lib/activity-log";
 import { codesMatch, generateAccessCode } from "@/lib/assignments";
+import { attemptOpenUntil } from "@/lib/queries/reopen";
+import { effectiveClose } from "@/lib/reopen";
 import {
   RESUME_CODE_MS,
   lockAnswered,
@@ -83,8 +85,9 @@ export async function pauseAttempt(
 
 /**
  * Bring an attempt up to date before anyone reads or writes it: pause it if it
- * sat idle for 10 minutes or its window closed while it was open. Returns
- * whether it is paused now.
+ * sat idle for 10 minutes or its window closed while it was open. The window is
+ * the student's own: a retake the teacher reopened after the close pauses when
+ * the reopen ends (Jon, Oct 14 2026, R5). Returns whether it is paused now.
  */
 export async function settleAttempt(attemptId: string, now = new Date()): Promise<boolean> {
   const [row] = await db
@@ -94,7 +97,8 @@ export async function settleAttempt(attemptId: string, now = new Date()): Promis
       dueAt: schema.attempts.dueAt,
       pausedAt: schema.attempts.pausedAt,
       lastActiveAt: schema.attempts.lastActiveAt,
-      closesAt: schema.assignments.closesAt,
+      assignmentCloses: schema.assignments.closesAt,
+      openUntil: attemptOpenUntil,
       timeLimitMinutes: schema.assignments.timeLimitMinutes,
       extraTimePercent: schema.enrollments.extraTimePercent,
     })
@@ -111,16 +115,17 @@ export async function settleAttempt(attemptId: string, now = new Date()): Promis
     .limit(1);
   if (!row) return false;
   if (row.pausedAt) return row.status === "in_progress";
-  const point = pausePoint(row, row.closesAt, now);
+  const closesAt = effectiveClose(row.assignmentCloses, row.openUntil);
+  const point = pausePoint(row, closesAt, now);
   if (!point) return false;
   // A deadline that is the window's close hides the time limit; work it out again.
   const owed =
-    point.reason === "closed" && row.closesAt && row.dueAt && sameMoment(row.dueAt, row.closesAt)
+    point.reason === "closed" && closesAt && row.dueAt && sameMoment(row.dueAt, closesAt)
       ? remainingAtClose({
           startedAt: row.startedAt,
           timeLimitMinutes: row.timeLimitMinutes,
           extraTimePercent: row.extraTimePercent ?? 0,
-          closesAt: row.closesAt,
+          closesAt,
         })
       : undefined;
   return pauseAttempt(attemptId, point.at, point.reason, owed);

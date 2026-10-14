@@ -2,12 +2,27 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft, Clock, Lock } from "lucide-react";
-import { isAuthzError, requireAssignmentAccess } from "@/lib/authz";
+import { isAuthzError, requireAssignmentAccess, studentCourseIds } from "@/lib/authz";
+import { listCustomPracticeOptions } from "@/lib/custom-practice";
 import { listStudentAssignments } from "@/lib/queries/assignments";
+import {
+  PRACTICE_PASS_PERCENT,
+  practiceOwed,
+  practiceSizeText,
+  targetList,
+} from "@/lib/quiz-practice";
+import { getStudentPractice } from "@/lib/queries/practice";
 import { listStudentAttempts } from "@/lib/queries/attempts";
+import {
+  correctionsActionLabel,
+  correctionsProgress,
+  correctionsWhy,
+  retakeGoal,
+} from "@/lib/student-home";
 import { LocalTime } from "@/components/local-time";
 import { TargetChip } from "@/components/targets/target-chip";
 import { Button } from "@/components/ui/button";
+import { PracticeSetCard } from "../../practice-cards";
 import { RetakePicker } from "../../retake-picker";
 import { RequestRetakeButton } from "./request-retake-button";
 import { StartForm } from "./start-form";
@@ -33,14 +48,39 @@ export default async function StudentAssignmentPage({
   const attemptsLeft =
     a.attemptsAllowed === null ? null : Math.max(0, a.attemptsAllowed - a.attemptsUsed);
   const c = a.corrections;
-  // Corrections hold the page only where the rule says they come first: never with teacher
-  // unlocks on (Jon, Oct 1 2026) or in a CVTC course (Oct 13 2026); the same rule as the card.
+  // Corrections hold the page where the rule says they come first: never in a CVTC course (Oct 13
+  // 2026), and with "Retakes need my OK" too (Oct 14 2026); the same rule as the card.
   const correctionsBlock =
     (a.correctionsRule === "gate" || a.correctionsRule === "to_full") &&
     !!c &&
     c.state !== "approved" &&
     c.state !== "none";
   const retaking = a.state === "retake_required" || a.state === "retake_available";
+  // On a closed test the cycle goes on toward asking to retake (Jon, Oct 14 2026, R4).
+  const closed = a.status === "closed";
+  // Quiz relearning (Jon, Oct 14 2026): the missed targets still to practise before a retake.
+  const owedPractice = practiceOwed(a.quizPractice);
+  // "Practice" opens Build my practice on the first target it can deal; otherwise the Practice tab.
+  const buildable = owedPractice.length
+    ? new Set(
+        (await listCustomPracticeOptions(await studentCourseIds(access.userId))).flatMap((co) =>
+          co.units.flatMap((u) => u.targets.map((t) => t.id))
+        )
+      )
+    : new Set<string>();
+  const practiceTarget = owedPractice.find((t) => buildable.has(t.targetId));
+  // A target only a teacher's set covers: its sets are listed here, open or closed (review, Oct 14
+  // 2026: the Practice tab lists open tests only).
+  const setOnly = owedPractice.filter((t) => !buildable.has(t.targetId)).map((t) => t.targetId);
+  const practiceSets = setOnly.length
+    ? (await getStudentPractice(access.userId, [a])).sets.filter((s) =>
+        s.targets.some((x) => setOnly.includes(x.id))
+      )
+    : [];
+  const practiceHref = practiceTarget
+    ? `/student/practice/build?target=${practiceTarget.targetId}`
+    : "#practice-sets";
+  const attemptsLeftNow = attemptsLeft === null || attemptsLeft > 0;
   // A paused or unfinished test stays reachable after the window closes (Finish later, Oct 13 2026).
   const canStart =
     (a.state === "in_progress" ||
@@ -61,7 +101,11 @@ export default async function StudentAssignmentPage({
           <span>
             {a.className} · {a.teacherLastName}
           </span>
-          {a.closesAt ? (
+          {a.reopenedUntil ? (
+            <span data-reopened>
+              Reopened for you until <LocalTime date={a.reopenedUntil} />
+            </span>
+          ) : a.closesAt ? (
             <span>
               Due <LocalTime date={a.closesAt} />
             </span>
@@ -93,13 +137,16 @@ export default async function StudentAssignmentPage({
         </p>
       </div>
 
-      {a.retake && a.attemptsUsed > 0 && a.state !== "in_progress" ? (
+      {a.retake &&
+      a.attemptsUsed > 0 &&
+      a.state !== "in_progress" &&
+      a.state !== "awaiting_grade" ? (
         <section className="rounded-lg border border-border bg-card px-4 py-3" data-retake-panel>
           <h2 className="mb-2 text-sm font-medium">Retake by learning target</h2>
           <RetakePicker
             assignmentId={a.id}
             retake={a.retake}
-            checklist={a.state === "relearning" || retaking}
+            checklist={a.cycle === "relearning" || retaking}
           />
         </section>
       ) : null}
@@ -107,6 +154,15 @@ export default async function StudentAssignmentPage({
       {a.state === "upcoming" ? (
         <p className="rounded-lg border border-border bg-card px-4 py-3 text-sm">
           This opens <LocalTime date={a.opensAt} />. Check back then.
+        </p>
+      ) : a.state === "awaiting_grade" ? (
+        <p
+          className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3 text-sm"
+          data-awaiting-grade
+        >
+          <Clock className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+          Waiting for your grade. Your teacher is grading your written answers; your score and
+          what&apos;s next show up here once they&apos;re done.
         </p>
       ) : c && correctionsBlock && a.state !== "in_progress" ? (
         <div
@@ -120,12 +176,20 @@ export default async function StudentAssignmentPage({
               : c.state === "returned"
                 ? a.correctionsRule === "to_full"
                   ? "Your teacher sent your corrections back. Revise and resubmit to raise this quiz to 100%."
-                  : "Your teacher sent your corrections back. Revise and resubmit to unlock your next attempt."
-                : a.state === "corrections_to_full"
-                  ? `Correct ${c.remaining} missed ${c.remaining === 1 ? "question" : "questions"} on attempt ${c.attemptNumber} to raise your score to 100%. That's the way up at your score; there's no retake.`
-                  : a.type === "formative" && a.correctionsCap && c.attemptNumber === 1
-                    ? `Correct ${c.remaining} missed ${c.remaining === 1 ? "question" : "questions"} on attempt ${c.attemptNumber} to bring this quiz up to ${a.retakeThreshold}%${attemptsLeft === null || attemptsLeft > 0 ? ", then retake it to go higher" : ""}.`
-                    : `Correct ${c.remaining} missed ${c.remaining === 1 ? "question" : "questions"} on attempt ${c.attemptNumber}${attemptsLeft === null || attemptsLeft > 0 ? " to unlock your next attempt" : ""}.`}
+                  : closed && attemptsLeftNow
+                    ? "Your teacher sent your corrections back. Revise and resubmit before you can ask to retake."
+                    : "Your teacher sent your corrections back. Revise and resubmit to unlock your next attempt."
+                : // The to-do list's words (Jon, Oct 14 2026); a retake to go higher only while it's open.
+                  `${correctionsWhy(a)}${
+                    a.type === "formative" &&
+                    a.correctionsCap &&
+                    c.attemptNumber === 1 &&
+                    a.correctionsRule !== "to_full" &&
+                    !closed &&
+                    attemptsLeftNow
+                      ? " Then retake it to go higher."
+                      : ""
+                  }${c.started > 0 ? ` ${correctionsProgress(c).label}.` : ""}`}
           </span>
           <Button
             size="lg"
@@ -137,17 +201,58 @@ export default async function StudentAssignmentPage({
               ? "View corrections"
               : c.state === "returned"
                 ? "Revise corrections"
-                : "Do corrections"}
+                : correctionsActionLabel(c)}
           </Button>
         </div>
-      ) : a.state === "relearning" ? (
+      ) : a.cycle === "relearning" && !a.retake && owedPractice.length ? (
+        <div
+          id="practice"
+          className="flex scroll-mt-16 flex-col gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm"
+          data-practice-gate
+        >
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="mr-auto inline-flex items-start gap-2">
+              <Lock className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
+              <span>
+                Practice {targetList(owedPractice.map((t) => t.code))} {retakeGoal(a)}. You can try
+                as many times as you like.
+                {/* What counts, per target (Build my practice: 5 questions, or all it has). */}
+                <span className="mt-1 flex flex-col text-muted-foreground">
+                  {owedPractice.map((t) => (
+                    <span key={t.targetId} data-practice-target={t.code}>
+                      {t.code}: score {PRACTICE_PASS_PERCENT}% or better{" "}
+                      {practiceSizeText(t.minQuestions)}
+                      {t.best !== null ? ` · best so far ${Math.round(t.best)}%` : ""}
+                    </span>
+                  ))}
+                </span>
+              </span>
+            </span>
+            <Button size="lg" nativeButton={false} render={<Link href={practiceHref} />}>
+              Practice
+            </Button>
+          </div>
+          {practiceSets.length ? (
+            <ul
+              id="practice-sets"
+              className="flex flex-col gap-2"
+              aria-label="Your teacher's practice"
+            >
+              {practiceSets.map((s) => (
+                <PracticeSetCard key={s.id} s={s} compact />
+              ))}
+            </ul>
+          ) : null}
+        </div>
+      ) : a.cycle === "relearning" && (a.state === "relearning" || closed) ? (
         <p
           className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3 text-sm"
           data-relearning-gate
         >
           <Lock className="size-4 text-muted-foreground" aria-hidden />
-          Finish the relearning checklist above for every target you&apos;re retaking. The retake
-          unlocks on its own.
+          {closed
+            ? "This test is closed. Finish the relearning checklist above for every target you're retaking, then you can ask your teacher to retake it."
+            : "Finish the relearning checklist above for every target you're retaking. The retake unlocks on its own."}
         </p>
       ) : a.nextAttemptAt && a.state !== "in_progress" ? (
         <p className="rounded-lg border border-border bg-card px-4 py-3 text-sm">
@@ -155,6 +260,28 @@ export default async function StudentAssignmentPage({
           {a.retakeWaitHours}-hour wait between attempts.
           {a.state === "awaiting_unlock" ? " Your teacher also has to unlock it." : ""}
         </p>
+      ) : a.state === "ask_to_retake" ? (
+        // Jon, Oct 14 2026 (decisions 1–2): a closed test can still be retaken if the teacher says yes.
+        <div
+          className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm"
+          data-ask-to-retake={a.askCounts ? "counted" : "optional"}
+        >
+          <span className="mr-auto inline-flex items-start gap-2">
+            <Lock className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
+            <span>
+              {a.askCounts
+                ? "This test is closed, and you still need a retake on some targets. Ask your teacher to let you retake it."
+                : "This test is closed. Want a higher score? Ask your teacher to let you retake it."}{" "}
+              If they say yes, it opens just for you until the end of the next school day.
+            </span>
+          </span>
+          <RequestRetakeButton
+            assignmentId={a.id}
+            attemptNumber={a.attemptsUsed + 1}
+            label="Ask to retake"
+            primary={a.askCounts}
+          />
+        </div>
       ) : a.state === "awaiting_unlock" ? (
         <div
           className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm"
@@ -163,12 +290,11 @@ export default async function StudentAssignmentPage({
           <span className="mr-auto inline-flex items-center gap-2">
             <Lock className="size-4 shrink-0 text-muted-foreground" aria-hidden />
             <span>
-              {a.retakeRequested
-                ? `Your request for attempt ${a.attemptsUsed + 1} is in. Your teacher will approve it, usually in class.`
-                : `Your teacher opens each retake. Ask for attempt ${a.attemptsUsed + 1} here, or in class.`}
-              {c && c.state !== "none" && c.state !== "approved"
-                ? " Corrections are optional on this quiz, but they're good practice."
-                : ""}
+              {a.retakeRequested && a.status === "closed"
+                ? "You asked to retake this test. Waiting on your teacher: if they say yes, it opens just for you until the end of the next school day."
+                : a.retakeRequested
+                  ? `Your request for attempt ${a.attemptsUsed + 1} is in. Your teacher will approve it, usually in class.`
+                  : `Your teacher opens each retake. Ask for attempt ${a.attemptsUsed + 1} here, or in class.`}
             </span>
           </span>
           {a.retakeRequested ? null : (
@@ -260,7 +386,7 @@ export default async function StudentAssignmentPage({
                         ? "Corrections submitted"
                         : c.state === "returned"
                           ? "Corrections returned"
-                          : `Corrections · ${c.done} of ${c.needed}`}
+                          : `Corrections · ${correctionsProgress(c).label}`}
                   </Link>
                 ) : null}
               </li>

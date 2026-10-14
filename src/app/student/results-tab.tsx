@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BarChart3 } from "lucide-react";
 import { cn } from "cn";
 import type { StudentResult } from "@/lib/queries/student-results";
+import { correctionsProgress } from "@/lib/student-home";
 import { EmptyState } from "@/components/empty-state";
 import { LocalTime } from "@/components/local-time";
 import { TargetChip } from "@/components/targets/target-chip";
@@ -13,6 +14,15 @@ const CORRECTIONS_LABEL = {
   approved: "Corrections approved",
   none: null,
 } as const;
+
+/** The label as the rule has it (Jon, Oct 13–14 2026): where corrections go to 100%, it says so. */
+function correctionsLabel(r: StudentResult): string | null {
+  const c = r.corrections;
+  if (!c) return null;
+  if (c.state === "needed")
+    return `${r.correctionsRule === "to_full" ? "Do corrections → 100%" : "Corrections needed"} · ${correctionsProgress(c).label}`;
+  return CORRECTIONS_LABEL[c.state];
+}
 
 /**
  * Student screen 6 (PLAN.md §5): per assignment, every attempt with the
@@ -101,17 +111,17 @@ export function ResultsTab({ results }: { results: StudentResult[] }) {
               </li>
             ))}
           </ul>
-          {r.corrections && CORRECTIONS_LABEL[r.corrections.state] ? (
-            <p className="mt-2 text-xs">
+          {r.corrections && correctionsLabel(r) ? (
+            <p className="mt-2 flex flex-wrap gap-x-2 text-xs" data-results-corrections>
               <Link
                 href={`/student/corrections/${r.corrections.attemptId}`}
                 className="font-medium text-brand-deep hover:underline"
               >
-                {CORRECTIONS_LABEL[r.corrections.state]}
-                {r.corrections.state === "needed"
-                  ? ` · ${r.corrections.done} of ${r.corrections.needed}`
-                  : ""}
+                {correctionsLabel(r)}
               </Link>
+              {r.correctionsWhy ? (
+                <span className="text-muted-foreground">{r.correctionsWhy}</span>
+              ) : null}
             </p>
           ) : null}
         </li>

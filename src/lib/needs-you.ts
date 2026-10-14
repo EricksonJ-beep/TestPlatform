@@ -29,22 +29,25 @@ export type StaleReason = "left_class" | "setting_off" | "taken" | "not_next" | 
 
 /**
  * Rule (research notes A3): a request is current only when it asks for the student's next try
- * (attempts used + 1) on a test that still says "Retakes need my OK" and still has that try, from
- * a student still in the test's class (moving a student to another period keeps their requests,
- * and Approve and Decline only work for an enrolled student). Anything else is a leftover:
- * approving it would unlock nothing useful, so it gets Clear.
+ * (attempts used + 1) on a test that still says "Retakes need my OK", or has closed (Jon, Oct 14
+ * 2026, R4: on a closed test any student may ask, and Approve reopens it for them), and still has
+ * that try, from a student still in the test's class (moving a student to another period keeps
+ * their requests, and Approve and Decline only work for an enrolled student). Anything else is a
+ * leftover: approving it would unlock nothing useful, so it gets Clear.
  */
 export function staleRequest(input: {
   attemptNumber: number;
   /** Attempts the student has on the assignment, finished or not. */
   used: number;
   retakesNeedUnlock: boolean;
+  /** The test has closed (its own close: a request carries no reopen). */
+  closed: boolean;
   attemptsAllowed: number | null;
   /** The student is still enrolled in the assignment's class. */
   enrolled: boolean;
 }): StaleReason | null {
   if (!input.enrolled) return "left_class";
-  if (!input.retakesNeedUnlock) return "setting_off";
+  if (!input.retakesNeedUnlock && !input.closed) return "setting_off";
   if (input.attemptNumber <= input.used) return "taken";
   if (input.attemptNumber !== input.used + 1) return "not_next";
   if (input.attemptsAllowed !== null && input.attemptNumber > input.attemptsAllowed)
@@ -61,16 +64,21 @@ export const STALE_TEXT: Record<StaleReason, string> = {
 };
 
 export type RequestBlocker =
-  | { reason: "not_open" | "closed" | "no_attempts_left" | "no_retake" }
+  | { reason: "not_open" | "closed" | "no_attempts_left" | "no_retake" | "corrections" }
   | { reason: "wait"; at: Date }
   | { reason: "window_closed"; at: Date }
-  | { reason: Exclude<RetakeBlocker, "no_attempts"> };
+  | { reason: Exclude<RetakeBlocker, "no_attempts"> }
+  /** Quiz relearning (Jon, Oct 14 2026): the codes of the missed targets still to practise. */
+  | { reason: "practice"; codes: string[] };
 
 /**
  * What would still stop a current request's try from starting once the teacher approves it: the
  * test's window, the wait between attempts, the corrections cap's retake window. The same
  * `canStartAttempt` rule `startAttempt` uses, with the unlock taken as given and no access code
- * (that is typed in class). A summative's relearning gates come from its retake plan separately.
+ * (that is typed in class). On a closed test the approval reopens it (Jon, Oct 14 2026, R4), so
+ * the close and the cap's window don't stop it: the row says until when instead. A summative's
+ * relearning gates come from its retake plan separately, and so do a quiz's corrections and
+ * practice (Jon, Oct 14 2026: owed with the setting on too).
  */
 export function requestBlocker(input: {
   assignment: {
@@ -84,6 +92,11 @@ export function requestBlocker(input: {
   used: number;
   lastSubmittedAt: Date | null;
   firstSubmittedAt: Date | null;
+  /**
+   * The test is open for this student until then by a reopen: one already approved, or the one
+   * an approval now would give (`endOfNextSchoolDay`). Null or absent when there is none.
+   */
+  reopenUntil?: Date | null;
   now: Date;
 }): RequestBlocker | null {
   const check = canStartAttempt({
@@ -91,6 +104,7 @@ export function requestBlocker(input: {
     attemptsUsed: input.used,
     lastSubmittedAt: input.lastSubmittedAt,
     firstSubmittedAt: input.firstSubmittedAt,
+    openUntil: input.reopenUntil,
     now: input.now,
   });
   if (check.ok) return null;
@@ -110,6 +124,8 @@ export const BLOCKER_LINE: Record<RequestBlocker["reason"], string> = {
   wait: "Can start after",
   window_closed: "The retake window closed",
   no_retake: "No retake at their score: corrections raise it to 100%.",
+  corrections: "Their corrections on the last try aren't done yet.",
+  practice: "They still need 80% on practice for",
   gates: "Their relearning checklist isn't done yet.",
   nothing_selected: "Every target is proficient; they have to pick a target to retake.",
 };

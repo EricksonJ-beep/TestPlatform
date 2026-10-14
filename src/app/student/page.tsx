@@ -1,21 +1,25 @@
 import Link from "next/link";
-import { ClipboardList, Plus } from "lucide-react";
+import { eq } from "drizzle-orm";
+import { KeyRound, Plus } from "lucide-react";
+import { db, schema } from "@/db";
 import { requireStudent, studentCourseIds } from "@/lib/authz";
 import { listCustomPracticeOptions } from "@/lib/custom-practice";
 import { listStudentAssignments } from "@/lib/queries/assignments";
 import { listStudentClasses } from "@/lib/queries/classes";
 import { getStudentPractice } from "@/lib/queries/practice";
 import { listStudentResults } from "@/lib/queries/student-results";
-import { eq } from "drizzle-orm";
-import { db, schema } from "@/db";
-import { KeyRound } from "lucide-react";
-import { EmptyState } from "@/components/empty-state";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AssignmentCard } from "./assignment-card";
+import { buildStudentToDo } from "@/lib/student-home";
+import { AssessmentsTab } from "./assessments-tab";
+import { HomeTabs } from "./home-tabs";
 import { PracticeTab } from "./practice-tab";
 import { ResultsTab } from "./results-tab";
-import { SECTION_TITLE, sectionAssessments } from "@/lib/student-home";
+import { ToDoList } from "./todo-list";
 
+/**
+ * The student home (Jon, Oct 14 2026, docs/student-home-plan.md "Student home"): the greeting and
+ * how many things are on the list, the To do list above the tabs, then Assessments | Practice |
+ * My results (`?tab=`), then the class chips. Reads only, so "View as student" sees it as is.
+ */
 export default async function StudentHome() {
   const session = await requireStudent();
   const [classes, assignments] = await Promise.all([
@@ -31,55 +35,22 @@ export default async function StudentHome() {
       where: eq(schema.users.id, session.userId),
     }),
   ]);
-  // Things needing action: open assignments not started, in progress, or waiting on corrections.
-  const attention = assignments.filter(
-    (a) =>
-      a.state === "not_started" ||
-      a.state === "in_progress" ||
-      a.state === "corrections_needed" ||
-      a.state === "corrections_to_full" ||
-      a.state === "corrections_returned" ||
-      a.state === "relearning" ||
-      a.state === "retake_required"
-  ).length;
-  const sections = sectionAssessments(assignments);
+  // One list, one count (Jon, Oct 14 2026): what the header says is what To do shows.
+  const list = buildStudentToDo({
+    assignments,
+    activities: practice.activities,
+    buildableTargetIds: new Set(
+      buildable.flatMap((c) => c.units.flatMap((u) => u.targets.map((t) => t.id)))
+    ),
+  });
 
   return (
     <div className="flex flex-col gap-5">
       <div>
         <h1 className="text-2xl">Hi, {session.firstName}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {attention === 0
-            ? "Nothing needs your attention right now."
-            : `${attention} ${attention === 1 ? "thing needs" : "things need"} your attention.`}
+        <p className="mt-1 text-sm text-muted-foreground" data-todo-count={list.count}>
+          {list.headline}
         </p>
-        <ul className="mt-3 flex flex-wrap items-center gap-2" aria-label="Your classes">
-          <li className="hidden" aria-hidden />
-          <li>
-            <Link
-              href="/student/join"
-              className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs font-medium text-muted-foreground hover:text-foreground"
-            >
-              <Plus className="size-3" aria-hidden /> Join a class
-            </Link>
-          </li>
-        </ul>
-        {classes.length > 0 ? (
-          <ul className="mt-2 flex flex-wrap gap-2" aria-label="Enrolled classes">
-            {classes.map((c) => (
-              <li
-                key={c.id}
-                className="rounded-md bg-brand-soft px-2.5 py-1 text-xs font-medium text-brand-deep"
-              >
-                {c.name}
-                <span className="font-normal text-brand-deep/80">
-                  {" · "}
-                  {c.teacherLastName}
-                </span>
-              </li>
-            ))}
-          </ul>
-        ) : null}
       </div>
 
       {me?.mustChangePassword ? (
@@ -97,73 +68,38 @@ export default async function StudentHome() {
         </Link>
       ) : null}
 
-      <Tabs defaultValue="assessments">
-        <TabsList className="w-full justify-start sm:w-auto">
-          <TabsTrigger value="assessments">Assessments</TabsTrigger>
-          <TabsTrigger value="practice">Practice</TabsTrigger>
-          <TabsTrigger value="results">My results</TabsTrigger>
-        </TabsList>
+      <ToDoList list={list} />
 
-        <TabsContent value="assessments">
-          {assignments.length === 0 ? (
-            <div className="rounded-lg border border-border bg-card">
-              <EmptyState
-                icon={ClipboardList}
-                title="No assessments yet"
-                description="When your teacher opens a quiz or test for your class, it shows up here with a Start button."
-              />
-            </div>
-          ) : (
-            <div className="flex flex-col gap-5" data-assessment-sections>
-              {(["needs_you", "waiting"] as const).map((key) =>
-                sections[key].length > 0 ? (
-                  <section key={key} aria-labelledby={`section-${key}`} data-section={key}>
-                    <h2
-                      id={`section-${key}`}
-                      className="mb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase"
-                    >
-                      {SECTION_TITLE[key]}
-                      <span className="ml-1.5 font-normal tabular">· {sections[key].length}</span>
-                    </h2>
-                    <ul className="flex flex-col gap-3" aria-label={SECTION_TITLE[key]}>
-                      {sections[key].map((a) => (
-                        <AssignmentCard key={a.id} a={a} />
-                      ))}
-                    </ul>
-                  </section>
-                ) : null
-              )}
-              {sections.needs_you.length === 0 && sections.waiting.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  Nothing open right now. Closed assessments are below.
-                </p>
-              ) : null}
-              {sections.closed.length > 0 ? (
-                <details className="group" data-section="closed">
-                  <summary className="cursor-pointer list-none text-xs font-medium tracking-wide text-muted-foreground uppercase select-none hover:text-foreground">
-                    <span className="group-open:hidden">Show closed</span>
-                    <span className="hidden group-open:inline">Hide closed</span>
-                    <span className="ml-1.5 font-normal tabular">· {sections.closed.length}</span>
-                  </summary>
-                  <ul className="mt-2 flex flex-col gap-3" aria-label="Closed">
-                    {sections.closed.map((a) => (
-                      <AssignmentCard key={a.id} a={a} />
-                    ))}
-                  </ul>
-                </details>
-              ) : null}
-            </div>
-          )}
-        </TabsContent>
+      <HomeTabs
+        panels={{
+          assessments: <AssessmentsTab assignments={assignments} />,
+          practice: <PracticeTab practice={practice} buildable={buildable} />,
+          results: <ResultsTab results={results} />,
+        }}
+      />
 
-        <TabsContent value="practice">
-          <PracticeTab practice={practice} buildable={buildable} />
-        </TabsContent>
-
-        <TabsContent value="results">
-          <ResultsTab results={results} />
-        </TabsContent>
-      </Tabs>
+      <ul className="flex flex-wrap items-center gap-2" aria-label="Your classes">
+        {classes.map((c) => (
+          <li
+            key={c.id}
+            className="rounded-md bg-brand-soft px-2.5 py-1 text-xs font-medium text-brand-deep"
+          >
+            {c.name}
+            <span className="font-normal text-brand-deep/80">
+              {" · "}
+              {c.teacherLastName}
+            </span>
+          </li>
+        ))}
+        <li>
+          <Link
+            href="/student/join"
+            className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs font-medium text-muted-foreground hover:text-foreground"
+          >
+            <Plus className="size-3" aria-hidden /> Join a class
+          </Link>
+        </li>
+      </ul>
     </div>
   );
 }

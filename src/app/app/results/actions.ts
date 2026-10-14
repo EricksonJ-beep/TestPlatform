@@ -6,6 +6,7 @@ import { z } from "zod";
 import { db, schema } from "@/db";
 import { deleteAttempt as removeAttempt, finalizeAttempt } from "@/lib/attempts";
 import { staleRequest } from "@/lib/needs-you";
+import { endOfNextSchoolDay } from "@/lib/reopen";
 import {
   currentResumeCode,
   issueResumeCode,
@@ -149,7 +150,7 @@ export const regradeAssignment = withAuthz(async (assignmentId: string) => {
 // Rule: only for a student enrolled in the assignment's class (the caller has passed requireOwner).
 async function enrolledStudent(assignmentId: string, studentId: string) {
   const asg = await db.query.assignments.findFirst({
-    columns: { classId: true, attemptsAllowed: true },
+    columns: { classId: true, attemptsAllowed: true, closesAt: true },
     where: eq(schema.assignments.id, assignmentId),
   });
   if (!asg) throw new ActionError("Not found.", 404);
@@ -173,7 +174,11 @@ async function enrolledStudent(assignmentId: string, studentId: string) {
   return { asg, used: counts?.used ?? 0, open: counts?.open ?? 0 };
 }
 
-/** Let one student start their next attempt (used + 1); also approves a pending request. Idempotent. */
+/**
+ * Let one student start their next attempt (used + 1); also approves a pending request.
+ * Idempotent. On a closed test it reopens the test for that student alone, through the end of
+ * the next school day (Jon, Oct 14 2026, decisions 1–2, R4: `endOfNextSchoolDay`).
+ */
 export const unlockNextAttempt = withAuthz(async (assignmentId: string, studentId: string) => {
   const session = await requireOwner({ type: "assignment", id: assignmentId });
   const { asg, used, open } = await enrolledStudent(assignmentId, studentId);
@@ -183,16 +188,27 @@ export const unlockNextAttempt = withAuthz(async (assignmentId: string, studentI
   if (asg.attemptsAllowed !== null && next > asg.attemptsAllowed)
     throw new ActionError("They've used every attempt.", 409);
   const grantedAt = new Date();
+  const openUntil =
+    asg.closesAt && asg.closesAt.getTime() <= grantedAt.getTime()
+      ? endOfNextSchoolDay(grantedAt)
+      : null;
   await db
     .insert(schema.attemptUnlocks)
-    .values({ assignmentId, studentId, attemptNumber: next, grantedBy: session.userId, grantedAt })
+    .values({
+      assignmentId,
+      studentId,
+      attemptNumber: next,
+      grantedBy: session.userId,
+      grantedAt,
+      openUntil,
+    })
     .onConflictDoUpdate({
       target: [
         schema.attemptUnlocks.assignmentId,
         schema.attemptUnlocks.studentId,
         schema.attemptUnlocks.attemptNumber,
       ],
-      set: { grantedBy: session.userId, grantedAt },
+      set: { grantedBy: session.userId, grantedAt, openUntil },
     });
   revalidatePath("/app");
   revalidatePath(`/app/results/${assignmentId}`);
@@ -223,8 +239,9 @@ export const revokeAttemptUnlock = withAuthz(async (assignmentId: string, studen
 
 /**
  * Undo an Approve from the Dashboard (Jon, Oct 13 2026): the unlock for the student's next try
- * goes back to being their request, so nothing is lost (Decline is the one that can't be undone).
- * An unlock the student never asked for is removed, as Take back does. Only an unused unlock.
+ * goes back to being their request, so nothing is lost (Decline is the one that can't be undone);
+ * on a closed test the reopen goes with it (Oct 14 2026). An unlock the student never asked for
+ * is removed, as Take back does. Only an unused unlock.
  */
 export const undoRetakeApproval = withAuthz(async (assignmentId: string, studentId: string) => {
   await requireOwner({ type: "assignment", id: assignmentId });
@@ -237,7 +254,7 @@ export const undoRetakeApproval = withAuthz(async (assignmentId: string, student
   );
   const restored = await db
     .update(schema.attemptUnlocks)
-    .set({ grantedAt: null, grantedBy: null })
+    .set({ grantedAt: null, grantedBy: null, openUntil: null })
     .where(and(unused, isNotNull(schema.attemptUnlocks.requestedAt)))
     .returning({ id: schema.attemptUnlocks.id });
   const removed = await db
@@ -255,7 +272,7 @@ export const undoRetakeApproval = withAuthz(async (assignmentId: string, student
 
 /**
  * Clear a leftover retake request (Jon, Oct 13 2026, dashboard plan): one that is no longer the
- * student's next try, sits on a test that no longer needs the teacher's OK, or comes from a
+ * student's next try, sits on an open test that no longer needs the teacher's OK, or comes from a
  * student no longer in the test's class (`staleRequest`).
  * Nothing else ever deletes those. A current request is refused here: Decline is the way to say
  * no to it, and it asks first.
@@ -273,7 +290,7 @@ export const clearRetakeRequest = withAuthz(async (assignmentId: string, request
     : undefined;
   if (!request || request.grantedAt) throw new ActionError("That request is already gone.", 404);
   const asg = await db.query.assignments.findFirst({
-    columns: { classId: true, attemptsAllowed: true, retakesNeedUnlock: true },
+    columns: { classId: true, attemptsAllowed: true, retakesNeedUnlock: true, closesAt: true },
     where: eq(schema.assignments.id, assignmentId),
   });
   const used = await db.$count(
@@ -293,7 +310,12 @@ export const clearRetakeRequest = withAuthz(async (assignmentId: string, request
         )
       )) > 0
     : false;
-  if (asg && !staleRequest({ ...asg, attemptNumber: request.attemptNumber, used, enrolled }))
+  // A closed test's request is current with or without "Retakes need my OK" (Oct 14 2026, R4).
+  const closed = !!asg?.closesAt && asg.closesAt.getTime() <= Date.now();
+  if (
+    asg &&
+    !staleRequest({ ...asg, attemptNumber: request.attemptNumber, used, closed, enrolled })
+  )
     throw new ActionError("That request is still current. Approve or decline it.", 409);
   await db.delete(schema.attemptUnlocks).where(eq(schema.attemptUnlocks.id, request.id));
   revalidatePath("/app");

@@ -8,7 +8,7 @@ import { db, schema } from "@/db";
 import { ActionError, publicAction, requireOwner, requireTeacher, withAuthz } from "@/lib/authz";
 import { clearViewAsCookie, readViewAsCookie, setViewAsCookie } from "@/lib/view-as";
 import { parseCsvRecords } from "@/lib/csv";
-import { rotateJoinCode } from "@/lib/join";
+import { rotateJoinCode, uniqueUsername, usernameBase } from "@/lib/join";
 import { parseRosterNames } from "@/lib/roster";
 import { generateTempPassword, hashPassword, passwordPolicy } from "@/lib/password";
 
@@ -289,6 +289,54 @@ export const deleteClass = withAuthz(async (classId: string) => {
   revalidatePath("/app");
   return { ok: true };
 });
+
+const nameSchema = studentSchema.pick({ firstName: true, lastName: true });
+
+/**
+ * Fix a student's name (typos, preferred names). Students who log in with a
+ * username get a new one built from the new name (blake.raycher → blade.raycher);
+ * the teacher is shown it so they can tell the student. Email logins and
+ * passwords are unchanged.
+ */
+export const renameStudent = withAuthz(
+  async (classId: string, studentId: string, formData: FormData) => {
+    await requireOwner({ type: "class", id: classId });
+    await assertStudentInClass(classId, studentId);
+    const parsed = nameSchema.safeParse(Object.fromEntries(formData));
+    if (!parsed.success) throw new ActionError("Check the form.", 400, fieldErrors(parsed.error));
+    const { firstName, lastName } = parsed.data;
+
+    const current = await db.query.users.findFirst({
+      columns: { firstName: true, lastName: true, username: true },
+      where: and(eq(schema.users.id, studentId), eq(schema.users.role, "student")),
+    });
+    if (!current) throw new ActionError("Student not found.", 404);
+
+    // Only regenerate when the name change would change the username's letters,
+    // so a capitalization fix doesn't move blake.raycher2 to blake.raycher3.
+    let username = current.username;
+    if (
+      username &&
+      usernameBase(firstName, lastName) !== usernameBase(current.firstName, current.lastName)
+    ) {
+      username = await uniqueUsername(firstName, lastName);
+    }
+
+    await db
+      .update(schema.users)
+      .set({ firstName, lastName, username })
+      .where(and(eq(schema.users.id, studentId), eq(schema.users.role, "student")));
+    // Keep the claimed roster-name row in step so the class list doesn't show the old spelling.
+    await db
+      .update(schema.rosterNames)
+      .set({ firstName, lastName })
+      .where(
+        and(eq(schema.rosterNames.classId, classId), eq(schema.rosterNames.studentId, studentId))
+      );
+    revalidatePath(`/app/classes/${classId}`);
+    return { username, usernameChanged: username !== current.username };
+  }
+);
 
 /** Remove a student from this class (keeps the account). */
 export const removeStudent = withAuthz(async (classId: string, studentId: string) => {

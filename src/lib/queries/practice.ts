@@ -17,6 +17,7 @@ import {
   type PracticeItemState,
   type PracticeProgress,
 } from "@/lib/practice-rules";
+import { practiceOwed } from "@/lib/quiz-practice";
 import { listBanksForCourse } from "@/lib/queries/assessments";
 import type { StudentAssignment } from "@/lib/queries/assignments";
 import { sanitizedQuestions, type StudentQuestion } from "@/lib/queries/attempts";
@@ -548,8 +549,31 @@ export type NeededGroup = {
   targets: NeededTarget[];
 };
 
+/**
+ * A quiz's missed target still to practise before its retake (Jon, Oct 14 2026, R3): the quiz
+ * score, the best practice so far, and the published sets tagged to it.
+ */
+export type QuizNeededTarget = {
+  id: string;
+  code: string;
+  title: string;
+  scored: number;
+  best: number | null;
+  /** The questions on it a built practice needs to count (`QuizPracticeTarget.minQuestions`). */
+  minQuestions: number | null;
+  sets: StudentPracticeSet[];
+};
+
+export type QuizNeededGroup = {
+  assignmentId: string;
+  title: string;
+  targets: QuizNeededTarget[];
+};
+
 export type StudentPractice = {
   needed: NeededGroup[];
+  /** Quiz practice targets (R3), on tests open to the student. */
+  quizNeeded: QuizNeededGroup[];
   sets: StudentPracticeSet[];
   activities: StudentActivity[];
 };
@@ -557,14 +581,17 @@ export type StudentPractice = {
 /**
  * Rule: a student sees published items on the courses of classes they're
  * enrolled in. Items that would satisfy a still-closed retake gate are grouped
- * first under "Needed before your retake" (PLAN.md §5 screen 2).
+ * first under "Needed before your retake" (PLAN.md §5 screen 2), with a quiz's
+ * missed targets still to practise (R3); both only for tests open to the
+ * student, a reopen included (Jon, Oct 14 2026: a closed test's steps sit on
+ * the to-do list, before asking to retake).
  */
 export async function getStudentPractice(
   studentId: string,
   assignments: StudentAssignment[]
 ): Promise<StudentPractice> {
   const courseIds = await studentCourseIds(studentId);
-  if (courseIds.length === 0) return { needed: [], sets: [], activities: [] };
+  if (courseIds.length === 0) return { needed: [], quizNeeded: [], sets: [], activities: [] };
 
   const setRows = await db
     .select({
@@ -656,7 +683,11 @@ export async function getStudentPractice(
   // "Needed before your retake": selected targets whose gate is still closed.
   const needed: NeededGroup[] = [];
   const pending = assignments.filter(
-    (a) => a.retake && a.retake.plan.selected.length > 0 && a.retake.plan.locked.length > 0
+    (a) =>
+      a.status === "open" &&
+      a.retake &&
+      a.retake.plan.selected.length > 0 &&
+      a.retake.plan.locked.length > 0
   );
   if (pending.length) {
     const pins = await db
@@ -709,7 +740,23 @@ export async function getStudentPractice(
       if (targets.length) needed.push({ assignmentId: a.id, title: a.title, targets });
     }
   }
-  return { needed, sets, activities };
+  const quizNeeded: QuizNeededGroup[] = assignments
+    .filter((a) => a.status === "open" && a.state === "relearning" && !a.retake)
+    .map((a) => ({
+      assignmentId: a.id,
+      title: a.title,
+      targets: practiceOwed(a.quizPractice).map((t) => ({
+        id: t.targetId,
+        code: t.code,
+        title: t.title,
+        scored: t.scored,
+        best: t.best,
+        minQuestions: t.minQuestions,
+        sets: sets.filter((s) => s.targets.some((x) => x.id === t.targetId)),
+      })),
+    }))
+    .filter((g) => g.targets.length > 0);
+  return { needed, quizNeeded, sets, activities };
 }
 
 export type PracticeRunnerPayload = {

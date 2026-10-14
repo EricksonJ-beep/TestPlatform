@@ -11,7 +11,8 @@ export const metadata: Metadata = { title: "Build my practice" };
 /**
  * "Build my practice" (Jon, Oct 13 2026): the student picks a unit and one,
  * several, or all of its learning targets, and gets a fresh set of questions
- * every time. Always open; nothing is assigned and nothing is graded.
+ * every time. Always open; nothing is assigned and nothing is graded. A to-do
+ * row's "Practice" opens it on one target (`?target=`, Oct 14 2026, R3).
  */
 export default async function BuildPracticePage({
   searchParams,
@@ -50,6 +51,7 @@ export default async function BuildPracticePage({
           courses={courses}
           initialCourseId={pick(sp.course)}
           initialUnitId={pick(sp.unit)}
+          initialTargetId={pick(sp.target)}
         />
       )}
     </div>
