@@ -30,7 +30,9 @@ export type StaleReason = "left_class" | "setting_off" | "taken" | "not_next" | 
 /**
  * Rule (research notes A3): a request is current only when it asks for the student's next try
  * (attempts used + 1) on a test that still says "Retakes need my OK", or has closed (Jon, Oct 14
- * 2026, R4: on a closed test any student may ask, and Approve reopens it for them), and still has
+ * 2026, R4: on a closed test any student may ask, and Approve reopens it for them), or is past the
+ * cap's retake window while still open (Oct 14 2026, "Let them ask while it's still open too":
+ * Approve lets them retake it through the next school day), and still has
  * that try, from a student still in the test's class (moving a student to another period keeps
  * their requests, and Approve and Decline only work for an enrolled student). Anything else is a
  * leftover: approving it would unlock nothing useful, so it gets Clear.
@@ -42,12 +44,17 @@ export function staleRequest(input: {
   retakesNeedUnlock: boolean;
   /** The test has closed (its own close: a request carries no reopen). */
   closed: boolean;
+  /**
+   * The cap's retake window has passed on the test while it is open (`capRetakeWindow`, with no
+   * approval: a request carries none). Absent means it hasn't.
+   */
+  windowPassed?: boolean;
   attemptsAllowed: number | null;
   /** The student is still enrolled in the assignment's class. */
   enrolled: boolean;
 }): StaleReason | null {
   if (!input.enrolled) return "left_class";
-  if (!input.retakesNeedUnlock && !input.closed) return "setting_off";
+  if (!input.retakesNeedUnlock && !input.closed && !input.windowPassed) return "setting_off";
   if (input.attemptNumber <= input.used) return "taken";
   if (input.attemptNumber !== input.used + 1) return "not_next";
   if (input.attemptsAllowed !== null && input.attemptNumber > input.attemptsAllowed)
@@ -75,8 +82,9 @@ export type RequestBlocker =
  * What would still stop a current request's try from starting once the teacher approves it: the
  * test's window, the wait between attempts, the corrections cap's retake window. The same
  * `canStartAttempt` rule `startAttempt` uses, with the unlock taken as given and no access code
- * (that is typed in class). On a closed test the approval reopens it (Jon, Oct 14 2026, R4), so
- * the close and the cap's window don't stop it: the row says until when instead. A summative's
+ * (that is typed in class). On a closed test the approval reopens it (Jon, Oct 14 2026, R4), and
+ * past the cap's window on an open one it lets them retake through the same date (Oct 14 2026),
+ * so the close and the cap's window don't stop it: the row says until when instead. A summative's
  * relearning gates come from its retake plan separately, and so do a quiz's corrections and
  * practice (Jon, Oct 14 2026: owed with the setting on too).
  */
@@ -93,8 +101,9 @@ export function requestBlocker(input: {
   lastSubmittedAt: Date | null;
   firstSubmittedAt: Date | null;
   /**
-   * The test is open for this student until then by a reopen: one already approved, or the one
-   * an approval now would give (`endOfNextSchoolDay`). Null or absent when there is none.
+   * The approved retake's end (`open_until`): one already approved, or the one an approval now
+   * would give (`endOfNextSchoolDay`) on a closed test or past the cap's window. Null or absent
+   * when there is none.
    */
   reopenUntil?: Date | null;
   now: Date;

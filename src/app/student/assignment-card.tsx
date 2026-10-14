@@ -183,7 +183,7 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
           {a.state === "awaiting_unlock" ? (
             <span className="inline-flex items-center gap-1" data-unlock-hint>
               <Lock className="size-3.5" aria-hidden />
-              {a.retakeRequested && a.status === "closed"
+              {a.retakeRequested && (a.status === "closed" || a.retakeWindowClosed)
                 ? "Retake requested"
                 : a.retakeRequested
                   ? `Attempt ${a.attemptsUsed + 1} requested`
@@ -217,10 +217,15 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
                 </span>
               )
             ) : (
+              // Past it the student asks for the retake (Jon, Oct 14 2026), so not "closed".
               <span data-retake-window="closed">
-                Retakes closed <LocalTime date={a.retakeBy} />
+                Retake window ended <LocalTime date={a.retakeBy} />
               </span>
             )
+          ) : a.retakeOpenUntil && a.state !== "in_progress" ? (
+            <span data-retake-window="approved">
+              Retake by <LocalTime date={a.retakeOpenUntil} />
+            </span>
           ) : null}
           {c && (a.state === "corrections_needed" || a.state === "corrections_to_full") ? (
             // The rule's words, as on the to-do list (Jon, Oct 14 2026).

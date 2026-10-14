@@ -46,6 +46,13 @@ describe("staleRequest", () => {
     );
     expect(staleRequest({ ...base, closed: true, attemptsAllowed: 1 })).toBe("no_attempts");
   });
+  it("past the cap's window on an open test a request is current with the setting off too (Oct 14 2026)", () => {
+    const open = { ...base, retakesNeedUnlock: false };
+    expect(staleRequest(open)).toBe("setting_off");
+    expect(staleRequest({ ...open, windowPassed: true })).toBeNull();
+    expect(staleRequest({ ...open, windowPassed: true, used: 2 })).toBe("taken");
+    expect(staleRequest({ ...open, windowPassed: true, enrolled: false })).toBe("left_class");
+  });
 });
 
 describe("requestBlocker", () => {
@@ -104,6 +111,20 @@ describe("requestBlocker", () => {
     expect(
       requestBlocker({ ...input, assignment: { ...closed, retakeWaitHours: 24 }, reopenUntil })
     ).toEqual({ reason: "wait", at: new Date(input.lastSubmittedAt.getTime() + 24 * HOUR) });
+  });
+  it("past the cap's window on an open test Approve lets them retake: the window doesn't block (Oct 14 2026)", () => {
+    const open = { ...assignment, closesAt: at("2026-10-30T12:00Z"), retakeWindowDays: 7 };
+    const late = { ...input, firstSubmittedAt: at("2026-10-01T14:00:00Z"), assignment: open };
+    expect(requestBlocker(late)).toEqual({
+      reason: "window_closed",
+      at: at("2026-10-08T14:00:00Z"),
+    });
+    expect(requestBlocker({ ...late, reopenUntil: at("2026-10-15T04:59:59.999Z") })).toBeNull();
+    // An approval whose end has passed lifts nothing.
+    expect(requestBlocker({ ...late, reopenUntil: at("2026-10-13T04:59:59.999Z") })).toEqual({
+      reason: "window_closed",
+      at: at("2026-10-08T14:00:00Z"),
+    });
   });
 });
 

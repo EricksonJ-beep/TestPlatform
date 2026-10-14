@@ -6,6 +6,7 @@ import { z } from "zod";
 import { db, schema } from "@/db";
 import { deleteAttempt as removeAttempt, finalizeAttempt } from "@/lib/attempts";
 import { staleRequest } from "@/lib/needs-you";
+import { capWindowPassed } from "@/lib/queries/reopen";
 import { endOfNextSchoolDay } from "@/lib/reopen";
 import {
   currentResumeCode,
@@ -177,7 +178,9 @@ async function enrolledStudent(assignmentId: string, studentId: string) {
 /**
  * Let one student start their next attempt (used + 1); also approves a pending request.
  * Idempotent. On a closed test it reopens the test for that student alone, through the end of
- * the next school day (Jon, Oct 14 2026, decisions 1–2, R4: `endOfNextSchoolDay`).
+ * the next school day (Jon, Oct 14 2026, decisions 1–2, R4: `endOfNextSchoolDay`); past the cap's
+ * retake window on a test still open, the retake gets the same end, and the window doesn't apply
+ * until then (Oct 14 2026: "Let them ask while it's still open too", `capWindowPassed`).
  */
 export const unlockNextAttempt = withAuthz(async (assignmentId: string, studentId: string) => {
   const session = await requireOwner({ type: "assignment", id: assignmentId });
@@ -188,8 +191,9 @@ export const unlockNextAttempt = withAuthz(async (assignmentId: string, studentI
   if (asg.attemptsAllowed !== null && next > asg.attemptsAllowed)
     throw new ActionError("They've used every attempt.", 409);
   const grantedAt = new Date();
+  const closed = !!asg.closesAt && asg.closesAt.getTime() <= grantedAt.getTime();
   const openUntil =
-    asg.closesAt && asg.closesAt.getTime() <= grantedAt.getTime()
+    closed || (await capWindowPassed(assignmentId, studentId, grantedAt))
       ? endOfNextSchoolDay(grantedAt)
       : null;
   await db
@@ -272,7 +276,8 @@ export const undoRetakeApproval = withAuthz(async (assignmentId: string, student
 
 /**
  * Clear a leftover retake request (Jon, Oct 13 2026, dashboard plan): one that is no longer the
- * student's next try, sits on an open test that no longer needs the teacher's OK, or comes from a
+ * student's next try, sits on an open test that no longer needs the teacher's OK (and isn't past
+ * the cap's retake window, where any student may ask: Oct 14 2026), or comes from a
  * student no longer in the test's class (`staleRequest`).
  * Nothing else ever deletes those. A current request is refused here: Decline is the way to say
  * no to it, and it asks first.
@@ -311,10 +316,20 @@ export const clearRetakeRequest = withAuthz(async (assignmentId: string, request
       )) > 0
     : false;
   // A closed test's request is current with or without "Retakes need my OK" (Oct 14 2026, R4).
-  const closed = !!asg?.closesAt && asg.closesAt.getTime() <= Date.now();
+  const now = new Date();
+  const closed = !!asg?.closesAt && asg.closesAt.getTime() <= now.getTime();
+  // So is one past the cap's retake window on an open test (Oct 14 2026).
+  const windowPassed = !closed && (await capWindowPassed(assignmentId, request.studentId, now));
   if (
     asg &&
-    !staleRequest({ ...asg, attemptNumber: request.attemptNumber, used, closed, enrolled })
+    !staleRequest({
+      ...asg,
+      attemptNumber: request.attemptNumber,
+      used,
+      closed,
+      windowPassed,
+      enrolled,
+    })
   )
     throw new ActionError("That request is still current. Approve or decline it.", 409);
   await db.delete(schema.attemptUnlocks).where(eq(schema.attemptUnlocks.id, request.id));

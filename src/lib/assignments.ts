@@ -3,7 +3,8 @@
  * start an attempt, the attempt deadline with accommodations, and defaults by
  * assessment type. No database, no clock of its own: every function takes `now`.
  */
-import { effectiveClose, reopenedUntil } from "@/lib/reopen";
+import { approvedUntil, effectiveClose } from "@/lib/reopen";
+import type { CorrectionsRule } from "@/lib/retakes";
 
 export type AssignmentStatus = "scheduled" | "open" | "closed";
 
@@ -41,8 +42,9 @@ export type StartCheck =
  * waiting period, and, when the assignment says retakes need the teacher's OK,
  * once the teacher has unlocked that attempt number (attempt 1 never needs one).
  * The window is the student's own (Jon, Oct 14 2026, R5): a retake the teacher
- * approved after the close is open until its reopen ends, and while reopened the
- * cap's retake window doesn't apply to it (decision 2).
+ * approved after the close is open until its reopen ends, and while an approved
+ * retake's end (`open_until`) is ahead, after the close or after the cap's retake
+ * window passed on an open test, that window doesn't apply to it (decision 2).
  */
 export function canStartAttempt(input: {
   assignment: WindowLike & {
@@ -92,7 +94,7 @@ export function canStartAttempt(input: {
   if (assignment.retakesNeedUnlock && needsUnlock(attemptsUsed, input.unlockedThrough ?? 0)) {
     return { ok: false, reason: "needs_unlock" };
   }
-  const closedAt = reopenedUntil(assignment.closesAt, openUntil, now)
+  const closedAt = approvedUntil(openUntil, now)
     ? null
     : retakeWindowEnd(assignment.retakeWindowDays, input.firstSubmittedAt);
   if (attemptsUsed > 0 && closedAt && now >= closedAt) {
@@ -108,6 +110,34 @@ export function retakeWindowEnd(
 ): Date | null {
   if (!retakeWindowDays || !firstSubmittedAt) return null;
   return new Date(firstSubmittedAt.getTime() + retakeWindowDays * 86_400_000);
+}
+
+/**
+ * The cap's retake window as it bounds this student's next retake: when it ends, and whether it
+ * has passed. It applies under the cap (`correctionsCapOn`) where a retake is on offer (not
+ * `to_full`, decision 2), on a test open to the student, and not while an approved retake's end
+ * is ahead (`approvedUntil`). Once it has passed on an open test the student asks the teacher for
+ * the retake, as on a closed one (Jon, Oct 14 2026: "Let them ask while it's still open too").
+ */
+export function capRetakeWindow(input: {
+  capped: boolean;
+  rule: CorrectionsRule;
+  /** The test is open for this student (its effective close hasn't passed). */
+  open: boolean;
+  retakeWindowDays: number | null | undefined;
+  firstSubmittedAt: Date | null | undefined;
+  /** An approved retake's end for the next attempt (`attempt_unlocks.open_until`). */
+  openUntil: Date | null | undefined;
+  now: Date;
+}): { retakeBy: Date | null; passed: boolean } {
+  const retakeBy =
+    input.capped &&
+    input.rule !== "to_full" &&
+    input.open &&
+    !approvedUntil(input.openUntil, input.now)
+      ? retakeWindowEnd(input.retakeWindowDays, input.firstSubmittedAt)
+      : null;
+  return { retakeBy, passed: retakeBy !== null && input.now >= retakeBy };
 }
 
 /** The next attempt (used + 1) needs an unlock unless it is the first or the teacher already unlocked it. */

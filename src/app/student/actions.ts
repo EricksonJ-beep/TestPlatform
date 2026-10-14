@@ -21,7 +21,7 @@ import { correctionsCapOn } from "@/lib/grading";
 import { practiceOwed, practiceOwedText, quizPracticeNeeds } from "@/lib/quiz-practice";
 import { getCorrectionsSummary, latestFinishedAttemptId } from "@/lib/queries/corrections";
 import { getQuizPracticeData } from "@/lib/queries/quiz-practice";
-import { openUntilFor } from "@/lib/queries/reopen";
+import { capWindowPassed, openUntilFor } from "@/lib/queries/reopen";
 import { effectiveClose } from "@/lib/reopen";
 import { getRetakeStatus } from "@/lib/queries/retakes";
 import { BLOCKER_TEXT, correctionsRule, TO_FULL_TEXT } from "@/lib/retakes";
@@ -290,16 +290,19 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
 /**
  * Ask the teacher for the next attempt (Jon, Oct 1 2026). Rules: the assignment has
  * "Retakes need my OK" on, or it has closed for this student, with the setting or
- * without (Jon, Oct 14 2026, decision 1: "Students ask, I approve"; R4); a finished
+ * without (Jon, Oct 14 2026, decision 1: "Students ask, I approve"; R4), or the cap's
+ * retake window has passed while it is still open (Oct 14 2026: "Let them ask while
+ * it's still open too", `capWindowPassed`); a finished
  * attempt exists and none is open or waiting for a grade; attempts remain; a retake
  * is on offer (not practice, not a quiz already at 100%); corrections are clear and a quiz's missed targets practised (decisions 4–5:
  * "To-do, then ask"), and a summative's relearning gates open, as `startAttempt`
  * checks them. The cap's retake window doesn't stop a closed test's request: the
  * teacher decides (decision 2). The row is a request until the teacher grants it.
- * Idempotent: asking again changes nothing (and logs nothing). On a closed test an
- * unlock that can no longer open it (given before the close, or a reopen that has
- * ended) becomes a fresh request, so it reaches the teacher's Needs you; a reopen
- * approved while the student was asking is kept.
+ * Idempotent: asking again changes nothing (and logs nothing). On a closed test, or
+ * past the cap's window, an unlock that can no longer open it (given before the close
+ * or the window's end, or an approval whose end has passed) becomes a fresh request,
+ * so it reaches the teacher's Needs you; one approved while the student was asking is
+ * kept.
  */
 export const requestRetake = withAuthz(async (assignmentId: string) => {
   const access = await requireAssignmentAccess(assignmentId);
@@ -345,7 +348,10 @@ export const requestRetake = withAuthz(async (assignmentId: string) => {
     used > 0 ? await openUntilFor(assignmentId, access.userId, next) : null
   );
   const closed = !!close && close <= now;
-  if (!closed && !assignment.retakesNeedUnlock)
+  // Past the cap's retake window on an open test, the student asks as on a closed one.
+  const windowPassed =
+    !closed && used > 0 && (await capWindowPassed(assignmentId, access.userId, now));
+  if (!closed && !windowPassed && !assignment.retakesNeedUnlock)
     throw new ActionError("This assignment doesn't need a request.", 409);
   if (used === 0) throw new ActionError("Take the quiz once first.", 409);
   if ((counts?.open ?? 0) > 0) throw new ActionError("Finish the attempt you're on first.", 409);
@@ -370,12 +376,12 @@ export const requestRetake = withAuthz(async (assignmentId: string) => {
     .insert(u)
     .values({ assignmentId, studentId: access.userId, attemptNumber: next, requestedAt: now });
   const written = await (
-    closed
+    closed || windowPassed
       ? insert.onConflictDoUpdate({
           target: [u.assignmentId, u.studentId, u.attemptNumber],
           set: { requestedAt: now, grantedAt: null, grantedBy: null, openUntil: null },
-          // Only a grant that can't open it (from before the close, or a reopen that ended): a
-          // reopen the teacher approved since the read above stands.
+          // Only a grant that can't open it (from before the close or the window's end, or one
+          // whose end has passed): one the teacher approved since the read above stands.
           setWhere: and(isNotNull(u.grantedAt), or(isNull(u.openUntil), lte(u.openUntil, now))),
         })
       : insert.onConflictDoNothing()

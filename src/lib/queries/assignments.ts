@@ -162,11 +162,17 @@ export type StudentAssignment = {
   retakesNeedUnlock: boolean;
   /**
    * The student has asked for the next attempt and the teacher hasn't answered yet, on a test
-   * that needs the teacher's OK or has closed (Jon, Oct 14 2026: ask to retake, R4).
+   * that needs the teacher's OK, has closed, or is past the cap's retake window (Jon, Oct 14
+   * 2026: ask to retake, R4).
    */
   retakeRequested: boolean;
   /** The test closed and the teacher reopened it for this student until then (R4–R5). */
   reopenedUntil: Date | null;
+  /**
+   * Past the cap's retake window on an open test, the teacher approved the retake: it may start
+   * until then (Jon, Oct 14 2026: "Let them ask while it's still open too").
+   */
+  retakeOpenUntil: Date | null;
   /** "Ask to retake" is a counted to-do: the retake would be required if the test were open (R6). */
   askCounts: boolean;
   /**
@@ -461,6 +467,7 @@ export async function listStudentAssignments(
           nextAttemptAt: next && next > now && card.status === "open" ? next : null,
           retakeRequested: card.retakeRequested,
           reopenedUntil: card.reopenedUntil,
+          retakeOpenUntil: card.retakeOpenUntil,
           askCounts: card.askCounts,
         };
       }

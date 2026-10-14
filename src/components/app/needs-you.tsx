@@ -461,10 +461,17 @@ function RequestRow({
       meta={meta}
       note={
         <>
-          {/* Ask to retake on a closed test (Jon, Oct 14 2026, R4): Approve reopens it for them. */}
+          {/* Ask to retake on a closed test (Jon, Oct 14 2026, R4): Approve reopens it for them;
+              past the cap's window on an open one, it lets them retake it ("Let them ask while
+              it's still open too"). */}
           {r.reopensUntil && !approved ? (
-            <p className="mt-0.5 text-xs text-muted-foreground" data-reopens>
-              Closed · Approve reopens it for {r.firstName} through{" "}
+            <p
+              className="mt-0.5 text-xs text-muted-foreground"
+              data-reopens={r.windowEnded ? "window" : "closed"}
+            >
+              {r.windowEnded
+                ? `Retake window ended · Approve lets ${r.firstName} retake it through `
+                : `Closed · Approve reopens it for ${r.firstName} through `}
               <LocalTime date={r.reopensUntil} mode="date" />
             </p>
           ) : null}
@@ -479,7 +486,8 @@ function RequestRow({
               <Check className="size-3.5" aria-hidden />
               {r.reopensUntil ? (
                 <>
-                  Reopened through <LocalTime date={r.reopensUntil} mode="date" />
+                  {r.windowEnded ? "Retake open through" : "Reopened through"}{" "}
+                  <LocalTime date={r.reopensUntil} mode="date" />
                 </>
               ) : (
                 <>Try {r.attemptNumber} unlocked</>

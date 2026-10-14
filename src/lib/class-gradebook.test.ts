@@ -20,6 +20,7 @@ const card = (c: Partial<CardState>): CardState => ({
   windowClosed: false,
   quizPractice: [],
   reopenedUntil: null,
+  retakeOpenUntil: null,
   retakeRequested: false,
   askCounts: false,
   ...c,

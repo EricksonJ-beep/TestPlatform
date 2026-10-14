@@ -37,6 +37,7 @@ const card = (c: Partial<CardState> = {}): CardState => ({
   windowClosed: false,
   quizPractice: [],
   reopenedUntil: null,
+  retakeOpenUntil: null,
   retakeRequested: false,
   askCounts: false,
   ...c,
@@ -93,7 +94,9 @@ const cell = (
     quizPractice: [],
     unlock: null,
     reopenedUntil: null,
+    retakeOpenUntil: null,
     retakeBy: null,
+    retakeWindowClosed: false,
     tabSwitches: 0,
     movedUpThisWeek: false,
     ...rest,
@@ -142,6 +145,7 @@ const todoAsg = (a: Partial<ToDoAssignment>): ToDoAssignment => ({
   retakesNeedUnlock: false,
   retakeRequested: false,
   reopenedUntil: null,
+  retakeOpenUntil: null,
   askCounts: false,
   correctionsCap: true,
   retakeThreshold: 80,
@@ -460,6 +464,19 @@ describe("one cell", () => {
     const reopened = cell({ reopenedUntil: hours(30) });
     expect(cellSentence(reopened, column({ status: "closed" }), { hideScores: true, fmt })).toBe(
       "Took try 1 Oct 9; reopened through Oct 9."
+    );
+    // Past the cap's window on an open quiz (Oct 14 2026): the window's end, then the approval.
+    const late = cell({
+      cycle: "retake_available",
+      retakeBy: hours(-30),
+      retakeWindowClosed: true,
+    });
+    expect(cellSentence(late, column(), { hideScores: true, fmt })).toBe(
+      "Took try 1 Oct 9; retake window ended Oct 9."
+    );
+    const approved = cell({ cycle: "retake_available", retakeOpenUntil: hours(30) });
+    expect(cellSentence(approved, column(), { hideScores: true, fmt })).toBe(
+      "Took try 1 Oct 9; retake open through Oct 9."
     );
     // Quiz practice still owed before the retake (Oct 14 2026, R3), with the best so far.
     const target = (code: string, best: number | null, done = false) => ({

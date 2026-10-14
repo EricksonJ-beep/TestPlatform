@@ -3,6 +3,7 @@ import {
   assignmentStatus,
   attemptDueAt,
   canStartAttempt,
+  capRetakeWindow,
   codesMatch,
   defaultAttempts,
   generateAccessCode,
@@ -178,6 +179,78 @@ describe("canStartAttempt", () => {
     });
     expect(canStartAttempt({ ...retake, openUntil, now: openUntil })).toMatchObject({
       reason: "closed",
+    });
+  });
+  it("past the cap's window on an open test, an approved retake starts until its end (Oct 14 2026)", () => {
+    // "Let them ask while it's still open too": the teacher's approval sets open_until.
+    const capped = { ...open, closesAt: at("2026-10-30T05:00:00Z"), retakeWindowDays: 7 };
+    const retake = {
+      assignment: capped,
+      attemptsUsed: 1,
+      firstSubmittedAt: at("2026-09-14T14:00:00Z"), // 8 days before now
+    };
+    expect(canStartAttempt({ ...retake, now })).toMatchObject({ reason: "window_closed" });
+    const openUntil = at("2026-09-24T04:59:59.999Z"); // before the class close
+    expect(canStartAttempt({ ...retake, openUntil, now })).toEqual({ ok: true });
+    // With "Retakes need my OK" the unlock is the same row.
+    expect(
+      canStartAttempt({
+        ...retake,
+        assignment: { ...capped, retakesNeedUnlock: true },
+        unlockedThrough: 2,
+        openUntil,
+        now,
+      })
+    ).toEqual({ ok: true });
+    // Unused by its end: the window applies again.
+    expect(canStartAttempt({ ...retake, openUntil, now: openUntil })).toMatchObject({
+      reason: "window_closed",
+    });
+    // The wait between attempts still counts.
+    expect(
+      canStartAttempt({
+        ...retake,
+        assignment: { ...capped, retakeWaitHours: 24 },
+        lastSubmittedAt: at("2026-09-22T13:00:00Z"),
+        openUntil,
+        now,
+      })
+    ).toMatchObject({ reason: "wait" });
+  });
+});
+
+describe("capRetakeWindow", () => {
+  const input = {
+    capped: true,
+    rule: "gate" as const,
+    open: true,
+    retakeWindowDays: 7,
+    firstSubmittedAt: at("2026-09-14T14:00:00Z"), // 8 days before now
+    openUntil: null,
+    now,
+  };
+  const end = at("2026-09-21T14:00:00Z");
+  it("passes a week after attempt 1 on an open capped quiz with a retake on offer", () => {
+    expect(capRetakeWindow(input)).toEqual({ retakeBy: end, passed: true });
+    expect(capRetakeWindow({ ...input, firstSubmittedAt: at("2026-09-20T14:00:00Z") })).toEqual({
+      retakeBy: at("2026-09-27T14:00:00Z"),
+      passed: false,
+    });
+  });
+  it("doesn't apply without the cap, at or above the line, on a closed test, or before attempt 1", () => {
+    const none = { retakeBy: null, passed: false };
+    expect(capRetakeWindow({ ...input, capped: false })).toEqual(none);
+    expect(capRetakeWindow({ ...input, rule: "to_full" })).toEqual(none);
+    expect(capRetakeWindow({ ...input, open: false })).toEqual(none);
+    expect(capRetakeWindow({ ...input, firstSubmittedAt: null })).toEqual(none);
+    expect(capRetakeWindow({ ...input, retakeWindowDays: 0 })).toEqual(none);
+  });
+  it("doesn't apply while an approved retake's end is ahead, and does again after it", () => {
+    const openUntil = at("2026-09-24T04:59:59.999Z");
+    expect(capRetakeWindow({ ...input, openUntil })).toEqual({ retakeBy: null, passed: false });
+    expect(capRetakeWindow({ ...input, openUntil, now: openUntil })).toEqual({
+      retakeBy: end,
+      passed: true,
     });
   });
 });

@@ -43,6 +43,7 @@ export type ToDoAssignment = Pick<
   | "retakesNeedUnlock"
   | "retakeRequested"
   | "reopenedUntil"
+  | "retakeOpenUntil"
   | "askCounts"
   | "correctionsCap"
   | "retakeThreshold"
@@ -188,7 +189,7 @@ export function correctionsWhy(a: ToDoAssignment, scores = true): string | null 
     return `${lead} to raise your score${from} to ${a.retakeThreshold}%.`;
   const attemptsLeft = a.attemptsAllowed === null || a.attemptsUsed < a.attemptsAllowed;
   if (!attemptsLeft) return `${lead} on attempt ${c.attemptNumber}.`;
-  if (a.status === "closed") return `${lead} before you can ask to retake.`;
+  if (asksToRetake(a)) return `${lead} before you can ask to retake.`;
   if (a.retakesNeedUnlock) return `${lead} before you can ask for attempt ${a.attemptsUsed + 1}.`;
   return `${lead} to unlock attempt ${a.attemptsUsed + 1}.`;
 }
@@ -216,9 +217,18 @@ export function correctionsActionLabel(c: { started: number; needed: number }): 
   return c.started >= c.needed ? "Finish and turn in" : "Continue corrections";
 }
 
+/**
+ * The retake is asked for whatever "Retakes need my OK" says: the test has closed (R4), or the
+ * cap's retake window has passed while it is open (Jon, Oct 14 2026: "Let them ask while it's
+ * still open too").
+ */
+function asksToRetake(a: ToDoAssignment): boolean {
+  return a.status === "closed" || a.retakeWindowClosed;
+}
+
 /** What a retake step leads to: the retake itself, or asking for it (closed, or needs the OK). */
 export function retakeGoal(a: ToDoAssignment): string {
-  if (a.status === "closed") return "before you can ask to retake";
+  if (asksToRetake(a)) return "before you can ask to retake";
   return a.retakesNeedUnlock ? "before you can ask for a retake" : "to unlock your retake";
 }
 
@@ -227,10 +237,11 @@ export function retakeGoal(a: ToDoAssignment): string {
  * to the student (the plan's To do order: practice, relearning), and on a closed one only when the
  * retake would be required there (a summative with targets below the line), the rule that decides
  * whether "Ask to retake" counts (`askCounts`). An optional retake's steps sit in "Want a higher
- * score?".
+ * score?", and so do a quiz's past the cap's retake window, where it is asked for too (Oct 14
+ * 2026).
  */
 function stepGroup(a: ToDoAssignment): ToDoGroup {
-  if (a.status !== "closed") return "todo";
+  if (!asksToRetake(a)) return "todo";
   return a.type === "summative" && !!a.retake?.plan.required.length ? "todo" : "higher";
 }
 
@@ -384,7 +395,9 @@ function rowsFor(a: ToDoAssignment, buildable: ReadonlySet<string>): ToDoRow[] {
           when:
             a.retakeBy && !a.retakeWindowClosed
               ? { label: "Retake by", at: a.retakeBy }
-              : closeWhen(a),
+              : a.retakeOpenUntil
+                ? { label: "Retake by", at: a.retakeOpenUntil }
+                : closeWhen(a),
           minutes: a.timeLimitMinutes,
           needsCode: a.needsCode,
           action: link("Start retake", assignmentHref(a), required),
@@ -400,7 +413,9 @@ function rowsFor(a: ToDoAssignment, buildable: ReadonlySet<string>): ToDoRow[] {
             why:
               a.status === "closed"
                 ? "You asked to retake this test. If your teacher says yes, it opens just for you until the end of the next school day."
-                : `You asked for attempt ${a.attemptsUsed + 1}. Your teacher will approve it, usually in class.`,
+                : a.retakeWindowClosed
+                  ? "You asked to retake this quiz. If your teacher says yes, you can retake it until the end of the next school day."
+                  : `You asked for attempt ${a.attemptsUsed + 1}. Your teacher will approve it, usually in class.`,
             when: null,
             action: link("View", assignmentHref(a), false),
           }),
@@ -426,9 +441,12 @@ function rowsFor(a: ToDoAssignment, buildable: ReadonlySet<string>): ToDoRow[] {
           group: a.askCounts ? "todo" : "higher",
           kind: "ask",
           why:
-            a.askCounts && codes.length
-              ? `This test is closed, and you still need to retake ${targetList(codes)}. Ask your teacher: if they say yes, it opens just for you until the end of the next school day.`
-              : "This test is closed. Want a higher score? Ask your teacher: if they say yes, it opens just for you until the end of the next school day.",
+            a.status !== "closed"
+              ? // Past the cap's window on an open quiz (Jon, Oct 14 2026): asked for, never "closed".
+                "The retake window for this quiz has ended. Want a higher score? Ask your teacher: if they say yes, you can retake it until the end of the next school day."
+              : a.askCounts && codes.length
+                ? `This test is closed, and you still need to retake ${targetList(codes)}. Ask your teacher: if they say yes, it opens just for you until the end of the next school day.`
+                : "This test is closed. Want a higher score? Ask your teacher: if they say yes, it opens just for you until the end of the next school day.",
           when: null,
           action: ask("Ask to retake", a.askCounts),
         }),

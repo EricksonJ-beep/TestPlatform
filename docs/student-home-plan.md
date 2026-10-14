@@ -76,6 +76,9 @@ and they have not already asked. This uses the existing `attempt_unlocks` reques
 the live database). The teacher approves in Needs you (existing Retake requests group): Approve on
 a closed assignment sets `granted_at = now`, `open_until = endOfNextSchoolDay(now)` (pure helper:
 next Mon–Fri after today, 23:59 America/Chicago). Decline / Undo / Clear work as today.
+Jon, Oct 14 2026: "Let them ask while it's still open too": past the cap's 7-day retake window on
+a quiz still open, a ready retake reads Ask to retake too, and Approve gives it the same
+`open_until` (the window doesn't apply until then); see decisions.md, "Ask while open".
 
 **R5. Effective close per student.** One helper gives a student's close for an assignment: the
 later of `assignments.closes_at` and an unused granted unlock's `open_until` for attempt used+1.

@@ -92,3 +92,13 @@ export function reopenedUntil(
   if (now.getTime() < closesAt.getTime() || now.getTime() >= openUntil.getTime()) return null;
   return openUntil;
 }
+
+/**
+ * A retake the teacher approved with an end (`open_until`) that hasn't come yet: until then the
+ * cap's retake window doesn't apply to it (decision 2: the teacher approved it), whether the
+ * approval reopened a closed test (R4) or came after the window passed on a test still open (Jon,
+ * Oct 14 2026: "Let them ask while it's still open too"). Null when there is none or it has ended.
+ */
+export function approvedUntil(openUntil: Date | null | undefined, now: Date): Date | null {
+  return openUntil && now.getTime() < openUntil.getTime() ? openUntil : null;
+}

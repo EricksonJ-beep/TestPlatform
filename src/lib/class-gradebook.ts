@@ -211,7 +211,8 @@ function studentKind(input: CellInput): { kind: CellKind; closed: boolean } | nu
       return input.retake?.plan.required.length ? own("retake_needed", true) : own("done");
     case "retake_available":
       if (input.unlockedBlocker) return own("unlocked");
-      return own(closed ? "done" : "can_retake");
+      // Past the cap's window the student asks for it, as on a closed test (Oct 14 2026).
+      return own(closed || card.windowClosed ? "done" : "can_retake");
     default:
       return own(input.unlockedBlocker ? "unlocked" : "done");
   }
