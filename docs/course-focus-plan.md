@@ -19,7 +19,7 @@ Like Google Classroom: the Dashboard is the front porch where you see every cour
 
 ### 1. One switcher, at the top of the sidebar (decided)
 
-The teal sidebar gets a course block under the Bloom wordmark: the current course's name with a dropdown of your courses. Picking one sets the current course and the page you are on re-renders for it. It is the same switcher on every page, so you never hunt for it.
+The teal sidebar gets a course block under the Bloom wordmark: the current course's name with a dropdown of your courses. _(Oct 14 2026, Jon: the dropdown became a list. Every course sits on its own row under a "Courses" heading, like Google Classroom's side tab, with a colored chip each; the focused course has a coral edge. Collapsed, the rail shows one chip per course.)_ Picking one sets the current course and the page you are on re-renders for it. It is the same switcher on every page, so you never hunt for it.
 
 Why the sidebar and not tabs on each page: tabs are already on two pages and would need adding to five more, each slightly different. One switcher in one place is what makes the focus feel like "I am in Anatomy now", not "this page happens to be filtered".
 

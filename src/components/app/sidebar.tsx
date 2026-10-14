@@ -62,7 +62,7 @@ function writeCollapsed(value: boolean) {
 
 /**
  * Teal left sidebar. Collapses to an icon rail; remembers the choice per browser.
- * The course switcher under the wordmark sets the course every scoped section
+ * The course list under the wordmark sets the course every scoped section
  * shows (docs/course-focus-plan.md).
  */
 export function AppSidebar({
@@ -114,15 +114,14 @@ export function AppSidebar({
         </Link>
       </div>
 
-      <div className="mb-1 flex flex-col pb-2">
-        <CourseSwitcher
-          courses={courses}
-          current={currentCourse}
-          collapsed={collapsed}
-          pick={pickCourse}
-        />
-      </div>
-      <nav aria-label="Main" className="flex flex-1 flex-col gap-0.5 px-2 pt-1">
+      <CourseSwitcher
+        courses={courses}
+        current={currentCourse}
+        collapsed={collapsed}
+        pick={pickCourse}
+      />
+      {courses.length > 0 ? <div className="mx-2 my-2 h-px bg-sidebar-border" /> : null}
+      <nav aria-label="Main" className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 pt-1">
         {NAV.map(({ href, label, icon: Icon, ...rest }) => {
           const active = isActive(href, "exact" in rest ? rest.exact : false);
           return (
