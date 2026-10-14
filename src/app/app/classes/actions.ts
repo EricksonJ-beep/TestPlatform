@@ -290,6 +290,31 @@ export const deleteClass = withAuthz(async (classId: string) => {
   return { ok: true };
 });
 
+const nameSchema = studentSchema.pick({ firstName: true, lastName: true });
+
+/** Fix a student's display name (typos, preferred names). Login username is unchanged. */
+export const renameStudent = withAuthz(
+  async (classId: string, studentId: string, formData: FormData) => {
+    await requireOwner({ type: "class", id: classId });
+    await assertStudentInClass(classId, studentId);
+    const parsed = nameSchema.safeParse(Object.fromEntries(formData));
+    if (!parsed.success) throw new ActionError("Check the form.", 400, fieldErrors(parsed.error));
+    await db
+      .update(schema.users)
+      .set(parsed.data)
+      .where(and(eq(schema.users.id, studentId), eq(schema.users.role, "student")));
+    // Keep the claimed roster-name row in step so the class list doesn't show the old spelling.
+    await db
+      .update(schema.rosterNames)
+      .set(parsed.data)
+      .where(
+        and(eq(schema.rosterNames.classId, classId), eq(schema.rosterNames.studentId, studentId))
+      );
+    revalidatePath(`/app/classes/${classId}`);
+    return { ok: true };
+  }
+);
+
 /** Remove a student from this class (keeps the account). */
 export const removeStudent = withAuthz(async (classId: string, studentId: string) => {
   await requireOwner({ type: "class", id: classId });
