@@ -13,6 +13,8 @@ import {
   type PoolQuestion,
 } from "@/lib/assessments/serve";
 
+import type { CustomPracticeCourse } from "@/lib/custom-practice";
+
 export type CustomDealQuestion = PoolQuestion & { difficulty: number };
 
 /** The lengths a student can pick; the deal stops early when the targets run out. */
@@ -95,4 +97,26 @@ function shuffle<T>(arr: T[], rng: () => number): T[] {
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
+}
+
+/** A unit's key on the build page (a target with no unit sits in "Other targets", key ""). */
+export const unitKey = (id: string | null) => String(id ?? "");
+
+/**
+ * Where Build my practice opens: the course and unit the link names (`?course=`, `?unit=`), or,
+ * with `?target=` (Jon, Oct 14 2026, R3: a to-do row's "Practice U2.LT1"), that target's course
+ * and unit with the target already picked. Anything not on offer falls back to the first course
+ * and its first unit, nothing picked.
+ */
+export function practiceBuildStart(
+  courses: CustomPracticeCourse[],
+  want: { course: string | null; unit: string | null; target: string | null }
+): { courseId: string; unitKey: string; picked: string[] } {
+  for (const c of want.target ? courses : [])
+    for (const u of c.units)
+      if (u.targets.some((t) => t.id === want.target))
+        return { courseId: c.id, unitKey: unitKey(u.id), picked: [want.target!] };
+  const course = courses.find((c) => c.id === want.course) ?? courses[0];
+  const unit = course?.units.find((u) => u.id === want.unit) ?? course?.units[0];
+  return { courseId: course?.id ?? "", unitKey: unitKey(unit?.id ?? null), picked: [] };
 }

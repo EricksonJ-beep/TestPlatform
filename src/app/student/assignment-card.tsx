@@ -2,9 +2,10 @@ import Link from "next/link";
 import { Clock, Lock } from "lucide-react";
 import type { StudentAssignment } from "@/lib/queries/assignments";
 import { practiceOwed, targetList } from "@/lib/quiz-practice";
-import { TYPE_LABEL } from "@/lib/student-home";
+import { correctionsWhy, retakeGoal, TYPE_LABEL } from "@/lib/student-home";
 import { LocalTime } from "@/components/local-time";
 import { Button } from "@/components/ui/button";
+import { RequestRetakeButton } from "./assignments/[assignmentId]/request-retake-button";
 import { RetakePicker } from "./retake-picker";
 
 const PILL: Record<StudentAssignment["state"], { label: string; className: string }> = {
@@ -62,7 +63,8 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
       : pill.label;
   const href =
     correcting && c ? `/student/corrections/${c.attemptId}` : `/student/assignments/${a.id}`;
-  const nextAttempt = a.attemptsAllowed === null || a.attemptsUsed < a.attemptsAllowed;
+  // "Ask to retake" and "Ask for a retake" send the request from the card (Jon, Oct 14 2026, R4).
+  const asks = a.state === "ask_to_retake" || (a.state === "awaiting_unlock" && !a.retakeRequested);
   const action: { label: string; primary: boolean } | null = (() => {
     switch (a.state) {
       case "not_started":
@@ -92,7 +94,7 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
       case "awaiting_unlock":
         return a.retakeRequested
           ? { label: "View", primary: false }
-          : { label: "Request retake", primary: true };
+          : { label: "Ask for a retake", primary: true };
       case "ask_to_retake":
         return { label: "Ask to retake", primary: a.askCounts };
       case "awaiting_grade":
@@ -221,29 +223,18 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
               </span>
             )
           ) : null}
-          {c && a.state === "corrections_needed" ? (
+          {c && (a.state === "corrections_needed" || a.state === "corrections_to_full") ? (
+            // The rule's words, as on the to-do list (Jon, Oct 14 2026).
             <span className="inline-flex items-center gap-1" data-corrections-hint>
-              <Lock className="size-3.5" aria-hidden />
-              {correctionsStarted
-                ? `${c.started} of ${c.needed} corrections started`
-                : `Correct ${c.remaining} missed ${c.remaining === 1 ? "question" : "questions"}`}
-              {capped && c.attemptNumber === 1
-                ? ` to bring this up to ${a.retakeThreshold}%`
-                : nextAttempt
-                  ? ` to unlock attempt ${a.attemptsUsed + 1}`
-                  : ""}
+              {a.state === "corrections_needed" ? <Lock className="size-3.5" aria-hidden /> : null}
+              {correctionsWhy(a)}
+              {correctionsStarted ? ` ${c.started} of ${c.needed} done.` : ""}
             </span>
-          ) : c && a.state === "corrections_to_full" ? (
-            <span data-corrections-hint>
-              {correctionsStarted
-                ? `${c.started} of ${c.needed} corrections started · finish them`
-                : `Correct ${c.remaining} missed ${c.remaining === 1 ? "question" : "questions"}`}{" "}
-              to raise this to 100%
-            </span>
-          ) : a.state === "relearning" && owedPractice.length ? (
+          ) : a.cycle === "relearning" && owedPractice.length ? (
+            // On a closed quiz the practice comes before asking to retake (R3, R4).
             <span className="inline-flex items-center gap-1" data-practice-hint>
               <Lock className="size-3.5" aria-hidden />
-              Practice {targetList(owedPractice.map((t) => t.code))} to unlock your retake
+              Practice {targetList(owedPractice.map((t) => t.code))} {retakeGoal(a)}
             </span>
           ) : c && a.state === "corrections_returned" ? (
             <span data-corrections-hint>Your teacher sent your corrections back with a note</span>
@@ -265,10 +256,21 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
           </div>
         ) : null}
       </div>
-      {action ? (
+      {action && asks ? (
+        <RequestRetakeButton
+          assignmentId={a.id}
+          attemptNumber={a.attemptsUsed + 1}
+          label={action.label}
+          primary={action.primary}
+          title={a.title}
+          block
+        />
+      ) : action ? (
         <Button
           size="lg"
           variant={action.primary ? "default" : "outline"}
+          className="h-11 w-full sm:h-9 sm:w-auto"
+          aria-label={`${action.label}: ${a.title}`}
           nativeButton={false}
           render={<Link href={href} />}
         >

@@ -7,6 +7,8 @@
 import { and, asc, eq, inArray, ne } from "drizzle-orm";
 import { db, schema } from "@/db";
 import type { StudentAssignment } from "@/lib/queries/assignments";
+import type { CorrectionsRule } from "@/lib/retakes";
+import { correctionsWhy } from "@/lib/student-home";
 
 export type StudentResult = {
   assignmentId: string;
@@ -28,6 +30,9 @@ export type StudentResult = {
     pending: boolean;
   }[];
   corrections: StudentAssignment["corrections"];
+  /** What corrections do here, and the to-do list's words for them (Jon, Oct 14 2026). */
+  correctionsRule: CorrectionsRule;
+  correctionsWhy: string | null;
 };
 
 export async function listStudentResults(
@@ -76,26 +81,35 @@ export async function listStudentResults(
         .where(inArray(schema.learningTargets.id, allIds))
     : [];
   const targetBy = new Map(targets.map((t) => [t.id, t]));
-  // Formatives: the best attempt's per-target scores; summatives: the stored per-target best.
-  const bestFormativeIds = finals
-    .filter((f) => f.tier === null)
-    .map(
-      (f) =>
-        attempts.find(
-          (a) =>
-            a.assignmentId === f.assignmentId &&
-            a.percent === finals.find((x) => x.assignmentId === f.assignmentId)?.percent
-        )?.id
-    )
+  // Formatives: the best finished attempt's per-target scores (the counting score may be a
+  // corrections lift no attempt scored); summatives: the stored per-target best.
+  const bestFinished = (assignmentId: string) =>
+    attempts
+      .filter((x) => x.assignmentId === assignmentId && x.status !== "in_progress")
+      .reduce<(typeof attempts)[number] | null>(
+        (b, x) => (b === null || (x.percent ?? 0) > (b.percent ?? 0) ? x : b),
+        null
+      );
+  const bestFormativeIds = withWork
+    .filter((a) => a.type !== "summative" && finals.some((f) => f.assignmentId === a.id))
+    .map((a) => bestFinished(a.id)?.id)
     .filter((x): x is string => !!x);
+  // Names joined here: these targets aren't in the final's per-target map, so not in `targetBy`.
   const formativeTargets = bestFormativeIds.length
     ? await db
         .select({
           attemptId: schema.attemptTargetScores.attemptId,
           learningTargetId: schema.attemptTargetScores.learningTargetId,
           percent: schema.attemptTargetScores.percent,
+          code: schema.learningTargets.code,
+          title: schema.learningTargets.title,
+          sortOrder: schema.learningTargets.sortOrder,
         })
         .from(schema.attemptTargetScores)
+        .innerJoin(
+          schema.learningTargets,
+          eq(schema.attemptTargetScores.learningTargetId, schema.learningTargets.id)
+        )
         .where(inArray(schema.attemptTargetScores.attemptId, bestFormativeIds))
     : [];
 
@@ -122,19 +136,14 @@ export async function listStudentResults(
           null
         )?.id ?? null;
     } else if (final) {
-      const best = finished.reduce<(typeof finished)[number] | null>(
-        (b, x) => (b === null || (x.percent ?? 0) > (b.percent ?? 0) ? x : b),
-        null
-      );
-      bestAttemptId = best?.id ?? null;
+      bestAttemptId = bestFinished(a.id)?.id ?? null;
       targetRows = formativeTargets
         .filter((t) => t.attemptId === bestAttemptId)
-        .map((t) => ({
-          id: t.learningTargetId,
-          code: targetBy.get(t.learningTargetId)?.code ?? "?",
-          title: targetBy.get(t.learningTargetId)?.title ?? "",
-          percent: t.percent,
-        }));
+        .sort(
+          (x, y) =>
+            x.sortOrder - y.sortOrder || x.code.localeCompare(y.code, undefined, { numeric: true })
+        )
+        .map((t) => ({ id: t.learningTargetId, code: t.code, title: t.title, percent: t.percent }));
     }
     const first = finished.find((x) => x.number === 1);
     const bestPercent = final?.percent ?? null;
@@ -160,6 +169,11 @@ export async function listStudentResults(
         pending: x.status === "submitted",
       })),
       corrections: a.corrections,
+      correctionsRule: a.correctionsRule,
+      correctionsWhy:
+        a.corrections && (a.corrections.state === "needed" || a.corrections.state === "returned")
+          ? correctionsWhy(a)
+          : null,
     };
   });
 }

@@ -4,7 +4,11 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "cn";
 import type { CustomPracticeCourse } from "@/lib/custom-practice";
-import { CUSTOM_PRACTICE_SIZES, DEFAULT_CUSTOM_PRACTICE_SIZE } from "@/lib/custom-practice-rules";
+import {
+  CUSTOM_PRACTICE_SIZES,
+  DEFAULT_CUSTOM_PRACTICE_SIZE,
+  practiceBuildStart,
+} from "@/lib/custom-practice-rules";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { startBuiltPractice } from "../actions";
@@ -12,27 +16,33 @@ import { startBuiltPractice } from "../actions";
 /**
  * Pick a course (when there is more than one), a unit, the targets ("All of
  * Unit 2" or any of its targets), and how many questions. Start deals a new
- * hand and opens the practice screen.
+ * hand and opens the practice screen. A link may name the course and unit, or
+ * one target to open on, already picked (`practiceBuildStart`).
  */
 export function BuildPractice({
   courses,
   initialCourseId,
   initialUnitId,
+  initialTargetId = null,
 }: {
   courses: CustomPracticeCourse[];
   initialCourseId: string | null;
   initialUnitId: string | null;
+  initialTargetId?: string | null;
 }) {
   const router = useRouter();
-  const [courseId, setCourseId] = useState(
-    courses.find((c) => c.id === initialCourseId)?.id ?? courses[0].id
+  const [opening] = useState(() =>
+    practiceBuildStart(courses, {
+      course: initialCourseId,
+      unit: initialUnitId,
+      target: initialTargetId,
+    })
   );
+  const [courseId, setCourseId] = useState(opening.courseId);
   const course = courses.find((c) => c.id === courseId) ?? courses[0];
-  const [unitKey, setUnitKey] = useState<string>(
-    String(course.units.find((u) => u.id === initialUnitId)?.id ?? course.units[0]?.id ?? "")
-  );
+  const [unitKey, setUnitKey] = useState<string>(opening.unitKey);
   const unit = course.units.find((u) => String(u.id ?? "") === unitKey) ?? course.units[0];
-  const [picked, setPicked] = useState<Set<string>>(new Set());
+  const [picked, setPicked] = useState<Set<string>>(new Set(opening.picked));
   const [count, setCount] = useState<number>(DEFAULT_CUSTOM_PRACTICE_SIZE);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);

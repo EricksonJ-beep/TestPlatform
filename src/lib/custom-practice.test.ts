@@ -17,7 +17,11 @@ import { and, eq } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { applyPack, listPacks } from "./content-packs";
 import { listCustomPracticeOptions, startCustomPractice } from "./custom-practice";
-import { dealCustomPractice, type CustomDealQuestion } from "./custom-practice-rules";
+import {
+  dealCustomPractice,
+  practiceBuildStart,
+  type CustomDealQuestion,
+} from "./custom-practice-rules";
 
 const q = (id: string, targetIds: string[], difficulty = 3): CustomDealQuestion => ({
   questionId: id,
@@ -82,6 +86,51 @@ describe("dealCustomPractice", () => {
       { rng: seeded(5) }
     );
     expect(hand.map((h) => h.questionId).sort()).toEqual(["b", "s"]);
+  });
+});
+
+describe("practiceBuildStart", () => {
+  const t = (id: string) => ({ id, code: id.toUpperCase(), title: id, available: 6 });
+  const courses = [
+    {
+      id: "bio",
+      name: "Biology",
+      units: [
+        { id: "u1", name: "Unit 1", targets: [t("lt11")] },
+        { id: "u2", name: "Unit 2", targets: [t("lt21"), t("lt22")] },
+      ],
+    },
+    {
+      id: "ap",
+      name: "Anatomy",
+      units: [{ id: null, name: "Other targets", targets: [t("ap1")] }],
+    },
+  ];
+
+  it("opens on the target a to-do row names, already picked (Jon, Oct 14 2026)", () => {
+    expect(practiceBuildStart(courses, { course: null, unit: null, target: "lt22" })).toEqual({
+      courseId: "bio",
+      unitKey: "u2",
+      picked: ["lt22"],
+    });
+    expect(practiceBuildStart(courses, { course: "bio", unit: "u1", target: "ap1" })).toEqual({
+      courseId: "ap",
+      unitKey: "",
+      picked: ["ap1"],
+    });
+  });
+
+  it("otherwise opens on the course and unit asked for, or the first of each", () => {
+    expect(practiceBuildStart(courses, { course: "bio", unit: "u2", target: null })).toEqual({
+      courseId: "bio",
+      unitKey: "u2",
+      picked: [],
+    });
+    expect(practiceBuildStart(courses, { course: "x", unit: "y", target: "gone" })).toEqual({
+      courseId: "bio",
+      unitKey: "u1",
+      picked: [],
+    });
   });
 });
 

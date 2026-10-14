@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft, Clock, Lock } from "lucide-react";
-import { isAuthzError, requireAssignmentAccess } from "@/lib/authz";
+import { isAuthzError, requireAssignmentAccess, studentCourseIds } from "@/lib/authz";
+import { listCustomPracticeOptions } from "@/lib/custom-practice";
 import { listStudentAssignments } from "@/lib/queries/assignments";
 import { PRACTICE_PASS_PERCENT, practiceOwed, targetList } from "@/lib/quiz-practice";
 import { listStudentAttempts } from "@/lib/queries/attempts";
+import { correctionsWhy, retakeGoal } from "@/lib/student-home";
 import { LocalTime } from "@/components/local-time";
 import { TargetChip } from "@/components/targets/target-chip";
 import { Button } from "@/components/ui/button";
@@ -42,8 +44,23 @@ export default async function StudentAssignmentPage({
     c.state !== "approved" &&
     c.state !== "none";
   const retaking = a.state === "retake_required" || a.state === "retake_available";
+  // On a closed test the cycle goes on toward asking to retake (Jon, Oct 14 2026, R4).
+  const closed = a.status === "closed";
   // Quiz relearning (Jon, Oct 14 2026): the missed targets still to practise before a retake.
   const owedPractice = practiceOwed(a.quizPractice);
+  // "Practice" opens Build my practice on the first target it can deal; otherwise the Practice tab.
+  const buildable = owedPractice.length
+    ? new Set(
+        (await listCustomPracticeOptions(await studentCourseIds(access.userId))).flatMap((co) =>
+          co.units.flatMap((u) => u.targets.map((t) => t.id))
+        )
+      )
+    : new Set<string>();
+  const practiceTarget = owedPractice.find((t) => buildable.has(t.targetId));
+  const practiceHref = practiceTarget
+    ? `/student/practice/build?target=${practiceTarget.targetId}`
+    : "/student?tab=practice";
+  const attemptsLeftNow = attemptsLeft === null || attemptsLeft > 0;
   // A paused or unfinished test stays reachable after the window closes (Finish later, Oct 13 2026).
   const canStart =
     (a.state === "in_progress" ||
@@ -109,7 +126,7 @@ export default async function StudentAssignmentPage({
           <RetakePicker
             assignmentId={a.id}
             retake={a.retake}
-            checklist={a.state === "relearning" || retaking}
+            checklist={a.cycle === "relearning" || retaking}
           />
         </section>
       ) : null}
@@ -139,12 +156,20 @@ export default async function StudentAssignmentPage({
               : c.state === "returned"
                 ? a.correctionsRule === "to_full"
                   ? "Your teacher sent your corrections back. Revise and resubmit to raise this quiz to 100%."
-                  : "Your teacher sent your corrections back. Revise and resubmit to unlock your next attempt."
-                : a.state === "corrections_to_full"
-                  ? `Correct ${c.remaining} missed ${c.remaining === 1 ? "question" : "questions"} on attempt ${c.attemptNumber} to raise your score to 100%. That's the way up at your score; there's no retake.`
-                  : a.type === "formative" && a.correctionsCap && c.attemptNumber === 1
-                    ? `Correct ${c.remaining} missed ${c.remaining === 1 ? "question" : "questions"} on attempt ${c.attemptNumber} to bring this quiz up to ${a.retakeThreshold}%${attemptsLeft === null || attemptsLeft > 0 ? ", then retake it to go higher" : ""}.`
-                    : `Correct ${c.remaining} missed ${c.remaining === 1 ? "question" : "questions"} on attempt ${c.attemptNumber}${attemptsLeft === null || attemptsLeft > 0 ? " to unlock your next attempt" : ""}.`}
+                  : closed && attemptsLeftNow
+                    ? "Your teacher sent your corrections back. Revise and resubmit before you can ask to retake."
+                    : "Your teacher sent your corrections back. Revise and resubmit to unlock your next attempt."
+                : // The to-do list's words (Jon, Oct 14 2026); a retake to go higher only while it's open.
+                  `${correctionsWhy(a)}${
+                    a.type === "formative" &&
+                    a.correctionsCap &&
+                    c.attemptNumber === 1 &&
+                    a.correctionsRule !== "to_full" &&
+                    !closed &&
+                    attemptsLeftNow
+                      ? " Then retake it to go higher."
+                      : ""
+                  }${c.started > 0 ? ` ${c.started} of ${c.needed} done.` : ""}`}
           </span>
           <Button
             size="lg"
@@ -159,7 +184,7 @@ export default async function StudentAssignmentPage({
                 : "Do corrections"}
           </Button>
         </div>
-      ) : a.state === "relearning" && !a.retake && owedPractice.length ? (
+      ) : a.cycle === "relearning" && !a.retake && owedPractice.length ? (
         <div
           className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm"
           data-practice-gate
@@ -167,24 +192,25 @@ export default async function StudentAssignmentPage({
           <span className="mr-auto inline-flex items-start gap-2">
             <Lock className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
             <span>
-              Practice {targetList(owedPractice.map((t) => t.code))} before your retake. Score{" "}
+              Practice {targetList(owedPractice.map((t) => t.code))} {retakeGoal(a)}. Score{" "}
               {PRACTICE_PASS_PERCENT}% or better on a practice for{" "}
               {owedPractice.length === 1 ? "it" : "each one"} (Build my practice: pick the target
               and at least 5 questions). You can try as many times as you like.
             </span>
           </span>
-          <Button size="lg" nativeButton={false} render={<Link href="/student/practice/build" />}>
+          <Button size="lg" nativeButton={false} render={<Link href={practiceHref} />}>
             Practice
           </Button>
         </div>
-      ) : a.state === "relearning" ? (
+      ) : a.cycle === "relearning" && (a.state === "relearning" || closed) ? (
         <p
           className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3 text-sm"
           data-relearning-gate
         >
           <Lock className="size-4 text-muted-foreground" aria-hidden />
-          Finish the relearning checklist above for every target you&apos;re retaking. The retake
-          unlocks on its own.
+          {closed
+            ? "This test is closed. Finish the relearning checklist above for every target you're retaking, then you can ask your teacher to retake it."
+            : "Finish the relearning checklist above for every target you're retaking. The retake unlocks on its own."}
         </p>
       ) : a.nextAttemptAt && a.state !== "in_progress" ? (
         <p className="rounded-lg border border-border bg-card px-4 py-3 text-sm">

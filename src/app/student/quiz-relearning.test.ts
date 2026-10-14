@@ -31,6 +31,9 @@ import { tagLabel } from "@/lib/class-gradebook";
 import { listStudentAssignments } from "@/lib/queries/assignments";
 import { getClassGradebook } from "@/lib/queries/class-gradebook";
 import { listRetakeRequests } from "@/lib/queries/dashboard";
+import { getStudentPractice } from "@/lib/queries/practice";
+import { listStudentResults } from "@/lib/queries/student-results";
+import { buildStudentToDo } from "@/lib/student-home";
 import { unlockNextAttempt } from "../app/results/actions";
 import { requestRetake, startAttempt } from "./actions";
 import { saveCorrection, submitCorrections } from "./corrections/actions";
@@ -353,6 +356,37 @@ describe("R1: Viola's closed quizzes keep their corrections", () => {
     expect(await label(ids.viola, "lt1Quiz")).toBe("Corrections needed 0/3");
     expect(await label(ids.viola, "carbs")).toBe("Corrections needed 0/5");
     await expectGradebookAgrees();
+    // Her home (build step 3): both are counted To do rows, in the rule's words, and the open
+    // check-in she hasn't started counts too (decision 3).
+    const list = buildStudentToDo({ assignments: await listStudentAssignments(ids.viola) });
+    expect(list.headline).toBe("You have 3 things to do.");
+    expect(list.todo.map((r) => [r.kind, r.title, r.why, r.progress?.label])).toEqual(
+      expect.arrayContaining([
+        [
+          "corrections",
+          "Unit 2 LT1 Quiz",
+          "Correct 3 missed questions to raise your score from 40% to 80%.",
+          "0 of 3 done",
+        ],
+        [
+          "corrections",
+          "Unit 2 Quiz: Carbohydrates",
+          "Correct 5 missed questions to raise your score from 50% to 80%.",
+          "0 of 5 done",
+        ],
+      ])
+    );
+    expect(list.todo.map((r) => r.kind)).toEqual(["corrections", "corrections", "start"]);
+    // My results says the same, and a quiz's target chips carry their codes (not "?").
+    const results = await listStudentResults(ids.viola, await listStudentAssignments(ids.viola));
+    expect(results.find((r) => r.assignmentId === ids.asg.carbs)).toMatchObject({
+      correctionsRule: "gate",
+      correctionsWhy: "Correct 5 missed questions to raise your score from 50% to 80%.",
+      targets: [
+        { id: ids.lt.lt2, code: "U2.LT2", title: "Sugars", percent: 40 },
+        { id: ids.lt.lt3, code: "U2.LT3", title: "Starch", percent: 60 },
+      ],
+    });
   });
 });
 
@@ -380,12 +414,53 @@ describe("R3: practice on every missed target before a quiz retake", () => {
     expect(await label(ids.viola, "lt1Quiz")).toBe("Relearning (needs: practice U2.LT1) · closed");
     expect(await label(ids.viola, "carbs")).toBe("Relearning (needs: practice U2.LT2) · closed");
     await expectGradebookAgrees();
+    // Her home: corrections done lifted both to 80%, so practising toward asking for an optional
+    // retake is a higher score, not a counted to-do (only the check-in is left); Build my practice
+    // opens on each target.
+    const home = buildStudentToDo({
+      assignments: await listStudentAssignments(ids.viola),
+      buildableTargetIds: new Set([ids.lt.lt1, ids.lt.lt2]),
+    });
+    expect(home.todo.map((r) => [r.kind, r.title])).toEqual([["start", "Unit 2 Sugar check-in"]]);
+    expect(home.higher.map((r) => [r.kind, r.why, r.action])).toEqual(
+      expect.arrayContaining([
+        [
+          "practice",
+          "Practice U2.LT1: score 80% before you can ask to retake (you scored 40%).",
+          expect.objectContaining({ href: `/student/practice/build?target=${ids.lt.lt1}` }),
+        ],
+        [
+          "practice",
+          "Practice U2.LT2: score 80% before you can ask to retake (you scored 40%).",
+          expect.objectContaining({ href: `/student/practice/build?target=${ids.lt.lt2}` }),
+        ],
+      ])
+    );
+    // "Needed before your retake" on the Practice tab lists tests open to the student only.
+    as(ids.viola, "student");
+    expect(
+      (await getStudentPractice(ids.viola, await listStudentAssignments(ids.viola))).quizNeeded
+    ).toEqual([]);
 
     // Reopened, the card reads Relearning and startAttempt refuses, naming the target.
     await setClosed("lt1Quiz", false);
     try {
       expect((await card(ids.viola, "lt1Quiz")).state).toBe("relearning");
       expect(await label(ids.viola, "lt1Quiz")).toBe("Relearning (needs: practice U2.LT1)");
+      // Open again: practice is a counted To do row, and the Practice tab lists the target.
+      const open = buildStudentToDo({ assignments: await listStudentAssignments(ids.viola) });
+      expect(open.headline).toBe("You have 2 things to do.");
+      expect(open.todo.map((r) => [r.kind, r.why])).toEqual([
+        ["practice", "Practice U2.LT1: score 80% to unlock your retake (you scored 40%)."],
+        ["start", "Open now."],
+      ]);
+      const practice = await getStudentPractice(ids.viola, await listStudentAssignments(ids.viola));
+      expect(practice.quizNeeded).toMatchObject([
+        {
+          assignmentId: ids.asg.lt1Quiz,
+          targets: [{ id: ids.lt.lt1, code: "U2.LT1", scored: 40, best: null, sets: [] }],
+        },
+      ]);
       as(ids.viola, "student");
       await refused(startAttempt(ids.asg.lt1Quiz, null), 403, /^Practice U2\.LT1 first: score 80%/);
       await expectGradebookAgrees();
