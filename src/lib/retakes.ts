@@ -143,26 +143,26 @@ export const BLOCKER_TEXT: Record<RetakeBlocker, string> = {
 // ---------------------------------------------------------------------------
 
 /**
- * The role corrections play on one assignment, read by the student card (`cycleState`) and by
- * `startAttempt` so the two never disagree (Jon, Oct 13 2026):
+ * The role corrections play on one assignment, read by the student card (`cycleState`), by
+ * `startAttempt` and by `requestRetake`, so they never disagree (Jon, Oct 13 2026):
  *   "none"     CVTC rules on the course: corrections earn no credit and are never owed; the only
  *              way up is a retake.
  *   "to_full"  capped formative with attempt 1 at or above the threshold: the student is directed
  *              to corrections, an approved set lifts the score to 100, and no retake is offered,
  *              with or without "Retakes need my OK" (decision 2 makes no exception for it).
- *   "optional" "Retakes need my OK" (Jon, Oct 1 2026): corrections stay open but never gate; the
- *              teacher's unlock is the only gate.
  *   "gate"     everything else (PLAN.md §4): the last attempt's corrections come before the next
  *              attempt; under the cap, attempt 1's approved set lifts the score to the threshold
  *              and a retake is the way higher.
+ * "Retakes need my OK" changes nothing here (Jon, Oct 14 2026, decision 4: "To-do, then ask"):
+ * corrections are owed exactly as without it and come before the student may ask; the teacher's
+ * unlock decides after that. There is no "optional" any more.
  */
-export type CorrectionsRule = "none" | "optional" | "to_full" | "gate";
+export type CorrectionsRule = "none" | "to_full" | "gate";
 
 export function correctionsRule(input: {
   type: "practice" | "formative" | "summative";
   /** The cap as it applies here (`correctionsCapOn`: formative, cap on, not a CVTC course). */
   capped: boolean;
-  retakesNeedUnlock: boolean;
   cvtcRules: boolean;
   /** Attempt 1's percent; null before the first finished attempt. */
   firstPercent: number | null;
@@ -171,7 +171,6 @@ export function correctionsRule(input: {
   if (input.type === "practice" || input.cvtcRules) return "none";
   if (input.capped && input.firstPercent !== null && input.firstPercent >= input.threshold)
     return "to_full";
-  if (input.retakesNeedUnlock) return "optional";
   return "gate";
 }
 
@@ -198,10 +197,12 @@ export type CycleState =
 /**
  * Rule (PLAN.md §5 screen 2): corrections come first; then, for summatives,
  * the relearning checklist, then Retake required / available; formatives go
- * straight to Retake available while attempts remain and the score is not
- * perfect. Done otherwise. When the retake is otherwise ready but the teacher
- * has not unlocked it (`needsUnlock`), the card waits on the teacher instead.
- * What corrections do comes from `correctionsRule` (Jon, Oct 13 2026).
+ * to Retake available while attempts remain and the score is not perfect,
+ * once every missed target is practised (`practiceOwed`, quiz relearning: Jon,
+ * Oct 14 2026, decision 5), else Relearning. Done otherwise. When the retake is
+ * otherwise ready but the teacher has not unlocked it (`needsUnlock`), the card
+ * waits on the teacher instead. What corrections do comes from `correctionsRule`
+ * (Jon, Oct 13 2026); "Retakes need my OK" no longer makes them optional (Oct 14).
  */
 export function cycleState(input: {
   type: "practice" | "formative" | "summative";
@@ -223,6 +224,8 @@ export function cycleState(input: {
   windowClosed?: boolean;
   /** From `correctionsRule`; when absent it is worked out from the cap inputs above. */
   rule?: CorrectionsRule;
+  /** Formatives: a missed target still needs practice before a retake (`quizPracticeNeeds`). */
+  practiceOwed?: boolean;
 }): CycleState {
   const state = readyState(input);
   if (input.needsUnlock && (state === "retake_required" || state === "retake_available"))
@@ -237,13 +240,12 @@ function readyState(input: Parameters<typeof cycleState>[0]): CycleState {
     correctionsRule({
       type: input.type,
       capped,
-      retakesNeedUnlock: false,
       cvtcRules: false,
       firstPercent: input.firstPercent ?? null,
       threshold: input.threshold ?? 80,
     });
-  // CVTC rules or teacher unlocks: corrections never hold the card (Jon, Oct 1 and Oct 13 2026).
-  const corrections = rule === "none" || rule === "optional" ? "none" : input.corrections;
+  // CVTC rules: corrections never hold the card (Jon, Oct 13 2026).
+  const corrections = rule === "none" ? "none" : input.corrections;
   if (corrections === "needed")
     return rule === "to_full" ? "corrections_to_full" : "corrections_needed";
   if (corrections === "returned") return "corrections_returned";
@@ -255,6 +257,8 @@ function readyState(input: Parameters<typeof cycleState>[0]): CycleState {
   if (input.type === "formative") {
     if (input.bestPercent !== null && input.bestPercent >= 100) return "done";
     if (capped && input.windowClosed) return "done";
+    // Quiz relearning (Jon, Oct 14 2026): practise every missed target before the retake.
+    if (input.practiceOwed) return "relearning";
     return "retake_available";
   }
   const plan = input.plan;

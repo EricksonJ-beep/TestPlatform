@@ -661,7 +661,10 @@ export const assignments = pgTable(
     resultsReleased: boolean("results_released").default(true).notNull(),
     /** Hours a student must wait after submitting before the next attempt; 0 = none. */
     retakeWaitHours: integer("retake_wait_hours").default(0).notNull(),
-    /** Jon, Oct 1 2026: each retake waits for the teacher's per-student unlock (`attempt_unlocks`); corrections become optional. */
+    /**
+     * Jon, Oct 1 2026: each retake waits for the teacher's per-student unlock (`attempt_unlocks`).
+     * Corrections are still owed first (Oct 14 2026, decision 4: "To-do, then ask").
+     */
     retakesNeedUnlock: boolean("retakes_need_unlock").default(false).notNull(),
     /**
      * Jon, Oct 8 2026 (formatives): below the threshold must do corrections and tops out at the
@@ -789,6 +792,12 @@ export const attemptUnlocks = pgTable(
     grantedBy: uuid("granted_by").references(() => users.id, { onDelete: "set null" }),
     /** Null = requested, not yet approved. */
     grantedAt: timestamp("granted_at", { withTimezone: true }),
+    /**
+     * Approved on a closed test (Jon, Oct 14 2026: "Students ask, I approve"): the test is open
+     * for this student, for this attempt, until then (the end of the next school day). Null for
+     * an unlock on an open test.
+     */
+    openUntil: timestamp("open_until", { withTimezone: true }),
   },
   (t) => [
     uniqueIndex("attempt_unlocks_assignment_student_number_unique").on(

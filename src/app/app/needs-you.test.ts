@@ -22,6 +22,7 @@ vi.mock("@/db", async () => {
 import { and, eq } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { needsYouCounts, placeLabel } from "@/lib/needs-you";
+import { endOfNextSchoolDay } from "@/lib/reopen";
 import { getDashboardCounts, getNeedsYou, listPausedAttempts } from "@/lib/queries/dashboard";
 import { verifyCompletion } from "./practice/actions";
 import {
@@ -377,13 +378,27 @@ describe("Needs you", () => {
     }
   });
 
-  it("a closed test shows as the blocker on a current request", async () => {
+  it("a closed test's request is current: Approve reopens it, so the close never blocks it (R4, Oct 14 2026)", async () => {
     await db
       .update(schema.assignments)
       .set({ closesAt: minutesAgo(1) })
       .where(eq(schema.assignments.id, ids.bioQuiz));
     const cal = (await getNeedsYou(ids.teacher)).requests.find((r) => r.id === ids.calRequest)!;
-    expect(cal.blocker).toEqual({ reason: "closed" });
+    // Only the 24-hour wait between tries is left; the row says until when Approve reopens it.
+    expect(cal).toMatchObject({ stale: null, blocker: { reason: "wait" } });
+    expect(cal.reopensUntil).toEqual(endOfNextSchoolDay(new Date()));
+    // With "Retakes need my OK" off, a closed test's request is still current.
+    await db
+      .update(schema.assignments)
+      .set({ retakesNeedUnlock: false })
+      .where(eq(schema.assignments.id, ids.bioQuiz));
+    expect(
+      (await getNeedsYou(ids.teacher)).requests.find((r) => r.id === ids.calRequest)
+    ).toMatchObject({ stale: null, blocker: { reason: "wait" } });
+    await db
+      .update(schema.assignments)
+      .set({ retakesNeedUnlock: true })
+      .where(eq(schema.assignments.id, ids.bioQuiz));
     await db
       .update(schema.assignments)
       .set({ closesAt: null })

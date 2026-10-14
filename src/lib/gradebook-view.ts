@@ -7,11 +7,13 @@
  * own: the loader's `generatedAt` is "now", so the server and the browser render the same thing.
  */
 import { CENTRAL, type CellTag, type TagFormat } from "@/lib/class-gradebook";
+import { PRACTICE_PASS_PERCENT, practiceOwed, targetList } from "@/lib/quiz-practice";
 import type {
   ClassGradebook,
   ClassGradebookCell,
   ClassGradebookColumn,
 } from "@/lib/queries/class-gradebook";
+import { correctionsProgress, type StudentToDo } from "@/lib/student-home";
 
 type Student = ClassGradebook["students"][number];
 
@@ -204,6 +206,59 @@ export function studentPanelItems(
   };
 }
 
+export type StudentPanel = {
+  /** The cells that are to do in the shown columns: the row badge's number. */
+  toDo: number;
+  done: number;
+  total: number;
+  /** What the student's own home lists for this class's tests (`buildStudentToDo`). */
+  list: StudentToDo;
+  /** The cell behind each of the list's rows, by assignment id. */
+  cells: Map<string, PanelItem>;
+  /**
+   * What the teacher would act on or watch that isn't on the student's list (a Missing test, a
+   * check-off on an older try), over the shown columns.
+   */
+  also: PanelItem[];
+};
+
+/**
+ * A student's panel (Jon, Oct 14 2026, docs/student-home-plan.md "Teacher side": "the student
+ * panel lists the same to-do the student sees"): the rows of the student's own home for this
+ * class, from the same builder (`studentToDo`, made by the loader), each with its cell; then what
+ * the teacher would still act on or watch that the list doesn't show; and the row badge's count,
+ * done and total over the columns the grid shows (`studentPanelItems`). Null when the student
+ * isn't on the roster.
+ */
+export function studentPanel(
+  gb: ClassGradebook,
+  studentId: string,
+  f: Pick<GradebookFilters, "showPractice">
+): StudentPanel | null {
+  const row = gb.rows.find((r) => r.student.id === studentId);
+  const items = studentPanelItems(gb, studentId, f);
+  if (!row || !items) return null;
+  const list = row.studentToDo;
+  const cells = new Map(
+    row.cells.map((cell, i) => [cell.assignmentId, { cell, column: gb.columns[i] }] as const)
+  );
+  const listed = new Set(
+    [...list.todo, ...list.higher, ...list.waiting].map((r) => r.assignmentId)
+  );
+  const flagged = new Set([...items.toDo, ...items.other].map((x) => x.cell));
+  return {
+    toDo: items.toDo.length,
+    done: items.done,
+    total: items.total,
+    list,
+    cells,
+    // In column order, as the grid shows them.
+    also: [...cells.values()].filter(
+      (x) => flagged.has(x.cell) && !listed.has(x.cell.assignmentId)
+    ),
+  };
+}
+
 /** "Cho, L": the phone list's short name. */
 export function shortName(s: { firstName: string; lastName: string }): string {
   return s.firstName ? `${s.lastName}, ${s.firstName[0]}` : s.lastName;
@@ -327,7 +382,9 @@ export function cellMarks(
 
 /**
  * The cell panel's plain sentence (research notes C, "Clicks": "Took try 1 Oct 9 (62%);
- * corrections 3 of 8 done"). Scores drop out when "Hide scores" is on (decision 6).
+ * corrections 3 of 8 started", in the student's own words for an owed set; Oct 14 2026: a quiz's practice still owed before the retake, R3,
+ * "needs 80% on practice for U2.LT1 (best 60%)", and a closed test reopened for the student ends
+ * "reopened through Oct 15", R4). Scores drop out when "Hide scores" is on (decision 6).
  */
 export function cellSentence(
   cell: ClassGradebookCell,
@@ -375,15 +432,14 @@ export function cellSentence(
   }
   const c = cell.corrections;
   if (c) {
-    const of = `${c.done} of ${c.needed}`;
     parts.push(
       c.state === "approved"
         ? "corrections approved"
         : c.state === "submitted"
           ? "corrections sent in, waiting for you"
           : c.state === "returned"
-            ? `corrections sent back (${of} done)`
-            : `corrections ${of} done`
+            ? `corrections sent back (${c.done} of ${c.needed} done)`
+            : `corrections ${correctionsProgress(c).label}`
     );
   }
   if (cell.score && !opts.hideScores) {
@@ -393,8 +449,20 @@ export function cellSentence(
         : "";
     parts.push(`counts ${scoreText(cell)}${via}`);
   }
+  // Quiz relearning (Jon, Oct 14 2026, R3): practice is what stands before the retake.
+  const owed = cell.cycle === "relearning" ? practiceOwed(cell.quizPractice) : [];
+  if (owed.length)
+    parts.push(
+      `needs ${PRACTICE_PASS_PERCENT}% on practice for ${targetList(
+        owed.map((t) =>
+          t.best !== null && !opts.hideScores ? `${t.code} (best ${pct(t.best)})` : t.code
+        )
+      )}`
+    );
   if (cell.retakeBy && (cell.cycle === "retake_available" || cell.cycle === "awaiting_unlock"))
     parts.push(`retake by ${fmt.time(cell.retakeBy)}`);
+  // Ask to retake on a closed test (Jon, Oct 14 2026, R4): open for them alone until then.
+  if (cell.reopenedUntil) parts.push(`reopened through ${fmt.date(cell.reopenedUntil)}`);
   const text = parts.join("; ");
   return text ? `${text[0].toUpperCase()}${text.slice(1)}.` : "";
 }

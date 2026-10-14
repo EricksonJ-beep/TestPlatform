@@ -30,6 +30,8 @@ import { recomputeGatesForStudent } from "@/lib/gates";
 import { listStudentAssignments, type StudentAssignment } from "@/lib/queries/assignments";
 import { getClassGradebook, type ClassGradebook } from "@/lib/queries/class-gradebook";
 import { getNeedsYou } from "@/lib/queries/dashboard";
+import { getStudentPractice } from "@/lib/queries/practice";
+import { buildStudentToDo } from "@/lib/student-home";
 import { askToFinish, finishLater, requestRetake, startAttempt } from "../student/actions";
 import { saveCorrection, submitCorrections } from "../student/corrections/actions";
 import { approveCorrections } from "./results/corrections/actions";
@@ -355,14 +357,16 @@ beforeAll(async () => {
     .set({ lastActiveAt: new Date(Date.now() - 15 * 60_000) })
     .where(eq(schema.attempts.id, eliLive)); // idle: paused, though nothing has written it yet
 
-  // Osmosis quiz ("Retakes need my OK", a day's wait).
-  await take("Ava", "okQuiz", ids.bioQ, firstN(3));
+  // Osmosis quiz ("Retakes need my OK", a day's wait). Corrections come before asking, exactly as
+  // without the setting (Jon, Oct 14 2026, decision 4): Ben hasn't done his.
+  await correct("Ava", await take("Ava", "okQuiz", ids.bioQ, firstN(3)));
   as(st("Ava"), "student");
   await ok(requestRetake(ids.asg.okQuiz));
   await take("Ben", "okQuiz", ids.bioQ, firstN(3));
-  await take("Cal", "okQuiz", ids.bioQ, firstN(3));
+  await correct("Cal", await take("Cal", "okQuiz", ids.bioQ, firstN(3)));
   as(ids.teacher, "teacher");
   await ok(unlockNextAttempt(ids.asg.okQuiz, st("Cal")));
+  await correct("Dee", await take("Dee", "okQuiz", ids.bioQ, firstN(3)));
 
   // Unit 3 test (summative, teacher-approved corrections). LT1 = questions 0-1, LT2 = 2-3.
   const lt1Wrong = (i: number) => i >= 2;
@@ -472,6 +476,45 @@ describe("getClassGradebook", () => {
     expect(open).toBe(8 * 5); // five open tests; the other three are scheduled or closed
   });
 
+  it("gives each student panel the to-do the student's own home lists for this class (Oct 14 2026)", async () => {
+    // The student's side first: reading it can write missing gate rows, which the gradebook
+    // then reads as stored.
+    const own = new Map<string, ReturnType<typeof buildStudentToDo>>();
+    // Every assignment in `ids.asg` is on this class (the other period's is `otherAsg`).
+    const inClass = new Set(Object.values(ids.asg));
+    for (const name of NAMES) {
+      const assignments = await listStudentAssignments(st(name));
+      const { activities } = await getStudentPractice(st(name), assignments);
+      own.set(
+        st(name),
+        buildStudentToDo({
+          assignments: assignments.filter((a) => inClass.has(a.id)),
+          activities: activities.filter((a) => a.courseName === "Biology"),
+        })
+      );
+    }
+    const gb = (await getClassGradebook(ids.cls))!;
+    for (const row of gb.rows)
+      expect(row.studentToDo, row.student.firstName).toEqual(own.get(row.student.id));
+    const list = (name: Name) => gb.rows.find((r) => r.student.id === st(name))!.studentToDo;
+    const kinds = (rows: { kind: string; title: string }[]) => rows.map((r) => [r.kind, r.title]);
+    // Ben: his corrections on the Cell quiz (one saved), the Osmosis quiz's, then his relearning
+    // on the Unit 3 test; his written answer waits for a grade.
+    expect(kinds(list("Ben").todo)).toContainEqual(["corrections", "Cell quiz"]);
+    expect(list("Ben").todo.find((r) => r.title === "Cell quiz")?.progress?.label).toBe(
+      "1 of 3 started, not turned in yet"
+    );
+    expect(kinds(list("Ben").waiting)).toEqual([["awaiting_grade", "Lab write-up"]]);
+    // Gus's activity waits for the teacher's check-off on both sides.
+    expect(kinds(list("Gus").waiting)).toContainEqual(["activity_check", "Cell model"]);
+    // Dee's paused test is still hers to finish, in class.
+    expect(list("Dee").todo[0]).toMatchObject({
+      kind: "keep_going",
+      title: "Cell quiz",
+      why: "Paused. Finish it in class.",
+    });
+  });
+
   it("tags each cell for the teacher, the first that applies winning", async () => {
     const gb = (await getClassGradebook(ids.cls))!;
     const fmt = { time: () => "2:15", date: () => "Oct 15" };
@@ -488,7 +531,7 @@ describe("getClassGradebook", () => {
     );
     expect(labels["Cell quiz"]).toEqual({
       Ava: "Corrections → 100%",
-      Ben: "Corrections needed 0/3",
+      Ben: "Corrections needed 1/3", // one saved, as his own row says (review, Oct 14 2026)
       Cal: "Taking it 2/5",
       Dee: "Asked to finish",
       Eli: "Paused",
@@ -498,9 +541,10 @@ describe("getClassGradebook", () => {
     });
     expect(labels["Osmosis quiz"]).toMatchObject({
       Ava: "Retake request",
-      Ben: "Ready, needs your OK",
+      Ben: "Corrections needed 0/2", // was "Ready, needs your OK" before decision 4
       Cal: "Unlocked · after 2:15",
-      Dee: "Not started",
+      Dee: "Ready, needs your OK",
+      Eli: "Not started",
     });
     expect(labels["Unit 3 test"]).toEqual({
       Ava: "Can retake", // every target proficient; optional retakes are on
@@ -520,8 +564,9 @@ describe("getClassGradebook", () => {
       Dee: "Missing",
       Hal: "Missing",
     });
-    // Her own card agrees: owed corrections stay in Needs you after the close (Jon, Oct 14 2026).
+    // R1 (Jon, Oct 14 2026): her own card keeps the corrections too (it used to read "closed").
     expect(cellOf(gb, "Ava", "closedQuiz")).toMatchObject({ card: "corrections_needed" });
+    expect(cellOf(gb, "Ben", "closedQuiz")).toMatchObject({ card: "closed", cycle: "done" });
     expect(labels["Unit 2 test"]).toMatchObject({
       Ava: "Retake needed (LT3) · closed",
       Ben: "Missing",
@@ -625,6 +670,70 @@ describe("getClassGradebook", () => {
       });
     } finally {
       await db.update(schema.attempts).set(before).where(eq(schema.attempts.id, calLive));
+    }
+  });
+
+  it("pauses an open test on the student's home exactly as the panel does (currentPause, review Oct 14 2026)", async () => {
+    const calLive = cellOf((await getClassGradebook(ids.cls))!, "Cal", "quiz").openAttemptId!;
+    const [before] = await db
+      .select({ dueAt: schema.attempts.dueAt, lastActiveAt: schema.attempts.lastActiveAt })
+      .from(schema.attempts)
+      .where(eq(schema.attempts.id, calLive));
+    const [quiz] = await db
+      .select({ closesAt: schema.assignments.closesAt })
+      .from(schema.assignments)
+      .where(eq(schema.assignments.id, ids.asg.quiz));
+    const keepGoing = async (now: Date) => {
+      const home = (await listStudentAssignments(st("Cal"), now)).find(
+        (a) => a.id === ids.asg.quiz
+      )!;
+      const row = cellOf((await getClassGradebook(ids.cls, now))!, "Cal", "quiz");
+      const panel = (await getClassGradebook(ids.cls, now))!.rows
+        .find((r) => r.student.id === st("Cal"))!
+        .studentToDo.todo.find((r) => r.kind === "keep_going" && r.assignmentId === ids.asg.quiz);
+      return {
+        home: home.paused,
+        cell: row.attempts.find((x) => x.id === calLive)?.paused,
+        panel: panel?.why,
+      };
+    };
+    try {
+      // The window closed a minute ago while Cal was still in the test (no heartbeat since).
+      const now = new Date();
+      await db
+        .update(schema.attempts)
+        .set({ lastActiveAt: new Date(now.getTime() - 2 * 60_000), dueAt: null })
+        .where(eq(schema.attempts.id, calLive));
+      await db
+        .update(schema.assignments)
+        .set({ closesAt: new Date(now.getTime() - 60_000) })
+        .where(eq(schema.assignments.id, ids.asg.quiz));
+      expect(await keepGoing(now)).toEqual({
+        home: true,
+        cell: true,
+        panel: "Paused. Finish it in class.",
+      });
+      await db
+        .update(schema.assignments)
+        .set({ closesAt: quiz.closesAt })
+        .where(eq(schema.assignments.id, ids.asg.quiz));
+      // A 20-minute clock that ran out before the 10 idle minutes did: out of time, not paused.
+      const lastSave = new Date(now.getTime() - 15 * 60_000);
+      await db
+        .update(schema.attempts)
+        .set({ lastActiveAt: lastSave, dueAt: new Date(lastSave.getTime() + 60_000) })
+        .where(eq(schema.attempts.id, calLive));
+      expect(await keepGoing(now)).toEqual({
+        home: false,
+        cell: false,
+        panel: "You started this. Pick up where you left off.",
+      });
+    } finally {
+      await db.update(schema.attempts).set(before).where(eq(schema.attempts.id, calLive));
+      await db
+        .update(schema.assignments)
+        .set({ closesAt: quiz.closesAt })
+        .where(eq(schema.assignments.id, ids.asg.quiz));
     }
   });
 

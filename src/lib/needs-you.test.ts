@@ -22,6 +22,7 @@ describe("staleRequest", () => {
     attemptNumber: 2,
     used: 1,
     retakesNeedUnlock: true,
+    closed: false,
     attemptsAllowed: 3,
     enrolled: true,
   };
@@ -37,6 +38,13 @@ describe("staleRequest", () => {
     expect(staleRequest({ ...base, attemptsAllowed: 1 })).toBe("no_attempts");
     // Moved to another period: Approve and Decline refuse a student who isn't in the class.
     expect(staleRequest({ ...base, enrolled: false })).toBe("left_class");
+  });
+  it("on a closed test a request is current with the setting off too (ask to retake, R4)", () => {
+    expect(staleRequest({ ...base, retakesNeedUnlock: false, closed: true })).toBeNull();
+    expect(staleRequest({ ...base, retakesNeedUnlock: false, closed: true, used: 2 })).toBe(
+      "taken"
+    );
+    expect(staleRequest({ ...base, closed: true, attemptsAllowed: 1 })).toBe("no_attempts");
   });
 });
 
@@ -80,6 +88,22 @@ describe("requestBlocker", () => {
     ).toEqual({ reason: "window_closed", at: at("2026-10-08T14:00:00Z") });
     // No cap (or a CVTC course): no window.
     expect(requestBlocker({ ...input, firstSubmittedAt: at("2026-10-01T14:00:00Z") })).toBeNull();
+  });
+  it("on a closed test Approve reopens it: neither the close nor the cap's window blocks (R4)", () => {
+    const closed = { ...assignment, closesAt: at("2026-10-13T12:00Z"), retakeWindowDays: 7 };
+    const reopenUntil = at("2026-10-15T04:59:59.999Z");
+    expect(
+      requestBlocker({
+        ...input,
+        firstSubmittedAt: at("2026-10-01T14:00:00Z"),
+        assignment: closed,
+        reopenUntil,
+      })
+    ).toBeNull();
+    // The wait between attempts still counts.
+    expect(
+      requestBlocker({ ...input, assignment: { ...closed, retakeWaitHours: 24 }, reopenUntil })
+    ).toEqual({ reason: "wait", at: new Date(input.lastSubmittedAt.getTime() + 24 * HOUR) });
   });
 });
 

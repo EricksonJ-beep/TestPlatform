@@ -3,6 +3,7 @@
  * start an attempt, the attempt deadline with accommodations, and defaults by
  * assessment type. No database, no clock of its own: every function takes `now`.
  */
+import { effectiveClose, reopenedUntil } from "@/lib/reopen";
 
 export type AssignmentStatus = "scheduled" | "open" | "closed";
 
@@ -39,6 +40,9 @@ export type StartCheck =
  * code when one is set, while attempts remain (null = unlimited), after any
  * waiting period, and, when the assignment says retakes need the teacher's OK,
  * once the teacher has unlocked that attempt number (attempt 1 never needs one).
+ * The window is the student's own (Jon, Oct 14 2026, R5): a retake the teacher
+ * approved after the close is open until its reopen ends, and while reopened the
+ * cap's retake window doesn't apply to it (decision 2).
  */
 export function canStartAttempt(input: {
   assignment: WindowLike & {
@@ -58,12 +62,18 @@ export function canStartAttempt(input: {
   firstSubmittedAt?: Date | null;
   /** Highest attempt number the teacher has unlocked for this student (0 = none). */
   unlockedThrough?: number;
+  /** An approved reopen for this attempt (`attempt_unlocks.open_until`); null or absent when none. */
+  openUntil?: Date | null;
   accessCode?: string | null;
   now?: Date;
 }): StartCheck {
   const { assignment, attemptsUsed } = input;
   const now = input.now ?? new Date();
-  const status = assignmentStatus(assignment, now);
+  const openUntil = input.openUntil ?? null;
+  const status = assignmentStatus(
+    { opensAt: assignment.opensAt, closesAt: effectiveClose(assignment.closesAt, openUntil) },
+    now
+  );
   if (status === "scheduled") return { ok: false, reason: "not_open" };
   if (status === "closed") return { ok: false, reason: "closed" };
   if (assignment.accessCode) {
@@ -82,7 +92,9 @@ export function canStartAttempt(input: {
   if (assignment.retakesNeedUnlock && needsUnlock(attemptsUsed, input.unlockedThrough ?? 0)) {
     return { ok: false, reason: "needs_unlock" };
   }
-  const closedAt = retakeWindowEnd(assignment.retakeWindowDays, input.firstSubmittedAt);
+  const closedAt = reopenedUntil(assignment.closesAt, openUntil, now)
+    ? null
+    : retakeWindowEnd(assignment.retakeWindowDays, input.firstSubmittedAt);
   if (attemptsUsed > 0 && closedAt && now >= closedAt) {
     return { ok: false, reason: "window_closed", closedAt };
   }

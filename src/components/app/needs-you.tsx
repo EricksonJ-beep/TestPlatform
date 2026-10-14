@@ -393,6 +393,7 @@ function BlockerNote({ b }: { b: RequestBlocker }) {
     <p className="mt-0.5 inline-flex items-center gap-1 text-xs text-warning-foreground">
       <Clock className="size-3.5" aria-hidden />
       {BLOCKER_LINE[b.reason]}
+      {"codes" in b ? ` ${b.codes.join(", ")}.` : null}
       {"at" in b ? (
         <>
           {" "}
@@ -458,14 +459,31 @@ function RequestRow({
       who={name(r)}
       what={`try ${r.attemptNumber}`}
       meta={meta}
-      note={r.blocker ? <BlockerNote b={r.blocker} /> : null}
+      note={
+        <>
+          {/* Ask to retake on a closed test (Jon, Oct 14 2026, R4): Approve reopens it for them. */}
+          {r.reopensUntil && !approved ? (
+            <p className="mt-0.5 text-xs text-muted-foreground" data-reopens>
+              Closed · Approve reopens it for {r.firstName} through{" "}
+              <LocalTime date={r.reopensUntil} mode="date" />
+            </p>
+          ) : null}
+          {r.blocker ? <BlockerNote b={r.blocker} /> : null}
+        </>
+      }
       error={error}
       actions={
         approved ? (
           <>
             <span className="inline-flex items-center gap-1 text-xs text-success-foreground">
               <Check className="size-3.5" aria-hidden />
-              Try {r.attemptNumber} unlocked
+              {r.reopensUntil ? (
+                <>
+                  Reopened through <LocalTime date={r.reopensUntil} mode="date" />
+                </>
+              ) : (
+                <>Try {r.attemptNumber} unlocked</>
+              )}
             </span>
             <Button
               size="sm"

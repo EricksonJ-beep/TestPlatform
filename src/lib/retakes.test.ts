@@ -250,7 +250,6 @@ describe("correctionsRule (Jon, Oct 13 2026)", () => {
   const f = {
     type: "formative" as const,
     capped: true,
-    retakesNeedUnlock: false,
     cvtcRules: false,
     threshold: 80,
   };
@@ -264,26 +263,15 @@ describe("correctionsRule (Jon, Oct 13 2026)", () => {
       "gate"
     );
   });
-  it("teacher unlocks keep corrections optional (Oct 1); CVTC rules mean none, for every type", () => {
-    // Decision 2 makes no exception for unlocks: at or above the line under the cap it is still
-    // corrections → 100%, never "optional" (this used to read "optional").
-    expect(correctionsRule({ ...f, retakesNeedUnlock: true, firstPercent: 85 })).toBe("to_full");
-    expect(correctionsRule({ ...f, retakesNeedUnlock: true, firstPercent: 50 })).toBe("optional");
-    expect(
-      correctionsRule({ ...f, capped: false, retakesNeedUnlock: true, firstPercent: 85 })
-    ).toBe("optional");
+  it("never optional (Oct 14 2026, decision 4); CVTC rules mean none, for every type", () => {
+    // "Retakes need my OK" is no longer an input: corrections gate exactly as without it (this
+    // used to read "optional" below the line and without the cap).
+    expect(correctionsRule({ ...f, firstPercent: 50 })).toBe("gate");
+    expect(correctionsRule({ ...f, capped: false, firstPercent: 85 })).toBe("gate");
     for (const type of ["formative", "summative"] as const)
-      for (const retakesNeedUnlock of [false, true])
-        expect(
-          correctionsRule({
-            ...f,
-            type,
-            capped: false,
-            cvtcRules: true,
-            retakesNeedUnlock,
-            firstPercent: 50,
-          })
-        ).toBe("none");
+      expect(
+        correctionsRule({ ...f, type, capped: false, cvtcRules: true, firstPercent: 50 })
+      ).toBe("none");
     expect(correctionsRule({ ...f, type: "practice", capped: false, firstPercent: 50 })).toBe(
       "none"
     );
@@ -358,10 +346,81 @@ describe("cycleState with the corrections rule", () => {
       })
     ).toBe("retake_required");
   });
-  it("optional (teacher unlocks): unchanged, the unlock is the only gate", () => {
-    const unlock = { ...f, correctionsCap: true, firstPercent: 50, rule: "optional" as const };
+  it("teacher unlocks: corrections first, then the wait for the teacher (Oct 14 2026, decision 4)", () => {
+    // This used to read awaiting_unlock with corrections owed ("optional").
+    const unlock = { ...f, correctionsCap: true, firstPercent: 50, rule: "gate" as const };
     expect(
       cycleState({ ...unlock, corrections: "needed", bestPercent: 50, needsUnlock: true })
+    ).toBe("corrections_needed");
+    expect(
+      cycleState({ ...unlock, corrections: "approved", bestPercent: 80, needsUnlock: true })
     ).toBe("awaiting_unlock");
+  });
+});
+
+describe("cycleState with quiz relearning (Jon, Oct 14 2026, decision 5)", () => {
+  const f = {
+    type: "formative" as const,
+    attemptsUsed: 1,
+    attemptsAllowed: 3,
+    plan: null,
+    threshold: 80,
+    correctionsCap: true,
+    firstPercent: 40,
+    rule: "gate" as const,
+  };
+  it("practice owed after corrections reads Relearning, before the retake and the teacher's OK", () => {
+    expect(cycleState({ ...f, corrections: "needed", bestPercent: 40, practiceOwed: true })).toBe(
+      "corrections_needed"
+    );
+    expect(cycleState({ ...f, corrections: "approved", bestPercent: 80, practiceOwed: true })).toBe(
+      "relearning"
+    );
+    expect(
+      cycleState({
+        ...f,
+        corrections: "approved",
+        bestPercent: 80,
+        practiceOwed: true,
+        needsUnlock: true,
+      })
+    ).toBe("relearning");
+    expect(
+      cycleState({ ...f, corrections: "approved", bestPercent: 80, practiceOwed: false })
+    ).toBe("retake_available");
+    // CVTC: no corrections, practice still comes first.
+    expect(
+      cycleState({
+        ...f,
+        correctionsCap: false,
+        rule: "none",
+        corrections: "none",
+        bestPercent: 40,
+        practiceOwed: true,
+      })
+    ).toBe("relearning");
+  });
+  it("no retake left means nothing to practise for", () => {
+    expect(
+      cycleState({ ...f, corrections: "approved", bestPercent: 100, practiceOwed: true })
+    ).toBe("done");
+    expect(
+      cycleState({
+        ...f,
+        attemptsUsed: 3,
+        corrections: "approved",
+        bestPercent: 80,
+        practiceOwed: true,
+      })
+    ).toBe("done");
+    expect(
+      cycleState({
+        ...f,
+        corrections: "approved",
+        bestPercent: 80,
+        practiceOwed: true,
+        windowClosed: true,
+      })
+    ).toBe("done");
   });
 });
