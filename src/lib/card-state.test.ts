@@ -18,6 +18,7 @@ const base: CardInput = {
   cvtcRules: false,
   attemptsUsed: 1,
   inProgress: false,
+  awaitingGrade: false,
   unlockedThrough: 0,
   firstPercent: 40,
   firstSubmittedAt: ago(1),
@@ -130,5 +131,27 @@ describe("deriveCardState (who owes what)", () => {
       windowClosed: true,
       state: "done",
     });
+  });
+
+  it("waits for the teacher's grade before anything else, open or closed (Jon, Oct 14 2026)", () => {
+    // An essay still to grade: no partial score, no corrections or retake yet.
+    const waiting = {
+      ...base,
+      awaitingGrade: true,
+      bestPercent: 0,
+      firstPercent: 0,
+      finalPercent: 0,
+    };
+    expect(deriveCardState(waiting, now).state).toBe("awaiting_grade");
+    expect(deriveCardState({ ...waiting, closesAt: ago(1) }, now).state).toBe("awaiting_grade");
+    // An open attempt or a test that hasn't opened still reads as before.
+    expect(deriveCardState({ ...waiting, inProgress: true }, now).state).toBe("in_progress");
+    expect(deriveCardState({ ...waiting, opensAt: new Date(now.getTime() + DAY) }, now).state).toBe(
+      "upcoming"
+    );
+    // Once graded, the learning cycle takes over again.
+    expect(deriveCardState({ ...waiting, awaitingGrade: false }, now).state).toBe(
+      "corrections_needed"
+    );
   });
 });

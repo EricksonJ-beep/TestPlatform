@@ -21,7 +21,15 @@ import {
   type RetakePlan,
 } from "@/lib/retakes";
 
-export type StudentCardState = "upcoming" | "not_started" | "in_progress" | "closed" | CycleState;
+export type StudentCardState =
+  "upcoming" | "not_started" | "in_progress" | "awaiting_grade" | "closed" | CycleState;
+
+/**
+ * Jon, Oct 14 2026: while the teacher still has written answers to grade, the student's card says
+ * "Waiting for your grade" instead of a partial score, and nothing else starts until it's graded.
+ */
+export const AWAITING_GRADE_TEXT =
+  "Your teacher hasn't graded your last attempt yet. You can start the next one once it's graded.";
 
 export type CardInput = {
   type: "practice" | "formative" | "summative";
@@ -39,6 +47,8 @@ export type CardInput = {
   attemptsUsed: number;
   /** An attempt is still open (in progress or paused). */
   inProgress: boolean;
+  /** A finished attempt still has answers waiting for the teacher's grade (status "submitted"). */
+  awaitingGrade: boolean;
   /** Highest attempt number the teacher has unlocked for this student (0 = none). */
   unlockedThrough: number;
   /** Attempt 1's percent and when it was submitted (the cap and its retake window read them). */
@@ -76,8 +86,9 @@ export type CardState = {
 
 /**
  * Rules: a test that hasn't opened is "upcoming"; an open attempt keeps the card "in progress",
- * even past the close (Finish later, Oct 13 2026: it is finished in class); a closed test reads
- * "closed" on the student's card; otherwise the learning cycle decides (`cycleState`, with what
+ * even past the close (Finish later, Oct 13 2026: it is finished in class); answers still waiting
+ * for the teacher's grade make it "awaiting grade", open or closed (Oct 14 2026: no partial score,
+ * no retake until it's graded); a closed test reads "closed" on the student's card; otherwise the learning cycle decides (`cycleState`, with what
  * corrections do from `correctionsRule`: CVTC rules, teacher unlocks, the cap; Jon, Oct 13 2026),
  * or "not started" before attempt 1. The cap's retake window counts from attempt 1.
  */
@@ -123,6 +134,7 @@ export function deriveCardState(input: CardInput, now: Date): CardState {
   let state: StudentCardState;
   if (status === "scheduled") state = "upcoming";
   else if (input.inProgress) state = "in_progress";
+  else if (input.awaitingGrade) state = "awaiting_grade";
   else if (status === "closed") state = "closed";
   else state = cycle ?? "not_started";
   return { status, state, cycle, capped, rule, retakeBy, windowClosed };

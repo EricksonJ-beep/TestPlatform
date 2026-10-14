@@ -237,6 +237,7 @@ export async function listStudentAssignments(
       inProgressAttemptId: sql<
         string | null
       >`(select a.id from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status = 'in_progress' order by a.number desc limit 1)`,
+      awaitingGrade: sql<boolean>`exists (select 1 from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status = 'submitted')`,
       inProgressPaused: sql<boolean>`exists (select 1 from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status = 'in_progress' and (a.paused_at is not null or a.last_active_at < now() - interval '10 minutes'))`,
       inProgressAnswered: sql<number>`(select count(*)::int from ${schema.responses} r join ${schema.attempts} a on a.id = r.attempt_id where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status = 'in_progress' and r.answer is not null)`,
       inProgressTotal: sql<number>`(select coalesce(max(jsonb_array_length(a.question_set)), 0)::int from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status = 'in_progress')`,
@@ -313,6 +314,7 @@ export async function listStudentAssignments(
             cvtcRules,
             attemptsUsed: r.attemptsUsed,
             inProgress: !!r.inProgressAttemptId,
+            awaitingGrade: !!r.awaitingGrade,
             unlockedThrough,
             firstPercent,
             firstSubmittedAt: firstSubmittedAt ? new Date(firstSubmittedAt) : null,

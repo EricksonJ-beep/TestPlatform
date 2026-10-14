@@ -10,6 +10,8 @@ const PILL: Record<StudentAssignment["state"], { label: string; className: strin
   upcoming: { label: "Opens soon", className: "bg-muted text-muted-foreground" },
   not_started: { label: "Not started", className: "bg-warning-soft text-warning-foreground" },
   in_progress: { label: "In progress", className: "bg-brand-soft text-brand-deep" },
+  // Jon, Oct 14 2026: written answers not graded yet; no partial score, no retake until then.
+  awaiting_grade: { label: "Waiting for your grade", className: "bg-muted text-muted-foreground" },
   // Jon, Oct 13 2026: at or above the threshold the student is directed here, not told it's optional.
   corrections_to_full: {
     label: "Do corrections → 100%",
@@ -87,6 +89,7 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
         return a.retakeRequested
           ? { label: "View", primary: false }
           : { label: "Request retake", primary: true };
+      case "awaiting_grade":
       case "done":
       case "closed":
         return { label: "View", primary: false };
@@ -173,7 +176,7 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
                 : `Your teacher unlocks attempt ${a.attemptsUsed + 1}`}
             </span>
           ) : null}
-          {a.final && a.resultsReleased && capped ? (
+          {a.state === "awaiting_grade" ? null : a.final && a.resultsReleased && capped ? (
             <span className="tabular" data-final={a.final.basis ?? "none"}>
               {a.final.basis === "best_attempt" ? "Best" : "Score"} {Math.round(a.final.percent)}%
               {a.final.basis === "corrections_to_threshold"
@@ -189,7 +192,10 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
               Best {Math.round(a.bestPercent)}%{allProficient ? " · all targets proficient" : ""}
             </span>
           ) : null}
-          {a.retakeBy && a.state !== "in_progress" && a.attemptsUsed > 0 ? (
+          {a.retakeBy &&
+          a.state !== "in_progress" &&
+          a.state !== "awaiting_grade" &&
+          a.attemptsUsed > 0 ? (
             windowOpen ? (
               a.state === "done" ? null : (
                 <span data-retake-window>

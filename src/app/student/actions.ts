@@ -7,6 +7,7 @@ import { db, schema } from "@/db";
 import { logActivity } from "@/lib/activity-log";
 import { canStartAttempt, startReasonText } from "@/lib/assignments";
 import { createAttempt, finalizeAttempt } from "@/lib/attempts";
+import { AWAITING_GRADE_TEXT } from "@/lib/card-state";
 import {
   pauseAttempt,
   resumeAttempt,
@@ -161,6 +162,20 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
       }
     );
   }
+  // Jon, Oct 14 2026: nothing starts while written answers wait for the teacher's grade; the
+  // card says "Waiting for your grade" (`deriveCardState`), and this is the same rule.
+  if (
+    used > 0 &&
+    (await db.$count(
+      schema.attempts,
+      and(
+        eq(schema.attempts.assignmentId, assignmentId),
+        eq(schema.attempts.studentId, access.userId),
+        eq(schema.attempts.status, "submitted")
+      )
+    )) > 0
+  )
+    throw new ActionError(AWAITING_GRADE_TEXT, 403);
   // What corrections do here (Jon, Oct 13 2026), worked out exactly as the student card does.
   const [first] =
     used > 0
@@ -254,6 +269,7 @@ export const requestRetake = withAuthz(async (assignmentId: string) => {
     .select({
       used: sql<number>`count(*)::int`,
       open: sql<number>`count(*) filter (where ${schema.attempts.status} = 'in_progress')::int`,
+      ungraded: sql<number>`count(*) filter (where ${schema.attempts.status} = 'submitted')::int`,
     })
     .from(schema.attempts)
     .where(
@@ -265,6 +281,7 @@ export const requestRetake = withAuthz(async (assignmentId: string) => {
   const used = counts?.used ?? 0;
   if (used === 0) throw new ActionError("Take the quiz once first.", 409);
   if ((counts?.open ?? 0) > 0) throw new ActionError("Finish the attempt you're on first.", 409);
+  if ((counts?.ungraded ?? 0) > 0) throw new ActionError(AWAITING_GRADE_TEXT, 409);
   const next = used + 1;
   if (assignment.attemptsAllowed !== null && next > assignment.attemptsAllowed)
     throw new ActionError("You've used every attempt.", 409);

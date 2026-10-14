@@ -247,7 +247,7 @@ describe("student visibility", () => {
       studentId: ids.student1,
       number: 1,
       questionSet: [],
-      status: "submitted",
+      status: "graded", // "submitted" would mean answers still waiting for a grade (Oct 14 2026)
       percent: 75,
     });
     const rows = await listStudentAssignments(ids.student1, after);
