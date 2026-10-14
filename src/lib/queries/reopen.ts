@@ -4,8 +4,11 @@
  * SQL fragment for reads that list many tests or attempts in one query, and as a one-attempt read
  * for the actions. Reads only. Callers pass the guards first.
  */
-import { and, eq, isNotNull, sql, type SQL } from "drizzle-orm";
+import { and, asc, eq, isNotNull, ne, sql, type SQL } from "drizzle-orm";
 import { db, schema } from "@/db";
+import { capRetakeWindow } from "@/lib/assignments";
+import { correctionsCapOn } from "@/lib/grading";
+import { correctionsRule } from "@/lib/retakes";
 
 /**
  * SQL: the approved reopen's end for the student's attempt in play on the assignment (the open
@@ -46,4 +49,67 @@ export async function openUntilFor(
     )
     .limit(1);
   return row?.openUntil ?? null;
+}
+
+/**
+ * The cap's retake window has passed for the student on a test still open by its own close, with
+ * any approval left aside (Jon, Oct 14 2026: "Let them ask while it's still open too"): asking is
+ * accepted there, and Approve gives the retake an end (`open_until`) as on a closed test. The
+ * same rule as the card (`capRetakeWindow`: the cap applies, a retake is on offer, attempt 1 is
+ * in). Reads only; callers pass the guards first.
+ */
+export async function capWindowPassed(
+  assignmentId: string,
+  studentId: string,
+  now: Date
+): Promise<boolean> {
+  const [a] = await db
+    .select({
+      closesAt: schema.assignments.closesAt,
+      correctionsCap: schema.assignments.correctionsCap,
+      retakeWindowDays: schema.assignments.retakeWindowDays,
+      retakeThreshold: schema.assignments.retakeThreshold,
+      type: schema.assessments.type,
+      cvtcRules: schema.courses.cvtcRules,
+    })
+    .from(schema.assignments)
+    .innerJoin(schema.assessments, eq(schema.assignments.assessmentId, schema.assessments.id))
+    .leftJoin(schema.courses, eq(schema.assessments.courseId, schema.courses.id))
+    .where(eq(schema.assignments.id, assignmentId))
+    .limit(1);
+  if (!a) return false;
+  const [first] = await db
+    .select({
+      percent: schema.attempts.percent,
+      submittedAt: sql<Date | null>`min(${schema.attempts.submittedAt}) over ()`.mapWith(
+        (v: Date | string | null) => (v ? new Date(v) : null)
+      ),
+    })
+    .from(schema.attempts)
+    .where(
+      and(
+        eq(schema.attempts.assignmentId, assignmentId),
+        eq(schema.attempts.studentId, studentId),
+        ne(schema.attempts.status, "in_progress")
+      )
+    )
+    .orderBy(asc(schema.attempts.number))
+    .limit(1);
+  if (!first) return false;
+  const capped = correctionsCapOn(a);
+  return capRetakeWindow({
+    capped,
+    rule: correctionsRule({
+      type: a.type,
+      capped,
+      cvtcRules: !!a.cvtcRules,
+      firstPercent: first.percent,
+      threshold: a.retakeThreshold,
+    }),
+    open: !a.closesAt || now < a.closesAt,
+    retakeWindowDays: a.retakeWindowDays,
+    firstSubmittedAt: first.submittedAt,
+    openUntil: null,
+    now,
+  }).passed;
 }

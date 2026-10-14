@@ -105,7 +105,8 @@ export type ClassGradebookCell = {
   quizPractice: QuizPracticeTarget[];
   /**
    * "Retakes need my OK", or a closed test the student asked to retake or was reopened on (Jon,
-   * Oct 14 2026, R4): the student's next try and where it stands (locked, asked for, or unlocked
+   * Oct 14 2026, R4), or the same past the cap's retake window on an open test (Oct 14 2026): the
+   * student's next try and where it stands (locked, asked for, or unlocked
    * by the teacher), for the cell panel's Approve / Decline, Unlock try N, Take back. Null when
    * neither applies, before attempt 1, while an attempt is open, or with no try left; also when
    * `rule` is "to_full" (no retake at their score) and nothing was asked for or unlocked.
@@ -113,8 +114,15 @@ export type ClassGradebookCell = {
   unlock: UnlockState | null;
   /** The test closed and the teacher reopened it for this student until then (R4–R5). */
   reopenedUntil: Date | null;
+  /**
+   * Past the cap's retake window on an open test, the teacher approved the retake: it may start
+   * until then (Jon, Oct 14 2026: "Let them ask while it's still open too").
+   */
+  retakeOpenUntil: Date | null;
   /** Under the cap: the last moment a retake may start. */
   retakeBy: Date | null;
+  /** `retakeBy` has passed on an open test: the student asks for the retake (Oct 14 2026). */
+  retakeWindowClosed: boolean;
   /** Most tab switches on any attempt. */
   tabSwitches: number;
   /** Summatives: the last tier change, since Monday, was up. */
@@ -126,8 +134,13 @@ export type UnlockState = {
   state: "locked" | "requested" | "unlocked";
   /** The student's request for that try, if they made one. */
   requestedAt: Date | null;
-  /** The test has closed: Approve (or Unlock) reopens it for the student until then (R4). */
+  /**
+   * The test has closed, or the cap's retake window has passed while it is open: Approve (or
+   * Unlock) opens the retake for the student until then (R4; Oct 14 2026).
+   */
   reopensUntil: Date | null;
+  /** That end comes from the cap's window having passed on an open test (not a close). */
+  windowEnded: boolean;
 };
 
 export type ClassGradebook = {
@@ -522,6 +535,8 @@ export async function getClassGradebook(
           used,
           retakesNeedUnlock: a.retakesNeedUnlock,
           closed: closedTest,
+          // Past the cap's window on an open test, as the card has it (a request has no approval).
+          windowPassed: card.windowClosed,
           attemptsAllowed: a.attemptsAllowed,
           // The roster is the class's enrollments, so every student here is in the class.
           enrolled: true,
@@ -533,7 +548,7 @@ export async function getClassGradebook(
     // Approved, but something else still stops the try (checked the way `startAttempt` checks).
     let unlockedBlocker: RequestBlocker | null = null;
     const nextUnlocked =
-      (a.retakesNeedUnlock || !!card.reopenedUntil) &&
+      (a.retakesNeedUnlock || !!card.reopenedUntil || !!card.retakeOpenUntil) &&
       used > 0 &&
       !open &&
       unlockedThrough >= used + 1 &&
@@ -560,14 +575,20 @@ export async function getClassGradebook(
     }
     // The next try under "Retakes need my OK", as the results table offers it (Oct 1 2026), and
     // on a closed test the student's request or reopen, with the setting or without (Oct 14 2026,
-    // R4). With no retake at their score there is nothing to unlock early; a request or an unlock
-    // already there stays, so the teacher can still answer it or take it back.
+    // R4), and the same past the cap's retake window on an open test (Oct 14 2026: "Let them ask
+    // while it's still open too"). With no retake at their score there is nothing to unlock early;
+    // a request or an unlock already there stays, so the teacher can still answer it or take it
+    // back.
     const next = used + 1;
+    const windowEnded = !closedTest && card.windowClosed;
     const nextRow = pairUnlocks.find((u) => u.attemptNumber === next) ?? null;
     const unlockState: UnlockState["state"] =
       unlockedThrough >= next ? "unlocked" : requested ? "requested" : "locked";
     const unlock: UnlockState | null =
-      (a.retakesNeedUnlock || (closedTest && (requested || !!card.reopenedUntil))) &&
+      (a.retakesNeedUnlock ||
+        (closedTest && (requested || !!card.reopenedUntil)) ||
+        (windowEnded && requested) ||
+        !!card.retakeOpenUntil) &&
       used > 0 &&
       !open &&
       (a.attemptsAllowed === null || next <= a.attemptsAllowed) &&
@@ -576,7 +597,11 @@ export async function getClassGradebook(
             attemptNumber: next,
             state: unlockState,
             requestedAt: nextRow?.requestedAt ?? null,
-            reopensUntil: closedTest && unlockState !== "unlocked" ? endOfNextSchoolDay(now) : null,
+            reopensUntil:
+              (closedTest || windowEnded) && unlockState !== "unlocked"
+                ? endOfNextSchoolDay(now)
+                : null,
+            windowEnded: windowEnded && unlockState !== "unlocked",
           }
         : null;
     const selected = new Set(retake?.plan.selected ?? []);
@@ -628,6 +653,7 @@ export async function getClassGradebook(
       retakesNeedUnlock: a.retakesNeedUnlock,
       retakeRequested: card.retakeRequested,
       reopenedUntil: card.reopenedUntil,
+      retakeOpenUntil: card.retakeOpenUntil,
       askCounts: card.askCounts,
       correctionsCap: card.capped,
       retakeThreshold: a.retakeThreshold,
@@ -675,7 +701,9 @@ export async function getClassGradebook(
       quizPractice: card.quizPractice,
       unlock,
       reopenedUntil: card.reopenedUntil,
+      retakeOpenUntil: card.retakeOpenUntil,
       retakeBy: card.retakeBy,
+      retakeWindowClosed: card.windowClosed,
       tabSwitches: Math.max(0, ...mine.map((x) => x.tabSwitches)),
       movedUpThisWeek: !!final && movedUp(final, week),
     };

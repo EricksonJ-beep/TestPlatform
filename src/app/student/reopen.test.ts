@@ -175,6 +175,7 @@ async function expectGradebookAgrees() {
       expect(c.card, where).toBe(own.state);
       expect(c.cycle, where).toBe(own.cycle);
       expect(c.reopenedUntil, where).toEqual(own.reopenedUntil);
+      expect(c.retakeOpenUntil, where).toEqual(own.retakeOpenUntil);
     }
   }
 }
@@ -711,6 +712,213 @@ describe("Asking only for a retake that is on offer (review, Oct 14 2026)", () =
       state: "retake_available",
       reopenedUntil: openUntil,
     });
+    await expectGradebookAgrees();
+  });
+});
+
+describe("Past the cap's retake window on a quiz still open (Jon, Oct 14 2026)", () => {
+  // "Let them ask while it's still open too": Quinn's capped quiz is open for ten more days;
+  // attempt 1 at 40% went in 8 days ago (the 7-day window has passed), corrections are approved
+  // (80%), and its questions are untagged, so there is no practice step.
+  const open = { id: "", quinn: "" };
+  const openCard = async () =>
+    (await listStudentAssignments(open.quinn)).find((a) => a.id === open.id)!;
+  const openCell = async () => {
+    const gb = await gradebook();
+    const i = gb.columns.findIndex((c) => c.assignmentId === open.id);
+    return {
+      cell: gb.rows.find((r) => r.student.id === open.quinn)!.cells[i],
+      column: gb.columns[i],
+    };
+  };
+  const openRequest = async () =>
+    (await listRetakeRequests(ids.teacher)).find(
+      (r) => r.studentId === open.quinn && r.assignmentId === open.id
+    );
+  const openUnlock = (attemptNumber = 2) =>
+    db.query.attemptUnlocks.findFirst({
+      where: and(
+        eq(schema.attemptUnlocks.assignmentId, open.id),
+        eq(schema.attemptUnlocks.studentId, open.quinn),
+        eq(schema.attemptUnlocks.attemptNumber, attemptNumber)
+      ),
+    });
+
+  beforeAll(async () => {
+    const [quinn] = await db
+      .insert(schema.users)
+      .values({
+        email: "q@s",
+        passwordHash: "x",
+        role: "student",
+        firstName: "Quinn",
+        lastName: "Q",
+      })
+      .returning();
+    open.quinn = quinn.id;
+    await db.insert(schema.enrollments).values({ classId: ids.cls, studentId: quinn.id });
+    const [quiz] = await db
+      .insert(schema.assessments)
+      .values({ ownerId: ids.teacher, type: "formative", title: "Unit 3 quiz", isPublished: true })
+      .returning();
+    const [sec] = await db
+      .insert(schema.assessmentSections)
+      .values({ assessmentId: quiz.id, title: "All", sortOrder: 0 })
+      .returning();
+    await db
+      .insert(schema.assessmentQuestions)
+      .values(ids.quizQ.map((q, j) => ({ sectionId: sec.id, questionId: q.id, sortOrder: j })));
+    const [asg] = await db
+      .insert(schema.assignments)
+      .values({
+        ownerId: ids.teacher,
+        classId: ids.cls,
+        assessmentId: quiz.id,
+        attemptsAllowed: 3,
+        timeLimitMinutes: 20,
+        opensAt: new Date(Date.now() - 20 * 86_400_000),
+        closesAt: new Date(Date.now() + 10 * 86_400_000),
+      })
+      .returning();
+    open.id = asg.id;
+    as(quinn.id, "student");
+    const { attemptId } = await ok(startAttempt(asg.id, null));
+    await db.insert(schema.responses).values(
+      ids.quizQ.map((q, i) => ({
+        attemptId,
+        questionId: q.id,
+        answer: { kind: "choice" as const, optionId: i < 2 ? q.right : q.wrong },
+      }))
+    );
+    const eightDaysAgo = new Date(Date.now() - 8 * 86_400_000);
+    await finalizeAttempt(attemptId, eightDaysAgo);
+    await db
+      .update(schema.attempts)
+      .set({ startedAt: new Date(eightDaysAgo.getTime() - 10 * MINUTE), submittedAt: eightDaysAgo })
+      .where(eq(schema.attempts.id, attemptId));
+    await correct(quinn.id, attemptId);
+  });
+
+  it("the card reads Ask to retake; starting is refused for the window until they ask", async () => {
+    expect(await openCard()).toMatchObject({
+      status: "open",
+      state: "ask_to_retake",
+      cycle: "retake_available",
+      askCounts: false,
+      retakeRequested: false,
+      retakeWindowClosed: true,
+      retakeOpenUntil: null,
+      reopenedUntil: null,
+      final: { percent: 80 },
+    });
+    as(open.quinn, "student");
+    await refused(startAttempt(open.id, null), 403, /^Retakes on this quiz closed/);
+    // Her list: an optional ask that says the window ended, never "closed".
+    const list = buildStudentToDo({ assignments: [await openCard()] });
+    expect(list.higher[0]).toMatchObject({
+      kind: "ask",
+      action: { kind: "ask", label: "Ask to retake", primary: false },
+    });
+    expect(list.higher[0].why).toMatch(/^The retake window for this quiz has ended\./);
+    // Nothing for the teacher yet (not asked): quiet.
+    expect(tagLabel((await openCell()).cell.tag, FMT)).toBe("Done");
+    expect(await openRequest()).toBeUndefined();
+    await expectGradebookAgrees();
+  });
+
+  it("asking lands in Needs you as current, with until when Approve opens it and no window blocker", async () => {
+    as(open.quinn, "student");
+    expect(await ok(requestRetake(open.id))).toEqual({ attemptNumber: 2 });
+    // Idempotent: asking again changes nothing and logs nothing.
+    const first = (await openUnlock())!;
+    expect(await ok(requestRetake(open.id))).toEqual({ attemptNumber: 2 });
+    expect(await openUnlock()).toEqual(first);
+    expect(await requestsLogged(open.quinn)).toBe(1);
+    expect(first).toMatchObject({ grantedAt: null, openUntil: null });
+    expect(await openCard()).toMatchObject({
+      status: "open",
+      state: "awaiting_unlock",
+      retakeRequested: true,
+    });
+    const row = (await openRequest())!;
+    expect(row).toMatchObject({ stale: null, blocker: null, windowEnded: true, attemptNumber: 2 });
+    expect(row.reopensUntil).toEqual(endOfNextSchoolDay(new Date()));
+    const { cell: c } = await openCell();
+    expect(tagLabel(c.tag, FMT)).toBe("Retake request");
+    expect(c.tag.needsYou).toBe(true);
+    expect(c.unlock).toMatchObject({ attemptNumber: 2, state: "requested", windowEnded: true });
+    expect(c.unlock?.reopensUntil).toBeInstanceOf(Date);
+    // Current, so Clear refuses it: Approve or Decline.
+    as(ids.teacher, "teacher");
+    await refused(clearRetakeRequest(open.id, row.id), 409);
+    await expectGradebookAgrees();
+  });
+
+  it("only the owning teacher approves; Approve opens the retake through the next school day", async () => {
+    as(ids.other, "teacher");
+    await refused(unlockNextAttempt(open.id, open.quinn), 403);
+    expect(await openUnlock()).toMatchObject({ grantedAt: null, openUntil: null });
+    as(ids.teacher, "teacher");
+    await ok(unlockNextAttempt(open.id, open.quinn));
+    const granted = (await openUnlock())!;
+    expect(granted.openUntil).toEqual(endOfNextSchoolDay(granted.grantedAt!));
+    expect(await openRequest()).toBeUndefined();
+    expect(await openCard()).toMatchObject({
+      status: "open",
+      state: "retake_available",
+      retakeOpenUntil: granted.openUntil,
+      reopenedUntil: null,
+      retakeBy: null,
+      retakeWindowClosed: false,
+    });
+    const { cell: c, column } = await openCell();
+    expect(column.status).toBe("open");
+    expect(tagLabel(c.tag, FMT)).toBe("Can retake");
+    expect(cellSentence(c, column, { hideScores: true, fmt: FMT })).toMatch(
+      /; retake open through Oct 15\.$/
+    );
+    await expectGradebookAgrees();
+    // Undo: the request comes back, and with it the window.
+    await ok(undoRetakeApproval(open.id, open.quinn));
+    expect(await openUnlock()).toMatchObject({ grantedAt: null, openUntil: null });
+    expect((await openCard()).state).toBe("awaiting_unlock");
+    expect(await openRequest()).toMatchObject({ stale: null, windowEnded: true });
+  });
+
+  it("unused by its end, the window applies again and asking makes a new request", async () => {
+    as(ids.teacher, "teacher");
+    await ok(unlockNextAttempt(open.id, open.quinn));
+    await db
+      .update(schema.attemptUnlocks)
+      .set({ openUntil: minutesAgo(1) })
+      .where(eq(schema.attemptUnlocks.id, (await openUnlock())!.id));
+    expect(await openCard()).toMatchObject({
+      status: "open",
+      state: "ask_to_retake",
+      retakeOpenUntil: null,
+      retakeWindowClosed: true,
+    });
+    as(open.quinn, "student");
+    await refused(startAttempt(open.id, null), 403, /^Retakes on this quiz closed/);
+    await ok(requestRetake(open.id));
+    expect(await openUnlock()).toMatchObject({ grantedAt: null, grantedBy: null, openUntil: null });
+    expect(await requestsLogged(open.quinn)).toBe(2);
+    expect(await openRequest()).toMatchObject({ stale: null, blocker: null, windowEnded: true });
+    await expectGradebookAgrees();
+  });
+
+  it("approved, the student starts; the deadline is the time limit, not in the past", async () => {
+    as(ids.teacher, "teacher");
+    await ok(unlockNextAttempt(open.id, open.quinn));
+    as(open.quinn, "student");
+    const before = Date.now();
+    const { attemptId, resumed } = await ok(startAttempt(open.id, null));
+    expect(resumed).toBe(false);
+    const a = (await db.query.attempts.findFirst({ where: eq(schema.attempts.id, attemptId) }))!;
+    expect(a.number).toBe(2);
+    expect(a.dueAt!.getTime()).toBeGreaterThan(before);
+    expect(a.dueAt!.getTime() - a.startedAt.getTime()).toBe(20 * MINUTE);
+    expect(await openCard()).toMatchObject({ status: "open", state: "in_progress" });
     await expectGradebookAgrees();
   });
 });

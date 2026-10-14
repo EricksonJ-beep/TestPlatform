@@ -439,9 +439,17 @@ function UnlockControls({
         )}
       </span>
       {unlock.reopensUntil && unlock.state !== "unlocked" ? (
-        <span className="text-xs text-muted-foreground" data-reopens>
-          Closed · {unlock.state === "requested" ? "Approve" : "Unlocking"} reopens it for{" "}
-          {student.firstName} through <LocalTime date={unlock.reopensUntil} mode="date" />
+        <span
+          className="text-xs text-muted-foreground"
+          data-reopens={unlock.windowEnded ? "window" : "closed"}
+        >
+          {/* Past the cap's window on an open test (Jon, Oct 14 2026), as the Needs you row says. */}
+          {unlock.windowEnded ? "Retake window ended" : "Closed"} ·{" "}
+          {unlock.state === "requested" ? "Approve" : "Unlocking"}{" "}
+          {unlock.windowEnded
+            ? `lets ${student.firstName} retake it`
+            : `reopens it for ${student.firstName}`}{" "}
+          through <LocalTime date={unlock.reopensUntil} mode="date" />
         </span>
       ) : null}
       {noRetake ? (

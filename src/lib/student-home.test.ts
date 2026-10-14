@@ -37,6 +37,7 @@ function a(title: string, over: Partial<StudentAssignment> = {}): StudentAssignm
     retakesNeedUnlock: false,
     retakeRequested: false,
     reopenedUntil: null,
+    retakeOpenUntil: null,
     askCounts: false,
     correctionsCap: true,
     retakeThreshold: 80,
@@ -412,6 +413,75 @@ describe("the student to-do list", () => {
       action: { kind: "ask", label: "Ask to retake", primary: false },
     });
     expect(list.higher[0].why).toMatch(/^This test is closed\. Want a higher score\?/);
+  });
+
+  it('past the cap\'s window on an open quiz: ask to retake, never "closed"; practice first (Oct 14 2026)', () => {
+    const late = (over: Partial<StudentAssignment>) =>
+      a("Unit 2 LT1 Quiz", {
+        closesAt: OCT20,
+        attemptsUsed: 1,
+        firstPercent: 40,
+        retakeBy: OCT10,
+        retakeWindowClosed: true,
+        ...over,
+      });
+    const asking = buildStudentToDo({
+      assignments: [late({ state: "ask_to_retake", cycle: "retake_available" })],
+    });
+    expect(asking.count).toBe(0);
+    expect(asking.higher[0]).toMatchObject({
+      kind: "ask",
+      action: { kind: "ask", label: "Ask to retake", attemptNumber: 2, primary: false },
+    });
+    expect(asking.higher[0].why).toMatch(/^The retake window for this quiz has ended\./);
+    expect(asking.higher[0].why).not.toMatch(/closed/);
+    const asked = buildStudentToDo({
+      assignments: [
+        late({ state: "awaiting_unlock", cycle: "retake_available", retakeRequested: true }),
+      ],
+    });
+    expect(asked.waiting[0]).toMatchObject({ kind: "retake_requested" });
+    expect(asked.waiting[0].why).toMatch(/^You asked to retake this quiz\./);
+    // Practice still owed: a step before asking, not counted, as on a closed quiz.
+    const practicing = buildStudentToDo({
+      assignments: [
+        late({
+          state: "relearning",
+          cycle: "relearning",
+          quizPractice: [
+            {
+              targetId: "lt1",
+              code: "U2.LT1",
+              title: "Sugars",
+              scored: 40,
+              best: null,
+              done: false,
+              minQuestions: 5,
+            },
+          ],
+        }),
+      ],
+      buildableTargetIds: new Set(["lt1"]),
+    });
+    expect(practicing.count).toBe(0);
+    expect(practicing.higher[0].kind).toBe("practice");
+    expect(practicing.higher[0].why).toMatch(/before you can ask to retake/);
+    // Approved: the retake starts until the end the teacher's approval gave it.
+    const approved = buildStudentToDo({
+      assignments: [
+        late({
+          state: "retake_available",
+          cycle: "retake_available",
+          retakeBy: null,
+          retakeWindowClosed: false,
+          retakeOpenUntil: OCT16,
+        }),
+      ],
+    });
+    expect(approved.higher[0]).toMatchObject({
+      kind: "retake",
+      when: { label: "Retake by", at: OCT16 },
+    });
   });
 
   it("required retakes and relearning count; a wait shows when the retake can start, with no button", () => {

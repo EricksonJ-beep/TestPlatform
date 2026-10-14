@@ -130,8 +130,13 @@ export default async function StudentAssignmentPage({
           ) : null}
           {a.retakeBy && a.attemptsUsed > 0 ? (
             <span data-retake-window={a.retakeWindowClosed ? "closed" : "open"}>
-              {a.retakeWindowClosed ? "Retakes closed " : "Retake by "}
+              {/* Past it the student asks for the retake (Jon, Oct 14 2026), so not "closed". */}
+              {a.retakeWindowClosed ? "Retake window ended " : "Retake by "}
               <LocalTime date={a.retakeBy} />
+            </span>
+          ) : a.retakeOpenUntil && a.state !== "in_progress" ? (
+            <span data-retake-window="approved">
+              Retake by <LocalTime date={a.retakeOpenUntil} />
             </span>
           ) : null}
         </p>
@@ -176,7 +181,7 @@ export default async function StudentAssignmentPage({
               : c.state === "returned"
                 ? a.correctionsRule === "to_full"
                   ? "Your teacher sent your corrections back. Revise and resubmit to raise this quiz to 100%."
-                  : closed && attemptsLeftNow
+                  : (closed || a.retakeWindowClosed) && attemptsLeftNow
                     ? "Your teacher sent your corrections back. Revise and resubmit before you can ask to retake."
                     : "Your teacher sent your corrections back. Revise and resubmit to unlock your next attempt."
                 : // The to-do list's words (Jon, Oct 14 2026); a retake to go higher only while it's open.
@@ -186,6 +191,7 @@ export default async function StudentAssignmentPage({
                     c.attemptNumber === 1 &&
                     a.correctionsRule !== "to_full" &&
                     !closed &&
+                    !a.retakeWindowClosed &&
                     attemptsLeftNow
                       ? " Then retake it to go higher."
                       : ""
@@ -269,10 +275,14 @@ export default async function StudentAssignmentPage({
           <span className="mr-auto inline-flex items-start gap-2">
             <Lock className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
             <span>
-              {a.askCounts
-                ? "This test is closed, and you still need a retake on some targets. Ask your teacher to let you retake it."
-                : "This test is closed. Want a higher score? Ask your teacher to let you retake it."}{" "}
-              If they say yes, it opens just for you until the end of the next school day.
+              {closed
+                ? `${
+                    a.askCounts
+                      ? "This test is closed, and you still need a retake on some targets. Ask your teacher to let you retake it."
+                      : "This test is closed. Want a higher score? Ask your teacher to let you retake it."
+                  } If they say yes, it opens just for you until the end of the next school day.`
+                : // Past the cap's window on an open quiz (Jon, Oct 14 2026).
+                  "The retake window for this quiz has ended. Want a higher score? Ask your teacher to let you retake it. If they say yes, you can retake it until the end of the next school day."}
             </span>
           </span>
           <RequestRetakeButton
@@ -292,9 +302,11 @@ export default async function StudentAssignmentPage({
             <span>
               {a.retakeRequested && a.status === "closed"
                 ? "You asked to retake this test. Waiting on your teacher: if they say yes, it opens just for you until the end of the next school day."
-                : a.retakeRequested
-                  ? `Your request for attempt ${a.attemptsUsed + 1} is in. Your teacher will approve it, usually in class.`
-                  : `Your teacher opens each retake. Ask for attempt ${a.attemptsUsed + 1} here, or in class.`}
+                : a.retakeRequested && a.retakeWindowClosed
+                  ? "You asked to retake this quiz. Waiting on your teacher: if they say yes, you can retake it until the end of the next school day."
+                  : a.retakeRequested
+                    ? `Your request for attempt ${a.attemptsUsed + 1} is in. Your teacher will approve it, usually in class.`
+                    : `Your teacher opens each retake. Ask for attempt ${a.attemptsUsed + 1} here, or in class.`}
             </span>
           </span>
           {a.retakeRequested ? null : (

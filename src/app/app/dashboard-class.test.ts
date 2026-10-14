@@ -222,6 +222,7 @@ describe("the cell panel's retake controls", () => {
       state: "locked",
       requestedAt: null,
       reopensUntil: null,
+      windowEnded: false,
     });
     expect(tagLabel(cell.tag)).toBe("Ready, needs your OK");
 

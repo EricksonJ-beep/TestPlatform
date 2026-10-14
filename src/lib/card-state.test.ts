@@ -163,12 +163,89 @@ describe("deriveCardState (who owes what)", () => {
     });
   });
 
-  it("closes the cap's retake window a week after attempt 1", () => {
+  it("closes the cap's retake window a week after attempt 1; past it the student asks (Oct 14 2026)", () => {
     const late = { ...base, firstSubmittedAt: ago(8), corrections: "approved" as const };
+    // Jon, Oct 14 2026: "Let them ask while it's still open too" (it read "done" before).
     expect(deriveCardState({ ...late, finalPercent: 80 }, now)).toMatchObject({
+      status: "open",
       windowClosed: true,
-      state: "done",
+      state: "ask_to_retake",
+      cycle: "retake_available",
+      askCounts: false,
+      retakeOpenUntil: null,
     });
+  });
+
+  it("past the cap's window on an open quiz: ask, approve, retake, and ask again (Oct 14 2026)", () => {
+    // Attempt 1 at 40% eight days ago, corrections approved (80%), no practice content.
+    const late = {
+      ...base,
+      firstSubmittedAt: ago(8),
+      corrections: "approved" as const,
+      finalPercent: 80,
+    };
+    const windowEnd = new Date(ago(8).getTime() + 7 * DAY);
+    expect(deriveCardState(late, now)).toMatchObject({
+      state: "ask_to_retake",
+      retakeBy: windowEnd,
+      windowClosed: true,
+      retakeRequested: false,
+    });
+    // Asked: waiting on the teacher, with "Retakes need my OK" or without.
+    for (const retakesNeedUnlock of [false, true]) {
+      expect(deriveCardState({ ...late, retakesNeedUnlock }, now).state).toBe("ask_to_retake");
+      expect(
+        deriveCardState({ ...late, retakesNeedUnlock, requestedNext: true }, now)
+      ).toMatchObject({ state: "awaiting_unlock", retakeRequested: true });
+    }
+    // Approved through the end of tomorrow: the window doesn't apply until then.
+    const until = new Date(now.getTime() + DAY);
+    const approved = { ...late, unlockedThrough: 2, openUntil: until };
+    for (const retakesNeedUnlock of [false, true])
+      expect(deriveCardState({ ...approved, retakesNeedUnlock }, now)).toMatchObject({
+        status: "open",
+        state: "retake_available",
+        retakeBy: null,
+        windowClosed: false,
+        retakeOpenUntil: until,
+        reopenedUntil: null,
+      });
+    // Unused by then: the window applies again and they may ask again.
+    expect(deriveCardState(approved, new Date(until.getTime() + 1))).toMatchObject({
+      status: "open",
+      state: "ask_to_retake",
+      windowClosed: true,
+      retakeOpenUntil: null,
+    });
+    // The steps before asking show as usual: corrections, then a quiz's practice.
+    expect(deriveCardState({ ...late, corrections: "needed" }, now).state).toBe(
+      "corrections_needed"
+    );
+    const lt1 = { id: "lt1", code: "U2.LT1", title: "Sugars", sortOrder: 1 };
+    const owed = deriveCardState(
+      {
+        ...late,
+        quizPractice: {
+          latest: { submittedAt: ago(8), targetPercents: { lt1: 40 } },
+          targets: [{ ...lt1, hasSet: false, openQuestions: 8 }],
+          practice: [],
+        },
+      },
+      now
+    );
+    expect(owed).toMatchObject({ state: "relearning", cycle: "relearning", windowClosed: true });
+    // Nothing to ask for: no tries left, or 100% already; never at or above the line (to_full).
+    expect(deriveCardState({ ...late, attemptsUsed: 3 }, now).state).toBe("done");
+    expect(deriveCardState({ ...late, bestPercent: 100, finalPercent: 100 }, now).state).toBe(
+      "done"
+    );
+    expect(
+      deriveCardState({ ...late, firstPercent: 85, bestPercent: 85, finalPercent: 100 }, now)
+    ).toMatchObject({ state: "done", retakeBy: null, windowClosed: false });
+    // Inside the window nothing changes: the retake starts without asking.
+    expect(deriveCardState({ ...late, firstSubmittedAt: ago(2) }, now).state).toBe(
+      "retake_available"
+    );
   });
 
   it("waits for the teacher's grade before anything else, open or closed (Jon, Oct 14 2026)", () => {
@@ -298,10 +375,13 @@ describe("deriveCardState (who owes what)", () => {
       state: "ask_to_retake",
       reopenedUntil: null,
     });
-    // A request on an open test without "Retakes need my OK" is a leftover: not "requested".
-    expect(deriveCardState({ ...closed, closesAt: null, requestedNext: true }, now)).toMatchObject({
-      state: "done",
-      retakeRequested: false,
-    });
+    // A request on an open test without "Retakes need my OK", inside the cap's window, is a
+    // leftover: not "requested" (past the window it is current: Oct 14 2026, above).
+    expect(
+      deriveCardState(
+        { ...closed, closesAt: null, firstSubmittedAt: ago(1), requestedNext: true },
+        now
+      )
+    ).toMatchObject({ state: "retake_available", retakeRequested: false });
   });
 });

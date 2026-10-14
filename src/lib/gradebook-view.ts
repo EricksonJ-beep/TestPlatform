@@ -384,7 +384,8 @@ export function cellMarks(
  * The cell panel's plain sentence (research notes C, "Clicks": "Took try 1 Oct 9 (62%);
  * corrections 3 of 8 started", in the student's own words for an owed set; Oct 14 2026: a quiz's practice still owed before the retake, R3,
  * "needs 80% on practice for U2.LT1 (best 60%)", and a closed test reopened for the student ends
- * "reopened through Oct 15", R4). Scores drop out when "Hide scores" is on (decision 6).
+ * "reopened through Oct 15", R4; past the cap's window on an open test, an approved retake ends
+ * "retake open through Oct 15"). Scores drop out when "Hide scores" is on (decision 6).
  */
 export function cellSentence(
   cell: ClassGradebookCell,
@@ -460,9 +461,16 @@ export function cellSentence(
       )}`
     );
   if (cell.retakeBy && (cell.cycle === "retake_available" || cell.cycle === "awaiting_unlock"))
-    parts.push(`retake by ${fmt.time(cell.retakeBy)}`);
-  // Ask to retake on a closed test (Jon, Oct 14 2026, R4): open for them alone until then.
+    parts.push(
+      // Past it, the student asks for the retake (Jon, Oct 14 2026).
+      cell.retakeWindowClosed
+        ? `retake window ended ${fmt.date(cell.retakeBy)}`
+        : `retake by ${fmt.time(cell.retakeBy)}`
+    );
+  // Ask to retake on a closed test (Jon, Oct 14 2026, R4): open for them alone until then; past
+  // the cap's window on an open one, the approved retake may start until then.
   if (cell.reopenedUntil) parts.push(`reopened through ${fmt.date(cell.reopenedUntil)}`);
+  if (cell.retakeOpenUntil) parts.push(`retake open through ${fmt.date(cell.retakeOpenUntil)}`);
   const text = parts.join("; ");
   return text ? `${text[0].toUpperCase()}${text.slice(1)}.` : "";
 }

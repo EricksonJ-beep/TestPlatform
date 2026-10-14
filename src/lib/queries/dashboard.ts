@@ -9,6 +9,7 @@
 import { and, asc, eq, inArray, isNull, ne, or, sql } from "drizzle-orm";
 import { alias, type AnyPgColumn } from "drizzle-orm/pg-core";
 import { db, schema } from "@/db";
+import { capRetakeWindow } from "@/lib/assignments";
 import { correctionsClear } from "@/lib/corrections";
 import { correctionsCapOn } from "@/lib/grading";
 import {
@@ -142,10 +143,13 @@ export type RetakeRequest = {
   /** What would still stop the try from starting once approved; null when nothing would. */
   blocker: RequestBlocker | null;
   /**
-   * The test has closed: Approve reopens it for the student until then, the end of the next
-   * school day (Jon, Oct 14 2026, R4). Null on an open test.
+   * The test has closed, or the cap's retake window has passed while it is open: Approve opens
+   * the retake for the student until then, the end of the next school day (Jon, Oct 14 2026, R4;
+   * "Let them ask while it's still open too"). Null otherwise.
    */
   reopensUntil: Date | null;
+  /** That end comes from the cap's window having passed on an open test (not a close). */
+  windowEnded: boolean;
 };
 
 /**
@@ -153,7 +157,8 @@ export type RetakeRequest = {
  * 2026 for current vs leftover). A current request carries what would still block the start
  * after approval (wait time, retake window, no retake at their score, relearning gates, and on a
  * quiz its corrections and practice: Jon, Oct 14 2026, decisions 4–5), checked the way
- * `startAttempt` checks it; on a closed test, until when Approve reopens it (R4). Reads only: a summative's relearning gates come from the stored gate
+ * `startAttempt` checks it; on a closed test, or past the cap's retake window on an open one,
+ * until when Approve opens the retake (R4; Oct 14 2026). Reads only: a summative's relearning gates come from the stored gate
  * rows (a pair with none reads its gates shut, as in the class gradebook), never from
  * `getRetakeStatus`, which writes missing rows; all of them in three batched reads, and a quiz's
  * corrections and practice in three more.
@@ -219,11 +224,7 @@ export async function listRetakeRequests(
     .orderBy(asc(u.requestedAt));
 
   const out = rows.map((r) => {
-    // A closed test's request (Jon, Oct 14 2026, R4): Approve reopens it through the next school day.
     const closed = !!r.closesAt && r.closesAt.getTime() <= now.getTime();
-    const reopensUntil = closed ? endOfNextSchoolDay(now) : null;
-    const stale = staleRequest({ ...r, closed, enrolled: !!r.enrolled });
-    let blocker: RequestBlocker | null = null;
     // The cap's retake window applies only where the cap does (never in a CVTC course).
     const capped = correctionsCapOn(r);
     const rule = correctionsRule({
@@ -233,6 +234,22 @@ export async function listRetakeRequests(
       firstPercent: r.firstPercent === null ? null : Number(r.firstPercent),
       threshold: r.retakeThreshold,
     });
+    // Past the cap's window on an open test (Oct 14 2026: "Let them ask while it's still open
+    // too"); a request carries no approval, so none is taken into account.
+    const windowEnded = capRetakeWindow({
+      capped,
+      rule,
+      open: !closed,
+      retakeWindowDays: r.retakeWindowDays,
+      firstSubmittedAt: asDate(r.firstSubmittedAt),
+      openUntil: null,
+      now,
+    }).passed;
+    // A closed test's request (Jon, Oct 14 2026, R4), or one past the window: Approve opens the
+    // retake through the next school day.
+    const reopensUntil = closed || windowEnded ? endOfNextSchoolDay(now) : null;
+    const stale = staleRequest({ ...r, closed, windowPassed: windowEnded, enrolled: !!r.enrolled });
+    let blocker: RequestBlocker | null = null;
     if (!stale) {
       // At or above the line under the cap, corrections are the way up and `startAttempt`
       // refuses any retake (decision 2), so an approval would unlock nothing. That outlasts a
@@ -249,7 +266,7 @@ export async function listRetakeRequests(
               now,
             });
     }
-    return { r, stale, blocker, rule, reopensUntil };
+    return { r, stale, blocker, rule, reopensUntil, windowEnded };
   });
 
   // A current quiz request with nothing else in the way: its corrections, then its practice
@@ -370,7 +387,7 @@ export async function listRetakeRequests(
     }
   }
 
-  return out.map(({ r, stale, blocker, reopensUntil }) => ({
+  return out.map(({ r, stale, blocker, reopensUntil, windowEnded }) => ({
     id: r.id,
     assignmentId: r.assignmentId,
     studentId: r.studentId,
@@ -385,6 +402,7 @@ export async function listRetakeRequests(
     stale,
     blocker,
     reopensUntil: stale ? null : reopensUntil,
+    windowEnded: !stale && windowEnded,
   }));
 }
 
