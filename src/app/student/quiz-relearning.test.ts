@@ -149,6 +149,23 @@ async function finishPractice(studentId: string, attemptId: string, right: numbe
   expect(done.completedAt).toBeInstanceOf(Date);
   return done;
 }
+/** One multiple-choice question in a bank, tagged to the given targets, ready for `finishPractice`. */
+async function addQuestion(bankId: string, targetIds: string[]) {
+  const [q] = await db
+    .insert(schema.questions)
+    .values({ bankId, ownerId: ids.teacher, type: "multiple_choice", stem: "Q", points: 1 })
+    .returning();
+  for (const learningTargetId of targetIds)
+    await db.insert(schema.questionTargets).values({ questionId: q.id, learningTargetId });
+  const [right, wrong] = await db
+    .insert(schema.questionOptions)
+    .values([
+      { questionId: q.id, content: "Right", isCorrect: true, sortOrder: 0 },
+      { questionId: q.id, content: "Wrong", isCorrect: false, sortOrder: 1 },
+    ])
+    .returning();
+  ids.practiceQ.set(q.id, { id: q.id, right: right.id, wrong: wrong.id });
+}
 /** Build my practice on one target (5 questions, the smallest size). */
 async function build(studentId: string, courseId: string, targetId: string, right: number) {
   as(studentId, "student");
@@ -373,13 +390,13 @@ describe("R1: Viola's closed quizzes keep their corrections", () => {
           "corrections",
           "Unit 2 LT1 Quiz",
           "Correct 3 missed questions to raise your score from 40% to 80%.",
-          "0 of 3 done",
+          "0 of 3 started",
         ],
         [
           "corrections",
           "Unit 2 Quiz: Carbohydrates",
           "Correct 5 missed questions to raise your score from 50% to 80%.",
-          "0 of 5 done",
+          "0 of 5 started",
         ],
       ])
     );
@@ -416,6 +433,7 @@ describe("R3: practice on every missed target before a quiz retake", () => {
         scored: 40,
         best: null,
         done: false,
+        minQuestions: 5,
       },
     ]);
     expect(await label(ids.viola, "lt1Quiz")).toBe("Relearning (needs: practice U2.LT1) · closed");
@@ -433,12 +451,12 @@ describe("R3: practice on every missed target before a quiz retake", () => {
       expect.arrayContaining([
         [
           "practice",
-          "Practice U2.LT1: score 80% before you can ask to retake (you scored 40%).",
+          "Practice U2.LT1: score 80% on at least 5 questions on it before you can ask to retake (you scored 40%).",
           expect.objectContaining({ href: `/student/practice/build?target=${ids.lt.lt1}` }),
         ],
         [
           "practice",
-          "Practice U2.LT2: score 80% before you can ask to retake (you scored 40%).",
+          "Practice U2.LT2: score 80% on at least 5 questions on it before you can ask to retake (you scored 40%).",
           expect.objectContaining({ href: `/student/practice/build?target=${ids.lt.lt2}` }),
         ],
       ])
@@ -458,7 +476,10 @@ describe("R3: practice on every missed target before a quiz retake", () => {
       const open = buildStudentToDo({ assignments: await listStudentAssignments(ids.viola) });
       expect(open.headline).toBe("You have 2 things to do.");
       expect(open.todo.map((r) => [r.kind, r.why])).toEqual([
-        ["practice", "Practice U2.LT1: score 80% to unlock your retake (you scored 40%)."],
+        [
+          "practice",
+          "Practice U2.LT1: score 80% on at least 5 questions on it to unlock your retake (you scored 40%).",
+        ],
         ["start", "Open now."],
       ]);
       const practice = await getStudentPractice(ids.viola, await listStudentAssignments(ids.viola));
@@ -522,6 +543,56 @@ describe("R3: practice on every missed target before a quiz retake", () => {
     expect(await card(ids.viola, "carbs")).toMatchObject({
       cycle: "retake_available",
       quizPractice: [{ code: "U2.LT2", best: 100, done: true }],
+    });
+    await expectGradebookAgrees();
+  });
+
+  it("a teacher's bank set counts on the target's own questions, each item for every tag it carries (review, Oct 14)", async () => {
+    // Xan: 40% on the LT1 quiz, corrections done, LT1 practice owed.
+    await setClosed("lt1Quiz", false);
+    const attemptId = await take(ids.xan, "lt1Quiz", { lt1: 2 });
+    await setClosed("lt1Quiz", true);
+    await correct(ids.xan, attemptId);
+    expect((await card(ids.xan, "lt1Quiz")).quizPractice).toMatchObject([
+      { code: "U2.LT1", best: null, done: false },
+    ]);
+    // "Unit 2 review", tagged LT1 and LT2, deals 3 from a bank whose questions are all on LT2.
+    const [bank] = await db
+      .insert(schema.questionBanks)
+      .values({ ownerId: ids.teacher, courseId: ids.bio, name: "U2 Review" })
+      .returning();
+    for (let i = 0; i < 2; i++) await addQuestion(bank.id, [ids.lt.lt2]);
+    const [review] = await db
+      .insert(schema.practiceSets)
+      .values({
+        ownerId: ids.teacher,
+        courseId: ids.bio,
+        title: "Unit 2 review",
+        isPublished: true,
+        bankId: bank.id,
+        drawCount: 3,
+      })
+      .returning();
+    await db.insert(schema.practiceSetTargets).values([
+      { practiceSetId: review.id, learningTargetId: ids.lt.lt1 },
+      { practiceSetId: review.id, learningTargetId: ids.lt.lt2 },
+    ]);
+    // 100% on a deal with no LT1 question: LT1 isn't practised, whatever the whole score.
+    as(ids.xan, "student");
+    const first = await ok(startPractice(review.id));
+    expect((await finishPractice(ids.xan, first.attemptId, 3)).percent).toBe(100);
+    expect(await card(ids.xan, "lt1Quiz")).toMatchObject({
+      cycle: "relearning",
+      quizPractice: [{ code: "U2.LT1", best: null, done: false }],
+    });
+    // A question tagged LT2 and LT1 counts for LT1 too, whichever tag the deal credited.
+    await addQuestion(bank.id, [ids.lt.lt2, ids.lt.lt1]);
+    as(ids.xan, "student");
+    const second = await ok(startPractice(review.id));
+    await finishPractice(ids.xan, second.attemptId, 3);
+    expect(await card(ids.xan, "lt1Quiz")).toMatchObject({
+      state: "ask_to_retake",
+      quizPractice: [{ code: "U2.LT1", best: 100, done: true }],
     });
     await expectGradebookAgrees();
   });

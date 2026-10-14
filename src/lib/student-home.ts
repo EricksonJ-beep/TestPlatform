@@ -8,7 +8,12 @@
 import type { StudentAssignment, StudentCardState } from "@/lib/queries/assignments";
 import type { StudentActivity } from "@/lib/queries/practice";
 import type { RetakeStatus } from "@/lib/queries/retakes";
-import { PRACTICE_PASS_PERCENT, practiceOwed, targetList } from "@/lib/quiz-practice";
+import {
+  PRACTICE_PASS_PERCENT,
+  practiceOwed,
+  practiceSizeText,
+  targetList,
+} from "@/lib/quiz-practice";
 
 // ---------------------------------------------------------------------------
 // The to-do list
@@ -111,6 +116,11 @@ export type ToDoRow = {
   className: string | null;
   /** Why it's on the list and what doing it earns, in the student's words. */
   why: string | null;
+  /**
+   * `why` with the student's own scores left out, for the teacher's Hide scores (decision 6), so
+   * the row still says what it is about; null when `why` shows no score.
+   */
+  whyWithoutScores: string | null;
   /** The teacher's note on corrections sent back. */
   note: string | null;
   /** A bar and its words: "0 of 6 done", "3 of 10 answered", "Best so far: 60%". */
@@ -132,8 +142,9 @@ export type ToDoRow = {
 
 /**
  * Hide scores (Jon, Oct 13 2026, decision 6) where the teacher's student panel shows these rows:
- * a line that shows a percent ("raise your score from 40% to 80%", "Best so far: 60%") drops out;
- * the rest of the row stays.
+ * a line that shows a percent ("Best so far: 60%") drops out, and the why line reads in its
+ * score-free form (`whyWithoutScores`: "Practice U2.LT1: score 80%… to unlock your retake."), so
+ * every row still says what it is about.
  */
 export function showsScore(text: string): boolean {
   return /\d%/.test(text);
@@ -165,19 +176,44 @@ function closeWhen(a: ToDoAssignment): ToDoRow["when"] {
  * threshold; otherwise they unlock the next attempt, or, on a closed test, come before asking to
  * retake (R4). Shared by the to-do row and My results, so the two say the same thing.
  */
-export function correctionsWhy(a: ToDoAssignment): string | null {
+export function correctionsWhy(a: ToDoAssignment, scores = true): string | null {
   const c = a.corrections;
   if (!c) return null;
   const lead = `Correct ${c.needed} missed ${plural(c.needed, "question", "questions")}`;
+  // Hide scores (the teacher's panel) leaves out the score they start from, not where they go.
+  const from = scores ? ` from ${pct(a.firstPercent)}%` : "";
   if (a.correctionsRule === "to_full")
-    return `${lead} to raise your score from ${pct(a.firstPercent)}% to 100%. There's no retake at your score.`;
+    return `${lead} to raise your score${from} to 100%. There's no retake at your score.`;
   if (a.type === "formative" && a.correctionsCap && c.attemptNumber === 1)
-    return `${lead} to raise your score from ${pct(a.firstPercent)}% to ${a.retakeThreshold}%.`;
+    return `${lead} to raise your score${from} to ${a.retakeThreshold}%.`;
   const attemptsLeft = a.attemptsAllowed === null || a.attemptsUsed < a.attemptsAllowed;
   if (!attemptsLeft) return `${lead} on attempt ${c.attemptNumber}.`;
   if (a.status === "closed") return `${lead} before you can ask to retake.`;
   if (a.retakesNeedUnlock) return `${lead} before you can ask for attempt ${a.attemptsUsed + 1}.`;
   return `${lead} to unlock attempt ${a.attemptsUsed + 1}.`;
+}
+
+/**
+ * How far an owed corrections set is, in one set of words for the to-do row, the card, My results,
+ * the assignment page and the teacher's gradebook (review of the Oct 14 2026 build: a saved draft
+ * is "started", never "done", as Jon had it Oct 8; the set goes in all at once with Submit).
+ */
+export function correctionsProgress(c: { started: number; done: number; needed: number }): {
+  value: number;
+  max: number;
+  label: string;
+} {
+  return {
+    value: c.started,
+    max: c.needed,
+    label: `${c.started} of ${c.needed} started${c.started > c.done ? ", not turned in yet" : ""}`,
+  };
+}
+
+/** The corrections button: do, continue, or (every one started) finish and turn them in. */
+export function correctionsActionLabel(c: { started: number; needed: number }): string {
+  if (c.started === 0) return "Do corrections";
+  return c.started >= c.needed ? "Finish and turn in" : "Continue corrections";
 }
 
 /** What a retake step leads to: the retake itself, or asking for it (closed, or needs the OK). */
@@ -203,6 +239,10 @@ type RowMaker = (
   r: Pick<ToDoRow, "group" | "kind" | "why" | "action"> & Partial<ToDoRow>
 ) => ToDoRow;
 
+/** The no-scores `why` where it differs (Hide scores); null where `why` shows no score. */
+const withoutScores = (why: string | null, plain: string | null) =>
+  why && plain !== why ? plain : null;
+
 type LinkMaker = (label: string, href: string, primary: boolean, what?: string) => ToDoAction;
 
 const requiredCodes = (a: ToDoAssignment) =>
@@ -215,6 +255,7 @@ function rowsFor(a: ToDoAssignment, buildable: ReadonlySet<string>): ToDoRow[] {
     title: a.title,
     type: a.type,
     className: a.className,
+    whyWithoutScores: null,
     note: null,
     progress: null,
     checklist: [],
@@ -288,15 +329,9 @@ function rowsFor(a: ToDoAssignment, buildable: ReadonlySet<string>): ToDoRow[] {
           group: "todo",
           kind: "corrections",
           why: correctionsWhy(a),
-          // A saved correction counts as done here: the set goes in all at once at the end.
-          progress: c
-            ? { value: c.started, max: c.needed, label: `${c.started} of ${c.needed} done` }
-            : null,
-          action: link(
-            c && c.started > 0 ? "Continue corrections" : "Do corrections",
-            correctionsHref,
-            true
-          ),
+          whyWithoutScores: withoutScores(correctionsWhy(a), correctionsWhy(a, false)),
+          progress: c ? correctionsProgress(c) : null,
+          action: link(c ? correctionsActionLabel(c) : "Do corrections", correctionsHref, true),
         }),
       ];
     case "corrections_submitted":
@@ -449,12 +484,15 @@ function relearningRows(
       }),
     ];
   }
-  return practiceOwed(a.quizPractice).map((t) =>
-    row({
+  return practiceOwed(a.quizPractice).map((t) => {
+    // The 80% is the pass mark, not their score: Hide scores keeps it and drops "you scored".
+    const ask = `Practice ${t.code}: score ${PRACTICE_PASS_PERCENT}% ${practiceSizeText(t.minQuestions)} ${retakeGoal(a)}`;
+    return row({
       key: `practice:${a.id}:${t.targetId}`,
       group,
       kind: "practice",
-      why: `Practice ${t.code}: score ${PRACTICE_PASS_PERCENT}% ${retakeGoal(a)} (you scored ${pct(t.scored)}%).`,
+      why: `${ask} (you scored ${pct(t.scored)}%).`,
+      whyWithoutScores: `${ask}.`,
       progress:
         t.best === null
           ? null
@@ -463,18 +501,21 @@ function relearningRows(
               max: PRACTICE_PASS_PERCENT,
               label: `Best so far: ${pct(t.best)}%`,
             },
-      // Build my practice opens on that target; a target only a teacher's set covers is on the
-      // Practice tab.
+      // Build my practice opens on that target. A target only a teacher's set covers: the test's
+      // group on the Practice tab, which lists tests open to the student; a closed test's own
+      // page, which lists the sets (review, Oct 14 2026).
       action: link(
         "Practice",
         buildable.has(t.targetId)
           ? `/student/practice/build?target=${t.targetId}`
-          : "/student?tab=practice",
+          : a.status === "closed"
+            ? `${assignmentHref(a)}#practice`
+            : `/student?tab=practice#needed-${a.id}`,
         group === "todo",
         `Practice ${t.code}`
       ),
-    })
-  );
+    });
+  });
 }
 
 /**
@@ -536,6 +577,7 @@ export function buildStudentToDo(input: {
         type: null,
         className: act.courseName,
         why: "You finished this activity. Your teacher checks it off.",
+        whyWithoutScores: null,
         note: null,
         progress: null,
         checklist: [],

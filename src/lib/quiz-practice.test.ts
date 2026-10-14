@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   practiceOwed,
   practiceOwedText,
+  practiceSizeText,
   quizPracticeNeeds,
   targetList,
   type PracticeResult,
@@ -25,6 +26,7 @@ const built = (byTarget: PracticeResult["byTarget"], completedAt = later(1)): Pr
   completedAt,
   practiceSetId: null,
   setTargetIds: [],
+  served: 10,
   byTarget,
   percent: null,
   creditedTargetIds: null,
@@ -37,6 +39,7 @@ const onSet = (
   completedAt: later(1),
   practiceSetId: "set",
   setTargetIds,
+  served: 10,
   byTarget,
   percent: null,
   creditedTargetIds: null,
@@ -53,9 +56,10 @@ const needs = (d: QuizPracticeData, more: Partial<Parameters<typeof quizPractice
 
 describe("quizPracticeNeeds (Jon, Oct 14 2026, decisions 5–6)", () => {
   it("lists every target under the threshold on the latest attempt, in course order", () => {
+    const owed = { best: null, done: false, minQuestions: 5 };
     expect(needs(data([]))).toEqual([
-      { targetId: "lt1", code: "U2.LT1", title: "lt1", scored: 40, best: null, done: false },
-      { targetId: "lt2", code: "U2.LT2", title: "lt2", scored: 60, best: null, done: false },
+      { targetId: "lt1", code: "U2.LT1", title: "lt1", scored: 40, ...owed },
+      { targetId: "lt2", code: "U2.LT2", title: "lt2", scored: 60, ...owed },
     ]);
     // The assignment's threshold decides what was missed.
     expect(needs(data([]), { threshold: 50 }).map((t) => t.targetId)).toEqual(["lt1"]);
@@ -86,7 +90,17 @@ describe("quizPracticeNeeds (Jon, Oct 14 2026, decisions 5–6)", () => {
   it("a short open bank lowers the built minimum to what it holds, so it never blocks for good", () => {
     const three = built({ lt1: { questions: 3, earned: 3, possible: 3 } });
     const d = data([three], { targets: [target("lt1", { openQuestions: 3 }), target("lt2")] });
-    expect(needs(d)[0]).toMatchObject({ targetId: "lt1", done: true });
+    expect(needs(d)[0]).toMatchObject({ targetId: "lt1", done: true, minQuestions: 3 });
+    // Only a teacher's set covers it: no built minimum to name.
+    const setOnly = data([], { targets: [target("lt1", { hasSet: true, openQuestions: 0 })] });
+    expect(needs(setOnly)[0]).toMatchObject({ targetId: "lt1", minQuestions: null });
+  });
+
+  it("says how much practice counts, where the student picks it (review, Oct 14 2026)", () => {
+    expect(practiceSizeText(5)).toBe("on at least 5 questions on it");
+    expect(practiceSizeText(3)).toBe("on all 3 of its practice questions");
+    expect(practiceSizeText(1)).toBe("on its one practice question");
+    expect(practiceSizeText(null)).toBe("on a practice");
   });
 
   it("a teacher's practice set tagged to the target counts at any size", () => {
@@ -97,10 +111,37 @@ describe("quizPracticeNeeds (Jon, Oct 14 2026, decisions 5–6)", () => {
     expect(needs(data([untagged]))[0]).toMatchObject({ best: null, done: false });
     // A worksheet set has no Bloom questions: its score and credited targets decide.
     const sheet = (percent: number, credited: string[] | null) =>
-      onSet(["lt1", "lt2"], {}, { percent, creditedTargetIds: credited });
+      onSet(["lt1", "lt2"], {}, { served: 0, percent, creditedTargetIds: credited });
     expect(needs(data([sheet(85, null)])).every((t) => t.done)).toBe(true);
     expect(needs(data([sheet(85, ["lt2"])])).map((t) => t.done)).toEqual([false, true]);
     expect(needs(data([sheet(70, null)])).some((t) => t.done)).toBe(false);
+  });
+
+  it("a teacher's bank or pool set counts only on the target's own questions (review, Oct 14)", () => {
+    // Viola's deal from "Unit 2 review" (tagged LT1–LT4) held no LT1 question, or only written
+    // ones, which practice never grades: 90% on the rest doesn't clear LT1.
+    const noLt1 = onSet(
+      ["lt1", "lt2", "lt3", "lt4"],
+      {
+        lt2: { questions: 5, earned: 5, possible: 5 },
+        lt3: { questions: 5, earned: 4, possible: 5 },
+      },
+      { percent: 90 }
+    );
+    expect(needs(data([noLt1])).map((t) => [t.targetId, t.best, t.done])).toEqual([
+      ["lt1", null, false],
+      ["lt2", 100, true],
+    ]);
+    const writtenOnly = onSet(
+      ["lt1"],
+      { lt1: { questions: 2, earned: 0, possible: 0 } },
+      { percent: 90 }
+    );
+    expect(needs(data([writtenOnly]))[0]).toMatchObject({
+      targetId: "lt1",
+      best: null,
+      done: false,
+    });
   });
 
   it("a target with no practice content doesn't block", () => {

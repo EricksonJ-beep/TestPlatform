@@ -502,7 +502,12 @@ function StudentPanel({
           <h3 id="student-todo-title" className="text-sm font-medium">
             {s.firstName}&apos;s to-do
           </h3>
-          <p className="text-xs text-muted-foreground">Their home says “{p.list.headline}”</p>
+          {/* This class's rows only: a student in two classes has more on their home. */}
+          <p className="text-xs text-muted-foreground">
+            {p.list.count
+              ? `From this class, their home lists ${p.list.count} ${p.list.count === 1 ? "thing" : "things"} to do.`
+              : "From this class, nothing is on their home's to-do list."}
+          </p>
         </div>
         {groups.map((g) => (
           <ToDoGroupList

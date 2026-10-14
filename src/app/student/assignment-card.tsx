@@ -2,7 +2,13 @@ import Link from "next/link";
 import { Clock, Lock } from "lucide-react";
 import type { StudentAssignment } from "@/lib/queries/assignments";
 import { practiceOwed, targetList } from "@/lib/quiz-practice";
-import { correctionsWhy, retakeGoal, TYPE_LABEL } from "@/lib/student-home";
+import {
+  correctionsActionLabel,
+  correctionsProgress,
+  correctionsWhy,
+  retakeGoal,
+  TYPE_LABEL,
+} from "@/lib/student-home";
 import { LocalTime } from "@/components/local-time";
 import { Button } from "@/components/ui/button";
 import { RequestRetakeButton } from "./assignments/[assignmentId]/request-retake-button";
@@ -72,15 +78,8 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
       case "in_progress":
         return { label: a.paused ? "Finish in class" : "Continue", primary: true };
       case "corrections_needed":
-        return {
-          label: correctionsStarted ? "Continue corrections" : "Do corrections",
-          primary: true,
-        };
       case "corrections_to_full":
-        return {
-          label: correctionsStarted ? "Continue corrections" : "Do corrections",
-          primary: true,
-        };
+        return { label: c ? correctionsActionLabel(c) : "Do corrections", primary: true };
       case "corrections_returned":
         return { label: "Revise corrections", primary: true };
       case "corrections_submitted":
@@ -228,7 +227,7 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
             <span className="inline-flex items-center gap-1" data-corrections-hint>
               {a.state === "corrections_needed" ? <Lock className="size-3.5" aria-hidden /> : null}
               {correctionsWhy(a)}
-              {correctionsStarted ? ` ${c.started} of ${c.needed} done.` : ""}
+              {correctionsStarted ? ` ${correctionsProgress(c).label}.` : ""}
             </span>
           ) : a.cycle === "relearning" && owedPractice.length ? (
             // On a closed quiz the practice comes before asking to retake (R3, R4).

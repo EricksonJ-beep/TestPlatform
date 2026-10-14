@@ -185,7 +185,7 @@ function book(): ClassGradebook {
       },
       {
         student: cho,
-        // Her home: corrections on the quiz (1 of 4 done), then the unit test she hasn't started.
+        // Her home: corrections on the quiz (1 of 4 started), then the unit test she hasn't started.
         studentToDo: buildStudentToDo({
           assignments: [
             todoAsg({ id: "test", title: "Unit 3 Test", type: "summative" }),
@@ -215,7 +215,7 @@ function book(): ClassGradebook {
           cell({
             input: {
               card: card({ cycle: "corrections_needed" }),
-              corrections: { done: 1, needed: 4 },
+              corrections: { started: 1, needed: 4 },
             },
           }),
           cell({ assignmentId: "prac", input: notStarted }),
@@ -430,8 +430,8 @@ describe("one cell", () => {
       corrections: {
         state: "needed",
         needed: 8,
-        done: 3,
-        remaining: 5,
+        done: 0,
+        remaining: 8,
         approved: 0,
         returned: 0,
         started: 3,
@@ -442,10 +442,10 @@ describe("one cell", () => {
       score: { percent: 62, tier: null, basis: "best_attempt" },
     });
     expect(cellSentence(c, column(), { hideScores: false, fmt })).toBe(
-      "Took try 1 Oct 9 (62%); corrections 3 of 8 done; counts 62%."
+      "Took try 1 Oct 9 (62%); corrections 3 of 8 started, not turned in yet; counts 62%."
     );
     expect(cellSentence(c, column(), { hideScores: true, fmt })).toBe(
-      "Took try 1 Oct 9; corrections 3 of 8 done."
+      "Took try 1 Oct 9; corrections 3 of 8 started, not turned in yet."
     );
     const none = cell({ attemptsUsed: 0, attempts: [] });
     expect(cellSentence(none, column(), { hideScores: false, fmt })).toBe("Hasn't started yet.");
@@ -469,6 +469,7 @@ describe("one cell", () => {
       scored: 40,
       best,
       done,
+      minQuestions: 5,
     });
     const practicing = cell({
       cycle: "relearning",

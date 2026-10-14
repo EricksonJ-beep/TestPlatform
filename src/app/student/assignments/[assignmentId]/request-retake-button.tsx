@@ -5,6 +5,7 @@ import { cn } from "cn";
 import { Button } from "@/components/ui/button";
 import { useAction } from "@/components/use-action";
 import { requestRetake } from "../../actions";
+import { useAskAnnouncer } from "../../ask-announcer";
 
 /**
  * Ask the teacher for the next attempt: on a "Retakes need my OK" assignment, or "Ask to retake"
@@ -28,8 +29,11 @@ export function RequestRetakeButton({
   /** Full width and 44px tall below `sm` (the student home's to-do rows). */
   block?: boolean;
 }) {
-  const { run, pending, error } = useAction();
+  // The action revalidates every page this button is on: no second render (`useAction`).
+  const { run, pending, error } = useAction({ refresh: false });
+  const announce = useAskAnnouncer();
   const text = label ?? `Request attempt ${attemptNumber}`;
+  const shown = pending ? "Sending…" : text;
   return (
     <span
       className={cn(
@@ -42,13 +46,21 @@ export function RequestRetakeButton({
         variant={primary ? "default" : "outline"}
         className={cn(block && "h-11 w-full sm:h-9 sm:w-auto")}
         disabled={pending}
-        aria-label={title ? `${text}: ${title}` : undefined}
-        onClick={() => run(requestRetake(assignmentId))}
+        aria-label={title ? `${shown}: ${title}` : undefined}
+        onClick={() =>
+          run(requestRetake(assignmentId), () =>
+            announce?.("Sent. You'll find it under Waiting on your teacher.")
+          )
+        }
       >
         <Hand data-icon="inline-start" aria-hidden />
-        {pending ? "Sending…" : text}
+        {shown}
       </Button>
-      {error ? <span className="text-xs text-error-foreground">{error}</span> : null}
+      {error ? (
+        <span role="alert" className="text-xs text-error-foreground">
+          {error}
+        </span>
+      ) : null}
     </span>
   );
 }

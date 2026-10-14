@@ -33,9 +33,12 @@ export type PracticeResult = {
   practiceSetId: string | null;
   /** The targets that set is tagged to (empty for a built practice). */
   setTargetIds: string[];
+  /** How many questions it served; 0 for a worksheet submit, which has only its whole score. */
+  served: number;
   /**
-   * Per target, over the served questions tagged to it: how many, and the points earned of the
-   * points possible on the auto-graded ones (practice never grades written answers).
+   * Per target, over the served questions tagged to it (every tag, not only the one the deal
+   * credited): how many, and the points earned of the points possible on the auto-graded ones
+   * (practice never grades written answers).
    */
   byTarget: Record<string, { questions: number; earned: number; possible: number }>;
   /** The whole attempt's percent (a worksheet-backed set has no Bloom questions, only this). */
@@ -64,7 +67,17 @@ export type QuizPracticeTarget = {
   /** Best percent on that target in practice that counts, since that attempt; null when none. */
   best: number | null;
   done: boolean;
+  /**
+   * The questions on it a built practice needs to count (`builtMinimum`); null when Build my
+   * practice can't deal it, so only a teacher's set (any size) covers it.
+   */
+  minQuestions: number | null;
 };
+
+/** Build my practice must cover a target with 5 questions, or every open one when it has fewer. */
+function builtMinimum(target: PracticeTargetInfo): number {
+  return Math.max(1, Math.min(BUILT_PRACTICE_MIN_QUESTIONS, target.openQuestions));
+}
 
 /** Percent of one practice attempt on one target, when it counts for that target; null otherwise. */
 function countingPercent(
@@ -76,24 +89,25 @@ function countingPercent(
   const on = r.byTarget[target.id];
   const pct = on && on.possible > 0 ? (on.earned / on.possible) * 100 : null;
   if (r.practiceSetId) {
-    // A teacher's set tagged to the target counts at any size; one with no question on the target
-    // (a worksheet, or a set tagged by hand) is read by its whole score and credited targets.
+    // A teacher's set tagged to the target counts at any size, on the target's own questions: a
+    // bank or pool deal with none on it (or only written ones) doesn't count. A worksheet submit
+    // serves no Bloom questions, so its whole score counts for the targets it credited.
     if (!r.setTargetIds.includes(target.id)) return null;
     if (!creditsTarget(r.creditedTargetIds, target.id)) return null;
-    return pct ?? r.percent;
+    return r.served === 0 ? r.percent : pct;
   }
   // Build my practice: at least 5 questions on the target, or every open question it has when the
   // bank holds fewer, so a short bank can never block the retake for good.
-  const min = Math.max(1, Math.min(BUILT_PRACTICE_MIN_QUESTIONS, target.openQuestions));
-  return on && on.questions >= min ? pct : null;
+  return on && on.questions >= builtMinimum(target) ? pct : null;
 }
 
 /**
  * Rule (Jon, Oct 14 2026, R3): on a formative, every learning target under the assignment's
  * retake threshold on the latest finished attempt needs practice before a retake: a finished
  * practice completed after that attempt was submitted, scoring at least 80% on that target's
- * questions, on a published practice set tagged to the target (any size) or a student-built
- * practice with at least 5 of its questions. A target with no practice content (no published set
+ * questions, on a published practice set tagged to the target (any size, as long as the deal held
+ * some; a worksheet set by its whole score and credited targets) or a student-built practice with
+ * at least 5 of its questions. A target with no practice content (no published set
  * tagged to it, no open-practice question) doesn't block. Untagged questions make no targets.
  * Every course, CVTC included; not where corrections are the way to 100% (`to_full`: no retake)
  * and not on summatives (their gate rows). Targets in the course's order.
@@ -130,6 +144,7 @@ export function quizPracticeNeeds(input: {
         scored: latest.targetPercents[t.id],
         best: best === null ? null : Math.round(best * 10) / 10,
         done: best !== null && best >= PRACTICE_PASS_PERCENT,
+        minQuestions: t.openQuestions > 0 ? builtMinimum(t) : null,
       };
     });
 }
@@ -144,6 +159,20 @@ export function targetList(codes: string[]): string {
   return codes.length <= 1
     ? (codes[0] ?? "")
     : `${codes.slice(0, -1).join(", ")} and ${codes.at(-1)}`;
+}
+
+/**
+ * How much practice on a target counts, in the student's words, where they pick it (review of the
+ * Oct 14 2026 build): "on at least 5 questions on it"; "on all 3 of its practice questions" when
+ * the open banks hold fewer; "on a practice" where only a teacher's set (any size) covers it.
+ */
+export function practiceSizeText(minQuestions: number | null): string {
+  if (minQuestions === null) return "on a practice";
+  if (minQuestions >= BUILT_PRACTICE_MIN_QUESTIONS)
+    return `on at least ${minQuestions} questions on it`;
+  return minQuestions === 1
+    ? "on its one practice question"
+    : `on all ${minQuestions} of its practice questions`;
 }
 
 /** Why a quiz retake (or a request for one) can't happen yet, in the student's words. */

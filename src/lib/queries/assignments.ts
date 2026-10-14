@@ -7,11 +7,13 @@ import { db, schema } from "@/db";
 import type { FinalBasis } from "@/db/schema";
 import { assignmentStatus, nextAttemptAt, type AssignmentStatus } from "@/lib/assignments";
 import { deriveCardState, type StudentCardState } from "@/lib/card-state";
+import { currentPause } from "@/lib/pause";
 import type { PracticeResult, QuizPracticeTarget } from "@/lib/quiz-practice";
 import { getCorrectionsSummary, type CorrectionsSetSummary } from "@/lib/queries/corrections";
 import { loadPracticeResults, loadPracticeTargets } from "@/lib/queries/quiz-practice";
 import { openUntilInPlay } from "@/lib/queries/reopen";
 import { getRetakeStatus, type RetakeStatus } from "@/lib/queries/retakes";
+import { effectiveClose } from "@/lib/reopen";
 import type { CorrectionsRule, CycleState } from "@/lib/retakes";
 
 export type AssignmentRow = {
@@ -189,7 +191,10 @@ export type StudentAssignment = {
   status: AssignmentStatus;
   attemptsUsed: number;
   inProgressAttemptId: string | null;
-  /** The in-progress attempt is paused (Finish later, Oct 13 2026), or idle long enough to be. */
+  /**
+   * The in-progress attempt is paused (Finish later, Oct 13 2026), stored or worked out with
+   * `currentPause` (idle 10 minutes, or the student's close passed while they were in it).
+   */
   paused: boolean;
   /** How far the in-progress attempt is (answers saved out of questions served); null otherwise. */
   progress: { answered: number; total: number } | null;
@@ -212,6 +217,41 @@ export type StudentAssignment = {
    */
   cycle: CycleState | null;
 };
+
+type OpenPauseJson = {
+  startedAt: string;
+  dueAt: string | null;
+  pausedAt: string | null;
+  pauseReason: string | null;
+  lastActiveAt: string | null;
+};
+
+/**
+ * The open attempt's pause right now, by the rule the class gradebook reads (`currentPause`, by the
+ * student's own close: a stored pause, 10 minutes idle, or the window or a reopen ending while they
+ * were in it), never an SQL idle check, so the card and the teacher's panel agree.
+ */
+function openPause(
+  open: OpenPauseJson | null,
+  closesAt: Date | null,
+  openUntil: Date | null,
+  now: Date
+) {
+  if (!open) return null;
+  const at = (v: string | null) => (v ? new Date(v) : null);
+  return currentPause(
+    {
+      status: "in_progress",
+      startedAt: new Date(open.startedAt),
+      dueAt: at(open.dueAt),
+      pausedAt: at(open.pausedAt),
+      pauseReason: open.pauseReason,
+      lastActiveAt: at(open.lastActiveAt),
+    },
+    effectiveClose(closesAt, openUntil),
+    now
+  );
+}
 
 /**
  * Rule: a student sees assignments only for classes they're enrolled in. Open ones
@@ -275,7 +315,11 @@ export async function listStudentAssignments(
         string | null
       >`(select a.id from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status = 'in_progress' order by a.number desc limit 1)`,
       awaitingGrade: sql<boolean>`exists (select 1 from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status = 'submitted')`,
-      inProgressPaused: sql<boolean>`exists (select 1 from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status = 'in_progress' and (a.paused_at is not null or a.last_active_at < now() - interval '10 minutes'))`,
+      // What `currentPause` reads of the open attempt, so the card and the gradebook pause it alike.
+      inProgressPause:
+        sql`(select jsonb_build_object('startedAt', a.started_at, 'dueAt', a.due_at, 'pausedAt', a.paused_at, 'pauseReason', a.pause_reason, 'lastActiveAt', a.last_active_at) from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status = 'in_progress' order by a.number desc limit 1)`.mapWith(
+          (v: unknown) => (typeof v === "string" ? JSON.parse(v) : v) as OpenPauseJson | null
+        ),
       inProgressAnswered: sql<number>`(select count(*)::int from ${schema.responses} r join ${schema.attempts} a on a.id = r.attempt_id where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status = 'in_progress' and r.answer is not null)`,
       inProgressTotal: sql<number>`(select coalesce(max(jsonb_array_length(a.question_set)), 0)::int from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status = 'in_progress')`,
       latestAttemptId: sql<
@@ -329,6 +373,7 @@ export async function listStudentAssignments(
         latestAttemptId,
         inProgressAnswered,
         inProgressTotal,
+        inProgressPause,
         firstSubmittedAt,
         firstPercent: firstPercentRaw,
         finalPercent,
@@ -406,7 +451,8 @@ export async function listStudentAssignments(
           cvtcRules,
           correctionsRule: card.rule,
           final: finalPct === null ? null : { percent: finalPct, basis: finalBasis ?? null },
-          paused: !!r.inProgressAttemptId && !!r.inProgressPaused,
+          paused:
+            !!r.inProgressAttemptId && !!openPause(inProgressPause, r.closesAt, openUntil, now),
           progress: r.inProgressAttemptId
             ? { answered: Math.min(inProgressAnswered, inProgressTotal), total: inProgressTotal }
             : null,

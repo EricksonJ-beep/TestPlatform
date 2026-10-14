@@ -559,6 +559,8 @@ export type QuizNeededTarget = {
   title: string;
   scored: number;
   best: number | null;
+  /** The questions on it a built practice needs to count (`QuizPracticeTarget.minQuestions`). */
+  minQuestions: number | null;
   sets: StudentPracticeSet[];
 };
 
@@ -749,6 +751,7 @@ export async function getStudentPractice(
         title: t.title,
         scored: t.scored,
         best: t.best,
+        minQuestions: t.minQuestions,
         sets: sets.filter((s) => s.targets.some((x) => x.id === t.targetId)),
       })),
     }))

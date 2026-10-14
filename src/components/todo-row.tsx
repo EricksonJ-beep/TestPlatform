@@ -7,7 +7,8 @@ import { LocalTime } from "@/components/local-time";
  * One to-do row's words (Jon, Oct 14 2026, docs/student-home-plan.md): the title, why it's on the
  * list, the teacher's note, a summative's checklist, when, and progress. The student home and the
  * teacher's student panel both render it, so the teacher reads exactly what the student reads.
- * `hideScores` (the teacher's "Hide scores", decision 6) drops any line that shows a percent.
+ * `hideScores` (the teacher's "Hide scores", decision 6) reads the why line without the student's
+ * scores and drops any other line that shows a percent.
  */
 export function ToDoRowBody({
   r,
@@ -19,7 +20,7 @@ export function ToDoRowBody({
   /** The title's level where the list sits deeper (the teacher's panel). */
   heading?: "h3" | "h4";
 }) {
-  const why = r.why && !(hideScores && showsScore(r.why)) ? r.why : null;
+  const why = hideScores && r.why && showsScore(r.why) ? r.whyWithoutScores : r.why;
   const progress = r.progress && !(hideScores && showsScore(r.progress.label)) ? r.progress : null;
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-1">

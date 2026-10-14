@@ -5,12 +5,24 @@ import { ChevronLeft, Clock, Lock } from "lucide-react";
 import { isAuthzError, requireAssignmentAccess, studentCourseIds } from "@/lib/authz";
 import { listCustomPracticeOptions } from "@/lib/custom-practice";
 import { listStudentAssignments } from "@/lib/queries/assignments";
-import { PRACTICE_PASS_PERCENT, practiceOwed, targetList } from "@/lib/quiz-practice";
+import {
+  PRACTICE_PASS_PERCENT,
+  practiceOwed,
+  practiceSizeText,
+  targetList,
+} from "@/lib/quiz-practice";
+import { getStudentPractice } from "@/lib/queries/practice";
 import { listStudentAttempts } from "@/lib/queries/attempts";
-import { correctionsWhy, retakeGoal } from "@/lib/student-home";
+import {
+  correctionsActionLabel,
+  correctionsProgress,
+  correctionsWhy,
+  retakeGoal,
+} from "@/lib/student-home";
 import { LocalTime } from "@/components/local-time";
 import { TargetChip } from "@/components/targets/target-chip";
 import { Button } from "@/components/ui/button";
+import { PracticeSetCard } from "../../practice-cards";
 import { RetakePicker } from "../../retake-picker";
 import { RequestRetakeButton } from "./request-retake-button";
 import { StartForm } from "./start-form";
@@ -57,9 +69,17 @@ export default async function StudentAssignmentPage({
       )
     : new Set<string>();
   const practiceTarget = owedPractice.find((t) => buildable.has(t.targetId));
+  // A target only a teacher's set covers: its sets are listed here, open or closed (review, Oct 14
+  // 2026: the Practice tab lists open tests only).
+  const setOnly = owedPractice.filter((t) => !buildable.has(t.targetId)).map((t) => t.targetId);
+  const practiceSets = setOnly.length
+    ? (await getStudentPractice(access.userId, [a])).sets.filter((s) =>
+        s.targets.some((x) => setOnly.includes(x.id))
+      )
+    : [];
   const practiceHref = practiceTarget
     ? `/student/practice/build?target=${practiceTarget.targetId}`
-    : "/student?tab=practice";
+    : "#practice-sets";
   const attemptsLeftNow = attemptsLeft === null || attemptsLeft > 0;
   // A paused or unfinished test stays reachable after the window closes (Finish later, Oct 13 2026).
   const canStart =
@@ -169,7 +189,7 @@ export default async function StudentAssignmentPage({
                     attemptsLeftNow
                       ? " Then retake it to go higher."
                       : ""
-                  }${c.started > 0 ? ` ${c.started} of ${c.needed} done.` : ""}`}
+                  }${c.started > 0 ? ` ${correctionsProgress(c).label}.` : ""}`}
           </span>
           <Button
             size="lg"
@@ -181,26 +201,48 @@ export default async function StudentAssignmentPage({
               ? "View corrections"
               : c.state === "returned"
                 ? "Revise corrections"
-                : "Do corrections"}
+                : correctionsActionLabel(c)}
           </Button>
         </div>
       ) : a.cycle === "relearning" && !a.retake && owedPractice.length ? (
         <div
-          className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm"
+          id="practice"
+          className="flex scroll-mt-16 flex-col gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm"
           data-practice-gate
         >
-          <span className="mr-auto inline-flex items-start gap-2">
-            <Lock className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
-            <span>
-              Practice {targetList(owedPractice.map((t) => t.code))} {retakeGoal(a)}. Score{" "}
-              {PRACTICE_PASS_PERCENT}% or better on a practice for{" "}
-              {owedPractice.length === 1 ? "it" : "each one"} (Build my practice: pick the target
-              and at least 5 questions). You can try as many times as you like.
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="mr-auto inline-flex items-start gap-2">
+              <Lock className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
+              <span>
+                Practice {targetList(owedPractice.map((t) => t.code))} {retakeGoal(a)}. You can try
+                as many times as you like.
+                {/* What counts, per target (Build my practice: 5 questions, or all it has). */}
+                <span className="mt-1 flex flex-col text-muted-foreground">
+                  {owedPractice.map((t) => (
+                    <span key={t.targetId} data-practice-target={t.code}>
+                      {t.code}: score {PRACTICE_PASS_PERCENT}% or better{" "}
+                      {practiceSizeText(t.minQuestions)}
+                      {t.best !== null ? ` · best so far ${Math.round(t.best)}%` : ""}
+                    </span>
+                  ))}
+                </span>
+              </span>
             </span>
-          </span>
-          <Button size="lg" nativeButton={false} render={<Link href={practiceHref} />}>
-            Practice
-          </Button>
+            <Button size="lg" nativeButton={false} render={<Link href={practiceHref} />}>
+              Practice
+            </Button>
+          </div>
+          {practiceSets.length ? (
+            <ul
+              id="practice-sets"
+              className="flex flex-col gap-2"
+              aria-label="Your teacher's practice"
+            >
+              {practiceSets.map((s) => (
+                <PracticeSetCard key={s.id} s={s} compact />
+              ))}
+            </ul>
+          ) : null}
         </div>
       ) : a.cycle === "relearning" && (a.state === "relearning" || closed) ? (
         <p
@@ -344,7 +386,7 @@ export default async function StudentAssignmentPage({
                         ? "Corrections submitted"
                         : c.state === "returned"
                           ? "Corrections returned"
-                          : `Corrections · ${c.done} of ${c.needed}`}
+                          : `Corrections · ${correctionsProgress(c).label}`}
                   </Link>
                 ) : null}
               </li>

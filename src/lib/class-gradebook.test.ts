@@ -66,7 +66,7 @@ describe("cellTag precedence", () => {
       requested: true,
       toGrade: 2,
       correctionsToCheck: 1,
-      corrections: { done: 3, needed: 8 },
+      corrections: { started: 3, needed: 8 },
     });
     expect(cellTag(busy)).toMatchObject({ kind: "request", group: "your_move", needsYou: true });
     expect(cellTag({ ...busy, requested: false }).kind).toBe("check_corrections");
@@ -76,7 +76,7 @@ describe("cellTag precedence", () => {
     });
     expect(label({ toGrade: 2 })).toBe("To grade (2)");
     expect(
-      label({ card: card({ cycle: "corrections_needed" }), corrections: { done: 3, needed: 8 } })
+      label({ card: card({ cycle: "corrections_needed" }), corrections: { started: 3, needed: 8 } })
     ).toBe("Corrections needed 3/8");
     expect(CELL_ORDER.indexOf("asked")).toBe(0);
     expect(CELL_ORDER.at(-1)).toBe("done");
@@ -125,7 +125,7 @@ describe("cellTag precedence", () => {
       cellTag(
         input({
           card: card({ ...closed, cycle: "corrections_needed" }),
-          corrections: { done: 0, needed: 3 },
+          corrections: { started: 0, needed: 3 },
         })
       )
     ).toMatchObject({ kind: "corrections_needed", closed: false, tone: "warning" });
@@ -197,7 +197,7 @@ describe("cellTag precedence", () => {
       { targetId: "lt1", code: "U2.LT1", title: "", scored: 40, best: 60, done: false },
       { targetId: "lt2", code: "U2.LT2", title: "", scored: 60, best: 85, done: true },
       { targetId: "lt3", code: "U2.LT3", title: "", scored: 20, best: null, done: false },
-    ];
+    ].map((t) => ({ ...t, minQuestions: 5 }));
     const relearning = card({ cycle: "relearning", quizPractice });
     expect(cellTag(input({ card: relearning }))).toMatchObject({
       kind: "relearning",

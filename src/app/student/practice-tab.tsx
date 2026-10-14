@@ -3,7 +3,7 @@ import { Check, Layers, Lock, Shuffle, X } from "lucide-react";
 import { cn } from "cn";
 import { groupByUnit } from "@/lib/practice-groups";
 import type { CustomPracticeCourse } from "@/lib/custom-practice";
-import { PRACTICE_PASS_PERCENT } from "@/lib/quiz-practice";
+import { PRACTICE_PASS_PERCENT, practiceSizeText } from "@/lib/quiz-practice";
 import type { NeededTarget, QuizNeededTarget, StudentPractice } from "@/lib/queries/practice";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
@@ -185,7 +185,7 @@ function QuizNeededRow({ t, canBuild }: { t: QuizNeededTarget; canBuild: boolean
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
           <TargetChip code={t.code} title={t.title} percent={t.scored} tone="required" />
           <span className="text-muted-foreground tabular">
-            Score {PRACTICE_PASS_PERCENT}% on a practice
+            Score {PRACTICE_PASS_PERCENT}% {practiceSizeText(t.minQuestions)}
             {t.best !== null ? ` · best so far ${Math.round(t.best)}%` : ""}
           </span>
         </div>

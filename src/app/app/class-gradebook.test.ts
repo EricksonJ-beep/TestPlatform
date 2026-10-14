@@ -502,7 +502,7 @@ describe("getClassGradebook", () => {
     // on the Unit 3 test; his written answer waits for a grade.
     expect(kinds(list("Ben").todo)).toContainEqual(["corrections", "Cell quiz"]);
     expect(list("Ben").todo.find((r) => r.title === "Cell quiz")?.progress?.label).toBe(
-      "1 of 3 done"
+      "1 of 3 started, not turned in yet"
     );
     expect(kinds(list("Ben").waiting)).toEqual([["awaiting_grade", "Lab write-up"]]);
     // Gus's activity waits for the teacher's check-off on both sides.
@@ -531,7 +531,7 @@ describe("getClassGradebook", () => {
     );
     expect(labels["Cell quiz"]).toEqual({
       Ava: "Corrections → 100%",
-      Ben: "Corrections needed 0/3",
+      Ben: "Corrections needed 1/3", // one saved, as his own row says (review, Oct 14 2026)
       Cal: "Taking it 2/5",
       Dee: "Asked to finish",
       Eli: "Paused",
@@ -670,6 +670,70 @@ describe("getClassGradebook", () => {
       });
     } finally {
       await db.update(schema.attempts).set(before).where(eq(schema.attempts.id, calLive));
+    }
+  });
+
+  it("pauses an open test on the student's home exactly as the panel does (currentPause, review Oct 14 2026)", async () => {
+    const calLive = cellOf((await getClassGradebook(ids.cls))!, "Cal", "quiz").openAttemptId!;
+    const [before] = await db
+      .select({ dueAt: schema.attempts.dueAt, lastActiveAt: schema.attempts.lastActiveAt })
+      .from(schema.attempts)
+      .where(eq(schema.attempts.id, calLive));
+    const [quiz] = await db
+      .select({ closesAt: schema.assignments.closesAt })
+      .from(schema.assignments)
+      .where(eq(schema.assignments.id, ids.asg.quiz));
+    const keepGoing = async (now: Date) => {
+      const home = (await listStudentAssignments(st("Cal"), now)).find(
+        (a) => a.id === ids.asg.quiz
+      )!;
+      const row = cellOf((await getClassGradebook(ids.cls, now))!, "Cal", "quiz");
+      const panel = (await getClassGradebook(ids.cls, now))!.rows
+        .find((r) => r.student.id === st("Cal"))!
+        .studentToDo.todo.find((r) => r.kind === "keep_going" && r.assignmentId === ids.asg.quiz);
+      return {
+        home: home.paused,
+        cell: row.attempts.find((x) => x.id === calLive)?.paused,
+        panel: panel?.why,
+      };
+    };
+    try {
+      // The window closed a minute ago while Cal was still in the test (no heartbeat since).
+      const now = new Date();
+      await db
+        .update(schema.attempts)
+        .set({ lastActiveAt: new Date(now.getTime() - 2 * 60_000), dueAt: null })
+        .where(eq(schema.attempts.id, calLive));
+      await db
+        .update(schema.assignments)
+        .set({ closesAt: new Date(now.getTime() - 60_000) })
+        .where(eq(schema.assignments.id, ids.asg.quiz));
+      expect(await keepGoing(now)).toEqual({
+        home: true,
+        cell: true,
+        panel: "Paused. Finish it in class.",
+      });
+      await db
+        .update(schema.assignments)
+        .set({ closesAt: quiz.closesAt })
+        .where(eq(schema.assignments.id, ids.asg.quiz));
+      // A 20-minute clock that ran out before the 10 idle minutes did: out of time, not paused.
+      const lastSave = new Date(now.getTime() - 15 * 60_000);
+      await db
+        .update(schema.attempts)
+        .set({ lastActiveAt: lastSave, dueAt: new Date(lastSave.getTime() + 60_000) })
+        .where(eq(schema.attempts.id, calLive));
+      expect(await keepGoing(now)).toEqual({
+        home: false,
+        cell: false,
+        panel: "You started this. Pick up where you left off.",
+      });
+    } finally {
+      await db.update(schema.attempts).set(before).where(eq(schema.attempts.id, calLive));
+      await db
+        .update(schema.assignments)
+        .set({ closesAt: quiz.closesAt })
+        .where(eq(schema.assignments.id, ids.asg.quiz));
     }
   });
 

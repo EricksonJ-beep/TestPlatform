@@ -1,6 +1,6 @@
 "use server";
 
-import { and, asc, eq, isNotNull, ne, sql } from "drizzle-orm";
+import { and, asc, eq, isNotNull, isNull, lte, ne, or, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db, schema } from "@/db";
@@ -291,14 +291,15 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
  * Ask the teacher for the next attempt (Jon, Oct 1 2026). Rules: the assignment has
  * "Retakes need my OK" on, or it has closed for this student, with the setting or
  * without (Jon, Oct 14 2026, decision 1: "Students ask, I approve"; R4); a finished
- * attempt exists and none is open or waiting for a grade; attempts remain;
- * corrections are clear and a quiz's missed targets practised (decisions 4–5:
+ * attempt exists and none is open or waiting for a grade; attempts remain; a retake
+ * is on offer (not practice, not a quiz already at 100%); corrections are clear and a quiz's missed targets practised (decisions 4–5:
  * "To-do, then ask"), and a summative's relearning gates open, as `startAttempt`
  * checks them. The cap's retake window doesn't stop a closed test's request: the
  * teacher decides (decision 2). The row is a request until the teacher grants it.
  * Idempotent: asking again changes nothing (and logs nothing). On a closed test an
  * unlock that can no longer open it (given before the close, or a reopen that has
- * ended) becomes a fresh request, so it reaches the teacher's Needs you.
+ * ended) becomes a fresh request, so it reaches the teacher's Needs you; a reopen
+ * approved while the student was asking is kept.
  */
 export const requestRetake = withAuthz(async (assignmentId: string) => {
   const access = await requireAssignmentAccess(assignmentId);
@@ -325,6 +326,9 @@ export const requestRetake = withAuthz(async (assignmentId: string) => {
       used: sql<number>`count(*)::int`,
       open: sql<number>`count(*) filter (where ${schema.attempts.status} = 'in_progress')::int`,
       ungraded: sql<number>`count(*) filter (where ${schema.attempts.status} = 'submitted')::int`,
+      best: sql<
+        number | null
+      >`max(${schema.attempts.percent}) filter (where ${schema.attempts.status} <> 'in_progress')`,
     })
     .from(schema.attempts)
     .where(
@@ -348,6 +352,12 @@ export const requestRetake = withAuthz(async (assignmentId: string) => {
   if ((counts?.ungraded ?? 0) > 0) throw new ActionError(AWAITING_GRADE_TEXT, 409);
   if (assignment.attemptsAllowed !== null && next > assignment.attemptsAllowed)
     throw new ActionError("You've used every attempt.", 409);
+  // Only a retake the card offers (`cycleState`): none on practice, none on a quiz already at
+  // 100%. A summative's plan is checked below.
+  if (assignment.type === "practice")
+    throw new ActionError("Practice has no retakes. You can practice again any time.", 409);
+  if (assignment.type === "formative" && Number(counts?.best ?? 0) >= 100)
+    throw new ActionError("You already have 100% on this quiz. There's nothing to retake.", 409);
   // To-do, then ask (Jon, Oct 14 2026): the same prerequisites the start checks.
   await assertRetakePrerequisites(assignmentId, access.userId, assignment);
   if (assignment.type === "summative") {
@@ -364,7 +374,9 @@ export const requestRetake = withAuthz(async (assignmentId: string) => {
       ? insert.onConflictDoUpdate({
           target: [u.assignmentId, u.studentId, u.attemptNumber],
           set: { requestedAt: now, grantedAt: null, grantedBy: null, openUntil: null },
-          setWhere: isNotNull(u.grantedAt),
+          // Only a grant that can't open it (from before the close, or a reopen that ended): a
+          // reopen the teacher approved since the read above stands.
+          setWhere: and(isNotNull(u.grantedAt), or(isNull(u.openUntil), lte(u.openUntil, now))),
         })
       : insert.onConflictDoNothing()
   ).returning({ id: u.id });

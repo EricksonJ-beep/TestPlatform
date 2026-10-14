@@ -41,9 +41,9 @@ type ByTargetJson = Record<string, { questions: number; earned: number; possible
 
 /**
  * Every finished practice attempt of the given students (ids, or a subquery of ids), with what
- * quiz relearning reads: per target over the served questions tagged to it, how many and the
- * points earned of the points possible on the auto-graded ones; the targets of the set it was on;
- * and a worksheet's credited targets. Grouped by student.
+ * quiz relearning reads: how many questions it served; per target over the served questions
+ * tagged to it, how many and the points earned of the points possible on the auto-graded ones;
+ * the targets of the set it was on; and a worksheet's credited targets. Grouped by student.
  */
 export async function loadPracticeResults(
   studentIds: string[] | SQLWrapper
@@ -68,8 +68,11 @@ export async function loadPracticeResults(
         sql`(select coalesce(jsonb_agg(pst.learning_target_id), '[]'::jsonb) from ${schema.practiceSetTargets} pst where pst.practice_set_id = practice_attempts.practice_set_id)`.mapWith(
           fromJson<string[]>
         ),
+      served: sql<number>`jsonb_array_length(practice_attempts.question_set)`.mapWith(Number),
+      // Each served item counts for every target it is tagged to (and the one the deal credited),
+      // so a question tagged LT1 and LT2 counts for both.
       byTarget:
-        sql`(select coalesce(jsonb_object_agg(x.target_id, jsonb_build_object('questions', x.questions, 'earned', x.earned, 'possible', x.possible)), '{}'::jsonb) from (select q->>'learningTargetId' as target_id, count(*)::int as questions, coalesce(sum((${item}->>'pointsEarned')::float8), 0) as earned, coalesce(sum((${item}->>'pointsPossible')::float8) filter (where ${item}->>'pointsEarned' is not null), 0) as possible from jsonb_array_elements(practice_attempts.question_set) q where q->>'learningTargetId' is not null group by 1) x)`.mapWith(
+        sql`(select coalesce(jsonb_object_agg(x.target_id, jsonb_build_object('questions', x.questions, 'earned', x.earned, 'possible', x.possible)), '{}'::jsonb) from (select t.target_id, count(*)::int as questions, coalesce(sum((${item}->>'pointsEarned')::float8), 0) as earned, coalesce(sum((${item}->>'pointsPossible')::float8) filter (where ${item}->>'pointsEarned' is not null), 0) as possible from jsonb_array_elements(practice_attempts.question_set) q cross join lateral (select q->>'learningTargetId' as target_id where q->>'learningTargetId' is not null union select qt.learning_target_id::text from ${schema.questionTargets} qt where qt.question_id = (q->>'questionId')::uuid) t group by 1) x)`.mapWith(
           fromJson<ByTargetJson>
         ),
     })
@@ -81,6 +84,7 @@ export async function loadPracticeResults(
       completedAt: new Date(r.completedAt!),
       practiceSetId: r.practiceSetId,
       setTargetIds: r.setTargetIds ?? [],
+      served: r.served,
       byTarget: r.byTarget ?? {},
       percent: r.percent === null ? null : Number(r.percent),
       creditedTargetIds: Array.isArray(r.creditedTargetIds)

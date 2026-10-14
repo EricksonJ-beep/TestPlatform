@@ -228,6 +228,7 @@ describe("deriveCardState (who owes what)", () => {
       completedAt: after,
       practiceSetId: null,
       setTargetIds: [],
+      served: 5,
       byTarget: { lt1: { questions: 5, earned: 4, possible: 5 } },
       percent: 80,
       creditedTargetIds: null,

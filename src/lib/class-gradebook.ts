@@ -7,7 +7,7 @@
  * its own.
  */
 import type { CardState } from "@/lib/card-state";
-import type { CorrectionsSummary } from "@/lib/corrections";
+import type { SetSummary } from "@/lib/corrections";
 import type { RequestBlocker } from "@/lib/needs-you";
 import { practiceOwed } from "@/lib/quiz-practice";
 import type { RetakePlan, RetakeTarget } from "@/lib/retakes";
@@ -146,7 +146,7 @@ export type CellInput = {
   /** Finished relearning activities on this test's retake targets waiting to be checked off. */
   activitiesToCheck: number;
   /** The latest finished attempt's corrections set; null when nothing is in scope. */
-  corrections: Pick<CorrectionsSummary, "done" | "needed"> | null;
+  corrections: Pick<SetSummary, "started" | "needed"> | null;
   /** Summatives: the retake picture from the stored gate rows. */
   retake: { targets: RetakeTarget[]; plan: RetakePlan } | null;
   /** The teacher unlocked the next try and something else still stops it (`requestBlocker`). */
@@ -166,8 +166,11 @@ export type CellTag = {
   toGrade: number;
   /** Taking it: answered of served. */
   progress: { answered: number; total: number } | null;
-  /** Corrections needed: done of needed. */
-  corrections: { done: number; needed: number } | null;
+  /**
+   * Corrections needed: started of needed, the count the student's own row shows (a saved draft
+   * counts; the set goes in all at once, so nothing is turned in while it is owed).
+   */
+  corrections: { started: number; needed: number } | null;
   /** Retake needed: the codes of the targets below the line. */
   targets: string[];
   /** Relearning: what the checklist still needs. */
@@ -260,7 +263,7 @@ export function cellTag(input: CellInput): CellTag {
     toGrade: input.toGrade,
     progress: input.live ? { answered: input.live.answered, total: input.live.total } : null,
     corrections: input.corrections
-      ? { done: input.corrections.done, needed: input.corrections.needed }
+      ? { started: input.corrections.started, needed: input.corrections.needed }
       : null,
     targets: retake
       ? retake.targets.filter((t) => retake.plan.required.includes(t.id)).map((t) => t.code)
@@ -353,7 +356,7 @@ export function tagLabel(tag: CellTag, fmt: TagFormat = CENTRAL): string {
       return "Not started";
     case "corrections_needed":
       return tag.corrections
-        ? `Corrections needed ${tag.corrections.done}/${tag.corrections.needed}`
+        ? `Corrections needed ${tag.corrections.started}/${tag.corrections.needed}`
         : "Corrections needed";
     case "sent_back":
       return "Sent back";

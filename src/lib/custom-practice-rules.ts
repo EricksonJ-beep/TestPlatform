@@ -90,6 +90,29 @@ export function dealCustomPractice(
   );
 }
 
+/**
+ * The fewest questions a hand of `count` deals the target at `index`, by the deal's rule (even
+ * shares, a short target handing its leftover to the others; the random remainder left out).
+ * The build page warns when the target a to-do row opened it on would get fewer than its practice
+ * needs to count toward a retake (R3; review of the Oct 14 2026 build).
+ */
+export function leastShare(count: number, available: number[], index: number): number {
+  const got = available.map(() => 0);
+  let left = count;
+  let open = available.map((_, j) => j).filter((j) => available[j] > 0);
+  while (left > 0 && open.length) {
+    const each = Math.floor(left / open.length);
+    if (each === 0) break;
+    for (const j of open) {
+      const take = Math.min(each, available[j] - got[j]);
+      got[j] += take;
+      left -= take;
+    }
+    open = open.filter((j) => got[j] < available[j]);
+  }
+  return got[index] ?? 0;
+}
+
 function shuffle<T>(arr: T[], rng: () => number): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {

@@ -19,6 +19,7 @@ import { applyPack, listPacks } from "./content-packs";
 import { listCustomPracticeOptions, startCustomPractice } from "./custom-practice";
 import {
   dealCustomPractice,
+  leastShare,
   practiceBuildStart,
   type CustomDealQuestion,
 } from "./custom-practice-rules";
@@ -86,6 +87,18 @@ describe("dealCustomPractice", () => {
       { rng: seeded(5) }
     );
     expect(hand.map((h) => h.questionId).sort()).toEqual(["b", "s"]);
+  });
+});
+
+describe("leastShare (review, Oct 14 2026)", () => {
+  it("is the target's even share, with short targets' leftovers handed on", () => {
+    // "All of Unit 2" (4 targets) at 10 questions: 2 each, the remainder at random.
+    expect(leastShare(10, [8, 8, 8, 8], 0)).toBe(2);
+    // One target alone gets the whole hand, up to what it has.
+    expect(leastShare(10, [8], 0)).toBe(8);
+    // A short target hands its share on: 10 over [1, 9] gives the second 9.
+    expect(leastShare(10, [1, 9], 1)).toBe(9);
+    expect(leastShare(20, [6, 6], 0)).toBe(6);
   });
 });
 

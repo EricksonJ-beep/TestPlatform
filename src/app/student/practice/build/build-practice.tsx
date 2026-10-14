@@ -7,8 +7,10 @@ import type { CustomPracticeCourse } from "@/lib/custom-practice";
 import {
   CUSTOM_PRACTICE_SIZES,
   DEFAULT_CUSTOM_PRACTICE_SIZE,
+  leastShare,
   practiceBuildStart,
 } from "@/lib/custom-practice-rules";
+import { BUILT_PRACTICE_MIN_QUESTIONS } from "@/lib/quiz-practice";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { startBuiltPractice } from "../actions";
@@ -17,7 +19,8 @@ import { startBuiltPractice } from "../actions";
  * Pick a course (when there is more than one), a unit, the targets ("All of
  * Unit 2" or any of its targets), and how many questions. Start deals a new
  * hand and opens the practice screen. A link may name the course and unit, or
- * one target to open on, already picked (`practiceBuildStart`).
+ * one target to open on, already picked (`practiceBuildStart`); on that target,
+ * it warns when the hand would be too thin on it to count toward a retake.
  */
 export function BuildPractice({
   courses,
@@ -52,6 +55,17 @@ export function BuildPractice({
     [unit, picked]
   );
   const available = chosen.reduce((n, t) => n + t.available, 0);
+  // Opened from a to-do row on a target the retake needs (R3): warn when the hand would give it
+  // too few questions to count (5, or every one it has when fewer).
+  const linked = chosen.find((t) => t.id === initialTargetId);
+  const need = linked ? Math.min(BUILT_PRACTICE_MIN_QUESTIONS, linked.available) : 0;
+  const share = linked
+    ? leastShare(
+        count,
+        chosen.map((t) => t.available),
+        chosen.indexOf(linked)
+      )
+    : 0;
   const allPicked = !!unit && unit.targets.length > 0 && chosen.length === unit.targets.length;
 
   function pickCourse(id: string) {
@@ -180,6 +194,16 @@ export function BuildPractice({
           <p className="text-xs text-muted-foreground">
             Those targets have {available} {available === 1 ? "question" : "questions"}, so you
             will get all of them.
+          </p>
+        ) : null}
+        {linked && share < need ? (
+          <p
+            className="rounded-md bg-warning-soft px-2 py-1 text-xs text-warning-foreground"
+            data-share-warning={linked.code}
+          >
+            {linked.code} may get only {share} {share === 1 ? "question" : "questions"}. To count
+            toward your retake, practice at least {need} on it: pick fewer targets or more
+            questions.
           </p>
         ) : null}
       </fieldset>

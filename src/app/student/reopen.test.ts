@@ -17,6 +17,17 @@ vi.mock("next/cache", () => ({ revalidatePath: () => undefined }));
 vi.mock("next/headers", () => ({
   cookies: async () => ({ get: () => undefined, set: () => undefined, delete: () => undefined }),
 }));
+// requestRetake reads the student's reopen, then writes: `staleRead` replays a read made just
+// before the teacher's approval landed.
+const race = vi.hoisted(() => ({ staleRead: false }));
+vi.mock("@/lib/queries/reopen", async (importOriginal) => {
+  const real = await importOriginal<typeof import("@/lib/queries/reopen")>();
+  return {
+    ...real,
+    openUntilFor: (...args: Parameters<typeof real.openUntilFor>) =>
+      race.staleRead ? Promise.resolve(null) : real.openUntilFor(...args),
+  };
+});
 vi.mock("@/db", async () => {
   const { createTestDb } = await import("@/test/db");
   const { db, schema } = await createTestDb();
@@ -337,7 +348,7 @@ describe("Ask to retake (R4, R6)", () => {
     // Her own list (and the teacher's panel): the practice before asking, optional on a closed quiz.
     const list = (await gradebook()).rows.find((r) => r.student.id === ids.yara)!.studentToDo;
     expect(list.higher.map((r) => r.why)).toEqual([
-      "Practice U2.LT1: score 80% before you can ask to retake (you scored 40%).",
+      "Practice U2.LT1: score 80% on at least 5 questions on it before you can ask to retake (you scored 40%).",
     ]);
     await expectGradebookAgrees();
     // Decline: the leftover request is gone.
@@ -611,6 +622,95 @@ describe('"Retakes need my OK" on a closed test', () => {
     });
     as(ids.xan, "student");
     expect((await ok(startAttempt(ids.asg.okQuiz, null))).resumed).toBe(false);
+    await expectGradebookAgrees();
+  });
+});
+
+describe("Asking only for a retake that is on offer (review, Oct 14 2026)", () => {
+  it("refuses a quiz already at 100%, and practice, as the card offers neither", async () => {
+    // Viola's reopened retake scored 100%: her card reads Closed, with no Ask button.
+    expect((await card(ids.viola, "quiz")).state).toBe("closed");
+    as(ids.viola, "student");
+    await refused(requestRetake(ids.asg.quiz), 409, /100%/);
+    expect(await unlockRow(ids.viola, "quiz", 3)).toBeUndefined();
+    // A practice assignment, taken once and closed.
+    const [drill] = await db
+      .insert(schema.assessments)
+      .values({ ownerId: ids.teacher, type: "practice", title: "Carbon drill", isPublished: true })
+      .returning();
+    const [sec] = await db
+      .insert(schema.assessmentSections)
+      .values({ assessmentId: drill.id, title: "All", sortOrder: 0 })
+      .returning();
+    await db
+      .insert(schema.assessmentQuestions)
+      .values(ids.quizQ.map((q, j) => ({ sectionId: sec.id, questionId: q.id, sortOrder: j })));
+    const [asg] = await db
+      .insert(schema.assignments)
+      .values({
+        ownerId: ids.teacher,
+        classId: ids.cls,
+        assessmentId: drill.id,
+        attemptsAllowed: 3,
+      })
+      .returning();
+    as(ids.yara, "student");
+    const { attemptId } = await ok(startAttempt(asg.id, null));
+    await finalizeAttempt(attemptId);
+    await db
+      .update(schema.assignments)
+      .set({ closesAt: minutesAgo(5) })
+      .where(eq(schema.assignments.id, asg.id));
+    expect((await listStudentAssignments(ids.yara)).find((a) => a.id === asg.id)).toMatchObject({
+      state: "closed",
+      cycle: "done",
+    });
+    await refused(requestRetake(asg.id), 409, /^Practice has no retakes/);
+    expect(await listRetakeRequests(ids.teacher)).not.toContainEqual(
+      expect.objectContaining({ assignmentId: asg.id })
+    );
+  });
+
+  it("a reopen the teacher approves while the student is asking stands", async () => {
+    // Zed: 40% on the quiz while it was open, corrections done; then it closed. Ask to retake.
+    const [zed] = await db
+      .insert(schema.users)
+      .values({ email: "z@s", passwordHash: "x", role: "student", firstName: "Zed", lastName: "Z" })
+      .returning();
+    await db.insert(schema.enrollments).values({ classId: ids.cls, studentId: zed.id });
+    const [{ closesAt }] = await db
+      .select({ closesAt: schema.assignments.closesAt })
+      .from(schema.assignments)
+      .where(eq(schema.assignments.id, ids.asg.quiz));
+    await setClosed("quiz", null);
+    const attemptId = await take(zed.id, "quiz", 2);
+    await setClosed("quiz", closesAt);
+    await correct(zed.id, attemptId);
+    expect((await card(zed.id, "quiz")).state).toBe("ask_to_retake");
+    // Both click at once: the teacher's Approve lands after the student's read of the reopen.
+    const openUntil = endOfNextSchoolDay(new Date());
+    await db.insert(schema.attemptUnlocks).values({
+      assignmentId: ids.asg.quiz,
+      studentId: zed.id,
+      attemptNumber: 2,
+      requestedAt: new Date(),
+      grantedAt: new Date(),
+      grantedBy: ids.teacher,
+      openUntil,
+    });
+    as(zed.id, "student");
+    race.staleRead = true;
+    try {
+      await ok(requestRetake(ids.asg.quiz));
+    } finally {
+      race.staleRead = false;
+    }
+    expect(await unlockRow(zed.id, "quiz", 2)).toMatchObject({ grantedBy: ids.teacher, openUntil });
+    expect(await card(zed.id, "quiz")).toMatchObject({
+      status: "open",
+      state: "retake_available",
+      reopenedUntil: openUntil,
+    });
     await expectGradebookAgrees();
   });
 });

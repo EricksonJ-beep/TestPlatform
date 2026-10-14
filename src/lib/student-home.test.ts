@@ -5,6 +5,8 @@ import {
   assessmentsByStatus,
   buildStudentToDo,
   closedCorrectionsCount,
+  correctionsActionLabel,
+  correctionsProgress,
   correctionsWhy,
   homeTab,
   showsScore,
@@ -110,7 +112,9 @@ describe("the student to-do list", () => {
     ]);
     expect(list.todo[0]).toMatchObject({
       why: "Correct 5 missed questions to raise your score from 50% to 80%.",
-      progress: { value: 0, max: 5, label: "0 of 5 done" },
+      // Hide scores in the teacher's panel: her 50% goes, the row still says what it's for.
+      whyWithoutScores: "Correct 5 missed questions to raise your score to 80%.",
+      progress: { value: 0, max: 5, label: "0 of 5 started" },
       when: null,
       action: { kind: "link", label: "Do corrections", href: "/student/corrections/att-carbs" },
     });
@@ -129,7 +133,15 @@ describe("the student to-do list", () => {
       state: "closed" as const,
       cycle: "relearning" as const,
       quizPractice: [
-        { targetId: "lt1", code: "U2.LT1", title: "Carbon", scored: 40, best: 60, done: false },
+        {
+          targetId: "lt1",
+          code: "U2.LT1",
+          title: "Carbon",
+          scored: 40,
+          best: 60,
+          done: false,
+          minQuestions: 5,
+        },
       ],
     };
     const list = buildStudentToDo({
@@ -140,9 +152,21 @@ describe("the student to-do list", () => {
     expect(list.higher).toHaveLength(1);
     expect(list.higher[0]).toMatchObject({
       kind: "practice",
-      why: "Practice U2.LT1: score 80% before you can ask to retake (you scored 40%).",
+      why: "Practice U2.LT1: score 80% on at least 5 questions on it before you can ask to retake (you scored 40%).",
+      // Hide scores (the teacher's panel) keeps what the row is about, without her score.
+      whyWithoutScores:
+        "Practice U2.LT1: score 80% on at least 5 questions on it before you can ask to retake.",
       progress: { value: 60, max: 80, label: "Best so far: 60%" },
       action: { label: "Practice", href: "/student/practice/build?target=lt1", primary: false },
+    });
+    // Only a teacher's set covers it (Build my practice can't deal it): on a closed quiz, its own
+    // page, which lists the sets; the Practice tab lists open tests only (review, Oct 14 2026).
+    const setOnly = { ...practised.quizPractice[0], minQuestions: null };
+    expect(
+      buildStudentToDo({ assignments: [{ ...practised, quizPractice: [setOnly] }] }).higher[0]
+    ).toMatchObject({
+      why: "Practice U2.LT1: score 80% on a practice before you can ask to retake (you scored 40%).",
+      action: { href: "/student/assignments/Unit 2 LT1 Quiz#practice" },
     });
     // On an open quiz the same step is a counted To do row, aimed at the retake itself.
     const open = buildStudentToDo({
@@ -151,10 +175,10 @@ describe("the student to-do list", () => {
     expect(open.count).toBe(1);
     expect(open.todo[0]).toMatchObject({
       kind: "practice",
-      why: "Practice U2.LT1: score 80% to unlock your retake (you scored 40%).",
+      why: "Practice U2.LT1: score 80% on at least 5 questions on it to unlock your retake (you scored 40%).",
       when: { label: "Closes", at: OCT20 },
-      // Only a teacher's set covers it: the Practice tab.
-      action: { href: "/student?tab=practice", primary: true },
+      // Not buildable for this student: the test's group on the Practice tab.
+      action: { href: "/student?tab=practice#needed-Unit 2 LT1 Quiz", primary: true },
     });
   });
 
@@ -186,14 +210,26 @@ describe("the student to-do list", () => {
     expect(correctionsWhy({ ...test, attemptsUsed: 3 })).toBe(
       "Correct 4 missed questions on attempt 1."
     );
-    // Started: Continue corrections.
+    // Started: Continue corrections. A saved draft is "started", never "done" (review, Oct 14):
+    // the set goes in all at once, and the teacher's tag counts the same thing.
     const started = buildStudentToDo({
-      assignments: [{ ...test, corrections: corrections("y", 4, 1, 2) }],
+      assignments: [{ ...test, corrections: corrections("y", 4, 0, 2) }],
     });
     expect(started.todo[0]).toMatchObject({
-      progress: { label: "2 of 4 done" },
+      progress: { value: 2, max: 4, label: "2 of 4 started, not turned in yet" },
       action: { label: "Continue corrections" },
     });
+    // Every one started: finish them and turn them in.
+    const all = corrections("y", 4, 0, 4);
+    expect(
+      buildStudentToDo({ assignments: [{ ...test, corrections: all }] }).todo[0]
+    ).toMatchObject({
+      progress: { label: "4 of 4 started, not turned in yet" },
+      action: { label: "Finish and turn in" },
+    });
+    expect(correctionsActionLabel(all)).toBe("Finish and turn in");
+    // A regrade that adds a missed question to a set already sent in: 3 were turned in.
+    expect(correctionsProgress(corrections("y", 4, 3, 3)).label).toBe("3 of 4 started");
   });
 
   it("CVTC: no corrections rows; the retake is the way up", () => {

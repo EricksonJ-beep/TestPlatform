@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BarChart3 } from "lucide-react";
 import { cn } from "cn";
 import type { StudentResult } from "@/lib/queries/student-results";
+import { correctionsProgress } from "@/lib/student-home";
 import { EmptyState } from "@/components/empty-state";
 import { LocalTime } from "@/components/local-time";
 import { TargetChip } from "@/components/targets/target-chip";
@@ -19,7 +20,7 @@ function correctionsLabel(r: StudentResult): string | null {
   const c = r.corrections;
   if (!c) return null;
   if (c.state === "needed")
-    return `${r.correctionsRule === "to_full" ? "Do corrections → 100%" : "Corrections needed"} · ${c.started} of ${c.needed} done`;
+    return `${r.correctionsRule === "to_full" ? "Do corrections → 100%" : "Corrections needed"} · ${correctionsProgress(c).label}`;
   return CORRECTIONS_LABEL[c.state];
 }
 

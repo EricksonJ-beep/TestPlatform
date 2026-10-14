@@ -13,7 +13,7 @@ import type {
   ClassGradebookCell,
   ClassGradebookColumn,
 } from "@/lib/queries/class-gradebook";
-import type { StudentToDo } from "@/lib/student-home";
+import { correctionsProgress, type StudentToDo } from "@/lib/student-home";
 
 type Student = ClassGradebook["students"][number];
 
@@ -382,7 +382,7 @@ export function cellMarks(
 
 /**
  * The cell panel's plain sentence (research notes C, "Clicks": "Took try 1 Oct 9 (62%);
- * corrections 3 of 8 done"; Oct 14 2026: a quiz's practice still owed before the retake, R3,
+ * corrections 3 of 8 started", in the student's own words for an owed set; Oct 14 2026: a quiz's practice still owed before the retake, R3,
  * "needs 80% on practice for U2.LT1 (best 60%)", and a closed test reopened for the student ends
  * "reopened through Oct 15", R4). Scores drop out when "Hide scores" is on (decision 6).
  */
@@ -432,15 +432,14 @@ export function cellSentence(
   }
   const c = cell.corrections;
   if (c) {
-    const of = `${c.done} of ${c.needed}`;
     parts.push(
       c.state === "approved"
         ? "corrections approved"
         : c.state === "submitted"
           ? "corrections sent in, waiting for you"
           : c.state === "returned"
-            ? `corrections sent back (${of} done)`
-            : `corrections ${of} done`
+            ? `corrections sent back (${c.done} of ${c.needed} done)`
+            : `corrections ${correctionsProgress(c).label}`
     );
   }
   if (cell.score && !opts.hideScores) {
