@@ -6,7 +6,8 @@
  * by a client.
  *
  * Per target: corrections_ok = every missed item on the latest attempt that
- * covered the target has an approved correction; activity_ok / practice_ok =
+ * covered the target has an approved correction (always true in a course with
+ * CVTC rules, Jon Oct 13 2026); activity_ok / practice_ok =
  * the student completed a published item tagged to the target (the pinned one
  * when the teacher pinned one), or nothing is published for it yet, so the
  * gate cannot block on content that doesn't exist.
@@ -32,9 +33,11 @@ export async function recomputeGates(assignmentId: string, studentId: string): P
       type: schema.assessments.type,
       threshold: schema.assignments.retakeThreshold,
       courseId: schema.assessments.courseId,
+      cvtcRules: schema.courses.cvtcRules,
     })
     .from(schema.assignments)
     .innerJoin(schema.assessments, eq(schema.assignments.assessmentId, schema.assessments.id))
+    .leftJoin(schema.courses, eq(schema.assessments.courseId, schema.courses.id))
     .where(eq(schema.assignments.id, assignmentId))
     .limit(1);
   if (!asg || asg.type !== "summative") return [];
@@ -59,7 +62,10 @@ export async function recomputeGates(assignmentId: string, studentId: string): P
     );
   const prior = new Map(existing.map((g) => [g.learningTargetId, g]));
 
-  const correctionsOk = await correctionsByTarget(assignmentId, studentId, targetIds);
+  // CVTC rules (Jon, Oct 13 2026): corrections are never owed, so that gate is always open.
+  const correctionsOk = asg.cvtcRules
+    ? new Map<string, boolean>()
+    : await correctionsByTarget(assignmentId, studentId, targetIds);
   const activityOk = await activitiesByTarget(assignmentId, studentId, targetIds);
   const practiceOk = await practiceByTarget(assignmentId, studentId, targetIds);
 

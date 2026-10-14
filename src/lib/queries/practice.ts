@@ -10,6 +10,7 @@ import type { ActivityKind, CompletionEvidence } from "@/db/types";
 import type { Answer } from "@/lib/grading";
 import { feedbackForAttempt, type PracticeFeedback } from "@/lib/practice";
 import { customPracticeTitle } from "@/lib/custom-practice";
+import type { ClassPlace } from "@/lib/needs-you";
 import {
   practiceProgress,
   type PracticeAnswer,
@@ -835,21 +836,75 @@ export async function getActivityForStudent(
   return { ...a, targets: targets.get(activityId) ?? [], completion: completion ?? null };
 }
 
-/** Count of link completions waiting on the teacher, for the dashboard. */
-export async function countPendingVerifications(teacherId: string): Promise<number> {
-  const [r] = await db
-    .select({ n: sql<number>`count(*)::int` })
+export type PendingVerification = {
+  activityId: string;
+  activityTitle: string;
+  studentId: string;
+  firstName: string;
+  lastName: string;
+  completedAt: Date;
+  /** The student's class with the teacher, on the activity's course when they have one there. */
+  place: ClassPlace;
+};
+
+/**
+ * Completed activities waiting for the teacher to check them off ("optionally teacher-verified",
+ * PLAN.md §3.7), oldest first, for the Dashboard's "Needs you" (Jon, Oct 13 2026).
+ */
+export async function listPendingVerifications(teacherId: string): Promise<PendingVerification[]> {
+  const rows = await db
+    .select({
+      activityId: schema.relearningActivities.id,
+      activityTitle: schema.relearningActivities.title,
+      courseId: schema.relearningActivities.courseId,
+      courseName: schema.courses.name,
+      studentId: schema.activityCompletions.studentId,
+      firstName: schema.users.firstName,
+      lastName: schema.users.lastName,
+      completedAt: schema.activityCompletions.completedAt,
+    })
     .from(schema.activityCompletions)
     .innerJoin(
       schema.relearningActivities,
       eq(schema.activityCompletions.activityId, schema.relearningActivities.id)
     )
+    .leftJoin(schema.courses, eq(schema.relearningActivities.courseId, schema.courses.id))
+    .innerJoin(schema.users, eq(schema.activityCompletions.studentId, schema.users.id))
     .where(
       and(
         eq(schema.relearningActivities.ownerId, teacherId),
         eq(schema.relearningActivities.requiresTeacherVerification, true),
         eq(schema.activityCompletions.teacherVerified, false)
       )
-    );
-  return r?.n ?? 0;
+    )
+    .orderBy(asc(schema.activityCompletions.completedAt));
+  if (rows.length === 0) return [];
+  const classes = await db
+    .select({
+      studentId: schema.enrollments.studentId,
+      className: schema.classes.name,
+      period: schema.classes.period,
+      courseId: schema.classes.courseId,
+      courseName: schema.courses.name,
+    })
+    .from(schema.enrollments)
+    .innerJoin(schema.classes, eq(schema.enrollments.classId, schema.classes.id))
+    .leftJoin(schema.courses, eq(schema.classes.courseId, schema.courses.id))
+    .where(
+      and(
+        eq(schema.classes.ownerId, teacherId),
+        inArray(schema.enrollments.studentId, [...new Set(rows.map((r) => r.studentId))])
+      )
+    )
+    .orderBy(asc(schema.classes.sortOrder), asc(schema.classes.name));
+  return rows.map(({ courseId, courseName, ...r }) => {
+    const theirs = classes.filter((c) => c.studentId === r.studentId);
+    const cls = theirs.find((c) => c.courseId === courseId) ?? theirs[0];
+    return {
+      ...r,
+      place: cls
+        ? { courseName: cls.courseName, className: cls.className, period: cls.period }
+        : { courseName, className: "", period: null },
+    };
+  });
 }

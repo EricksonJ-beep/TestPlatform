@@ -18,4 +18,9 @@ if (r.status !== 0) process.exit(r.status ?? 1);
 // Content packs (Jon, Oct 2 2026): quizzes shipped in content/packs/ apply once, after migrations.
 console.log("migrate-on-build: applying content packs…");
 spawnSync("npx", ["tsx", "scripts/apply-packs.ts"], { stdio: "inherit", shell: true });
+
+// CVTC rules (Jon, Oct 13 2026): scores lifted by corrections before a course turned the rules on.
+// Production deploys only: the script skips itself on a preview build (live database, main's code).
+console.log("migrate-on-build: settling CVTC scores…");
+spawnSync("npx", ["tsx", "scripts/cvtc-leftovers.ts"], { stdio: "inherit", shell: true });
 process.exit(0);

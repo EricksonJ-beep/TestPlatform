@@ -137,6 +137,11 @@ export const courses = pgTable(
     }),
     name: text("name").notNull(),
     description: text("description"),
+    /**
+     * Jon, Oct 13 2026 (CVTC dual credit, Anatomy and Physiology): corrections earn no credit and
+     * are never owed or required on any assignment of the course; the only way up is a retake.
+     */
+    cvtcRules: boolean("cvtc_rules").default(false).notNull(),
     ...timestamps,
   },
   (t) => [index("courses_owner_idx").on(t.ownerId)]

@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq, isNotNull, sql } from "drizzle-orm";
+import { and, asc, eq, isNotNull, ne, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db, schema } from "@/db";
@@ -16,9 +16,10 @@ import {
 } from "@/lib/attempt-pause";
 import { correctionsClear } from "@/lib/corrections";
 import { setOptIn } from "@/lib/gates";
+import { correctionsCapOn } from "@/lib/grading";
 import { getCorrectionsSummary, latestFinishedAttemptId } from "@/lib/queries/corrections";
 import { getRetakeStatus } from "@/lib/queries/retakes";
-import { BLOCKER_TEXT } from "@/lib/retakes";
+import { BLOCKER_TEXT, correctionsRule, TO_FULL_TEXT } from "@/lib/retakes";
 import {
   ActionError,
   type AttemptAccess,
@@ -53,8 +54,9 @@ function revalidate(assignmentId: string) {
 
 /**
  * Start (or resume) an attempt. Rules: enrolled student only; inside the window;
- * access code if set; attempts remaining. An in-progress attempt is resumed; one
- * that ran past its deadline is submitted first.
+ * access code if set; attempts remaining; corrections as `correctionsRule` says, the
+ * same rule the student card follows (Jon, Oct 13 2026). An in-progress attempt is
+ * resumed; one that ran past its deadline is submitted first.
  */
 export const startAttempt = withAuthz(async (assignmentId: string, accessCode: string | null) => {
   const access = await requireAssignmentAccess(assignmentId);
@@ -90,13 +92,18 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
       retakesNeedUnlock: schema.assignments.retakesNeedUnlock,
       correctionsCap: schema.assignments.correctionsCap,
       retakeWindowDays: schema.assignments.retakeWindowDays,
+      retakeThreshold: schema.assignments.retakeThreshold,
       type: schema.assessments.type,
+      cvtcRules: schema.courses.cvtcRules,
     })
     .from(schema.assignments)
     .innerJoin(schema.assessments, eq(schema.assignments.assessmentId, schema.assessments.id))
+    .leftJoin(schema.courses, eq(schema.assessments.courseId, schema.courses.id))
     .where(eq(schema.assignments.id, assignmentId))
     .limit(1);
   if (!assignment) throw new ActionError("Not found.", 404);
+  // The cap, and its retake window, never apply in a CVTC course (Jon, Oct 13 2026).
+  const capped = correctionsCapOn(assignment);
   const [unlock] = await db
     .select({ through: sql<number>`coalesce(max(${schema.attemptUnlocks.attemptNumber}), 0)::int` })
     .from(schema.attemptUnlocks)
@@ -133,10 +140,7 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
     assignment: {
       ...assignment,
       // The retake window is a corrections-cap rule, so formatives only (Jon, Oct 8 2026).
-      retakeWindowDays:
-        assignment.type === "formative" && assignment.correctionsCap
-          ? assignment.retakeWindowDays
-          : null,
+      retakeWindowDays: capped ? assignment.retakeWindowDays : null,
     },
     attemptsUsed: used,
     lastSubmittedAt,
@@ -157,12 +161,43 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
       }
     );
   }
-  // Rule (PLAN.md §4): no retake until corrections on the last attempt are done (and approved, in that mode).
-  // Exception (Jon, Oct 1 2026): when retakes need the teacher's unlock, that unlock is the only gate.
-  const lastAttemptId = assignment.retakesNeedUnlock
-    ? null
-    : await latestFinishedAttemptId(assignmentId, access.userId);
+  // What corrections do here (Jon, Oct 13 2026), worked out exactly as the student card does.
+  const [first] =
+    used > 0
+      ? await db
+          .select({ percent: schema.attempts.percent })
+          .from(schema.attempts)
+          .where(
+            and(
+              eq(schema.attempts.assignmentId, assignmentId),
+              eq(schema.attempts.studentId, access.userId),
+              ne(schema.attempts.status, "in_progress")
+            )
+          )
+          .orderBy(asc(schema.attempts.number))
+          .limit(1)
+      : [];
+  const rule = correctionsRule({
+    type: assignment.type,
+    capped,
+    retakesNeedUnlock: assignment.retakesNeedUnlock,
+    cvtcRules: !!assignment.cvtcRules,
+    firstPercent: first?.percent ?? null,
+    threshold: assignment.retakeThreshold,
+  });
+  const lastAttemptId =
+    used > 0 && (rule === "gate" || rule === "to_full")
+      ? await latestFinishedAttemptId(assignmentId, access.userId)
+      : null;
   const corrections = lastAttemptId ? await getCorrectionsSummary(lastAttemptId) : null;
+  // Capped formative at or above the threshold: corrections → 100% is the way up, never a retake.
+  if (rule === "to_full")
+    throw new ActionError(
+      corrections?.state === "approved" ? TO_FULL_TEXT.done : TO_FULL_TEXT.pending,
+      403
+    );
+  // Rule (PLAN.md §4): no retake until corrections on the last attempt are done (and approved, in that mode).
+  // Exceptions: with the teacher's unlock (Oct 1 2026) or CVTC rules (Oct 13 2026) corrections never gate.
   if (corrections && !correctionsClear(corrections)) {
     throw new ActionError(
       corrections.state === "submitted"
@@ -441,16 +476,25 @@ export const resumeWithCode = withAuthz(async (attemptId: string, code: string) 
     throw new ActionError("That code isn't right, or it has run out. Ask your teacher.", 400, {
       code: ["That code isn't right, or it has run out. Ask your teacher."],
     });
-  if (!(await resumeAttempt(attemptId))) throw new ActionError("This test isn't paused.", 409);
+  if (!(await resumeAttempt(attemptId, "code")))
+    throw new ActionError("This test isn't paused.", 409);
   revalidate(access.attempt.assignmentId);
   return { attemptId };
 });
 
-/** Ask the teacher to let you finish (they see it on the Results page). */
+/**
+ * Ask the teacher to let you finish (they see it in "Needs you" and on the Results page). The
+ * first ask of a pause is logged (`resume_requested`, Oct 13 2026); asking again only moves the
+ * time.
+ */
 export const askToFinish = withAuthz(async (attemptId: string) => {
   const access = await requireAttemptAccess(attemptId);
   assertOwnStudentRow(access, access.attempt);
-  await db
+  const before = await db.query.attempts.findFirst({
+    columns: { resumeRequestedAt: true, number: true },
+    where: eq(schema.attempts.id, attemptId),
+  });
+  const asked = await db
     .update(schema.attempts)
     .set({ resumeRequestedAt: new Date() })
     .where(
@@ -459,7 +503,15 @@ export const askToFinish = withAuthz(async (attemptId: string) => {
         eq(schema.attempts.status, "in_progress"),
         isNotNull(schema.attempts.pausedAt)
       )
-    );
+    )
+    .returning({ id: schema.attempts.id });
+  if (asked.length && before && !before.resumeRequestedAt)
+    await logActivity({
+      userId: access.userId,
+      kind: "resume_requested",
+      assignmentId: access.attempt.assignmentId,
+      detail: { attemptNumber: before.number },
+    });
   revalidate(access.attempt.assignmentId);
   return { asked: true };
 });

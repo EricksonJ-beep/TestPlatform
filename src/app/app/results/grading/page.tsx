@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CheckCircle2, ChevronLeft } from "lucide-react";
-import { requireTeacher } from "@/lib/authz";
-import { splitByCourse } from "@/lib/course-focus";
+import { isUuid, requireTeacher } from "@/lib/authz";
+import { focusQueue } from "@/lib/course-focus";
 import { getCurrentCourse } from "@/lib/current-course";
 import { answerToText } from "@/lib/grading";
 import { listGradingQueue } from "@/lib/queries/results";
@@ -13,16 +13,24 @@ import { GradeForm } from "../grade-form";
 
 export const metadata: Metadata = { title: "Grading queue" };
 
-/** Every short answer and extended response still waiting for a score, oldest first. */
-export default async function GradingQueuePage() {
+/**
+ * Every short answer and extended response still waiting for a score, oldest first.
+ * `?assignment=` (from the Dashboard's "Needs you", Jon Oct 13 2026) narrows to one test in
+ * any course.
+ */
+export default async function GradingQueuePage({
+  searchParams,
+}: PageProps<"/app/results/grading">) {
   const session = await requireTeacher();
+  const sp = await searchParams;
+  const only = isUuid(sp.assignment) ? sp.assignment : null;
   const [allItems, { current }] = await Promise.all([
     listGradingQueue(session.userId),
     getCurrentCourse(session.userId),
   ]);
-  // Course focus: this course's responses (plus any whose assessment has no course).
-  const split = splitByCourse(allItems, current);
-  const items = [...split.mine, ...split.orphans];
+  // Course focus: this course's responses (plus any whose assessment has no course), or one test.
+  const { items, elsewhere } = focusQueue(allItems, current, only);
+  const test = only ? allItems.find((i) => i.assignmentId === only) : undefined;
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4">
@@ -36,12 +44,24 @@ export default async function GradingQueuePage() {
         <h1 className="mt-2 text-2xl">Grading queue</h1>
         <p className="mt-1 text-sm text-muted-foreground tabular">
           {items.length} {items.length === 1 ? "response" : "responses"} waiting
-          {current ? ` in ${current.name}` : ""}. Scores update the student&apos;s attempt and final
-          score the moment you save.
-          {split.elsewhere > 0 ? (
+          {only ? (
+            <span data-filtered>
+              {test ? ` on ${test.assignmentTitle} · ${test.className}` : " on this test"} (
+              <Link href="/app/results/grading" className="text-brand-deep hover:underline">
+                show all
+              </Link>
+              )
+            </span>
+          ) : current ? (
+            ` in ${current.name}`
+          ) : (
+            ""
+          )}
+          . Scores update the student&apos;s attempt and final score the moment you save.
+          {elsewhere > 0 ? (
             <span data-elsewhere>
               {" "}
-              {split.elsewhere} more in other courses; switch course in the sidebar to see them.
+              {elsewhere} more in other courses; switch course in the sidebar to see them.
             </span>
           ) : null}
         </p>

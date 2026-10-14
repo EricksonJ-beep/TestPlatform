@@ -19,7 +19,8 @@ export type CorrectableItem = {
  * summative only on missed questions inside the targets being retaken (targets
  * below the threshold on this attempt, plus any the student opted into — Ticket
  * 1.12 supplies those). Practice never needs corrections. A question still
- * waiting for a manual grade is not "missed" yet.
+ * waiting for a manual grade is not "missed" yet. In a course with CVTC rules
+ * (Jon, Oct 13 2026: "corrections earn no credit, retakes only") nothing is.
  */
 export function questionsNeedingCorrection(input: {
   type: "practice" | "formative" | "summative";
@@ -29,8 +30,10 @@ export function questionsNeedingCorrection(input: {
   threshold: number;
   /** Extra targets being retaken by choice (optional retakes). */
   optedInTargetIds?: string[];
+  /** The assessment's course has CVTC rules on. */
+  cvtcRules?: boolean;
 }): string[] {
-  if (input.type === "practice") return [];
+  if (input.type === "practice" || input.cvtcRules) return [];
   const missed = input.items.filter((i) => i.earned !== null && i.earned < i.points);
   if (input.type === "formative") return missed.map((i) => i.questionId);
   const retaking = new Set(input.optedInTargetIds ?? []);
@@ -40,6 +43,27 @@ export function questionsNeedingCorrection(input: {
   return missed
     .filter((i) => i.learningTargetId && retaking.has(i.learningTargetId))
     .map((i) => i.questionId);
+}
+
+/**
+ * The served questions as corrections scope reads them, from stored scores only (never re-graded):
+ * a manual score beats the auto score, a question with no saved response earned 0, and one still
+ * waiting for a manual grade is null. The student's corrections form and the class gradebook both
+ * build their items here.
+ */
+export function correctableItems(
+  served: { questionId: string; learningTargetId: string | null; points: number }[],
+  scores: Map<string, { autoScore: number | null; manualScore: number | null }>
+): CorrectableItem[] {
+  return served.map((s) => {
+    const r = scores.get(s.questionId);
+    return {
+      questionId: s.questionId,
+      learningTargetId: s.learningTargetId,
+      points: s.points,
+      earned: r ? (r.manualScore ?? r.autoScore) : 0,
+    };
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -160,6 +184,28 @@ export function correctionsSummary(
             ? "submitted"
             : "needed";
   return { state, needed: n, done, remaining: n - done, approved, returned };
+}
+
+export type SetSummary = CorrectionsSummary & {
+  /** Needed items with any saved correction (a draft counts), so a set can read "in progress". */
+  started: number;
+  /** The teacher's note on a returned set, if any. */
+  reviewerNote: string | null;
+};
+
+/** The set's summary, plus how far the student has started it and the teacher's note when returned. */
+export function summarizeSet(
+  needed: string[],
+  rows: { questionId: string; status: CorrectionStatus; reviewerNote: string | null }[]
+): SetSummary {
+  const summary = correctionsSummary(needed, rows);
+  const neededSet = new Set(needed);
+  const started = rows.filter((r) => neededSet.has(r.questionId)).length;
+  return {
+    ...summary,
+    started: Math.min(started, summary.needed),
+    reviewerNote: rows.find((r) => r.status === "returned" && r.reviewerNote)?.reviewerNote ?? null,
+  };
 }
 
 /** True when the student may start another attempt as far as corrections go. */

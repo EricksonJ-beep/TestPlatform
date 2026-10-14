@@ -1,15 +1,25 @@
 import Link from "next/link";
 import {
   CheckCircle2,
+  CirclePause,
   ClipboardList,
   Hand,
+  KeyRound,
   Layers,
   LogIn,
+  MessageCircleQuestion,
   PlayCircle,
   Send,
   Users,
 } from "lucide-react";
-import { describeActivity, type ActivityKind, type ActivityRow } from "@/lib/activity-log";
+import {
+  activityLine,
+  activityScore,
+  type ActivityKind,
+  type ActivityRow,
+} from "@/lib/activity-log";
+import { feedDay } from "@/lib/activity-filter";
+import { placeLabel } from "@/lib/needs-you";
 import { LocalTime } from "@/components/local-time";
 
 const ICON: Record<ActivityKind, typeof LogIn> = {
@@ -21,19 +31,25 @@ const ICON: Record<ActivityKind, typeof LogIn> = {
   practice_completed: Layers,
   activity_completed: CheckCircle2,
   retake_requested: Hand,
+  test_paused: CirclePause,
+  resume_requested: MessageCircleQuestion,
+  resumed: KeyRound,
 };
 
-const dayKey = (d: Date) => d.toISOString().slice(0, 10);
-
-/** A list of logged milestones, optionally with the student's name and a date heading per day. */
+/**
+ * A list of logged milestones, optionally with the student's name, where it happened (course ·
+ * period, for a feed across classes) and a date heading per day.
+ */
 export function ActivityFeed({
   rows,
   showName = true,
+  showPlace = false,
   groupByDay = false,
   emptyText = "No activity yet.",
 }: {
   rows: ActivityRow[];
   showName?: boolean;
+  showPlace?: boolean;
   groupByDay?: boolean;
   emptyText?: string;
 }) {
@@ -46,7 +62,7 @@ export function ActivityFeed({
   }
   const groups: { day: string; rows: ActivityRow[] }[] = [];
   for (const r of rows) {
-    const day = groupByDay ? dayKey(new Date(r.createdAt)) : "";
+    const day = groupByDay ? feedDay(new Date(r.createdAt)) : "";
     const last = groups[groups.length - 1];
     if (last && last.day === day) last.rows.push(r);
     else groups.push({ day, rows: [r] });
@@ -63,6 +79,18 @@ export function ActivityFeed({
           <ul className="divide-y divide-border">
             {g.rows.map((r) => {
               const Icon = ICON[r.kind] ?? LogIn;
+              // The Dashboard's "Hide scores" (decision 6) hides the percent, not the line.
+              const score = activityScore(r);
+              const line = (
+                <>
+                  {activityLine(r)}
+                  {score ? (
+                    <span className="group-data-[hide-scores]/scores:hidden" data-score>
+                      {score}
+                    </span>
+                  ) : null}
+                </>
+              );
               return (
                 <li
                   key={r.id}
@@ -77,12 +105,17 @@ export function ActivityFeed({
                       </span>
                     ) : null}
                     {showName ? " · " : ""}
+                    {showPlace && r.place ? (
+                      <span className="text-muted-foreground" data-activity-place>
+                        {placeLabel(r.place)} ·{" "}
+                      </span>
+                    ) : null}
                     {r.assignmentId ? (
                       <Link href={`/app/results/${r.assignmentId}`} className="hover:underline">
-                        {describeActivity(r)}
+                        {line}
                       </Link>
                     ) : (
-                      describeActivity(r)
+                      line
                     )}
                   </span>
                   <LocalTime

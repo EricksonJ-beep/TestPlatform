@@ -13,6 +13,7 @@ import {
   withAuthz,
 } from "@/lib/authz";
 import { CURRENT_COURSE_COOKIE, ownsCourse, rememberCourse } from "@/lib/current-course";
+import { recomputeCourseRules } from "@/lib/cvtc";
 
 const uuid = z.string().uuid();
 const name = (label: string, maxLen = 80) =>
@@ -90,6 +91,25 @@ async function assertUniqueCourseName(ownerId: string, courseName: string, excep
     });
   }
 }
+
+/**
+ * CVTC rules on a course (Jon, Oct 13 2026: "corrections earn no credit, retakes only"). Owner
+ * only. The scores the switch can change on the course's tests are recomputed on the spot, a few
+ * at a time (`recomputeCourseRules`: capped formatives' counting scores, summatives' relearning
+ * gates), so a corrections lift comes off (or back) with the switch. The rule lives on the test's
+ * course, so classes of teachers it is shared with follow it too and are recomputed with it.
+ * Saving the same value again re-runs the recompute, which finishes one that stopped part way.
+ */
+export const setCourseCvtcRules = withAuthz(async (courseId: string, on: boolean) => {
+  await requireOwner({ type: "course", id: courseId });
+  const cvtcRules = on === true;
+  await db.update(schema.courses).set({ cvtcRules }).where(eq(schema.courses.id, courseId));
+  revalidateCourse(courseId);
+  const recomputed = await recomputeCourseRules(courseId);
+  revalidatePath("/app/results", "layout");
+  revalidatePath("/student", "layout");
+  return { cvtcRules, recomputed };
+});
 
 /** Remember the current course in a cookie. Only the owner's own courses are accepted. */
 export const setCurrentCourse = withAuthz(async (courseId: string | null) => {

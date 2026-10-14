@@ -69,6 +69,69 @@ export function planRetake(input: {
   return { required, optional, selected, locked, canStart: blocker === null, blocker };
 }
 
+/** One target of a student's summative retake picture, as the card, the start action, and the gradebook read it. */
+export type RetakeTarget = {
+  id: string;
+  code: string;
+  title: string;
+  percent: number;
+  required: boolean;
+  optedIn: boolean;
+  gate: GateFlags & { unlocked: boolean };
+};
+
+/** A stored `retake_gates` row, as far as the retake picture reads it. */
+export type StoredGate = GateFlags & {
+  learningTargetId: string;
+  optedIn: boolean;
+  unlockedAt: Date | null;
+};
+
+/**
+ * Rule: the targets are the ones on the counting score (per-target best), in the course's target
+ * order; required = below the threshold; flags come from the stored gate rows (a target with no
+ * row has every gate shut). In a course with CVTC rules (Jon, Oct 13 2026) the corrections gate is
+ * always open, even on rows written before the course turned the rules on. `getRetakeStatus` and
+ * the class gradebook (`getClassGradebook`) both build the picture here, so they agree.
+ */
+export function retakeTargets(input: {
+  perTarget: Record<string, { percent: number }>;
+  /** The targets' names; a target missing here is left out. */
+  names: { id: string; code: string; title: string; sortOrder: number }[];
+  gates: StoredGate[];
+  threshold: number;
+  cvtcRules: boolean;
+}): RetakeTarget[] {
+  const gateBy = new Map(input.gates.map((g) => [g.learningTargetId, g]));
+  return input.names
+    .filter((t) => t.id in input.perTarget)
+    .sort((a, b) => a.sortOrder - b.sortOrder || a.code.localeCompare(b.code))
+    .map((t) => {
+      const g = gateBy.get(t.id);
+      const percent = input.perTarget[t.id].percent;
+      const required = percent < input.threshold;
+      const optedIn = g?.optedIn ?? false;
+      const flags: GateFlags = {
+        correctionsOk: input.cvtcRules ? true : (g?.correctionsOk ?? false),
+        activityOk: g?.activityOk ?? false,
+        practiceOk: g?.practiceOk ?? false,
+      };
+      return {
+        id: t.id,
+        code: t.code,
+        title: t.title,
+        percent,
+        required,
+        optedIn,
+        gate: {
+          ...flags,
+          unlocked:
+            !!g?.unlockedAt || (input.cvtcRules && (required || optedIn) && gateOpen(flags)),
+        },
+      };
+    });
+}
+
 export const BLOCKER_TEXT: Record<RetakeBlocker, string> = {
   no_attempts: "You've used every attempt.",
   nothing_selected: "Every target is proficient. Choose a target to retake it.",
@@ -76,12 +139,54 @@ export const BLOCKER_TEXT: Record<RetakeBlocker, string> = {
 };
 
 // ---------------------------------------------------------------------------
+// What corrections do on one assignment
+// ---------------------------------------------------------------------------
+
+/**
+ * The role corrections play on one assignment, read by the student card (`cycleState`) and by
+ * `startAttempt` so the two never disagree (Jon, Oct 13 2026):
+ *   "none"     CVTC rules on the course: corrections earn no credit and are never owed; the only
+ *              way up is a retake.
+ *   "to_full"  capped formative with attempt 1 at or above the threshold: the student is directed
+ *              to corrections, an approved set lifts the score to 100, and no retake is offered,
+ *              with or without "Retakes need my OK" (decision 2 makes no exception for it).
+ *   "optional" "Retakes need my OK" (Jon, Oct 1 2026): corrections stay open but never gate; the
+ *              teacher's unlock is the only gate.
+ *   "gate"     everything else (PLAN.md §4): the last attempt's corrections come before the next
+ *              attempt; under the cap, attempt 1's approved set lifts the score to the threshold
+ *              and a retake is the way higher.
+ */
+export type CorrectionsRule = "none" | "optional" | "to_full" | "gate";
+
+export function correctionsRule(input: {
+  type: "practice" | "formative" | "summative";
+  /** The cap as it applies here (`correctionsCapOn`: formative, cap on, not a CVTC course). */
+  capped: boolean;
+  retakesNeedUnlock: boolean;
+  cvtcRules: boolean;
+  /** Attempt 1's percent; null before the first finished attempt. */
+  firstPercent: number | null;
+  threshold: number;
+}): CorrectionsRule {
+  if (input.type === "practice" || input.cvtcRules) return "none";
+  if (input.capped && input.firstPercent !== null && input.firstPercent >= input.threshold)
+    return "to_full";
+  if (input.retakesNeedUnlock) return "optional";
+  return "gate";
+}
+
+export const TO_FULL_TEXT = {
+  pending: "Do your corrections to raise this quiz to 100%. There's no retake at your score.",
+  done: "Your corrections raised this quiz to 100%. There's nothing to retake.",
+} as const;
+
+// ---------------------------------------------------------------------------
 // Card state
 // ---------------------------------------------------------------------------
 
 export type CycleState =
   | "corrections_needed"
-  | "corrections_optional"
+  | "corrections_to_full"
   | "corrections_returned"
   | "corrections_submitted"
   | "relearning"
@@ -96,6 +201,7 @@ export type CycleState =
  * straight to Retake available while attempts remain and the score is not
  * perfect. Done otherwise. When the retake is otherwise ready but the teacher
  * has not unlocked it (`needsUnlock`), the card waits on the teacher instead.
+ * What corrections do comes from `correctionsRule` (Jon, Oct 13 2026).
  */
 export function cycleState(input: {
   type: "practice" | "formative" | "summative";
@@ -108,13 +214,15 @@ export function cycleState(input: {
   needsUnlock?: boolean;
   /**
    * Corrections cap (formatives, Jon Oct 8 2026): with attempt 1 at or above the threshold,
-   * corrections are optional (they lift the score to 100); once the retake window has closed,
+   * corrections are the way up (they lift the score to 100); once the retake window has closed,
    * no retake is offered.
    */
   correctionsCap?: boolean;
   firstPercent?: number | null;
   threshold?: number;
   windowClosed?: boolean;
+  /** From `correctionsRule`; when absent it is worked out from the cap inputs above. */
+  rule?: CorrectionsRule;
 }): CycleState {
   const state = readyState(input);
   if (input.needsUnlock && (state === "retake_required" || state === "retake_available"))
@@ -124,13 +232,24 @@ export function cycleState(input: {
 
 function readyState(input: Parameters<typeof cycleState>[0]): CycleState {
   const capped = input.type === "formative" && !!input.correctionsCap;
-  if (input.corrections === "needed") {
-    const first = input.firstPercent ?? null;
-    if (capped && first !== null && first >= (input.threshold ?? 80)) return "corrections_optional";
-    return "corrections_needed";
-  }
-  if (input.corrections === "returned") return "corrections_returned";
-  if (input.corrections === "submitted") return "corrections_submitted";
+  const rule =
+    input.rule ??
+    correctionsRule({
+      type: input.type,
+      capped,
+      retakesNeedUnlock: false,
+      cvtcRules: false,
+      firstPercent: input.firstPercent ?? null,
+      threshold: input.threshold ?? 80,
+    });
+  // CVTC rules or teacher unlocks: corrections never hold the card (Jon, Oct 1 and Oct 13 2026).
+  const corrections = rule === "none" || rule === "optional" ? "none" : input.corrections;
+  if (corrections === "needed")
+    return rule === "to_full" ? "corrections_to_full" : "corrections_needed";
+  if (corrections === "returned") return "corrections_returned";
+  if (corrections === "submitted") return "corrections_submitted";
+  // At or above the threshold under the cap, corrections are the only way up: no retake (Oct 13 2026).
+  if (rule === "to_full") return "done";
   const attemptsLeft = input.attemptsAllowed === null || input.attemptsUsed < input.attemptsAllowed;
   if (!attemptsLeft || input.type === "practice") return "done";
   if (input.type === "formative") {

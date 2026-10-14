@@ -8,12 +8,13 @@ import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import type { CorrectionStatus, QuestionType } from "@/db/types";
 import {
+  correctableItems,
   correctionsProgressState,
-  correctionsSummary,
   questionsNeedingCorrection,
+  summarizeSet,
   tallyProgress,
   type CorrectionsProgressState,
-  type CorrectionsSummary,
+  type SetSummary,
 } from "@/lib/corrections";
 import { answerToText, correctAnswerText, gradeResponse, type Answer } from "@/lib/grading";
 import { loadGradableQuestions } from "@/lib/queries/attempts";
@@ -54,10 +55,12 @@ async function loadScope(attemptId: string): Promise<Scope | null> {
       reviewMode: schema.assignments.reviewMode,
       retakeThreshold: schema.assignments.retakeThreshold,
       className: schema.classes.name,
+      cvtcRules: schema.courses.cvtcRules,
     })
     .from(schema.assignments)
     .innerJoin(schema.assessments, eq(schema.assignments.assessmentId, schema.assessments.id))
     .innerJoin(schema.classes, eq(schema.assignments.classId, schema.classes.id))
+    .leftJoin(schema.courses, eq(schema.assessments.courseId, schema.courses.id))
     .where(eq(schema.assignments.id, attempt.assignmentId))
     .limit(1);
   if (!asg) return null;
@@ -89,19 +92,12 @@ async function loadScope(attemptId: string): Promise<Scope | null> {
       ? []
       : questionsNeedingCorrection({
           type: asg.type,
-          items: attempt.questionSet.map((s) => {
-            const r = byQ.get(s.questionId);
-            const earned = r ? (r.manualScore ?? r.autoScore) : 0;
-            return {
-              questionId: s.questionId,
-              learningTargetId: s.learningTargetId,
-              points: s.points,
-              earned,
-            };
-          }),
+          items: correctableItems(attempt.questionSet, byQ),
           targetPercents,
           threshold: asg.retakeThreshold,
           optedInTargetIds: optedIn.map((o) => o.learningTargetId),
+          // CVTC rules (Jon, Oct 13 2026): corrections are never owed in such a course.
+          cvtcRules: !!asg.cvtcRules,
         });
   return {
     attempt: {
@@ -112,20 +108,23 @@ async function loadScope(attemptId: string): Promise<Scope | null> {
       assignmentId: attempt.assignmentId,
       questionSet: attempt.questionSet,
     },
-    assignment: asg,
+    assignment: {
+      id: asg.id,
+      title: asg.title,
+      type: asg.type,
+      reviewMode: asg.reviewMode,
+      retakeThreshold: asg.retakeThreshold,
+      className: asg.className,
+    },
     needed,
     responses: byQ,
     targetPercents,
   };
 }
 
-export type CorrectionsSetSummary = CorrectionsSummary & {
+export type CorrectionsSetSummary = SetSummary & {
   attemptId: string;
   attemptNumber: number;
-  /** Needed items with any saved correction (a draft counts), so a set can read "in progress". */
-  started: number;
-  /** The teacher's note on a returned set, if any. */
-  reviewerNote: string | null;
 };
 
 /** The set's state for the student card, the retake gate, and the gradebook. */
@@ -142,17 +141,7 @@ export async function getCorrectionsSummary(
     })
     .from(schema.corrections)
     .where(eq(schema.corrections.attemptId, attemptId));
-  const summary = correctionsSummary(scope.needed, rows);
-  const note = rows.find((r) => r.status === "returned" && r.reviewerNote)?.reviewerNote ?? null;
-  const neededSet = new Set(scope.needed);
-  const started = rows.filter((r) => neededSet.has(r.questionId)).length;
-  return {
-    ...summary,
-    started: Math.min(started, summary.needed),
-    attemptId,
-    attemptNumber: scope.attempt.number,
-    reviewerNote: note,
-  };
+  return { ...summarizeSet(scope.needed, rows), attemptId, attemptNumber: scope.attempt.number };
 }
 
 /** Which questions need a correction and whether each one is settled (used by the actions). */

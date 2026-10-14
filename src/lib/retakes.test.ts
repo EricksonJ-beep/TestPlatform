@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cycleState, gateOpen, planRetake } from "./retakes";
+import { correctionsRule, cycleState, gateOpen, planRetake } from "./retakes";
 
 const open = { correctionsOk: true, activityOk: true, practiceOk: true };
 const closed = { correctionsOk: false, activityOk: true, practiceOk: true };
@@ -141,7 +141,7 @@ describe("cycleState", () => {
     ).toBe("corrections_needed");
     expect(
       cycleState({ ...base, ...f, corrections: "needed", firstPercent: 85, bestPercent: 85 })
-    ).toBe("corrections_optional");
+    ).toBe("corrections_to_full");
     expect(
       cycleState({ ...base, ...f, corrections: "approved", firstPercent: 85, bestPercent: 100 })
     ).toBe("done");
@@ -243,5 +243,125 @@ describe("cycleState", () => {
         needsUnlock: true,
       })
     ).toBe("relearning");
+  });
+});
+
+describe("correctionsRule (Jon, Oct 13 2026)", () => {
+  const f = {
+    type: "formative" as const,
+    capped: true,
+    retakesNeedUnlock: false,
+    cvtcRules: false,
+    threshold: 80,
+  };
+  it("non-CVTC capped formative: at/above the threshold → corrections to 100; below → corrections gate the retake", () => {
+    expect(correctionsRule({ ...f, firstPercent: 85 })).toBe("to_full");
+    expect(correctionsRule({ ...f, firstPercent: 80 })).toBe("to_full");
+    expect(correctionsRule({ ...f, firstPercent: 79.5 })).toBe("gate");
+    expect(correctionsRule({ ...f, firstPercent: null })).toBe("gate");
+    expect(correctionsRule({ ...f, capped: false, firstPercent: 85 })).toBe("gate");
+    expect(correctionsRule({ ...f, type: "summative", capped: false, firstPercent: 85 })).toBe(
+      "gate"
+    );
+  });
+  it("teacher unlocks keep corrections optional (Oct 1); CVTC rules mean none, for every type", () => {
+    // Decision 2 makes no exception for unlocks: at or above the line under the cap it is still
+    // corrections → 100%, never "optional" (this used to read "optional").
+    expect(correctionsRule({ ...f, retakesNeedUnlock: true, firstPercent: 85 })).toBe("to_full");
+    expect(correctionsRule({ ...f, retakesNeedUnlock: true, firstPercent: 50 })).toBe("optional");
+    expect(
+      correctionsRule({ ...f, capped: false, retakesNeedUnlock: true, firstPercent: 85 })
+    ).toBe("optional");
+    for (const type of ["formative", "summative"] as const)
+      for (const retakesNeedUnlock of [false, true])
+        expect(
+          correctionsRule({
+            ...f,
+            type,
+            capped: false,
+            cvtcRules: true,
+            retakesNeedUnlock,
+            firstPercent: 50,
+          })
+        ).toBe("none");
+    expect(correctionsRule({ ...f, type: "practice", capped: false, firstPercent: 50 })).toBe(
+      "none"
+    );
+  });
+});
+
+describe("cycleState with the corrections rule", () => {
+  const f = {
+    type: "formative" as const,
+    attemptsUsed: 1,
+    attemptsAllowed: 3,
+    plan: null,
+    threshold: 80,
+  };
+  it("to_full: the card directs to corrections and never offers a retake", () => {
+    const noRule = { ...f, correctionsCap: true, firstPercent: 85 };
+    const capped = { ...noRule, rule: "to_full" as const };
+    expect(cycleState({ ...capped, corrections: "needed", bestPercent: 85 })).toBe(
+      "corrections_to_full"
+    );
+    expect(cycleState({ ...capped, corrections: "returned", bestPercent: 85 })).toBe(
+      "corrections_returned"
+    );
+    expect(cycleState({ ...capped, corrections: "submitted", bestPercent: 85 })).toBe(
+      "corrections_submitted"
+    );
+    expect(cycleState({ ...capped, corrections: "approved", bestPercent: 100 })).toBe("done");
+    // Nothing to correct yet (an answer still waits for a grade): still no retake.
+    expect(cycleState({ ...capped, corrections: "none", bestPercent: 85 })).toBe("done");
+    // Worked out from the cap inputs when no rule is passed.
+    expect(cycleState({ ...noRule, corrections: "none", bestPercent: 85 })).toBe("done");
+  });
+  it("gate (below the threshold): corrections first, then the retake", () => {
+    const capped = { ...f, correctionsCap: true, firstPercent: 50, rule: "gate" as const };
+    expect(cycleState({ ...capped, corrections: "needed", bestPercent: 50 })).toBe(
+      "corrections_needed"
+    );
+    expect(cycleState({ ...capped, corrections: "approved", bestPercent: 80 })).toBe(
+      "retake_available"
+    );
+  });
+  it("CVTC (none): corrections never hold the card; the retake is the way up, behind the teacher's OK when on", () => {
+    const cvtc = { ...f, correctionsCap: false, firstPercent: 50, rule: "none" as const };
+    expect(cycleState({ ...cvtc, corrections: "needed", bestPercent: 50 })).toBe(
+      "retake_available"
+    );
+    expect(cycleState({ ...cvtc, corrections: "submitted", bestPercent: 50 })).toBe(
+      "retake_available"
+    );
+    expect(cycleState({ ...cvtc, corrections: "needed", bestPercent: 50, needsUnlock: true })).toBe(
+      "awaiting_unlock"
+    );
+    // No cap, so no retake window either.
+    expect(cycleState({ ...cvtc, corrections: "none", bestPercent: 50, windowClosed: true })).toBe(
+      "retake_available"
+    );
+    expect(cycleState({ ...cvtc, corrections: "none", bestPercent: 100 })).toBe("done");
+    expect(
+      cycleState({
+        ...cvtc,
+        type: "summative",
+        corrections: "needed",
+        bestPercent: 50,
+        plan: {
+          required: ["lt4"],
+          optional: [],
+          selected: ["lt4"],
+          locked: [],
+          canStart: true,
+          blocker: null,
+        },
+      })
+    ).toBe("retake_required");
+  });
+  it("optional (teacher unlocks): unchanged, the unlock is the only gate", () => {
+    const unlock = { ...f, correctionsCap: true, firstPercent: 50, rule: "optional" as const };
+    expect(
+      cycleState({ ...unlock, corrections: "needed", bestPercent: 50, needsUnlock: true })
+    ).toBe("awaiting_unlock");
   });
 });

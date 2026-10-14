@@ -10,8 +10,9 @@ const PILL: Record<StudentAssignment["state"], { label: string; className: strin
   upcoming: { label: "Opens soon", className: "bg-muted text-muted-foreground" },
   not_started: { label: "Not started", className: "bg-warning-soft text-warning-foreground" },
   in_progress: { label: "In progress", className: "bg-brand-soft text-brand-deep" },
-  corrections_optional: {
-    label: "Corrections optional",
+  // Jon, Oct 13 2026: at or above the threshold the student is directed here, not told it's optional.
+  corrections_to_full: {
+    label: "Do corrections → 100%",
     className: "bg-brand-soft text-brand-deep",
   },
   corrections_needed: {
@@ -40,14 +41,13 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
   const c = a.corrections;
   const correcting =
     a.state === "corrections_needed" ||
-    a.state === "corrections_optional" ||
+    a.state === "corrections_to_full" ||
     a.state === "corrections_returned" ||
     a.state === "corrections_submitted";
   // Jon, Oct 8 2026: a set the student has started but not finished says so.
   const correctionsStarted =
-    (a.state === "corrections_needed" || a.state === "corrections_optional") &&
-    !!c &&
-    c.started > 0;
+    (a.state === "corrections_needed" || a.state === "corrections_to_full") && !!c && c.started > 0;
+  // Already off in a CVTC course (Jon, Oct 13 2026).
   const capped = a.type === "formative" && a.correctionsCap;
   const windowOpen = a.retakeBy !== null && !a.retakeWindowClosed;
   const pillLabel = correctionsStarted
@@ -69,10 +69,10 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
           label: correctionsStarted ? "Continue corrections" : "Do corrections",
           primary: true,
         };
-      case "corrections_optional":
+      case "corrections_to_full":
         return {
           label: correctionsStarted ? "Continue corrections" : "Do corrections",
-          primary: false,
+          primary: true,
         };
       case "corrections_returned":
         return { label: "Revise corrections", primary: true };
@@ -208,16 +208,18 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
               {correctionsStarted
                 ? `${c.started} of ${c.needed} corrections started`
                 : `Correct ${c.remaining} missed ${c.remaining === 1 ? "question" : "questions"}`}
-              {capped
+              {capped && c.attemptNumber === 1
                 ? ` to bring this up to ${a.retakeThreshold}%`
                 : nextAttempt
                   ? ` to unlock attempt ${a.attemptsUsed + 1}`
                   : ""}
             </span>
-          ) : c && a.state === "corrections_optional" ? (
+          ) : c && a.state === "corrections_to_full" ? (
             <span data-corrections-hint>
-              {correctionsStarted ? `${c.started} of ${c.needed} corrections started · ` : ""}
-              Finish corrections to raise this to 100%
+              {correctionsStarted
+                ? `${c.started} of ${c.needed} corrections started · finish them`
+                : `Correct ${c.remaining} missed ${c.remaining === 1 ? "question" : "questions"}`}{" "}
+              to raise this to 100%
             </span>
           ) : c && a.state === "corrections_returned" ? (
             <span data-corrections-hint>Your teacher sent your corrections back with a note</span>

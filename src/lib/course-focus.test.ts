@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { courseInitials, sectionListPath, splitByCourse } from "./course-focus";
+import { courseInitials, focusQueue, sectionListPath, splitByCourse } from "./course-focus";
 
 describe("sectionListPath", () => {
   it("lands on the section's list from inside an item", () => {
@@ -49,5 +49,24 @@ describe("splitByCourse", () => {
   });
   it("with no current course, everything is mine", () => {
     expect(splitByCourse(items, null)).toEqual({ mine: items, orphans: [], elsewhere: 0 });
+  });
+});
+
+describe("focusQueue", () => {
+  const items = [
+    { id: 1, courseId: "bio", assignmentId: "a1" },
+    { id: 2, courseId: "anat", assignmentId: "a2" },
+    { id: 3, courseId: null, assignmentId: "a3" },
+    { id: 4, courseId: "anat", assignmentId: "a2" },
+  ];
+  it("without a filter, follows the sidebar course and counts the rest", () => {
+    const q = focusQueue(items, { id: "bio" }, null);
+    expect(q.items.map((i) => i.id)).toEqual([1, 3]);
+    expect(q.elsewhere).toBe(2);
+  });
+  it("with ?assignment=, shows that assignment's items even in another course", () => {
+    const q = focusQueue(items, { id: "bio" }, "a2");
+    expect(q.items.map((i) => i.id)).toEqual([2, 4]);
+    expect(q.elsewhere).toBe(0);
   });
 });

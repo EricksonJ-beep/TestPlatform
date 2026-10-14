@@ -40,7 +40,8 @@ export default async function ClassActivityPage({
         </Link>
         <h1 className="mt-2 text-2xl">Activity</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Logins, attempts, corrections, practice, and retake requests. Newest first.
+          Logins, attempts, pauses, corrections, practice, and retake requests in this class. Newest
+          first.
         </p>
       </div>
       <StudentFilter

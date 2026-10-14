@@ -1,10 +1,11 @@
 /**
- * Tier board, relearning monitor, and the dashboard's class-at-a-glance strip
- * (PLAN.md §3.11, Ticket 1.15). Everything derives from what is already
+ * Tier board and relearning monitor (PLAN.md §3.11, Ticket 1.15; the dashboard's
+ * class-at-a-glance strip now lives in the class gradebook's summative column
+ * footers, Oct 13 2026). Everything derives from what is already
  * stored: final scores (tiers, moves), retake gates, corrections, practice
  * attempts, activity completions. Callers pass the guards first.
  */
-import { and, asc, desc, eq, inArray, isNotNull, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNotNull, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { assignmentStatus, type AssignmentStatus } from "@/lib/assignments";
 import { getCorrectionsSummary, latestFinishedAttemptId } from "@/lib/queries/corrections";
@@ -618,58 +619,4 @@ export async function getRelearningMonitor(
     minutesOnTask: attemptMinutes + Math.round(Number(practiceMinutes[0]?.m ?? 0)),
     targets,
   };
-}
-
-// ---------------------------------------------------------------------------
-// Dashboard: class at a glance
-// ---------------------------------------------------------------------------
-
-export type GlanceRow = {
-  assignmentId: string;
-  title: string;
-  className: string;
-  status: AssignmentStatus;
-  counts: { 1: number; 2: number; 3: number };
-  unscored: number;
-  movedUpThisWeek: number;
-};
-
-/** Summatives the teacher owns that have any final score, newest first, for the dashboard strip. */
-export async function getClassGlance(teacherId: string, limit = 6): Promise<GlanceRow[]> {
-  const now = new Date();
-  const asgs = await db
-    .select({
-      id: schema.assignments.id,
-      title: schema.assessments.title,
-      className: schema.classes.name,
-      opensAt: schema.assignments.opensAt,
-      closesAt: schema.assignments.closesAt,
-      enrolled: sql<number>`(select count(*)::int from ${schema.enrollments} e where e.class_id = ${schema.assignments.classId})`,
-      scored: sql<number>`(select count(*)::int from ${schema.assignmentFinalScores} f where f.assignment_id = ${schema.assignments.id} and f.tier is not null)`,
-      t1: sql<number>`(select count(*)::int from ${schema.assignmentFinalScores} f where f.assignment_id = ${schema.assignments.id} and f.tier = 1)`,
-      t2: sql<number>`(select count(*)::int from ${schema.assignmentFinalScores} f where f.assignment_id = ${schema.assignments.id} and f.tier = 2)`,
-      t3: sql<number>`(select count(*)::int from ${schema.assignmentFinalScores} f where f.assignment_id = ${schema.assignments.id} and f.tier = 3)`,
-      moved: sql<number>`(select count(*)::int from ${schema.assignmentFinalScores} f where f.assignment_id = ${schema.assignments.id} and f.previous_tier is not null and f.tier < f.previous_tier and f.tier_changed_at >= ${startOfWeek(now)})`,
-      latest: sql<
-        string | null
-      >`(select max(f.updated_at) from ${schema.assignmentFinalScores} f where f.assignment_id = ${schema.assignments.id})`,
-    })
-    .from(schema.assignments)
-    .innerJoin(schema.assessments, eq(schema.assignments.assessmentId, schema.assessments.id))
-    .innerJoin(schema.classes, eq(schema.assignments.classId, schema.classes.id))
-    .where(and(eq(schema.assignments.ownerId, teacherId), eq(schema.assessments.type, "summative")))
-    .orderBy(desc(schema.assignments.createdAt));
-  return asgs
-    .filter((a) => a.scored > 0)
-    .sort((a, b) => Date.parse(b.latest ?? "0") - Date.parse(a.latest ?? "0"))
-    .slice(0, limit)
-    .map((a) => ({
-      assignmentId: a.id,
-      title: a.title,
-      className: a.className,
-      status: assignmentStatus(a, now),
-      counts: { 1: a.t1, 2: a.t2, 3: a.t3 },
-      unscored: Math.max(0, a.enrolled - a.scored),
-      movedUpThisWeek: a.moved,
-    }));
 }

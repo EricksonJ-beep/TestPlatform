@@ -356,14 +356,14 @@ export function AssignmentDialog({
               key={`u-${assessmentId}`}
               name="retakesNeedUnlock"
               label="Retakes need my OK"
-              help="Each student's next attempt stays locked until you unlock it on the results page. Corrections become optional on this assignment."
+              help="Each student's next attempt stays locked until you unlock it on the results page. Corrections become optional on this assignment, except under the corrections cap at or above the threshold, where they are still the way to 100% and there is no retake."
               defaultChecked={existing?.retakesNeedUnlock ?? false}
             />
             <Toggle
               key={`c-${assessmentId}`}
               name="correctionsCap"
               label="Corrections cap (formatives)"
-              help="Below the threshold: the student must do corrections, and finishing them brings the score up to the threshold. At or above it: corrections are optional and bring the score to 100%. A retake's score stands on its own; the highest counts."
+              help="Below the threshold: the student must do corrections, and finishing them brings the score up to the threshold. At or above it: the student is directed to corrections, which bring the score to 100%, and no retake is offered. A retake's score stands on its own; the highest counts."
               defaultChecked={existing?.correctionsCap ?? true}
             />
             <div className="grid gap-1.5">

@@ -1,10 +1,11 @@
 "use server";
 
-import { and, eq, gt, ne, sql } from "drizzle-orm";
+import { and, eq, gt, isNotNull, isNull, ne, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db, schema } from "@/db";
 import { deleteAttempt as removeAttempt, finalizeAttempt } from "@/lib/attempts";
+import { staleRequest } from "@/lib/needs-you";
 import {
   currentResumeCode,
   issueResumeCode,
@@ -14,6 +15,7 @@ import {
 import {
   ActionError,
   type AttemptAccess,
+  isUuid,
   requireAttemptAccess,
   requireOwner,
   requireTeacher,
@@ -220,6 +222,86 @@ export const revokeAttemptUnlock = withAuthz(async (assignmentId: string, studen
 });
 
 /**
+ * Undo an Approve from the Dashboard (Jon, Oct 13 2026): the unlock for the student's next try
+ * goes back to being their request, so nothing is lost (Decline is the one that can't be undone).
+ * An unlock the student never asked for is removed, as Take back does. Only an unused unlock.
+ */
+export const undoRetakeApproval = withAuthz(async (assignmentId: string, studentId: string) => {
+  await requireOwner({ type: "assignment", id: assignmentId });
+  const { used } = await enrolledStudent(assignmentId, studentId);
+  const unused = and(
+    eq(schema.attemptUnlocks.assignmentId, assignmentId),
+    eq(schema.attemptUnlocks.studentId, studentId),
+    gt(schema.attemptUnlocks.attemptNumber, used),
+    isNotNull(schema.attemptUnlocks.grantedAt)
+  );
+  const restored = await db
+    .update(schema.attemptUnlocks)
+    .set({ grantedAt: null, grantedBy: null })
+    .where(and(unused, isNotNull(schema.attemptUnlocks.requestedAt)))
+    .returning({ id: schema.attemptUnlocks.id });
+  const removed = await db
+    .delete(schema.attemptUnlocks)
+    .where(and(unused, isNull(schema.attemptUnlocks.requestedAt)))
+    .returning({ id: schema.attemptUnlocks.id });
+  if (restored.length + removed.length === 0)
+    throw new ActionError("There's nothing to undo: they may have started that try already.", 409);
+  revalidatePath("/app");
+  revalidatePath(`/app/results/${assignmentId}`);
+  revalidatePath(`/student/assignments/${assignmentId}`);
+  revalidatePath("/student");
+  return { ok: true };
+});
+
+/**
+ * Clear a leftover retake request (Jon, Oct 13 2026, dashboard plan): one that is no longer the
+ * student's next try, sits on a test that no longer needs the teacher's OK, or comes from a
+ * student no longer in the test's class (`staleRequest`).
+ * Nothing else ever deletes those. A current request is refused here: Decline is the way to say
+ * no to it, and it asks first.
+ */
+export const clearRetakeRequest = withAuthz(async (assignmentId: string, requestId: string) => {
+  await requireOwner({ type: "assignment", id: assignmentId });
+  const request = isUuid(requestId)
+    ? await db.query.attemptUnlocks.findFirst({
+        columns: { id: true, studentId: true, attemptNumber: true, grantedAt: true },
+        where: and(
+          eq(schema.attemptUnlocks.id, requestId),
+          eq(schema.attemptUnlocks.assignmentId, assignmentId)
+        ),
+      })
+    : undefined;
+  if (!request || request.grantedAt) throw new ActionError("That request is already gone.", 404);
+  const asg = await db.query.assignments.findFirst({
+    columns: { classId: true, attemptsAllowed: true, retakesNeedUnlock: true },
+    where: eq(schema.assignments.id, assignmentId),
+  });
+  const used = await db.$count(
+    schema.attempts,
+    and(
+      eq(schema.attempts.assignmentId, assignmentId),
+      eq(schema.attempts.studentId, request.studentId)
+    )
+  );
+  // A student moved out of the class keeps their request, and Approve / Decline refuse them.
+  const enrolled = asg
+    ? (await db.$count(
+        schema.enrollments,
+        and(
+          eq(schema.enrollments.classId, asg.classId),
+          eq(schema.enrollments.studentId, request.studentId)
+        )
+      )) > 0
+    : false;
+  if (asg && !staleRequest({ ...asg, attemptNumber: request.attemptNumber, used, enrolled }))
+    throw new ActionError("That request is still current. Approve or decline it.", 409);
+  await db.delete(schema.attemptUnlocks).where(eq(schema.attemptUnlocks.id, request.id));
+  revalidatePath("/app");
+  revalidatePath(`/app/results/${assignmentId}`);
+  return { ok: true };
+});
+
+/**
  * Delete one attempt outright: a student started the test again by accident,
  * or a run needs wiping so they can retake cleanly. Responses and corrections
  * go with it; later attempts renumber; the final score and gates recompute.
@@ -245,7 +327,8 @@ export const letContinue = withAuthz(async (attemptId: string) => {
   if (access.as !== "teacher") throw new ActionError("Teachers only.", 403);
   // An idle test reads as paused before anyone has touched it; settle it first.
   await settleAttempt(attemptId);
-  if (!(await resumeAttempt(attemptId))) throw new ActionError("That test isn't paused.", 409);
+  if (!(await resumeAttempt(attemptId, "teacher")))
+    throw new ActionError("That test isn't paused.", 409);
   revalidate(access.attempt.assignmentId, attemptId);
   return { ok: true };
 });

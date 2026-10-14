@@ -12,6 +12,7 @@ import { buildQuestionSet } from "@/lib/assessments/serve";
 import { attemptDueAt } from "@/lib/assignments";
 import {
   computeFinalScore,
+  correctionsCapOn,
   gradeResponse,
   scoreAttempt,
   type Answer,
@@ -217,7 +218,10 @@ export async function finalizeAttempt(attemptId: string, now = new Date()): Prom
   return score;
 }
 
-/** Highest counts (PLAN.md §2): per target for summatives, best attempt otherwise. */
+/**
+ * Highest counts (PLAN.md §2): per target for summatives, best attempt otherwise; the corrections
+ * cap on formatives, never in a course with CVTC rules (Jon, Oct 13 2026).
+ */
 export async function recomputeFinalScore(assignmentId: string, studentId: string): Promise<void> {
   const [asg] = await db
     .select({
@@ -225,9 +229,11 @@ export async function recomputeFinalScore(assignmentId: string, studentId: strin
       retakeThreshold: schema.assignments.retakeThreshold,
       tier2Max: schema.assignments.tier2Max,
       correctionsCap: schema.assignments.correctionsCap,
+      cvtcRules: schema.courses.cvtcRules,
     })
     .from(schema.assignments)
     .innerJoin(schema.assessments, eq(schema.assignments.assessmentId, schema.assessments.id))
+    .leftJoin(schema.courses, eq(schema.assessments.courseId, schema.courses.id))
     .where(eq(schema.assignments.id, assignmentId))
     .limit(1);
   if (!asg) return;
@@ -275,8 +281,9 @@ export async function recomputeFinalScore(assignmentId: string, studentId: strin
         attempts.map((a) => a.id)
       )
     );
-  // Corrections cap (Jon, Oct 8 2026): attempt 1's finished corrections lift its score.
-  const capped = asg.type === "formative" && asg.correctionsCap;
+  // Corrections cap (Jon, Oct 8 2026): attempt 1's finished corrections lift its score, except in a
+  // course with CVTC rules, where corrections earn no credit (Jon, Oct 13 2026).
+  const capped = correctionsCapOn(asg);
   const firstNumber = Math.min(...attempts.map((a) => a.number));
   let firstApproved = false;
   if (capped) {

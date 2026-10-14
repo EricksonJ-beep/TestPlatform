@@ -6,17 +6,9 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { recomputeGates } from "@/lib/gates";
-import { planRetake, type GateFlags, type RetakePlan } from "@/lib/retakes";
+import { planRetake, retakeTargets, type RetakePlan, type RetakeTarget } from "@/lib/retakes";
 
-export type RetakeTarget = {
-  id: string;
-  code: string;
-  title: string;
-  percent: number;
-  required: boolean;
-  optedIn: boolean;
-  gate: GateFlags & { unlocked: boolean };
-};
+export type { RetakeTarget } from "@/lib/retakes";
 
 export type RetakeStatus = {
   targets: RetakeTarget[];
@@ -36,9 +28,11 @@ export async function getRetakeStatus(
       threshold: schema.assignments.retakeThreshold,
       optionalRetakes: schema.assignments.optionalRetakes,
       attemptsAllowed: schema.assignments.attemptsAllowed,
+      cvtcRules: schema.courses.cvtcRules,
     })
     .from(schema.assignments)
     .innerJoin(schema.assessments, eq(schema.assignments.assessmentId, schema.assessments.id))
+    .leftJoin(schema.courses, eq(schema.assessments.courseId, schema.courses.id))
     .where(eq(schema.assignments.id, assignmentId))
     .limit(1);
   if (!asg || asg.type !== "summative") return null;
@@ -77,27 +71,13 @@ export async function getRetakeStatus(
   ]);
   // Self-heal: a student whose events predate the gate rows gets them computed on first read.
   const gateRows = gates.length ? gates : await recomputeGates(assignmentId, studentId);
-  const gateBy = new Map(gateRows.map((g) => [g.learningTargetId, g]));
-  const targets: RetakeTarget[] = names
-    .sort((a, b) => a.sortOrder - b.sortOrder || a.code.localeCompare(b.code))
-    .map((t) => {
-      const g = gateBy.get(t.id);
-      const percent = final.perTarget[t.id].percent;
-      return {
-        id: t.id,
-        code: t.code,
-        title: t.title,
-        percent,
-        required: percent < asg.threshold,
-        optedIn: g?.optedIn ?? false,
-        gate: {
-          correctionsOk: g?.correctionsOk ?? false,
-          activityOk: g?.activityOk ?? false,
-          practiceOk: g?.practiceOk ?? false,
-          unlocked: !!g?.unlockedAt,
-        },
-      };
-    });
+  const targets = retakeTargets({
+    perTarget: final.perTarget,
+    names,
+    gates: gateRows,
+    threshold: asg.threshold,
+    cvtcRules: !!asg.cvtcRules,
+  });
   const plan = planRetake({
     targets,
     threshold: asg.threshold,

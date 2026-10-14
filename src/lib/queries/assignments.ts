@@ -5,16 +5,11 @@
 import { and, asc, desc, eq, inArray, or, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import type { FinalBasis } from "@/db/schema";
-import {
-  assignmentStatus,
-  needsUnlock,
-  nextAttemptAt,
-  retakeWindowEnd,
-  type AssignmentStatus,
-} from "@/lib/assignments";
+import { assignmentStatus, nextAttemptAt, type AssignmentStatus } from "@/lib/assignments";
+import { deriveCardState, type StudentCardState } from "@/lib/card-state";
 import { getCorrectionsSummary, type CorrectionsSetSummary } from "@/lib/queries/corrections";
 import { getRetakeStatus, type RetakeStatus } from "@/lib/queries/retakes";
-import { cycleState, type CycleState } from "@/lib/retakes";
+import type { CorrectionsRule } from "@/lib/retakes";
 
 export type AssignmentRow = {
   id: string;
@@ -39,6 +34,8 @@ export type AssignmentRow = {
   retakesNeedUnlock: boolean;
   correctionsCap: boolean;
   retakeWindowDays: number;
+  /** The assessment's course has CVTC rules on (Jon, Oct 13 2026): no corrections cap, retakes only. */
+  cvtcRules: boolean;
   createdAt: Date;
   enrolled: number;
   started: number;
@@ -68,6 +65,7 @@ const baseSelect = {
   retakesNeedUnlock: schema.assignments.retakesNeedUnlock,
   correctionsCap: schema.assignments.correctionsCap,
   retakeWindowDays: schema.assignments.retakeWindowDays,
+  cvtcRules: sql<boolean>`coalesce((select c.cvtc_rules from ${schema.courses} c where c.id = ${schema.assessments.courseId}), false)`,
   createdAt: schema.assignments.createdAt,
   enrolled: sql<number>`(select count(*)::int from ${schema.enrollments} e where e.class_id = ${schema.assignments.classId})`,
   started: sql<number>`(select count(distinct a.student_id)::int from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id})`,
@@ -135,7 +133,7 @@ export async function listAssignableAssessments(teacherId: string) {
 // Student side
 // ---------------------------------------------------------------------------
 
-export type StudentCardState = "upcoming" | "not_started" | "in_progress" | "closed" | CycleState;
+export type { StudentCardState } from "@/lib/card-state";
 
 export type StudentAssignment = {
   id: string;
@@ -156,9 +154,16 @@ export type StudentAssignment = {
   retakesNeedUnlock: boolean;
   /** The student has asked for the next attempt and the teacher hasn't answered yet. */
   retakeRequested: boolean;
-  /** Corrections cap (formatives, Jon Oct 8 2026) and the threshold it lifts to. */
+  /**
+   * Corrections cap (formatives, Jon Oct 8 2026) as it applies here (never in a CVTC course), and
+   * the threshold it lifts to.
+   */
   correctionsCap: boolean;
   retakeThreshold: number;
+  /** The course has CVTC rules on (Jon, Oct 13 2026): corrections earn no credit, retakes only. */
+  cvtcRules: boolean;
+  /** What corrections do on this assignment; the card and `startAttempt` both follow it. */
+  correctionsRule: CorrectionsRule;
   /** Under the cap: the last moment a retake may start; null before attempt 1 or with no window. */
   retakeBy: Date | null;
   /** `retakeBy` has passed (decided server-side so the cards never read the clock while rendering). */
@@ -216,6 +221,7 @@ export async function listStudentAssignments(
       correctionsCap: schema.assignments.correctionsCap,
       retakeWindowDays: schema.assignments.retakeWindowDays,
       retakeThreshold: schema.assignments.retakeThreshold,
+      cvtcRules: schema.courses.cvtcRules,
       firstSubmittedAt: sql<Date | null>`(select min(a.submitted_at) from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status <> 'in_progress')`,
       firstPercent: sql<
         number | null
@@ -245,6 +251,7 @@ export async function listStudentAssignments(
     .innerJoin(schema.assessments, eq(schema.assignments.assessmentId, schema.assessments.id))
     .innerJoin(schema.classes, eq(schema.assignments.classId, schema.classes.id))
     .innerJoin(schema.users, eq(schema.assignments.ownerId, schema.users.id))
+    .leftJoin(schema.courses, eq(schema.assessments.courseId, schema.courses.id))
     .where(inArray(schema.assignments.classId, classIds))
     .orderBy(asc(schema.assignments.closesAt), desc(schema.assignments.createdAt));
 
@@ -255,7 +262,8 @@ export async function listStudentAssignments(
     rows.map(async (r) => {
       if (r.type === "practice" || !r.latestAttemptId) return;
       const [s, rt] = await Promise.all([
-        getCorrectionsSummary(r.latestAttemptId),
+        // CVTC rules (Jon, Oct 13 2026): nothing is ever in corrections scope there.
+        r.cvtcRules ? null : getCorrectionsSummary(r.latestAttemptId),
         r.type === "summative" ? getRetakeStatus(r.id, studentId) : null,
       ]);
       if (s && s.state !== "none") summaries.set(r.id, s);
@@ -278,45 +286,43 @@ export async function listStudentAssignments(
         retakeWindowDays,
         unlockedThrough,
         requestedThrough,
+        correctionsCap,
+        cvtcRules: cvtcRaw,
         ...r
       }): StudentAssignment => {
-        const status = assignmentStatus(r, now);
         const next = nextAttemptAt(
           r.retakeWaitHours,
           lastSubmittedAt ? new Date(lastSubmittedAt) : null
         );
         const corrections = summaries.get(r.id) ?? null;
         const retake = retakes.get(r.id) ?? null;
-        const bestPercent = r.bestPercent === null ? null : Number(r.bestPercent);
-        // Corrections cap (Jon, Oct 8 2026): formatives only; the window counts from attempt 1.
-        const capped = r.type === "formative" && r.correctionsCap;
+        const cvtcRules = !!cvtcRaw;
         const firstPercent = firstPercentRaw === null ? null : Number(firstPercentRaw);
         const finalPct = finalPercent === null ? null : Number(finalPercent);
-        const retakeBy = capped
-          ? retakeWindowEnd(retakeWindowDays, firstSubmittedAt ? new Date(firstSubmittedAt) : null)
-          : null;
-        let state: StudentCardState;
-        if (status === "scheduled") state = "upcoming";
-        // A test still in progress stays reachable after the window closes: it pauses and is
-        // finished in class with the teacher's resume code (Finish later, Oct 13 2026).
-        else if (r.inProgressAttemptId) state = "in_progress";
-        else if (status === "closed") state = "closed";
-        else if (r.attemptsUsed > 0)
-          state = cycleState({
+        // Who owes what (Jon, Oct 13 2026): the same rule the teacher's class gradebook reads.
+        const { status, state, capped, rule, retakeBy, windowClosed } = deriveCardState(
+          {
             type: r.type,
-            // Rule (Jon, Oct 1 2026): with teacher unlocks on, corrections never gate the retake.
-            corrections: r.retakesNeedUnlock ? "none" : (corrections?.state ?? "none"),
-            attemptsUsed: r.attemptsUsed,
+            opensAt: r.opensAt,
+            closesAt: r.closesAt,
             attemptsAllowed: r.attemptsAllowed,
-            bestPercent: capped && finalPct !== null ? finalPct : bestPercent,
-            plan: retake?.plan ?? null,
-            needsUnlock: r.retakesNeedUnlock && needsUnlock(r.attemptsUsed, unlockedThrough),
-            correctionsCap: capped,
+            retakeThreshold: r.retakeThreshold,
+            retakesNeedUnlock: r.retakesNeedUnlock,
+            correctionsCap,
+            retakeWindowDays,
+            cvtcRules,
+            attemptsUsed: r.attemptsUsed,
+            inProgress: !!r.inProgressAttemptId,
+            unlockedThrough,
             firstPercent,
-            threshold: r.retakeThreshold,
-            windowClosed: retakeBy !== null && now >= retakeBy,
-          });
-        else state = "not_started";
+            firstSubmittedAt: firstSubmittedAt ? new Date(firstSubmittedAt) : null,
+            bestPercent: r.bestPercent === null ? null : Number(r.bestPercent),
+            finalPercent: finalPct,
+            corrections: corrections?.state ?? "none",
+            plan: retake?.plan ?? null,
+          },
+          now
+        );
         return {
           ...r,
           needsCode: !!accessCode,
@@ -325,8 +331,11 @@ export async function listStudentAssignments(
           corrections,
           retake,
           retakeBy,
-          retakeWindowClosed: retakeBy !== null && now >= retakeBy,
+          retakeWindowClosed: windowClosed,
           firstPercent,
+          correctionsCap: capped,
+          cvtcRules,
+          correctionsRule: rule,
           final: finalPct === null ? null : { percent: finalPct, basis: finalBasis ?? null },
           paused: !!r.inProgressAttemptId && !!r.inProgressPaused,
           progress: r.inProgressAttemptId

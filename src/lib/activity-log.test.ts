@@ -12,6 +12,8 @@ vi.mock("@/db", async () => {
 
 import { db, schema } from "@/db";
 import {
+  activityLine,
+  activityScore,
   describeActivity,
   listClassActivity,
   listRecentActivity,
@@ -126,9 +128,13 @@ describe("activity log", () => {
   it("describes each kind in plain language", () => {
     const base = { assignmentTitle: "Lab Quiz: Skin", detail: {} };
     expect(describeActivity({ ...base, kind: "login" })).toBe("Logged in");
+    // Oct 13 2026 (dashboard plan build step 5): a second or later try reads as a retake.
     expect(
       describeActivity({ ...base, kind: "attempt_started", detail: { attemptNumber: 2 } })
-    ).toBe("Started attempt 2 on Lab Quiz: Skin");
+    ).toBe("Started retake (try 2) on Lab Quiz: Skin");
+    expect(
+      describeActivity({ ...base, kind: "attempt_started", detail: { attemptNumber: 1 } })
+    ).toBe("Started attempt 1 on Lab Quiz: Skin");
     expect(
       describeActivity({
         ...base,
@@ -136,6 +142,16 @@ describe("activity log", () => {
         detail: { attemptNumber: 2, percent: 79.6 },
       })
     ).toBe("Submitted attempt 2 on Lab Quiz: Skin · 80%");
+    // "Hide scores" on the Dashboard (decision 6) drops the score and keeps the line.
+    const submitted = {
+      ...base,
+      kind: "attempt_submitted" as const,
+      detail: { attemptNumber: 2, percent: 79.6 },
+    };
+    expect(activityLine(submitted)).toBe("Submitted attempt 2 on Lab Quiz: Skin");
+    expect(activityScore(submitted)).toBe(" · 80%");
+    expect(activityScore({ ...submitted, detail: { percent: null } })).toBeNull();
+    expect(activityScore({ ...base, kind: "attempt_started", detail: { percent: 50 } })).toBeNull();
     expect(
       describeActivity({ ...base, kind: "attempt_submitted", detail: { percent: null } })
     ).toBe("Submitted attempt on Lab Quiz: Skin");
@@ -159,6 +175,25 @@ describe("activity log", () => {
     expect(
       describeActivity({ ...base, kind: "retake_requested", detail: { attemptNumber: 3 } })
     ).toBe("Asked for attempt 3 on Lab Quiz: Skin");
+    // Finish later's milestones (Oct 13 2026).
+    expect(describeActivity({ ...base, kind: "test_paused", detail: { reason: "student" } })).toBe(
+      "Chose Finish later on Lab Quiz: Skin"
+    );
+    expect(describeActivity({ ...base, kind: "test_paused", detail: { reason: "idle" } })).toBe(
+      "Paused on Lab Quiz: Skin after 10 idle minutes"
+    );
+    expect(describeActivity({ ...base, kind: "test_paused", detail: { reason: "closed" } })).toBe(
+      "Paused on Lab Quiz: Skin when it closed"
+    );
+    expect(describeActivity({ ...base, kind: "resume_requested" })).toBe(
+      "Asked to finish Lab Quiz: Skin"
+    );
+    expect(describeActivity({ ...base, kind: "resumed", detail: { by: "code" } })).toBe(
+      "Resumed Lab Quiz: Skin with the resume code"
+    );
+    expect(describeActivity({ ...base, kind: "resumed", detail: { by: "teacher" } })).toBe(
+      "Resumed Lab Quiz: Skin (you let them continue)"
+    );
   });
   it("never throws on a bad write", async () => {
     await expect(logActivity({ userId: "not-a-uuid", kind: "login" })).resolves.toBeUndefined();
