@@ -227,6 +227,57 @@ describe("students", () => {
     );
   });
 
+  it("rename gives a username student a matching new username; a capitalization fix keeps it", async () => {
+    asUser(ids.teacherA, "teacher");
+    const [blake, other] = await db
+      .insert(schema.users)
+      .values([
+        {
+          username: "blake.raycher",
+          passwordHash: "x",
+          role: "student",
+          firstName: "Blake",
+          lastName: "Raycher",
+        },
+        {
+          username: "blade.raycher",
+          passwordHash: "x",
+          role: "student",
+          firstName: "Blade",
+          lastName: "Raycher",
+        },
+      ])
+      .returning();
+    const cls = await createClass(fd({ name: "Rename" }));
+    if (!cls.ok) throw new Error("class");
+    const classId = cls.data.classId;
+    await db.insert(schema.enrollments).values({ classId, studentId: blake.id });
+
+    // The plain base is taken by someone else, so the next free one is used.
+    const r = await renameStudent(
+      classId,
+      blake.id,
+      fd({ firstName: "Blade", lastName: "Raycher" })
+    );
+    expect(r).toMatchObject({
+      ok: true,
+      data: { username: "blade.raycher2", usernameChanged: true },
+    });
+
+    const r2 = await renameStudent(
+      classId,
+      blake.id,
+      fd({ firstName: "BLADE", lastName: "raycher" })
+    );
+    expect(r2).toMatchObject({
+      ok: true,
+      data: { username: "blade.raycher2", usernameChanged: false },
+    });
+    const after = await db.query.users.findFirst({ where: eq(schema.users.id, blake.id) });
+    expect(after).toMatchObject({ firstName: "BLADE", username: "blade.raycher2" });
+    expect(other.username).toBe("blade.raycher");
+  });
+
   it("cannot reset a student who is not in the class", async () => {
     asUser(ids.teacherA, "teacher");
     const r2 = await createClass(fd({ name: "Empty" }));
