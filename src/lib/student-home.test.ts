@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { StudentAssignment } from "@/lib/queries/assignments";
-import { sectionAssessments, sectionOf } from "./student-home";
+import { correctionsToDo, sectionAssessments, sectionOf } from "./student-home";
 
 const a = (
   title: string,
@@ -45,5 +45,30 @@ describe("student home sections", () => {
     expect(s.needs_you.map((x) => x.title)).toEqual(["Unit 2 Test", "Unit 2 Quiz: Carbohydrates"]);
     expect(s.waiting.map((x) => x.title)).toEqual(["Element quiz", "Lab safety"]);
     expect(s.closed.map((x) => x.title)).toEqual(["Unit 2 LT1 Quiz", "Unit 1 Test"]);
+  });
+
+  it("lists owed corrections for the banner: below the threshold first, lowest score first", () => {
+    const owed = (title: string, state: StudentAssignment["state"], best: number | null) =>
+      ({
+        ...a(title, state, "2026-10-10T16:05:00Z"),
+        resultsReleased: true,
+        bestPercent: best,
+        final: null,
+        retakeThreshold: 80,
+        corrections: { attemptId: title } as StudentAssignment["corrections"],
+      }) as StudentAssignment;
+    const list = [
+      owed("Atoms quiz", "corrections_to_full", 85),
+      owed("Unit 2 Quiz: Carbohydrates", "corrections_needed", 10),
+      owed("Lipids quiz", "corrections_returned", 60),
+      owed("Waiting on teacher", "corrections_submitted", 30),
+      owed("Done", "done", 100),
+      { ...owed("No set", "corrections_needed", 50), corrections: null },
+    ];
+    expect(correctionsToDo(list).map((x) => x.title)).toEqual([
+      "Unit 2 Quiz: Carbohydrates",
+      "Lipids quiz",
+      "Atoms quiz",
+    ]);
   });
 });

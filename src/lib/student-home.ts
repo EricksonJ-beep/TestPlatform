@@ -65,3 +65,24 @@ export const TYPE_LABEL: Record<StudentAssignment["type"], string> = {
   formative: "Formative",
   summative: "Summative",
 };
+
+/** The corrections states where the next move is the student's (the home's "Corrections to do" banner). */
+const OWES_CORRECTIONS = new Set<StudentCardState>([
+  "corrections_needed",
+  "corrections_to_full",
+  "corrections_returned",
+]);
+
+/**
+ * Corrections the student owes, for the banner at the top of their home (Jon, Oct 14 2026:
+ * "almost like an advertisement… especially when they got below an 80 percent"). Below the
+ * threshold first, then the lowest score, then soonest due.
+ */
+export function correctionsToDo(list: StudentAssignment[]): StudentAssignment[] {
+  const score = (a: StudentAssignment) =>
+    a.resultsReleased ? (a.final?.percent ?? a.bestPercent ?? 0) : 0;
+  const below = (a: StudentAssignment) => (score(a) < a.retakeThreshold ? 0 : 1);
+  return list
+    .filter((a) => OWES_CORRECTIONS.has(a.state) && a.corrections)
+    .sort((a, b) => below(a) - below(b) || score(a) - score(b) || byDue(a, b));
+}

@@ -14,7 +14,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AssignmentCard } from "./assignment-card";
 import { PracticeTab } from "./practice-tab";
 import { ResultsTab } from "./results-tab";
-import { SECTION_TITLE, sectionAssessments } from "@/lib/student-home";
+import { CorrectionsBanner } from "./corrections-banner";
+import { SECTION_TITLE, correctionsToDo, sectionAssessments } from "@/lib/student-home";
 
 export default async function StudentHome() {
   const session = await requireStudent();
@@ -43,6 +44,7 @@ export default async function StudentHome() {
       a.state === "retake_required"
   ).length;
   const sections = sectionAssessments(assignments);
+  const corrections = correctionsToDo(assignments);
 
   return (
     <div className="flex flex-col gap-5">
@@ -96,6 +98,8 @@ export default async function StudentHome() {
           <span className="font-medium">Change it →</span>
         </Link>
       ) : null}
+
+      <CorrectionsBanner items={corrections} />
 
       <Tabs defaultValue="assessments">
         <TabsList className="w-full justify-start sm:w-auto">

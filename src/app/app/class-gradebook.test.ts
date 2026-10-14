@@ -520,7 +520,8 @@ describe("getClassGradebook", () => {
       Dee: "Missing",
       Hal: "Missing",
     });
-    expect(cellOf(gb, "Ava", "closedQuiz")).toMatchObject({ card: "closed" });
+    // Her own card agrees: owed corrections stay in Needs you after the close (Jon, Oct 14 2026).
+    expect(cellOf(gb, "Ava", "closedQuiz")).toMatchObject({ card: "corrections_needed" });
     expect(labels["Unit 2 test"]).toMatchObject({
       Ava: "Retake needed (LT3) · closed",
       Ben: "Missing",
