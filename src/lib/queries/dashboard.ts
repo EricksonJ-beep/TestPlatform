@@ -203,17 +203,10 @@ export async function listRetakeRequests(
     if (!stale) {
       // The cap's retake window applies only where the cap does (never in a CVTC course).
       const capped = correctionsCapOn(r);
-      blocker = requestBlocker({
-        assignment: { ...r, retakeWindowDays: capped ? r.retakeWindowDays : null },
-        used: r.used,
-        lastSubmittedAt: asDate(r.lastSubmittedAt),
-        firstSubmittedAt: asDate(r.firstSubmittedAt),
-        now,
-      });
       // At or above the line under the cap, corrections are the way up and `startAttempt`
-      // refuses any retake (decision 2), so an approval would unlock nothing.
-      if (
-        !blocker &&
+      // refuses any retake (decision 2), so an approval would unlock nothing. That outlasts a
+      // wait, a window or a closed test, so it is named ahead of them.
+      blocker =
         correctionsRule({
           type: r.type,
           capped,
@@ -222,8 +215,14 @@ export async function listRetakeRequests(
           firstPercent: r.firstPercent === null ? null : Number(r.firstPercent),
           threshold: r.retakeThreshold,
         }) === "to_full"
-      )
-        blocker = { reason: "no_retake" };
+          ? { reason: "no_retake" }
+          : requestBlocker({
+              assignment: { ...r, retakeWindowDays: capped ? r.retakeWindowDays : null },
+              used: r.used,
+              lastSubmittedAt: asDate(r.lastSubmittedAt),
+              firstSubmittedAt: asDate(r.firstSubmittedAt),
+              now,
+            });
     }
     return { r, stale, blocker };
   });

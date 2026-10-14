@@ -102,7 +102,8 @@ export type ClassGradebookCell = {
   /**
    * "Retakes need my OK": the student's next try and where it stands (locked, asked for, or
    * unlocked by the teacher), for the cell panel's Approve / Decline, Unlock try N, Take back.
-   * Null when the setting is off, before attempt 1, while an attempt is open, or with no try left.
+   * Null when the setting is off, before attempt 1, while an attempt is open, or with no try left;
+   * also when `rule` is "to_full" (no retake at their score) and nothing was asked for or unlocked.
    */
   unlock: UnlockState | null;
   /** Under the cap: the last moment a retake may start. */
@@ -507,6 +508,9 @@ export async function getClassGradebook(
           enrolled: true,
         }) === null
     );
+    // At or above the line under the cap, corrections are the way up and `startAttempt` refuses
+    // any retake (decision 2), whatever the teacher unlocks: the inbox's "No retake at their score".
+    const noRetake = card.rule === "to_full";
     // Approved, but something else still stops the try (checked the way `startAttempt` checks).
     let unlockedBlocker: RequestBlocker | null = null;
     const nextUnlocked =
@@ -515,7 +519,8 @@ export async function getClassGradebook(
       !open &&
       unlockedThrough >= used + 1 &&
       (a.attemptsAllowed === null || used < a.attemptsAllowed);
-    if (nextUnlocked) {
+    if (nextUnlocked && noRetake) unlockedBlocker = { reason: "no_retake" };
+    else if (nextUnlocked) {
       unlockedBlocker = requestBlocker({
         assignment: { ...a, retakeWindowDays: card.capped ? a.retakeWindowDays : null },
         used,
@@ -527,19 +532,20 @@ export async function getClassGradebook(
       if (!unlockedBlocker && plan?.blocker && plan.blocker !== "no_attempts")
         unlockedBlocker = { reason: plan.blocker };
     }
-    // The next try under "Retakes need my OK", as the results table offers it (Oct 1 2026).
+    // The next try under "Retakes need my OK", as the results table offers it (Oct 1 2026). With
+    // no retake at their score there is nothing to unlock early; a request or an unlock already
+    // there stays, so the teacher can still answer it or take it back.
     const next = used + 1;
     const nextRow = pairUnlocks.find((u) => u.attemptNumber === next) ?? null;
+    const unlockState: UnlockState["state"] =
+      unlockedThrough >= next ? "unlocked" : requested ? "requested" : "locked";
     const unlock: UnlockState | null =
       a.retakesNeedUnlock &&
       used > 0 &&
       !open &&
-      (a.attemptsAllowed === null || next <= a.attemptsAllowed)
-        ? {
-            attemptNumber: next,
-            state: unlockedThrough >= next ? "unlocked" : requested ? "requested" : "locked",
-            requestedAt: nextRow?.requestedAt ?? null,
-          }
+      (a.attemptsAllowed === null || next <= a.attemptsAllowed) &&
+      !(noRetake && unlockState === "locked")
+        ? { attemptNumber: next, state: unlockState, requestedAt: nextRow?.requestedAt ?? null }
         : null;
     const selected = new Set(retake?.plan.selected ?? []);
     const activitiesToCheck = new Set(

@@ -532,6 +532,73 @@ describe("getClassGradebook", () => {
     expect(new Set(Object.values(labels["Unit 4 quiz"]))).toEqual(new Set(["Opens Oct 15"]));
   });
 
+  it("offers no retake unlock at or above the line under the cap, as startAttempt refuses one (decision 2)", async () => {
+    // Osmosis quiz is capped (the default) with "Retakes need my OK": lift attempt 1 over 80.
+    const firsts = await db
+      .select({ id: schema.attempts.id, studentId: schema.attempts.studentId })
+      .from(schema.attempts)
+      .where(and(eq(schema.attempts.assignmentId, ids.asg.okQuiz), eq(schema.attempts.number, 1)));
+    const calTry = firsts.find((f) => f.studentId === st("Cal"))!.id;
+    const calMissed = await db
+      .select({ questionId: schema.responses.questionId })
+      .from(schema.responses)
+      .where(and(eq(schema.responses.attemptId, calTry), eq(schema.responses.autoScore, 0)));
+    for (const f of firsts)
+      await db.update(schema.attempts).set({ percent: 85 }).where(eq(schema.attempts.id, f.id));
+    // Cal has nothing to correct: 100%, so his card is Done with the try 2 unlock still there.
+    await db.update(schema.attempts).set({ percent: 100 }).where(eq(schema.attempts.id, calTry));
+    await db
+      .update(schema.responses)
+      .set({ autoScore: 1 })
+      .where(eq(schema.responses.attemptId, calTry));
+    try {
+      const gb = (await getClassGradebook(ids.cls))!;
+      const fmt = { time: () => "2:15", date: () => "Oct 15" };
+      const [ava, ben, cal] = (["Ava", "Ben", "Cal"] as const).map((n) => cellOf(gb, n, "okQuiz"));
+      for (const c of [ava, ben, cal]) expect(c.rule).toBe("to_full");
+      // Nothing asked for or unlocked: no "Unlock try 2" for a try that can never start.
+      expect(ben.unlock).toBeNull();
+      expect(tagLabel(ben.tag, fmt)).toBe("Corrections → 100%");
+      // A request already made still gets an answer (the panel adds the inbox's note).
+      expect(ava.unlock).toMatchObject({ attemptNumber: 2, state: "requested" });
+      expect(tagLabel(ava.tag, fmt)).toBe("Retake request");
+      const inboxRow = (await getNeedsYou(ids.teacher)).requests.find(
+        (r) => r.assignmentId === ids.asg.okQuiz && r.studentId === st("Ava")
+      );
+      expect(inboxRow).toMatchObject({ stale: null, blocker: { reason: "no_retake" } });
+      // An unlock already given can be taken back, and the tag names the real blocker, not the wait.
+      expect(cal.unlock).toMatchObject({ attemptNumber: 2, state: "unlocked" });
+      expect(cal.tag.blocker).toEqual({ reason: "no_retake" });
+      expect(tagLabel(cal.tag, fmt)).toBe("Unlocked · no retake at their score");
+      // With the wait gone too, the student's start is refused for exactly that reason.
+      await db
+        .update(schema.assignments)
+        .set({ retakeWaitHours: 0 })
+        .where(eq(schema.assignments.id, ids.asg.okQuiz));
+      as(st("Cal"), "student");
+      const refused = await startAttempt(ids.asg.okQuiz, null);
+      expect(refused).toMatchObject({ ok: false, status: 403 });
+      expect(!refused.ok && refused.error).toMatch(/retake/);
+    } finally {
+      await db
+        .update(schema.assignments)
+        .set({ retakeWaitHours: 24 })
+        .where(eq(schema.assignments.id, ids.asg.okQuiz));
+      for (const f of firsts)
+        await db.update(schema.attempts).set({ percent: 60 }).where(eq(schema.attempts.id, f.id));
+      for (const m of calMissed)
+        await db
+          .update(schema.responses)
+          .set({ autoScore: 0 })
+          .where(
+            and(
+              eq(schema.responses.attemptId, calTry),
+              eq(schema.responses.questionId, m.questionId)
+            )
+          );
+    }
+  });
+
   it("never reads a test whose time ran out (and was left open) as Taking it", async () => {
     const calLive = cellOf((await getClassGradebook(ids.cls))!, "Cal", "quiz").openAttemptId!;
     const [before] = await db

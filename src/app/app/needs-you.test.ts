@@ -354,17 +354,27 @@ describe("Needs you", () => {
         and(eq(schema.attempts.assignmentId, ids.bioQuiz), eq(schema.attempts.studentId, ids.cal))
       )
       .returning();
-    await db
-      .update(schema.assignments)
-      .set({ retakeWaitHours: 0 })
-      .where(eq(schema.assignments.id, ids.bioQuiz));
-    const cal = (await getNeedsYou(ids.teacher)).requests.find((r) => r.id === ids.calRequest)!;
-    expect(cal).toMatchObject({ stale: null, blocker: { reason: "no_retake" } });
-    await db.update(schema.attempts).set({ percent: 60 }).where(eq(schema.attempts.id, calTry.id));
-    await db
-      .update(schema.assignments)
-      .set({ retakeWaitHours: 24 })
-      .where(eq(schema.assignments.id, ids.bioQuiz));
+    const calBlocker = async () =>
+      (await getNeedsYou(ids.teacher)).requests.find((r) => r.id === ids.calRequest)!;
+    try {
+      // Named ahead of the 24-hour wait, which passes while "no retake" never does.
+      expect(await calBlocker()).toMatchObject({ stale: null, blocker: { reason: "no_retake" } });
+      // ...and ahead of a closed test.
+      await db
+        .update(schema.assignments)
+        .set({ closesAt: minutesAgo(1) })
+        .where(eq(schema.assignments.id, ids.bioQuiz));
+      expect((await calBlocker()).blocker).toEqual({ reason: "no_retake" });
+    } finally {
+      await db
+        .update(schema.attempts)
+        .set({ percent: 60 })
+        .where(eq(schema.attempts.id, calTry.id));
+      await db
+        .update(schema.assignments)
+        .set({ closesAt: null })
+        .where(eq(schema.assignments.id, ids.bioQuiz));
+    }
   });
 
   it("a closed test shows as the blocker on a current request", async () => {

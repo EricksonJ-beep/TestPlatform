@@ -24,7 +24,7 @@ vi.mock("@/db", async () => {
 import { and, eq } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { finalizeAttempt } from "@/lib/attempts";
-import { settleCvtcLeftovers } from "@/lib/cvtc";
+import { settleCvtcLeftovers, settlesOnThisDeploy } from "@/lib/cvtc";
 import { listStudentAssignments } from "@/lib/queries/assignments";
 import { getCorrectionsSummary } from "@/lib/queries/corrections";
 import { getRetakeStatus } from "@/lib/queries/retakes";
@@ -402,5 +402,13 @@ describe("the course setting", () => {
     });
     expect(await settleCvtcLeftovers()).toBe(0); // nothing left: cheap on every later deploy
     await db.update(schema.courses).set({ cvtcRules: false }).where(eq(schema.courses.id, ids.bio));
+  });
+
+  it("settles on a production deploy or by hand, never on a preview build (shared live database)", () => {
+    expect(settlesOnThisDeploy("production")).toBe(true);
+    expect(settlesOnThisDeploy(undefined)).toBe(true); // by hand, or a plain local build
+    expect(settlesOnThisDeploy("")).toBe(true);
+    expect(settlesOnThisDeploy("preview")).toBe(false);
+    expect(settlesOnThisDeploy("development")).toBe(false);
   });
 });

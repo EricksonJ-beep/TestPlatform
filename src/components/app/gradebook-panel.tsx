@@ -22,6 +22,7 @@ import type {
   ClassGradebookColumn,
   UnlockState,
 } from "@/lib/queries/class-gradebook";
+import { BLOCKER_LINE } from "@/lib/needs-you";
 import { LocalTime } from "@/components/local-time";
 import { Button } from "@/components/ui/button";
 import {
@@ -189,7 +190,12 @@ function CellPanel({
       <div className="flex flex-col gap-2 px-4" data-cell-actions>
         {open?.paused ? <LetContinueButton attemptId={open.id} asked={!!open.askedAt} /> : null}
         {cell.unlock ? (
-          <UnlockControls assignmentId={cell.assignmentId} student={student} unlock={cell.unlock} />
+          <UnlockControls
+            assignmentId={cell.assignmentId}
+            student={student}
+            unlock={cell.unlock}
+            noRetake={cell.rule === "to_full"}
+          />
         ) : null}
         <div className="flex flex-wrap gap-2">
           {checkCorrections ? (
@@ -304,16 +310,19 @@ function AttemptChip({
  * "Retakes need my OK" for this student's next try (Jon, Oct 1 2026; inbox rules Oct 13): Approve
  * keeps an undo (Take back turns the unlock back into their request, `undoRetakeApproval`);
  * Decline asks first, because only the student can ask again; an unasked try can be unlocked
- * early (Ready, needs your OK) and taken back.
+ * early (Ready, needs your OK) and taken back. At or above the line under the cap (`noRetake`)
+ * the inbox's note says why no try will start, whatever is approved.
  */
 function UnlockControls({
   assignmentId,
   student,
   unlock,
+  noRetake,
 }: {
   assignmentId: string;
   student: Student;
   unlock: UnlockState;
+  noRetake: boolean;
 }) {
   // Unlock, Decline and Take back all revalidate /app, which re-renders the Dashboard in place.
   const { run, pending, error } = useAction({ refresh: false });
@@ -404,6 +413,12 @@ function UnlockControls({
           </Button>
         )}
       </span>
+      {noRetake ? (
+        <span className="inline-flex items-center gap-1 text-xs text-warning-foreground">
+          <Clock className="size-3.5" aria-hidden />
+          {BLOCKER_LINE.no_retake}
+        </span>
+      ) : null}
       {error ? <span className="text-xs text-error-foreground">{error}</span> : null}
     </div>
   );

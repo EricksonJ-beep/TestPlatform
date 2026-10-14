@@ -56,6 +56,15 @@ export async function recomputeCourseRules(courseId: string): Promise<number> {
 }
 
 /**
+ * Rule: the after-deploy settle runs on a production deploy, or by hand (VERCEL_ENV unset), never
+ * on a preview build. Previews share the live database while production may still run code that
+ * lifts these scores, so a preview settle would rewrite live grades back and forth on every push.
+ */
+export function settlesOnThisDeploy(vercelEnv: string | undefined): boolean {
+  return !vercelEnv?.trim() || vercelEnv === "production";
+}
+
+/**
  * After a deploy: every counting score in a course with CVTC rules on that still carries a
  * corrections lift (basis `corrections_to_threshold` / `corrections_to_full`, earned before the
  * rules came on, as migration 0027 turned them on without recomputing) is recomputed now, rather
