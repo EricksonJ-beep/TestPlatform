@@ -93,7 +93,10 @@ export default async function StudentAssignmentPage({
         </p>
       </div>
 
-      {a.retake && a.attemptsUsed > 0 && a.state !== "in_progress" ? (
+      {a.retake &&
+      a.attemptsUsed > 0 &&
+      a.state !== "in_progress" &&
+      a.state !== "awaiting_grade" ? (
         <section className="rounded-lg border border-border bg-card px-4 py-3" data-retake-panel>
           <h2 className="mb-2 text-sm font-medium">Retake by learning target</h2>
           <RetakePicker
@@ -107,6 +110,15 @@ export default async function StudentAssignmentPage({
       {a.state === "upcoming" ? (
         <p className="rounded-lg border border-border bg-card px-4 py-3 text-sm">
           This opens <LocalTime date={a.opensAt} />. Check back then.
+        </p>
+      ) : a.state === "awaiting_grade" ? (
+        <p
+          className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3 text-sm"
+          data-awaiting-grade
+        >
+          <Clock className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+          Waiting for your grade. Your teacher is grading your written answers; your score and
+          what&apos;s next show up here once they&apos;re done.
         </p>
       ) : c && correctionsBlock && a.state !== "in_progress" ? (
         <div

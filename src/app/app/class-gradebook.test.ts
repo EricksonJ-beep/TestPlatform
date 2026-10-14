@@ -529,6 +529,8 @@ describe("getClassGradebook", () => {
     expect(labels["Skin quiz"]).toMatchObject({ Ava: "Can retake", Ben: "Not started" });
     expect(cellOf(gb, "Ava", "apQuiz")).toMatchObject({ rule: "none", corrections: null });
     expect(labels["Lab write-up"]).toMatchObject({ Ben: "To grade (1)", Ava: "Not started" });
+    // Ben's own card waits for the grade (Jon, Oct 14 2026); the teacher's cell says To grade.
+    expect(cellOf(gb, "Ben", "essayQuiz")).toMatchObject({ card: "awaiting_grade" });
     expect(new Set(Object.values(labels["Unit 4 quiz"]))).toEqual(new Set(["Opens Oct 15"]));
   });
 

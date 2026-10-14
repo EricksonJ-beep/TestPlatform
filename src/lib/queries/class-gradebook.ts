@@ -482,6 +482,7 @@ export async function getClassGradebook(
         cvtcRules,
         attemptsUsed: used,
         inProgress: !!open,
+        awaitingGrade: finished.some((x) => x.status === "submitted"),
         unlockedThrough,
         firstPercent: finished[0]?.percent ?? null,
         firstSubmittedAt,

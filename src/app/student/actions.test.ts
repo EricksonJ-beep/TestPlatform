@@ -25,6 +25,7 @@ import { listStudentAssignments } from "@/lib/queries/assignments";
 import { getRunnerPayload, listAssignmentAttempts, listFinalScores } from "@/lib/queries/attempts";
 import { recordTabSwitch, saveAnswer, setFlag, startAttempt, submitAttempt } from "./actions";
 import { saveCorrection, submitCorrections } from "./corrections/actions";
+import { setManualScore } from "../app/results/actions";
 
 const ids = {
   teacher: "",
@@ -369,6 +370,17 @@ describe("submitAttempt", () => {
       .update(schema.assignments)
       .set({ retakeWaitHours: 0 })
       .where(eq(schema.assignments.id, ids.assignment));
+    // Jon, Oct 14 2026: nothing starts while the written answer waits for the teacher's grade.
+    const ungraded = await startAttempt(ids.assignment, "AB3K9Q");
+    expect(ungraded).toMatchObject({ ok: false, status: 403 });
+    expect(ungraded.ok ? "" : ungraded.error).toMatch(/hasn't graded your last attempt/);
+    expect((await listStudentAssignments(ids.s1))[0].state).toBe("awaiting_grade");
+    asUser(ids.teacher, "teacher");
+    const grade = new FormData();
+    grade.set("points", "0");
+    expect((await ok(setManualScore(ids.attempt, ids.extended, grade))).pendingManual).toBe(0);
+    asUser(ids.s1, "student");
+    expect((await listStudentAssignments(ids.s1))[0].state).toBe("corrections_needed");
     // Ticket 1.11: no retake until the missed LT1 items (MC3 wrong, MC4 blank) are corrected. Auto review approves at submit.
     const locked = await startAttempt(ids.assignment, "AB3K9Q");
     expect(locked).toMatchObject({ ok: false, status: 403 });
@@ -380,6 +392,7 @@ describe("submitAttempt", () => {
     };
     await ok(saveCorrection(ids.attempt, ids.mc[2].id, why));
     await ok(saveCorrection(ids.attempt, ids.mc[3].id, why));
+    await ok(saveCorrection(ids.attempt, ids.extended, why)); // graded 0 above, so it's in scope too
     expect((await ok(submitCorrections(ids.attempt))).state).toBe("approved");
     const { attemptId } = await ok(startAttempt(ids.assignment, "AB3K9Q"));
     const a2 = (await db.query.attempts.findFirst({ where: eq(schema.attempts.id, attemptId) }))!;
