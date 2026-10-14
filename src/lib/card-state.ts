@@ -31,6 +31,14 @@ export type StudentCardState =
 export const AWAITING_GRADE_TEXT =
   "Your teacher hasn't graded your last attempt yet. You can start the next one once it's graded.";
 
+/** Corrections states that keep their own card after the test closes (the student still owes, or waits on, them). */
+const CORRECTIONS_AFTER_CLOSE = new Set<CycleState>([
+  "corrections_needed",
+  "corrections_to_full",
+  "corrections_returned",
+  "corrections_submitted",
+]);
+
 export type CardInput = {
   type: "practice" | "formative" | "summative";
   opensAt: Date | null;
@@ -88,7 +96,8 @@ export type CardState = {
  * Rules: a test that hasn't opened is "upcoming"; an open attempt keeps the card "in progress",
  * even past the close (Finish later, Oct 13 2026: it is finished in class); answers still waiting
  * for the teacher's grade make it "awaiting grade", open or closed (Oct 14 2026: no partial score,
- * no retake until it's graded); a closed test reads "closed" on the student's card; otherwise the learning cycle decides (`cycleState`, with what
+ * no retake until it's graded); a closed test reads "closed" on the student's card unless
+ * corrections are still owed or waiting on the teacher (Oct 14 2026); otherwise the learning cycle decides (`cycleState`, with what
  * corrections do from `correctionsRule`: CVTC rules, teacher unlocks, the cap; Jon, Oct 13 2026),
  * or "not started" before attempt 1. The cap's retake window counts from attempt 1.
  */
@@ -135,7 +144,10 @@ export function deriveCardState(input: CardInput, now: Date): CardState {
   if (status === "scheduled") state = "upcoming";
   else if (input.inProgress) state = "in_progress";
   else if (input.awaitingGrade) state = "awaiting_grade";
-  else if (status === "closed") state = "closed";
+  // Jon, Oct 14 2026: corrections stay open after the close, so a student who still owes them
+  // sees them in "Needs you", not filed under Show closed. Retakes can't start once closed.
+  else if (status === "closed")
+    state = cycle && CORRECTIONS_AFTER_CLOSE.has(cycle) ? cycle : "closed";
   else state = cycle ?? "not_started";
   return { status, state, cycle, capped, rule, retakeBy, windowClosed };
 }

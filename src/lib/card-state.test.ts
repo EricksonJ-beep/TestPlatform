@@ -62,13 +62,25 @@ describe("deriveCardState (who owes what)", () => {
     });
   });
 
-  it("still works out the cycle once the test has closed; the student's card says closed", () => {
+  it("still works out the cycle once the test has closed; owed corrections keep their card", () => {
     const closed = { ...base, closesAt: ago(0.5) };
+    // Hudson's screen (Jon, Oct 14 2026): corrections owed on a closed quiz sat under Show closed.
     expect(deriveCardState(closed, now)).toMatchObject({
       status: "closed",
-      state: "closed",
+      state: "corrections_needed",
       cycle: "corrections_needed",
     });
+    expect(deriveCardState({ ...closed, corrections: "returned" }, now).state).toBe(
+      "corrections_returned"
+    );
+    expect(deriveCardState({ ...closed, corrections: "submitted" }, now).state).toBe(
+      "corrections_submitted"
+    );
+    // Done, or never started: the card says closed.
+    expect(
+      deriveCardState({ ...closed, corrections: "approved", finalPercent: 80 }, now).state
+    ).toBe("closed");
+    expect(deriveCardState({ ...closed, attemptsUsed: 0 }, now).state).toBe("closed");
     // A paused test is finished in class even after the close (Finish later).
     expect(deriveCardState({ ...closed, inProgress: true }, now).state).toBe("in_progress");
     const summative = {

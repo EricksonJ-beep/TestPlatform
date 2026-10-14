@@ -59,7 +59,9 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
       : pill.label;
   const href =
     correcting && c ? `/student/corrections/${c.attemptId}` : `/student/assignments/${a.id}`;
-  const nextAttempt = a.attemptsAllowed === null || a.attemptsUsed < a.attemptsAllowed;
+  // Retakes can't start once the test closes, so corrections there never "unlock" one.
+  const nextAttempt =
+    a.status !== "closed" && (a.attemptsAllowed === null || a.attemptsUsed < a.attemptsAllowed);
   const action: { label: string; primary: boolean } | null = (() => {
     switch (a.state) {
       case "not_started":
@@ -133,6 +135,9 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
             <span>
               Due <LocalTime date={a.closesAt} />
             </span>
+          ) : null}
+          {correcting && a.status === "closed" ? (
+            <span data-closed-corrections>Closed · corrections still open</span>
           ) : null}
           {a.timeLimitMinutes ? (
             <span className="inline-flex items-center gap-1">
