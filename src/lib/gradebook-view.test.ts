@@ -33,6 +33,7 @@ const card = (c: Partial<CardState> = {}): CardState => ({
   rule: "gate",
   retakeBy: null,
   windowClosed: false,
+  quizPractice: [],
   ...c,
 });
 const tag = (i: Partial<CellInput>) =>
@@ -84,6 +85,7 @@ const cell = (
     latestAttemptId: "a1",
     corrections: null,
     retake: null,
+    quizPractice: [],
     unlock: null,
     retakeBy: null,
     tabSwitches: 0,

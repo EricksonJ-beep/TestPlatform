@@ -9,6 +9,7 @@
 import { and, asc, eq, inArray, isNull, ne, or, sql } from "drizzle-orm";
 import { alias, type AnyPgColumn } from "drizzle-orm/pg-core";
 import { db, schema } from "@/db";
+import { correctionsClear } from "@/lib/corrections";
 import { correctionsCapOn } from "@/lib/grading";
 import {
   needsYouCounts,
@@ -20,7 +21,10 @@ import {
   type StaleReason,
 } from "@/lib/needs-you";
 import { currentPause, type PauseReason } from "@/lib/pause";
+import { practiceOwed, quizPracticeNeeds } from "@/lib/quiz-practice";
+import { loadCorrectionScopes, scopeSummary } from "@/lib/queries/corrections";
 import { listPendingVerifications, type PendingVerification } from "@/lib/queries/practice";
+import { loadPracticeResults, loadPracticeTargets } from "@/lib/queries/quiz-practice";
 import { countUnmatchedEmails } from "@/lib/queries/worksheets";
 import { correctionsRule, planRetake, retakeTargets } from "@/lib/retakes";
 
@@ -138,10 +142,12 @@ export type RetakeRequest = {
 /**
  * Pending retake requests on the teacher's assignments, oldest first (Jon, Oct 1 2026; Oct 13
  * 2026 for current vs leftover). A current request carries what would still block the start
- * after approval (wait time, retake window, closed, no retake at their score, relearning gates),
- * checked the way `startAttempt` checks it. Reads only: a summative's relearning gates come from
- * the stored gate rows (a pair with none reads its gates shut, as in the class gradebook), never
- * from `getRetakeStatus`, which writes missing rows; all of them in three batched reads.
+ * after approval (wait time, retake window, closed, no retake at their score, relearning gates,
+ * and on a quiz its corrections and practice: Jon, Oct 14 2026, decisions 4–5), checked the way
+ * `startAttempt` checks it. Reads only: a summative's relearning gates come from the stored gate
+ * rows (a pair with none reads its gates shut, as in the class gradebook), never from
+ * `getRetakeStatus`, which writes missing rows; all of them in three batched reads, and a quiz's
+ * corrections and practice in three more.
  */
 export async function listRetakeRequests(
   teacherId: string,
@@ -185,6 +191,12 @@ export async function listRetakeRequests(
       firstSubmittedAt: sql<
         Date | string | null
       >`(select min(a.submitted_at) from ${schema.attempts} a where ${mine} and a.status <> 'in_progress')`,
+      latestAttemptId: sql<
+        string | null
+      >`(select a.id from ${schema.attempts} a where ${mine} and a.status <> 'in_progress' order by a.number desc limit 1)`,
+      latestSubmittedAt: sql<
+        Date | string | null
+      >`(select a.submitted_at from ${schema.attempts} a where ${mine} and a.status <> 'in_progress' order by a.number desc limit 1)`,
       ...placeColumns,
     })
     .from(u)
@@ -200,21 +212,21 @@ export async function listRetakeRequests(
   const out = rows.map((r) => {
     const stale = staleRequest({ ...r, enrolled: !!r.enrolled });
     let blocker: RequestBlocker | null = null;
+    // The cap's retake window applies only where the cap does (never in a CVTC course).
+    const capped = correctionsCapOn(r);
+    const rule = correctionsRule({
+      type: r.type,
+      capped,
+      cvtcRules: !!r.cvtcRules,
+      firstPercent: r.firstPercent === null ? null : Number(r.firstPercent),
+      threshold: r.retakeThreshold,
+    });
     if (!stale) {
-      // The cap's retake window applies only where the cap does (never in a CVTC course).
-      const capped = correctionsCapOn(r);
       // At or above the line under the cap, corrections are the way up and `startAttempt`
       // refuses any retake (decision 2), so an approval would unlock nothing. That outlasts a
       // wait, a window or a closed test, so it is named ahead of them.
       blocker =
-        correctionsRule({
-          type: r.type,
-          capped,
-          retakesNeedUnlock: r.retakesNeedUnlock,
-          cvtcRules: !!r.cvtcRules,
-          firstPercent: r.firstPercent === null ? null : Number(r.firstPercent),
-          threshold: r.retakeThreshold,
-        }) === "to_full"
+        rule === "to_full"
           ? { reason: "no_retake" }
           : requestBlocker({
               assignment: { ...r, retakeWindowDays: capped ? r.retakeWindowDays : null },
@@ -224,8 +236,55 @@ export async function listRetakeRequests(
               now,
             });
     }
-    return { r, stale, blocker };
+    return { r, stale, blocker, rule };
   });
+
+  // A current quiz request with nothing else in the way: its corrections, then its practice
+  // (Jon, Oct 14 2026: owed with "Retakes need my OK" on too), read in three batched reads.
+  const quizzes = out.filter(
+    (x) => !x.stale && !x.blocker && x.r.type === "formative" && x.r.latestAttemptId
+  );
+  if (quizzes.length) {
+    const latestIds = quizzes.map((x) => x.r.latestAttemptId!);
+    const ats = schema.attemptTargetScores;
+    const [scopes, practice, targets] = await Promise.all([
+      loadCorrectionScopes(latestIds),
+      loadPracticeResults([...new Set(quizzes.map((x) => x.r.studentId))]),
+      loadPracticeTargets(
+        db.select({ id: ats.learningTargetId }).from(ats).where(inArray(ats.attemptId, latestIds))
+      ),
+    ]);
+    for (const x of quizzes) {
+      const scope = scopes.get(x.r.latestAttemptId!);
+      if (!scope) continue;
+      const set = scopeSummary(scope, {
+        type: x.r.type,
+        threshold: x.r.retakeThreshold,
+        optedInTargetIds: [],
+        cvtcRules: !!x.r.cvtcRules,
+      });
+      if (x.rule === "gate" && !correctionsClear(set)) {
+        x.blocker = { reason: "corrections" };
+        continue;
+      }
+      const owed = practiceOwed(
+        quizPracticeNeeds({
+          type: x.r.type,
+          rule: x.rule,
+          threshold: x.r.retakeThreshold,
+          data: {
+            latest: {
+              submittedAt: asDate(x.r.latestSubmittedAt),
+              targetPercents: scope.targetPercents,
+            },
+            targets,
+            practice: practice.get(x.r.studentId) ?? [],
+          },
+        })
+      );
+      if (owed.length) x.blocker = { reason: "practice", codes: owed.map((t) => t.code) };
+    }
+  }
 
   // A current summative request with nothing else in the way: its relearning gates, read as stored.
   const summatives = out.filter((x) => !x.stale && !x.blocker && x.r.type === "summative");

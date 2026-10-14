@@ -14,6 +14,12 @@ import {
 import type { CorrectionsState } from "@/lib/corrections";
 import { correctionsCapOn } from "@/lib/grading";
 import {
+  practiceOwed,
+  quizPracticeNeeds,
+  type QuizPracticeData,
+  type QuizPracticeTarget,
+} from "@/lib/quiz-practice";
+import {
   correctionsRule,
   cycleState,
   type CorrectionsRule,
@@ -23,6 +29,17 @@ import {
 
 export type StudentCardState =
   "upcoming" | "not_started" | "in_progress" | "awaiting_grade" | "closed" | CycleState;
+
+/**
+ * The corrections states, which a closed test keeps on the student's card (Jon, Oct 14 2026, R1):
+ * corrections stay open after a close and have no due date, so they stay on the student's list.
+ */
+export const CORRECTIONS_STATES: ReadonlySet<CycleState> = new Set<CycleState>([
+  "corrections_needed",
+  "corrections_to_full",
+  "corrections_returned",
+  "corrections_submitted",
+]);
 
 /**
  * Jon, Oct 14 2026: while the teacher still has written answers to grade, the student's card says
@@ -61,6 +78,8 @@ export type CardInput = {
   corrections: CorrectionsState;
   /** Summatives: the retake plan from the stored gates; null otherwise. */
   plan: RetakePlan | null;
+  /** Formatives: what quiz relearning reads (R3, `quizPracticeNeeds`); null before any attempt. */
+  quizPractice: QuizPracticeData | null;
 };
 
 export type CardState = {
@@ -82,15 +101,22 @@ export type CardState = {
    */
   retakeBy: Date | null;
   windowClosed: boolean;
+  /**
+   * Quiz relearning (Jon, Oct 14 2026, R3): the targets missed on the latest finished attempt that
+   * need practice before a retake, done or not; empty where it doesn't apply.
+   */
+  quizPractice: QuizPracticeTarget[];
 };
 
 /**
  * Rules: a test that hasn't opened is "upcoming"; an open attempt keeps the card "in progress",
  * even past the close (Finish later, Oct 13 2026: it is finished in class); answers still waiting
  * for the teacher's grade make it "awaiting grade", open or closed (Oct 14 2026: no partial score,
- * no retake until it's graded); a closed test reads "closed" on the student's card; otherwise the learning cycle decides (`cycleState`, with what
- * corrections do from `correctionsRule`: CVTC rules, teacher unlocks, the cap; Jon, Oct 13 2026),
- * or "not started" before attempt 1. The cap's retake window counts from attempt 1.
+ * no retake until it's graded); a closed test keeps its corrections states (Jon, Oct 14 2026, R1:
+ * corrections stay open after a close) and otherwise reads "closed"; an open one follows the
+ * learning cycle (`cycleState`, with what corrections do from `correctionsRule`: CVTC rules, the
+ * cap; and quiz relearning from `quizPracticeNeeds`), or "not started" before attempt 1. The
+ * cap's retake window counts from attempt 1.
  */
 export function deriveCardState(input: CardInput, now: Date): CardState {
   const status = assignmentStatus(input, now);
@@ -99,11 +125,20 @@ export function deriveCardState(input: CardInput, now: Date): CardState {
   const rule = correctionsRule({
     type: input.type,
     capped,
-    retakesNeedUnlock: input.retakesNeedUnlock,
     cvtcRules: input.cvtcRules,
     firstPercent: input.firstPercent,
     threshold: input.retakeThreshold,
   });
+  // Quiz relearning (Jon, Oct 14 2026, decision 5): practice on every missed target first.
+  const quizPractice =
+    input.attemptsUsed > 0
+      ? quizPracticeNeeds({
+          type: input.type,
+          rule,
+          threshold: input.retakeThreshold,
+          data: input.quizPractice,
+        })
+      : [];
   // The window bounds a retake, so it means nothing where no retake is offered: at or above the
   // threshold under the cap, corrections are the way up (decision 2).
   const retakeBy =
@@ -115,7 +150,7 @@ export function deriveCardState(input: CardInput, now: Date): CardState {
     input.attemptsUsed > 0 && !input.inProgress
       ? cycleState({
           type: input.type,
-          // Teacher unlocks (Oct 1) and CVTC rules (Oct 13 2026): the rule keeps corrections off the gate.
+          // CVTC rules (Oct 13 2026): the rule keeps corrections off the gate.
           corrections: input.corrections,
           rule,
           attemptsUsed: input.attemptsUsed,
@@ -129,13 +164,14 @@ export function deriveCardState(input: CardInput, now: Date): CardState {
           firstPercent: input.firstPercent,
           threshold: input.retakeThreshold,
           windowClosed,
+          practiceOwed: practiceOwed(quizPractice).length > 0,
         })
       : null;
   let state: StudentCardState;
   if (status === "scheduled") state = "upcoming";
   else if (input.inProgress) state = "in_progress";
   else if (input.awaitingGrade) state = "awaiting_grade";
-  else if (status === "closed") state = "closed";
+  else if (status === "closed") state = cycle && CORRECTIONS_STATES.has(cycle) ? cycle : "closed";
   else state = cycle ?? "not_started";
-  return { status, state, cycle, capped, rule, retakeBy, windowClosed };
+  return { status, state, cycle, capped, rule, retakeBy, windowClosed, quizPractice };
 }

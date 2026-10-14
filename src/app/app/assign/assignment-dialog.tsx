@@ -356,7 +356,7 @@ export function AssignmentDialog({
               key={`u-${assessmentId}`}
               name="retakesNeedUnlock"
               label="Retakes need my OK"
-              help="Each student's next attempt stays locked until you unlock it on the results page. Corrections become optional on this assignment, except under the corrections cap at or above the threshold, where they are still the way to 100% and there is no retake."
+              help="Each student's next attempt stays locked until you unlock it on the results page or approve their request. Students do their corrections first (and on a quiz, practice the targets they missed), exactly as without this setting, then ask. Under the corrections cap at or above the threshold, corrections are the way to 100% and there is no retake."
               defaultChecked={existing?.retakesNeedUnlock ?? false}
             />
             <Toggle

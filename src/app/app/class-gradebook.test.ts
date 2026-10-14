@@ -355,14 +355,16 @@ beforeAll(async () => {
     .set({ lastActiveAt: new Date(Date.now() - 15 * 60_000) })
     .where(eq(schema.attempts.id, eliLive)); // idle: paused, though nothing has written it yet
 
-  // Osmosis quiz ("Retakes need my OK", a day's wait).
-  await take("Ava", "okQuiz", ids.bioQ, firstN(3));
+  // Osmosis quiz ("Retakes need my OK", a day's wait). Corrections come before asking, exactly as
+  // without the setting (Jon, Oct 14 2026, decision 4): Ben hasn't done his.
+  await correct("Ava", await take("Ava", "okQuiz", ids.bioQ, firstN(3)));
   as(st("Ava"), "student");
   await ok(requestRetake(ids.asg.okQuiz));
   await take("Ben", "okQuiz", ids.bioQ, firstN(3));
-  await take("Cal", "okQuiz", ids.bioQ, firstN(3));
+  await correct("Cal", await take("Cal", "okQuiz", ids.bioQ, firstN(3)));
   as(ids.teacher, "teacher");
   await ok(unlockNextAttempt(ids.asg.okQuiz, st("Cal")));
+  await correct("Dee", await take("Dee", "okQuiz", ids.bioQ, firstN(3)));
 
   // Unit 3 test (summative, teacher-approved corrections). LT1 = questions 0-1, LT2 = 2-3.
   const lt1Wrong = (i: number) => i >= 2;
@@ -498,9 +500,10 @@ describe("getClassGradebook", () => {
     });
     expect(labels["Osmosis quiz"]).toMatchObject({
       Ava: "Retake request",
-      Ben: "Ready, needs your OK",
+      Ben: "Corrections needed 0/2", // was "Ready, needs your OK" before decision 4
       Cal: "Unlocked · after 2:15",
-      Dee: "Not started",
+      Dee: "Ready, needs your OK",
+      Eli: "Not started",
     });
     expect(labels["Unit 3 test"]).toEqual({
       Ava: "Can retake", // every target proficient; optional retakes are on
@@ -520,7 +523,9 @@ describe("getClassGradebook", () => {
       Dee: "Missing",
       Hal: "Missing",
     });
-    expect(cellOf(gb, "Ava", "closedQuiz")).toMatchObject({ card: "closed" });
+    // R1 (Jon, Oct 14 2026): her own card keeps the corrections too (it used to read "closed").
+    expect(cellOf(gb, "Ava", "closedQuiz")).toMatchObject({ card: "corrections_needed" });
+    expect(cellOf(gb, "Ben", "closedQuiz")).toMatchObject({ card: "closed", cycle: "done" });
     expect(labels["Unit 2 test"]).toMatchObject({
       Ava: "Retake needed (LT3) · closed",
       Ben: "Missing",

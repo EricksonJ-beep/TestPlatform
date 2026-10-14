@@ -9,6 +9,7 @@
 import type { CardState } from "@/lib/card-state";
 import type { CorrectionsSummary } from "@/lib/corrections";
 import type { RequestBlocker } from "@/lib/needs-you";
+import { practiceOwed } from "@/lib/quiz-practice";
 import type { RetakePlan, RetakeTarget } from "@/lib/retakes";
 import { movedUp, startOfWeek } from "@/lib/tiers";
 
@@ -171,6 +172,8 @@ export type CellTag = {
   targets: string[];
   /** Relearning: what the checklist still needs. */
   needs: RelearningNeed[];
+  /** Relearning on a quiz (Jon, Oct 14 2026, R3): the codes of the missed targets still to practise. */
+  practice: string[];
   /** Unlocked: what still stops the start. */
   blocker: RequestBlocker | null;
   /** Opens: when the test opens. */
@@ -219,8 +222,10 @@ function studentKind(input: CellInput): { kind: CellKind; closed: boolean } | nu
  * top of the student's own card state, which supplies the rest: Missing (closed, never started),
  * Not started, the corrections and relearning states (even on a closed test), Retake needed,
  * Ready (needs your OK, not asked), Can retake, Corrections → 100%, Unlocked (approved but still
- * blocked), Opens, Done. With "Retakes need my OK" on, corrections are never owed (decision row
- * 65); in a CVTC course they never are either (Oct 13 2026); both come through the card.
+ * blocked), Opens, Done. Corrections are owed with "Retakes need my OK" on too (Jon, Oct 14 2026,
+ * decision 4); in a CVTC course they never are (Oct 13 2026); a quiz's missed targets need
+ * practice before its retake ("Relearning (needs: practice U2.LT1)", decision 5); all of it comes
+ * through the card.
  */
 export function cellTag(input: CellInput): CellTag {
   const applies = new Map<CellKind, boolean>();
@@ -245,6 +250,7 @@ export function cellTag(input: CellInput): CellTag {
   const closed = applies.get(kind) ?? false;
   const group = CELL_GROUP[kind];
   const retake = input.retake;
+  const practice = practiceOwed(input.card.quizPractice).map((t) => t.code);
   return {
     kind,
     group,
@@ -259,7 +265,12 @@ export function cellTag(input: CellInput): CellTag {
     targets: retake
       ? retake.targets.filter((t) => retake.plan.required.includes(t.id)).map((t) => t.code)
       : [],
-    needs: retake ? relearningNeeds(retake.targets, retake.plan) : [],
+    needs: retake
+      ? relearningNeeds(retake.targets, retake.plan)
+      : practice.length
+        ? ["practice"]
+        : [],
+    practice,
     blocker: kind === "unlocked" ? input.unlockedBlocker : null,
     opensAt: input.opensAt,
   };
@@ -303,6 +314,10 @@ function unlockedText(b: RequestBlocker | null, fmt: TagFormat): string {
       return "no tries left";
     case "no_retake":
       return "no retake at their score";
+    case "corrections":
+      return "corrections not done";
+    case "practice":
+      return `practice ${b.codes.join(", ")} not done`;
     case "gates":
       return "relearning not done";
     case "nothing_selected":
@@ -344,7 +359,7 @@ export function tagLabel(tag: CellTag, fmt: TagFormat = CENTRAL): string {
       return "Sent back";
     case "relearning":
       return tag.needs.length
-        ? `Relearning (needs: ${tag.needs.map((n) => NEED_TEXT[n]).join(", ")})${closed}`
+        ? `Relearning (needs: ${tag.needs.map((n) => (n === "practice" && tag.practice.length ? `practice ${tag.practice.join(", ")}` : NEED_TEXT[n])).join(", ")})${closed}`
         : `Relearning${closed}`;
     case "retake_needed":
       return tag.targets.length

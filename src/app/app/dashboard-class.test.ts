@@ -133,16 +133,29 @@ beforeAll(async () => {
     })
     .returning();
   ids.quiz = quiz.id;
-  await db.insert(schema.attempts).values({
-    assignmentId: quiz.id,
+  const [calTry] = await db
+    .insert(schema.attempts)
+    .values({
+      assignmentId: quiz.id,
+      studentId: cal.id,
+      number: 1,
+      questionSet: [
+        { questionId: q.id, sectionId: q.id, learningTargetId: null, points: 1, order: 0 },
+      ],
+      status: "graded",
+      percent: 60,
+      submittedAt: new Date(Date.now() - 30 * 60_000),
+    })
+    .returning();
+  // Corrections come before asking, with "Retakes need my OK" too (Jon, Oct 14 2026, decision 4).
+  await db.insert(schema.corrections).values({
+    attemptId: calTry.id,
+    questionId: q.id,
     studentId: cal.id,
-    number: 1,
-    questionSet: [
-      { questionId: q.id, sectionId: q.id, learningTargetId: null, points: 1, order: 0 },
-    ],
-    status: "graded",
-    percent: 60,
-    submittedAt: new Date(Date.now() - 30 * 60_000),
+    correctAnswer: "Right",
+    explanation: "I picked the wrong one.",
+    status: "approved",
+    submittedAt: new Date(),
   });
 });
 

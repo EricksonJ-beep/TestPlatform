@@ -7,9 +7,11 @@ import { db, schema } from "@/db";
 import type { FinalBasis } from "@/db/schema";
 import { assignmentStatus, nextAttemptAt, type AssignmentStatus } from "@/lib/assignments";
 import { deriveCardState, type StudentCardState } from "@/lib/card-state";
+import type { PracticeResult, QuizPracticeTarget } from "@/lib/quiz-practice";
 import { getCorrectionsSummary, type CorrectionsSetSummary } from "@/lib/queries/corrections";
+import { loadPracticeResults, loadPracticeTargets } from "@/lib/queries/quiz-practice";
 import { getRetakeStatus, type RetakeStatus } from "@/lib/queries/retakes";
-import type { CorrectionsRule } from "@/lib/retakes";
+import type { CorrectionsRule, CycleState } from "@/lib/retakes";
 
 export type AssignmentRow = {
   id: string;
@@ -150,7 +152,10 @@ export type StudentAssignment = {
   retakeWaitHours: number;
   /** When the wait rule lets the student start again; null when they may start now. */
   nextAttemptAt: Date | null;
-  /** Every attempt after the first waits for the teacher's unlock; corrections are optional then. */
+  /**
+   * Every attempt after the first waits for the teacher's unlock; the student asks once
+   * corrections (and a quiz's practice) are done (Jon, Oct 14 2026, decision 4).
+   */
   retakesNeedUnlock: boolean;
   /** The student has asked for the next attempt and the teacher hasn't answered yet. */
   retakeRequested: boolean;
@@ -184,7 +189,19 @@ export type StudentAssignment = {
   corrections: CorrectionsSetSummary | null;
   /** Summatives with a finished attempt: required / optional targets and their gates. */
   retake: RetakeStatus | null;
+  /**
+   * Quiz relearning (Jon, Oct 14 2026, R3): targets missed on the latest finished attempt that
+   * need 80% on practice before a retake, with the quiz score, the best practice so far, and
+   * whether each is done; empty where it doesn't apply (summatives, `to_full`, nothing missed).
+   */
+  quizPractice: QuizPracticeTarget[];
   state: StudentCardState;
+  /**
+   * The learning cycle after the last finished attempt, worked out on a closed test too (its
+   * corrections states show on the card, R1; what comes after them is here); null before any
+   * attempt and while one is open.
+   */
+  cycle: CycleState | null;
 };
 
 /**
@@ -231,6 +248,14 @@ export async function listStudentAssignments(
       >`(select f.percent from ${schema.assignmentFinalScores} f where f.assignment_id = ${schema.assignments.id} and f.student_id = ${studentId})`,
       finalBasis: sql<FinalBasis | null>`(select f.basis from ${schema.assignmentFinalScores} f where f.assignment_id = ${schema.assignments.id} and f.student_id = ${studentId})`,
       lastSubmittedAt: sql<Date | null>`(select max(a.submitted_at) from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status <> 'in_progress')`,
+      // Quiz relearning (R3) reads the latest finished attempt's per-target percents.
+      latestSubmittedAt: sql<
+        Date | string | null
+      >`(select a.submitted_at from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status <> 'in_progress' order by a.number desc limit 1)`,
+      latestTargetPercents:
+        sql`(select coalesce(jsonb_object_agg(t.learning_target_id, t.percent), '{}'::jsonb) from ${schema.attemptTargetScores} t where t.attempt_id = (select a.id from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status <> 'in_progress' order by a.number desc limit 1))`.mapWith(
+          (v: unknown) => (typeof v === "string" ? JSON.parse(v) : v) as Record<string, number>
+        ),
       unlockedThrough: sql<number>`(select coalesce(max(u.attempt_number), 0)::int from ${schema.attemptUnlocks} u where u.assignment_id = ${schema.assignments.id} and u.student_id = ${studentId} and u.granted_at is not null)`,
       requestedThrough: sql<number>`(select coalesce(max(u.attempt_number), 0)::int from ${schema.attemptUnlocks} u where u.assignment_id = ${schema.assignments.id} and u.student_id = ${studentId} and u.granted_at is null)`,
       attemptsUsed: sql<number>`(select count(*)::int from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId})`,
@@ -259,25 +284,37 @@ export async function listStudentAssignments(
   // Corrections state for the latest finished attempt (formative/summative only; practice never has any).
   const summaries = new Map<string, CorrectionsSetSummary>();
   const retakes = new Map<string, RetakeStatus>();
-  await Promise.all(
-    rows.map(async (r) => {
-      if (r.type === "practice" || !r.latestAttemptId) return;
-      const [s, rt] = await Promise.all([
-        // CVTC rules (Jon, Oct 13 2026): nothing is ever in corrections scope there.
-        r.cvtcRules ? null : getCorrectionsSummary(r.latestAttemptId),
-        r.type === "summative" ? getRetakeStatus(r.id, studentId) : null,
-      ]);
-      if (s && s.state !== "none") summaries.set(r.id, s);
-      if (rt) retakes.set(r.id, rt);
-    })
-  );
+  // Quiz relearning (R3): the student's practice and the quiz targets' content, one read each.
+  const quizTargetIds = [
+    ...new Set(
+      rows.flatMap((r) => (r.type === "formative" ? Object.keys(r.latestTargetPercents ?? {}) : []))
+    ),
+  ];
+  const [practiceTargets, practice] = await Promise.all([
+    loadPracticeTargets(quizTargetIds),
+    quizTargetIds.length ? loadPracticeResults([studentId]) : new Map<string, PracticeResult[]>(),
+    Promise.all(
+      rows.map(async (r) => {
+        if (r.type === "practice" || !r.latestAttemptId) return;
+        const [s, rt] = await Promise.all([
+          // CVTC rules (Jon, Oct 13 2026): nothing is ever in corrections scope there.
+          r.cvtcRules ? null : getCorrectionsSummary(r.latestAttemptId),
+          r.type === "summative" ? getRetakeStatus(r.id, studentId) : null,
+        ]);
+        if (s && s.state !== "none") summaries.set(r.id, s);
+        if (rt) retakes.set(r.id, rt);
+      })
+    ),
+  ]);
 
   return rows
     .map(
       ({
         accessCode,
         lastSubmittedAt,
-        latestAttemptId: _latest,
+        latestSubmittedAt,
+        latestTargetPercents,
+        latestAttemptId,
         inProgressAnswered,
         inProgressTotal,
         firstSubmittedAt,
@@ -301,7 +338,7 @@ export async function listStudentAssignments(
         const firstPercent = firstPercentRaw === null ? null : Number(firstPercentRaw);
         const finalPct = finalPercent === null ? null : Number(finalPercent);
         // Who owes what (Jon, Oct 13 2026): the same rule the teacher's class gradebook reads.
-        const { status, state, capped, rule, retakeBy, windowClosed } = deriveCardState(
+        const card = deriveCardState(
           {
             type: r.type,
             opensAt: r.opensAt,
@@ -322,22 +359,37 @@ export async function listStudentAssignments(
             finalPercent: finalPct,
             corrections: corrections?.state ?? "none",
             plan: retake?.plan ?? null,
+            quizPractice:
+              r.attemptsUsed > 0
+                ? {
+                    latest: latestAttemptId
+                      ? {
+                          submittedAt: latestSubmittedAt ? new Date(latestSubmittedAt) : null,
+                          targetPercents: latestTargetPercents ?? {},
+                        }
+                      : null,
+                    targets: practiceTargets,
+                    practice: practice.get(studentId) ?? [],
+                  }
+                : null,
           },
           now
         );
         return {
           ...r,
           needsCode: !!accessCode,
-          status,
-          state,
+          status: card.status,
+          state: card.state,
+          cycle: card.cycle,
           corrections,
           retake,
-          retakeBy,
-          retakeWindowClosed: windowClosed,
+          quizPractice: card.quizPractice,
+          retakeBy: card.retakeBy,
+          retakeWindowClosed: card.windowClosed,
           firstPercent,
-          correctionsCap: capped,
+          correctionsCap: card.capped,
           cvtcRules,
-          correctionsRule: rule,
+          correctionsRule: card.rule,
           final: finalPct === null ? null : { percent: finalPct, basis: finalBasis ?? null },
           paused: !!r.inProgressAttemptId && !!r.inProgressPaused,
           progress: r.inProgressAttemptId

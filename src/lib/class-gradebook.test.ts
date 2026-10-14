@@ -18,6 +18,7 @@ const card = (c: Partial<CardState>): CardState => ({
   rule: "gate",
   retakeBy: null,
   windowClosed: false,
+  quizPractice: [],
   ...c,
 });
 const input = (i: Partial<CellInput>): CellInput => ({
@@ -186,6 +187,35 @@ describe("cellTag precedence", () => {
     });
     expect(label({ card: card({ cycle: "corrections_returned" }) })).toBe("Sent back");
     expect(label({ card: card({ cycle: "corrections_to_full" }) })).toBe("Corrections → 100%");
+  });
+
+  it("names a quiz's missed targets still to practise (Jon, Oct 14 2026, R3)", () => {
+    const quizPractice = [
+      { targetId: "lt1", code: "U2.LT1", title: "", scored: 40, best: 60, done: false },
+      { targetId: "lt2", code: "U2.LT2", title: "", scored: 60, best: 85, done: true },
+      { targetId: "lt3", code: "U2.LT3", title: "", scored: 20, best: null, done: false },
+    ];
+    const relearning = card({ cycle: "relearning", quizPractice });
+    expect(cellTag(input({ card: relearning }))).toMatchObject({
+      kind: "relearning",
+      group: "owes",
+      needs: ["practice"],
+      practice: ["U2.LT1", "U2.LT3"],
+    });
+    expect(label({ card: relearning })).toBe("Relearning (needs: practice U2.LT1, U2.LT3)");
+    expect(
+      label({
+        card: card({ status: "closed", state: "closed", cycle: "relearning", quizPractice }),
+      })
+    ).toBe("Relearning (needs: practice U2.LT1, U2.LT3) · closed");
+    // Approved, but the student still owes their part (with "Retakes need my OK", decision 4).
+    const ok = card({ cycle: "retake_available" });
+    expect(label({ card: ok, unlockedBlocker: { reason: "corrections" } })).toBe(
+      "Unlocked · corrections not done"
+    );
+    expect(label({ card: ok, unlockedBlocker: { reason: "practice", codes: ["U2.LT1"] } })).toBe(
+      "Unlocked · practice U2.LT1 not done"
+    );
   });
 });
 

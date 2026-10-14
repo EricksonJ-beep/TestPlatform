@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ChevronLeft, Clock, Lock } from "lucide-react";
 import { isAuthzError, requireAssignmentAccess } from "@/lib/authz";
 import { listStudentAssignments } from "@/lib/queries/assignments";
+import { PRACTICE_PASS_PERCENT, practiceOwed, targetList } from "@/lib/quiz-practice";
 import { listStudentAttempts } from "@/lib/queries/attempts";
 import { LocalTime } from "@/components/local-time";
 import { TargetChip } from "@/components/targets/target-chip";
@@ -33,14 +34,16 @@ export default async function StudentAssignmentPage({
   const attemptsLeft =
     a.attemptsAllowed === null ? null : Math.max(0, a.attemptsAllowed - a.attemptsUsed);
   const c = a.corrections;
-  // Corrections hold the page only where the rule says they come first: never with teacher
-  // unlocks on (Jon, Oct 1 2026) or in a CVTC course (Oct 13 2026); the same rule as the card.
+  // Corrections hold the page where the rule says they come first: never in a CVTC course (Oct 13
+  // 2026), and with "Retakes need my OK" too (Oct 14 2026); the same rule as the card.
   const correctionsBlock =
     (a.correctionsRule === "gate" || a.correctionsRule === "to_full") &&
     !!c &&
     c.state !== "approved" &&
     c.state !== "none";
   const retaking = a.state === "retake_required" || a.state === "retake_available";
+  // Quiz relearning (Jon, Oct 14 2026): the missed targets still to practise before a retake.
+  const owedPractice = practiceOwed(a.quizPractice);
   // A paused or unfinished test stays reachable after the window closes (Finish later, Oct 13 2026).
   const canStart =
     (a.state === "in_progress" ||
@@ -152,6 +155,24 @@ export default async function StudentAssignmentPage({
                 : "Do corrections"}
           </Button>
         </div>
+      ) : a.state === "relearning" && !a.retake && owedPractice.length ? (
+        <div
+          className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm"
+          data-practice-gate
+        >
+          <span className="mr-auto inline-flex items-start gap-2">
+            <Lock className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
+            <span>
+              Practice {targetList(owedPractice.map((t) => t.code))} before your retake. Score{" "}
+              {PRACTICE_PASS_PERCENT}% or better on a practice for{" "}
+              {owedPractice.length === 1 ? "it" : "each one"} (Build my practice: pick the target
+              and at least 5 questions). You can try as many times as you like.
+            </span>
+          </span>
+          <Button size="lg" nativeButton={false} render={<Link href="/student/practice/build" />}>
+            Practice
+          </Button>
+        </div>
       ) : a.state === "relearning" ? (
         <p
           className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3 text-sm"
@@ -178,9 +199,6 @@ export default async function StudentAssignmentPage({
               {a.retakeRequested
                 ? `Your request for attempt ${a.attemptsUsed + 1} is in. Your teacher will approve it, usually in class.`
                 : `Your teacher opens each retake. Ask for attempt ${a.attemptsUsed + 1} here, or in class.`}
-              {c && c.state !== "none" && c.state !== "approved"
-                ? " Corrections are optional on this quiz, but they're good practice."
-                : ""}
             </span>
           </span>
           {a.retakeRequested ? null : (

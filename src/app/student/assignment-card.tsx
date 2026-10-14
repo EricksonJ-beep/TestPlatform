@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Clock, Lock } from "lucide-react";
 import type { StudentAssignment } from "@/lib/queries/assignments";
+import { practiceOwed, targetList } from "@/lib/quiz-practice";
 import { TYPE_LABEL } from "@/lib/student-home";
 import { LocalTime } from "@/components/local-time";
 import { Button } from "@/components/ui/button";
@@ -81,7 +82,8 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
       case "corrections_submitted":
         return { label: "View corrections", primary: false };
       case "relearning":
-        return { label: "View checklist", primary: false };
+        // A quiz has no checklist: its missed targets need practice (Jon, Oct 14 2026).
+        return { label: a.retake ? "View checklist" : "What to practice", primary: false };
       case "retake_required":
       case "retake_available":
         return { label: "Start retake", primary: a.state === "retake_required" };
@@ -98,6 +100,7 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
     }
   })();
   const allProficient = a.type === "summative" && a.retake && a.retake.plan.required.length === 0;
+  const owedPractice = practiceOwed(a.quizPractice);
 
   return (
     <li
@@ -226,6 +229,11 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
                 ? `${c.started} of ${c.needed} corrections started · finish them`
                 : `Correct ${c.remaining} missed ${c.remaining === 1 ? "question" : "questions"}`}{" "}
               to raise this to 100%
+            </span>
+          ) : a.state === "relearning" && owedPractice.length ? (
+            <span className="inline-flex items-center gap-1" data-practice-hint>
+              <Lock className="size-3.5" aria-hidden />
+              Practice {targetList(owedPractice.map((t) => t.code))} to unlock your retake
             </span>
           ) : c && a.state === "corrections_returned" ? (
             <span data-corrections-hint>Your teacher sent your corrections back with a note</span>

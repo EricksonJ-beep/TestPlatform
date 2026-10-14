@@ -8,7 +8,8 @@
  * - one row of counts and newest moments across everything the page shows for the teacher (the
  *   "Needs you" list covers all their courses): attempts starting, submitting, pausing, asked
  *   about, graded; corrections sent in, approved or returned (not drafts, which change no tag);
- *   retake unlocks and requests; final scores; relearning gates; check-offs; assignment settings
+ *   retake unlocks and requests; final scores; relearning gates; check-offs; practice the
+ *   class students finish (a quiz's relearning reads it, Oct 14 2026); assignment settings
  *   and windows opening or closing; rosters; unmatched worksheet emails (one per worksheet and
  *   email, as the inbox counts them); resume codes issued (the header shows the live one); and
  *   the time boundaries that change a tag with nothing written: a retake wait ending on a test
@@ -54,6 +55,8 @@ export async function getDashboardVersion(
         assignments: sql<string>`(select concat_ws(':', count(*), count(*) filter (where s.opens_at <= ${at}), count(*) filter (where s.closes_at <= ${at}), ${newest("s.updated_at")}) from ${schema.assignments} s where s.owner_id = ${teacherId})`,
         roster: sql<string>`(select concat_ws(':', count(*), ${newest("e.created_at")}) from ${schema.enrollments} e join ${schema.classes} k on k.id = e.class_id where k.owner_id = ${teacherId})`,
         checkOffs: sql<string>`(select concat_ws(':', count(*), count(*) filter (where ac.teacher_verified), ${newest("ac.completed_at")}) from ${schema.activityCompletions} ac join ${schema.relearningActivities} r on r.id = ac.activity_id where r.owner_id = ${teacherId})`,
+        // Quiz relearning (Jon, Oct 14 2026): a finished practice can clear "Relearning".
+        practice: sql<string>`(select concat_ws(':', count(*), ${newest("p.completed_at")}) from ${schema.practiceAttempts} p where p.completed_at is not null and p.student_id in (select e.student_id from ${schema.enrollments} e join ${schema.classes} k on k.id = e.class_id where k.owner_id = ${teacherId}))`,
         worksheets: sql<string>`(select count(distinct (w.worksheet_id, w.email)) from ${schema.worksheetEvents} w join ${schema.worksheets} ws on ws.id = w.worksheet_id where ws.owner_id = ${teacherId} and w.student_id is null)`,
         resumeCodes: sql<string>`(select concat_ws(':', count(*), ${newest("r.created_at")}) from ${schema.resumeCodes} r where r.teacher_id = ${teacherId})`,
         // Boundaries already passed, per student × test with a finished attempt: each crossing
@@ -107,6 +110,7 @@ export async function getDashboardVersion(
     s?.assignments,
     s?.roster,
     s?.checkOffs,
+    s?.practice,
     log,
     s?.worksheets,
     s?.resumeCodes,

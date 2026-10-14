@@ -390,6 +390,7 @@ function BlockerNote({ b }: { b: RequestBlocker }) {
     <p className="mt-0.5 inline-flex items-center gap-1 text-xs text-warning-foreground">
       <Clock className="size-3.5" aria-hidden />
       {BLOCKER_LINE[b.reason]}
+      {"codes" in b ? ` ${b.codes.join(", ")}.` : null}
       {"at" in b ? (
         <>
           {" "}

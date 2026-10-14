@@ -61,16 +61,19 @@ export const STALE_TEXT: Record<StaleReason, string> = {
 };
 
 export type RequestBlocker =
-  | { reason: "not_open" | "closed" | "no_attempts_left" | "no_retake" }
+  | { reason: "not_open" | "closed" | "no_attempts_left" | "no_retake" | "corrections" }
   | { reason: "wait"; at: Date }
   | { reason: "window_closed"; at: Date }
-  | { reason: Exclude<RetakeBlocker, "no_attempts"> };
+  | { reason: Exclude<RetakeBlocker, "no_attempts"> }
+  /** Quiz relearning (Jon, Oct 14 2026): the codes of the missed targets still to practise. */
+  | { reason: "practice"; codes: string[] };
 
 /**
  * What would still stop a current request's try from starting once the teacher approves it: the
  * test's window, the wait between attempts, the corrections cap's retake window. The same
  * `canStartAttempt` rule `startAttempt` uses, with the unlock taken as given and no access code
- * (that is typed in class). A summative's relearning gates come from its retake plan separately.
+ * (that is typed in class). A summative's relearning gates come from its retake plan separately,
+ * and so do a quiz's corrections and practice (Jon, Oct 14 2026: owed with the setting on too).
  */
 export function requestBlocker(input: {
   assignment: {
@@ -110,6 +113,8 @@ export const BLOCKER_LINE: Record<RequestBlocker["reason"], string> = {
   wait: "Can start after",
   window_closed: "The retake window closed",
   no_retake: "No retake at their score: corrections raise it to 100%.",
+  corrections: "Their corrections on the last try aren't done yet.",
+  practice: "They still need 80% on practice for",
   gates: "Their relearning checklist isn't done yet.",
   nothing_selected: "Every target is proficient; they have to pick a target to retake.",
 };

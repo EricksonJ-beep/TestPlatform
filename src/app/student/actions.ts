@@ -18,7 +18,9 @@ import {
 import { correctionsClear } from "@/lib/corrections";
 import { setOptIn } from "@/lib/gates";
 import { correctionsCapOn } from "@/lib/grading";
+import { practiceOwed, practiceOwedText, quizPracticeNeeds } from "@/lib/quiz-practice";
 import { getCorrectionsSummary, latestFinishedAttemptId } from "@/lib/queries/corrections";
+import { getQuizPracticeData } from "@/lib/queries/quiz-practice";
 import { getRetakeStatus } from "@/lib/queries/retakes";
 import { BLOCKER_TEXT, correctionsRule, TO_FULL_TEXT } from "@/lib/retakes";
 import {
@@ -54,10 +56,85 @@ function revalidate(assignmentId: string) {
 }
 
 /**
+ * What must be done before a student's next attempt, or before they may ask for it, beyond the
+ * window, the wait and the teacher's unlock; the same rules the student card reads, so the card
+ * and the server agree. Rules: no retake where corrections are the way to 100% (`to_full`, Jon
+ * Oct 13 2026, decision 2); the last attempt's corrections clear (approved, or nothing to correct),
+ * with or without "Retakes need my OK" (Jon, Oct 14 2026, decision 4); on a quiz, every missed
+ * learning target practised to 80% (decision 5, `quizPracticeNeeds`). Throws what the student sees.
+ */
+async function assertRetakePrerequisites(
+  assignmentId: string,
+  studentId: string,
+  assignment: {
+    type: "practice" | "formative" | "summative";
+    correctionsCap: boolean;
+    cvtcRules: boolean | null;
+    retakeThreshold: number;
+  }
+): Promise<void> {
+  // The cap never applies in a CVTC course (Jon, Oct 13 2026).
+  const capped = correctionsCapOn(assignment);
+  const [first] = await db
+    .select({ percent: schema.attempts.percent })
+    .from(schema.attempts)
+    .where(
+      and(
+        eq(schema.attempts.assignmentId, assignmentId),
+        eq(schema.attempts.studentId, studentId),
+        ne(schema.attempts.status, "in_progress")
+      )
+    )
+    .orderBy(asc(schema.attempts.number))
+    .limit(1);
+  const rule = correctionsRule({
+    type: assignment.type,
+    capped,
+    cvtcRules: !!assignment.cvtcRules,
+    firstPercent: first?.percent ?? null,
+    threshold: assignment.retakeThreshold,
+  });
+  const lastAttemptId =
+    rule === "gate" || rule === "to_full"
+      ? await latestFinishedAttemptId(assignmentId, studentId)
+      : null;
+  const corrections = lastAttemptId ? await getCorrectionsSummary(lastAttemptId) : null;
+  // Capped formative at or above the threshold: corrections → 100% is the way up, never a retake.
+  if (rule === "to_full")
+    throw new ActionError(
+      corrections?.state === "approved" ? TO_FULL_TEXT.done : TO_FULL_TEXT.pending,
+      403
+    );
+  // Rule (PLAN.md §4): no retake until corrections on the last attempt are done (and approved, in
+  // that mode). Only CVTC rules (Oct 13 2026) take corrections off the gate.
+  if (corrections && !correctionsClear(corrections)) {
+    throw new ActionError(
+      corrections.state === "submitted"
+        ? "Your corrections are waiting for your teacher's approval."
+        : `Finish your corrections on attempt ${corrections.attemptNumber} first.`,
+      403
+    );
+  }
+  // Quiz relearning (Jon, Oct 14 2026): practice every missed target first, CVTC courses too.
+  if (assignment.type === "formative") {
+    const owed = practiceOwed(
+      quizPracticeNeeds({
+        type: assignment.type,
+        rule,
+        threshold: assignment.retakeThreshold,
+        data: await getQuizPracticeData(assignmentId, studentId),
+      })
+    );
+    if (owed.length) throw new ActionError(practiceOwedText(owed), 403);
+  }
+}
+
+/**
  * Start (or resume) an attempt. Rules: enrolled student only; inside the window;
- * access code if set; attempts remaining; corrections as `correctionsRule` says, the
- * same rule the student card follows (Jon, Oct 13 2026). An in-progress attempt is
- * resumed; one that ran past its deadline is submitted first.
+ * access code if set; attempts remaining; nothing waiting for a grade; then what
+ * `assertRetakePrerequisites` checks (corrections, quiz practice), and a summative's
+ * relearning gates: the same rules the student card follows. An in-progress attempt
+ * is resumed; one that ran past its deadline is submitted first.
  */
 export const startAttempt = withAuthz(async (assignmentId: string, accessCode: string | null) => {
   const access = await requireAssignmentAccess(assignmentId);
@@ -176,51 +253,8 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
     )) > 0
   )
     throw new ActionError(AWAITING_GRADE_TEXT, 403);
-  // What corrections do here (Jon, Oct 13 2026), worked out exactly as the student card does.
-  const [first] =
-    used > 0
-      ? await db
-          .select({ percent: schema.attempts.percent })
-          .from(schema.attempts)
-          .where(
-            and(
-              eq(schema.attempts.assignmentId, assignmentId),
-              eq(schema.attempts.studentId, access.userId),
-              ne(schema.attempts.status, "in_progress")
-            )
-          )
-          .orderBy(asc(schema.attempts.number))
-          .limit(1)
-      : [];
-  const rule = correctionsRule({
-    type: assignment.type,
-    capped,
-    retakesNeedUnlock: assignment.retakesNeedUnlock,
-    cvtcRules: !!assignment.cvtcRules,
-    firstPercent: first?.percent ?? null,
-    threshold: assignment.retakeThreshold,
-  });
-  const lastAttemptId =
-    used > 0 && (rule === "gate" || rule === "to_full")
-      ? await latestFinishedAttemptId(assignmentId, access.userId)
-      : null;
-  const corrections = lastAttemptId ? await getCorrectionsSummary(lastAttemptId) : null;
-  // Capped formative at or above the threshold: corrections → 100% is the way up, never a retake.
-  if (rule === "to_full")
-    throw new ActionError(
-      corrections?.state === "approved" ? TO_FULL_TEXT.done : TO_FULL_TEXT.pending,
-      403
-    );
-  // Rule (PLAN.md §4): no retake until corrections on the last attempt are done (and approved, in that mode).
-  // Exceptions: with the teacher's unlock (Oct 1 2026) or CVTC rules (Oct 13 2026) corrections never gate.
-  if (corrections && !correctionsClear(corrections)) {
-    throw new ActionError(
-      corrections.state === "submitted"
-        ? "Your corrections are waiting for your teacher's approval."
-        : `Finish your corrections on attempt ${corrections.attemptNumber} first.`,
-      403
-    );
-  }
+  // Corrections, a quiz's practice (Jon, Oct 13–14 2026), worked out exactly as the card does.
+  if (used > 0) await assertRetakePrerequisites(assignmentId, access.userId, assignment);
   // Rule (PLAN.md §2, §4): a summative retake covers only the required and opted-in targets, and only once every gate is open.
   let scope: string[] | null = null;
   if (used > 0) {
@@ -251,15 +285,29 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
 /**
  * Ask the teacher to unlock the next attempt (Jon, Oct 1 2026). Rules: the
  * assignment has "Retakes need my OK" on; a finished attempt exists and none is
- * open; attempts remain. The row is a request until the teacher grants it.
+ * open or waiting for a grade; attempts remain; corrections are clear and a
+ * quiz's missed targets practised (Jon, Oct 14 2026, decisions 4–5: "To-do, then
+ * ask"), and a summative's relearning gates open, as `startAttempt` checks them.
+ * The row is a request until the teacher grants it.
  */
 export const requestRetake = withAuthz(async (assignmentId: string) => {
   const access = await requireAssignmentAccess(assignmentId);
   if (access.as !== "student") throw new ActionError("Students only.", 403);
-  const assignment = await db.query.assignments.findFirst({
-    columns: { attemptsAllowed: true, retakesNeedUnlock: true, closesAt: true },
-    where: eq(schema.assignments.id, assignmentId),
-  });
+  const [assignment] = await db
+    .select({
+      attemptsAllowed: schema.assignments.attemptsAllowed,
+      retakesNeedUnlock: schema.assignments.retakesNeedUnlock,
+      closesAt: schema.assignments.closesAt,
+      correctionsCap: schema.assignments.correctionsCap,
+      retakeThreshold: schema.assignments.retakeThreshold,
+      type: schema.assessments.type,
+      cvtcRules: schema.courses.cvtcRules,
+    })
+    .from(schema.assignments)
+    .innerJoin(schema.assessments, eq(schema.assignments.assessmentId, schema.assessments.id))
+    .leftJoin(schema.courses, eq(schema.assessments.courseId, schema.courses.id))
+    .where(eq(schema.assignments.id, assignmentId))
+    .limit(1);
   if (!assignment) throw new ActionError("Not found.", 404);
   if (!assignment.retakesNeedUnlock)
     throw new ActionError("This assignment doesn't need a request.", 409);
@@ -285,6 +333,13 @@ export const requestRetake = withAuthz(async (assignmentId: string) => {
   const next = used + 1;
   if (assignment.attemptsAllowed !== null && next > assignment.attemptsAllowed)
     throw new ActionError("You've used every attempt.", 409);
+  // To-do, then ask (Jon, Oct 14 2026): the same prerequisites the start checks.
+  await assertRetakePrerequisites(assignmentId, access.userId, assignment);
+  if (assignment.type === "summative") {
+    const retake = await getRetakeStatus(assignmentId, access.userId);
+    if (retake && !retake.plan.canStart)
+      throw new ActionError(BLOCKER_TEXT[retake.plan.blocker!], 403);
+  }
   // Idempotent: a second request, or a request after the teacher already unlocked, changes nothing.
   await db
     .insert(schema.attemptUnlocks)
