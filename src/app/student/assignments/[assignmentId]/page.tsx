@@ -64,7 +64,11 @@ export default async function StudentAssignmentPage({
           <span>
             {a.className} · {a.teacherLastName}
           </span>
-          {a.closesAt ? (
+          {a.reopenedUntil ? (
+            <span data-reopened>
+              Reopened for you until <LocalTime date={a.reopenedUntil} />
+            </span>
+          ) : a.closesAt ? (
             <span>
               Due <LocalTime date={a.closesAt} />
             </span>
@@ -188,6 +192,28 @@ export default async function StudentAssignmentPage({
           {a.retakeWaitHours}-hour wait between attempts.
           {a.state === "awaiting_unlock" ? " Your teacher also has to unlock it." : ""}
         </p>
+      ) : a.state === "ask_to_retake" ? (
+        // Jon, Oct 14 2026 (decisions 1–2): a closed test can still be retaken if the teacher says yes.
+        <div
+          className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm"
+          data-ask-to-retake={a.askCounts ? "counted" : "optional"}
+        >
+          <span className="mr-auto inline-flex items-start gap-2">
+            <Lock className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
+            <span>
+              {a.askCounts
+                ? "This test is closed, and you still need a retake on some targets. Ask your teacher to let you retake it."
+                : "This test is closed. Want a higher score? Ask your teacher to let you retake it."}{" "}
+              If they say yes, it opens just for you until the end of the next school day.
+            </span>
+          </span>
+          <RequestRetakeButton
+            assignmentId={a.id}
+            attemptNumber={a.attemptsUsed + 1}
+            label="Ask to retake"
+            primary={a.askCounts}
+          />
+        </div>
       ) : a.state === "awaiting_unlock" ? (
         <div
           className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm"
@@ -196,9 +222,11 @@ export default async function StudentAssignmentPage({
           <span className="mr-auto inline-flex items-center gap-2">
             <Lock className="size-4 shrink-0 text-muted-foreground" aria-hidden />
             <span>
-              {a.retakeRequested
-                ? `Your request for attempt ${a.attemptsUsed + 1} is in. Your teacher will approve it, usually in class.`
-                : `Your teacher opens each retake. Ask for attempt ${a.attemptsUsed + 1} here, or in class.`}
+              {a.retakeRequested && a.status === "closed"
+                ? "You asked to retake this test. Waiting on your teacher: if they say yes, it opens just for you until the end of the next school day."
+                : a.retakeRequested
+                  ? `Your request for attempt ${a.attemptsUsed + 1} is in. Your teacher will approve it, usually in class.`
+                  : `Your teacher opens each retake. Ask for attempt ${a.attemptsUsed + 1} here, or in class.`}
             </span>
           </span>
           {a.retakeRequested ? null : (

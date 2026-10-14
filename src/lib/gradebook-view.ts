@@ -327,7 +327,8 @@ export function cellMarks(
 
 /**
  * The cell panel's plain sentence (research notes C, "Clicks": "Took try 1 Oct 9 (62%);
- * corrections 3 of 8 done"). Scores drop out when "Hide scores" is on (decision 6).
+ * corrections 3 of 8 done"; a closed test reopened for the student ends "reopened through Oct
+ * 15", Oct 14 2026). Scores drop out when "Hide scores" is on (decision 6).
  */
 export function cellSentence(
   cell: ClassGradebookCell,
@@ -395,6 +396,8 @@ export function cellSentence(
   }
   if (cell.retakeBy && (cell.cycle === "retake_available" || cell.cycle === "awaiting_unlock"))
     parts.push(`retake by ${fmt.time(cell.retakeBy)}`);
+  // Ask to retake on a closed test (Jon, Oct 14 2026, R4): open for them alone until then.
+  if (cell.reopenedUntil) parts.push(`reopened through ${fmt.date(cell.reopenedUntil)}`);
   const text = parts.join("; ");
   return text ? `${text[0].toUpperCase()}${text.slice(1)}.` : "";
 }

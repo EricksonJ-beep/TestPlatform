@@ -34,6 +34,8 @@ const PILL: Record<StudentAssignment["state"], { label: string; className: strin
   retake_required: { label: "Retake required", className: "bg-coral-soft text-[#B93E27]" },
   retake_available: { label: "Retake available", className: "bg-brand-soft text-brand-deep" },
   awaiting_unlock: { label: "Waiting for teacher", className: "bg-muted text-muted-foreground" },
+  // Jon, Oct 14 2026 (R6): a closed test the student may still ask to retake.
+  ask_to_retake: { label: "Ask to retake", className: "bg-brand-soft text-brand-deep" },
   done: { label: "Done for now", className: "bg-success-soft text-success-foreground" },
   closed: { label: "Closed", className: "bg-muted text-muted-foreground" },
 };
@@ -91,6 +93,8 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
         return a.retakeRequested
           ? { label: "View", primary: false }
           : { label: "Request retake", primary: true };
+      case "ask_to_retake":
+        return { label: "Ask to retake", primary: a.askCounts };
       case "awaiting_grade":
       case "done":
       case "closed":
@@ -131,6 +135,10 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
           {a.state === "upcoming" && a.opensAt ? (
             <span>
               Opens <LocalTime date={a.opensAt} />
+            </span>
+          ) : a.reopenedUntil ? (
+            <span data-reopened>
+              Reopened for you until <LocalTime date={a.reopenedUntil} />
             </span>
           ) : a.closesAt ? (
             <span>
@@ -174,9 +182,11 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
           {a.state === "awaiting_unlock" ? (
             <span className="inline-flex items-center gap-1" data-unlock-hint>
               <Lock className="size-3.5" aria-hidden />
-              {a.retakeRequested
-                ? `Attempt ${a.attemptsUsed + 1} requested`
-                : `Your teacher unlocks attempt ${a.attemptsUsed + 1}`}
+              {a.retakeRequested && a.status === "closed"
+                ? "Retake requested"
+                : a.retakeRequested
+                  ? `Attempt ${a.attemptsUsed + 1} requested`
+                  : `Your teacher unlocks attempt ${a.attemptsUsed + 1}`}
             </span>
           ) : null}
           {a.state === "awaiting_grade" ? null : a.final && a.resultsReleased && capped ? (

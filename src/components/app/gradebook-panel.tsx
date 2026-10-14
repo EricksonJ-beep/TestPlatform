@@ -194,6 +194,7 @@ function CellPanel({
             assignmentId={cell.assignmentId}
             student={student}
             unlock={cell.unlock}
+            reopenedUntil={cell.reopenedUntil}
             noRetake={cell.rule === "to_full"}
           />
         ) : null}
@@ -310,18 +311,23 @@ function AttemptChip({
  * "Retakes need my OK" for this student's next try (Jon, Oct 1 2026; inbox rules Oct 13): Approve
  * keeps an undo (Take back turns the unlock back into their request, `undoRetakeApproval`);
  * Decline asks first, because only the student can ask again; an unasked try can be unlocked
- * early (Ready, needs your OK) and taken back. At or above the line under the cap (`noRetake`)
- * the inbox's note says why no try will start, whatever is approved.
+ * early (Ready, needs your OK) and taken back. On a closed test (Oct 14 2026, R4) Approve reopens
+ * it for the student through the next school day, and the panel says until when. At or above
+ * the line under the cap (`noRetake`) the inbox's note says why no try will start, whatever is
+ * approved.
  */
 function UnlockControls({
   assignmentId,
   student,
   unlock,
+  reopenedUntil,
   noRetake,
 }: {
   assignmentId: string;
   student: Student;
   unlock: UnlockState;
+  /** The closed test is open for this student until then. */
+  reopenedUntil: Date | null;
   noRetake: boolean;
 }) {
   // Unlock, Decline and Take back all revalidate /app, which re-renders the Dashboard in place.
@@ -336,6 +342,12 @@ function UnlockControls({
             <span className="inline-flex items-center gap-1 text-xs text-success-foreground">
               <LockOpen className="size-3.5" aria-hidden />
               Try {n} unlocked
+              {reopenedUntil ? (
+                <>
+                  {" "}
+                  · reopened through <LocalTime date={reopenedUntil} mode="date" />
+                </>
+              ) : null}
             </span>
             <Button
               size="sm"
@@ -413,6 +425,12 @@ function UnlockControls({
           </Button>
         )}
       </span>
+      {unlock.reopensUntil && unlock.state !== "unlocked" ? (
+        <span className="text-xs text-muted-foreground" data-reopens>
+          Closed · {unlock.state === "requested" ? "Approve" : "Unlocking"} reopens it for{" "}
+          {student.firstName} through <LocalTime date={unlock.reopensUntil} mode="date" />
+        </span>
+      ) : null}
       {noRetake ? (
         <span className="inline-flex items-center gap-1 text-xs text-warning-foreground">
           <Clock className="size-3.5" aria-hidden />

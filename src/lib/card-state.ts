@@ -19,6 +19,7 @@ import {
   type QuizPracticeData,
   type QuizPracticeTarget,
 } from "@/lib/quiz-practice";
+import { effectiveClose, reopenedUntil } from "@/lib/reopen";
 import {
   correctionsRule,
   cycleState,
@@ -28,7 +29,14 @@ import {
 } from "@/lib/retakes";
 
 export type StudentCardState =
-  "upcoming" | "not_started" | "in_progress" | "awaiting_grade" | "closed" | CycleState;
+  | "upcoming"
+  | "not_started"
+  | "in_progress"
+  | "awaiting_grade"
+  | "closed"
+  /** A closed test the student may ask to retake (Jon, Oct 14 2026, R6). */
+  | "ask_to_retake"
+  | CycleState;
 
 /**
  * The corrections states, which a closed test keeps on the student's card (Jon, Oct 14 2026, R1):
@@ -68,6 +76,13 @@ export type CardInput = {
   awaitingGrade: boolean;
   /** Highest attempt number the teacher has unlocked for this student (0 = none). */
   unlockedThrough: number;
+  /** The student asked for the next attempt (used + 1) and the teacher hasn't answered yet. */
+  requestedNext: boolean;
+  /**
+   * An approved reopen for the attempt in play (`attempt_unlocks.open_until`, Jon Oct 14 2026,
+   * R5): the open attempt, or the next one when none is open. Null when there is none.
+   */
+  openUntil: Date | null;
   /** Attempt 1's percent and when it was submitted (the cap and its retake window read them). */
   firstPercent: number | null;
   firstSubmittedAt: Date | null;
@@ -83,6 +98,7 @@ export type CardInput = {
 };
 
 export type CardState = {
+  /** The window as it stands for this student: the assignment's close, or a later reopen (R5). */
   status: AssignmentStatus;
   /** What the student's card shows. */
   state: StudentCardState;
@@ -106,6 +122,18 @@ export type CardState = {
    * need practice before a retake, done or not; empty where it doesn't apply.
    */
   quizPractice: QuizPracticeTarget[];
+  /** The test closed and the teacher reopened it for this student until then (R4–R5). */
+  reopenedUntil: Date | null;
+  /**
+   * The student's request for the next attempt is current: asked, not answered, on a test that
+   * needs the teacher's OK or has closed (the Needs you inbox's `staleRequest` rule).
+   */
+  retakeRequested: boolean;
+  /**
+   * "Ask to retake" is a counted to-do (R6): the retake would be required if the test were open (a
+   * summative with targets below the line); otherwise it is optional ("Want a higher score?").
+   */
+  askCounts: boolean;
 };
 
 /**
@@ -113,13 +141,21 @@ export type CardState = {
  * even past the close (Finish later, Oct 13 2026: it is finished in class); answers still waiting
  * for the teacher's grade make it "awaiting grade", open or closed (Oct 14 2026: no partial score,
  * no retake until it's graded); a closed test keeps its corrections states (Jon, Oct 14 2026, R1:
- * corrections stay open after a close) and otherwise reads "closed"; an open one follows the
+ * corrections stay open after a close), reads "ask to retake" once a retake is otherwise ready
+ * (R6: attempts left; corrections, a quiz's practice, a summative's gates done) or "awaiting
+ * unlock" once the student has asked, and otherwise reads "closed"; an open one follows the
  * learning cycle (`cycleState`, with what corrections do from `correctionsRule`: CVTC rules, the
  * cap; and quiz relearning from `quizPracticeNeeds`), or "not started" before attempt 1. The
- * cap's retake window counts from attempt 1.
+ * student's close is the assignment's or a later approved reopen (R5, `effectiveClose`). The cap's
+ * retake window counts from attempt 1 and bounds a retake on an open test only: a closed test's
+ * retake is the teacher's call, and while reopened the window doesn't apply (decision 2).
  */
 export function deriveCardState(input: CardInput, now: Date): CardState {
-  const status = assignmentStatus(input, now);
+  const status = assignmentStatus(
+    { opensAt: input.opensAt, closesAt: effectiveClose(input.closesAt, input.openUntil) },
+    now
+  );
+  const reopened = reopenedUntil(input.closesAt, input.openUntil, now);
   // Corrections cap (Jon, Oct 8 2026): formatives only, never in a CVTC course (Oct 13 2026).
   const capped = correctionsCapOn(input);
   const rule = correctionsRule({
@@ -140,38 +176,60 @@ export function deriveCardState(input: CardInput, now: Date): CardState {
         })
       : [];
   // The window bounds a retake, so it means nothing where no retake is offered: at or above the
-  // threshold under the cap, corrections are the way up (decision 2).
+  // threshold under the cap, corrections are the way up (decision 2). Nor on a closed test, where
+  // the student asks and the teacher decides, or while the teacher has reopened it (Oct 14 2026).
   const retakeBy =
-    capped && rule !== "to_full"
+    capped && rule !== "to_full" && status === "open" && !reopened
       ? retakeWindowEnd(input.retakeWindowDays, input.firstSubmittedAt)
       : null;
   const windowClosed = retakeBy !== null && now >= retakeBy;
-  const cycle =
-    input.attemptsUsed > 0 && !input.inProgress
-      ? cycleState({
-          type: input.type,
-          // CVTC rules (Oct 13 2026): the rule keeps corrections off the gate.
-          corrections: input.corrections,
-          rule,
-          attemptsUsed: input.attemptsUsed,
-          attemptsAllowed: input.attemptsAllowed,
-          bestPercent:
-            capped && input.finalPercent !== null ? input.finalPercent : input.bestPercent,
-          plan: input.plan,
-          needsUnlock:
-            input.retakesNeedUnlock && needsUnlock(input.attemptsUsed, input.unlockedThrough),
-          correctionsCap: capped,
-          firstPercent: input.firstPercent,
-          threshold: input.retakeThreshold,
-          windowClosed,
-          practiceOwed: practiceOwed(quizPractice).length > 0,
-        })
-      : null;
+  const cycleInput: Parameters<typeof cycleState>[0] = {
+    type: input.type,
+    // CVTC rules (Oct 13 2026): the rule keeps corrections off the gate.
+    corrections: input.corrections,
+    rule,
+    attemptsUsed: input.attemptsUsed,
+    attemptsAllowed: input.attemptsAllowed,
+    bestPercent: capped && input.finalPercent !== null ? input.finalPercent : input.bestPercent,
+    plan: input.plan,
+    needsUnlock: input.retakesNeedUnlock && needsUnlock(input.attemptsUsed, input.unlockedThrough),
+    correctionsCap: capped,
+    firstPercent: input.firstPercent,
+    threshold: input.retakeThreshold,
+    windowClosed,
+    practiceOwed: practiceOwed(quizPractice).length > 0,
+  };
+  const finished = input.attemptsUsed > 0 && !input.inProgress;
+  const cycle = finished ? cycleState(cycleInput) : null;
+  // Where the cycle stands with the teacher's OK left aside: a retake ready to ask for.
+  const ready = finished ? cycleState({ ...cycleInput, needsUnlock: false }) : null;
+  const retakeReady = ready === "retake_required" || ready === "retake_available";
+  const retakeRequested = input.requestedNext && (input.retakesNeedUnlock || status === "closed");
   let state: StudentCardState;
   if (status === "scheduled") state = "upcoming";
   else if (input.inProgress) state = "in_progress";
   else if (input.awaitingGrade) state = "awaiting_grade";
-  else if (status === "closed") state = cycle && CORRECTIONS_STATES.has(cycle) ? cycle : "closed";
+  else if (status === "closed")
+    state =
+      cycle && CORRECTIONS_STATES.has(cycle)
+        ? cycle
+        : retakeReady
+          ? retakeRequested
+            ? "awaiting_unlock"
+            : "ask_to_retake"
+          : "closed";
   else state = cycle ?? "not_started";
-  return { status, state, cycle, capped, rule, retakeBy, windowClosed, quizPractice };
+  return {
+    status,
+    state,
+    cycle,
+    capped,
+    rule,
+    retakeBy,
+    windowClosed,
+    quizPractice,
+    reopenedUntil: reopened,
+    retakeRequested,
+    askCounts: state === "ask_to_retake" && ready === "retake_required",
+  };
 }

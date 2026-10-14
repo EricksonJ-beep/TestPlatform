@@ -17,6 +17,8 @@ const NEEDS_YOU = new Set<StudentCardState>([
   "relearning",
   "retake_required",
   "retake_available",
+  // A closed test the student may ask to retake (Jon, Oct 14 2026, R6).
+  "ask_to_retake",
 ]);
 
 export function sectionOf(state: StudentCardState): AssessmentSection {

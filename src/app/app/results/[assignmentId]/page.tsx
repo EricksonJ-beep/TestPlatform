@@ -115,6 +115,7 @@ export default async function AssignmentResultsPage({
           corrections={corrections?.rows ?? null}
           summative={summative}
           retakesNeedUnlock={a.retakesNeedUnlock}
+          closed={a.status === "closed"}
           attemptsAllowed={a.attemptsAllowed}
         />
       </section>

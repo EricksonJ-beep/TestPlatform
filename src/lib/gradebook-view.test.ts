@@ -34,6 +34,9 @@ const card = (c: Partial<CardState> = {}): CardState => ({
   retakeBy: null,
   windowClosed: false,
   quizPractice: [],
+  reopenedUntil: null,
+  retakeRequested: false,
+  askCounts: false,
   ...c,
 });
 const tag = (i: Partial<CellInput>) =>
@@ -87,6 +90,7 @@ const cell = (
     retake: null,
     quizPractice: [],
     unlock: null,
+    reopenedUntil: null,
     retakeBy: null,
     tabSwitches: 0,
     movedUpThisWeek: false,
@@ -367,6 +371,11 @@ describe("one cell", () => {
     const eli = book().rows[2].cells[1];
     expect(cellSentence(eli, column(), { hideScores: false, fmt })).toBe(
       "Took try 1 Oct 9 (62%); try 2 is paused at 3 of 10 answered; they asked to finish."
+    );
+    // A closed test the teacher reopened for this student (Oct 14 2026, R4).
+    const reopened = cell({ reopenedUntil: hours(30) });
+    expect(cellSentence(reopened, column({ status: "closed" }), { hideScores: true, fmt })).toBe(
+      "Took try 1 Oct 9; reopened through Oct 9."
     );
   });
 });

@@ -22,9 +22,11 @@ import {
 } from "@/lib/needs-you";
 import { currentPause, type PauseReason } from "@/lib/pause";
 import { practiceOwed, quizPracticeNeeds } from "@/lib/quiz-practice";
+import { effectiveClose, endOfNextSchoolDay } from "@/lib/reopen";
 import { loadCorrectionScopes, scopeSummary } from "@/lib/queries/corrections";
 import { listPendingVerifications, type PendingVerification } from "@/lib/queries/practice";
 import { loadPracticeResults, loadPracticeTargets } from "@/lib/queries/quiz-practice";
+import { attemptOpenUntil } from "@/lib/queries/reopen";
 import { countUnmatchedEmails } from "@/lib/queries/worksheets";
 import { correctionsRule, planRetake, retakeTargets } from "@/lib/retakes";
 
@@ -84,6 +86,7 @@ export async function listPausedAttempts(
       lastActiveAt: schema.attempts.lastActiveAt,
       askedAt: schema.attempts.resumeRequestedAt,
       closesAt: schema.assignments.closesAt,
+      openUntil: attemptOpenUntil,
       ...placeColumns,
     })
     .from(schema.attempts)
@@ -97,7 +100,8 @@ export async function listPausedAttempts(
     );
   const out: PausedAttempt[] = [];
   for (const r of rows) {
-    const point = currentPause(r, r.closesAt, now);
+    // The student's own close: a reopened retake pauses when its reopen ends (R5).
+    const point = currentPause(r, effectiveClose(r.closesAt, r.openUntil), now);
     if (!point) continue;
     out.push({
       attemptId: r.attemptId,
@@ -137,14 +141,19 @@ export type RetakeRequest = {
   stale: StaleReason | null;
   /** What would still stop the try from starting once approved; null when nothing would. */
   blocker: RequestBlocker | null;
+  /**
+   * The test has closed: Approve reopens it for the student until then, the end of the next
+   * school day (Jon, Oct 14 2026, R4). Null on an open test.
+   */
+  reopensUntil: Date | null;
 };
 
 /**
  * Pending retake requests on the teacher's assignments, oldest first (Jon, Oct 1 2026; Oct 13
  * 2026 for current vs leftover). A current request carries what would still block the start
- * after approval (wait time, retake window, closed, no retake at their score, relearning gates,
- * and on a quiz its corrections and practice: Jon, Oct 14 2026, decisions 4–5), checked the way
- * `startAttempt` checks it. Reads only: a summative's relearning gates come from the stored gate
+ * after approval (wait time, retake window, no retake at their score, relearning gates, and on a
+ * quiz its corrections and practice: Jon, Oct 14 2026, decisions 4–5), checked the way
+ * `startAttempt` checks it; on a closed test, until when Approve reopens it (R4). Reads only: a summative's relearning gates come from the stored gate
  * rows (a pair with none reads its gates shut, as in the class gradebook), never from
  * `getRetakeStatus`, which writes missing rows; all of them in three batched reads, and a quiz's
  * corrections and practice in three more.
@@ -210,7 +219,10 @@ export async function listRetakeRequests(
     .orderBy(asc(u.requestedAt));
 
   const out = rows.map((r) => {
-    const stale = staleRequest({ ...r, enrolled: !!r.enrolled });
+    // A closed test's request (Jon, Oct 14 2026, R4): Approve reopens it through the next school day.
+    const closed = !!r.closesAt && r.closesAt.getTime() <= now.getTime();
+    const reopensUntil = closed ? endOfNextSchoolDay(now) : null;
+    const stale = staleRequest({ ...r, closed, enrolled: !!r.enrolled });
     let blocker: RequestBlocker | null = null;
     // The cap's retake window applies only where the cap does (never in a CVTC course).
     const capped = correctionsCapOn(r);
@@ -233,10 +245,11 @@ export async function listRetakeRequests(
               used: r.used,
               lastSubmittedAt: asDate(r.lastSubmittedAt),
               firstSubmittedAt: asDate(r.firstSubmittedAt),
+              reopenUntil: reopensUntil,
               now,
             });
     }
-    return { r, stale, blocker, rule };
+    return { r, stale, blocker, rule, reopensUntil };
   });
 
   // A current quiz request with nothing else in the way: its corrections, then its practice
@@ -357,7 +370,7 @@ export async function listRetakeRequests(
     }
   }
 
-  return out.map(({ r, stale, blocker }) => ({
+  return out.map(({ r, stale, blocker, reopensUntil }) => ({
     id: r.id,
     assignmentId: r.assignmentId,
     studentId: r.studentId,
@@ -371,6 +384,7 @@ export async function listRetakeRequests(
     bestPercent: r.bestPercent === null ? null : Number(r.bestPercent),
     stale,
     blocker,
+    reopensUntil: stale ? null : reopensUntil,
   }));
 }
 

@@ -21,6 +21,8 @@ const base: CardInput = {
   inProgress: false,
   awaitingGrade: false,
   unlockedThrough: 0,
+  requestedNext: false,
+  openUntil: null,
   firstPercent: 40,
   firstSubmittedAt: ago(1),
   bestPercent: 40,
@@ -64,7 +66,7 @@ describe("deriveCardState (who owes what)", () => {
     });
   });
 
-  it("keeps the corrections states on a closed test; anything else there reads closed (R1, Oct 14 2026)", () => {
+  it("keeps the corrections states on a closed test; a ready retake there is Ask to retake (R1, R6, Oct 14 2026)", () => {
     // This used to read "closed" on the student's card while the teacher saw corrections owed.
     const closed = { ...base, closesAt: ago(0.5) };
     expect(deriveCardState(closed, now)).toMatchObject({
@@ -78,12 +80,21 @@ describe("deriveCardState (who owes what)", () => {
       );
     const high = { ...closed, firstPercent: 85, bestPercent: 85, finalPercent: 85 };
     expect(deriveCardState(high, now).state).toBe("corrections_to_full");
-    // Corrections done: the retake can't start on a closed test, so the card reads closed.
+    // Corrections done: the retake can't start on a closed test, but the student may ask for
+    // one (R6); an optional retake (the quiz is at 80% after corrections) isn't a counted to-do.
     expect(
       deriveCardState({ ...closed, corrections: "approved", finalPercent: 80 }, now)
-    ).toMatchObject({ state: "closed", cycle: "retake_available" });
+    ).toMatchObject({ state: "ask_to_retake", cycle: "retake_available", askCounts: false });
+    // No tries left: nothing to ask for, so it reads closed.
+    expect(
+      deriveCardState(
+        { ...closed, corrections: "approved", finalPercent: 80, attemptsAllowed: 1 },
+        now
+      )
+    ).toMatchObject({ state: "closed", cycle: "done", askCounts: false });
     // A paused test is finished in class even after the close (Finish later).
     expect(deriveCardState({ ...closed, inProgress: true }, now).state).toBe("in_progress");
+    // A summative with targets below the line: asking is a counted to-do.
     const summative = {
       ...closed,
       type: "summative" as const,
@@ -91,9 +102,17 @@ describe("deriveCardState (who owes what)", () => {
       plan: plan({ required: ["lt3"], selected: ["lt3"] }),
     };
     expect(deriveCardState(summative, now)).toMatchObject({
-      state: "closed",
+      state: "ask_to_retake",
       cycle: "retake_required",
+      askCounts: true,
     });
+    // Relearning not done yet: there is nothing to ask for, so it reads closed.
+    expect(
+      deriveCardState(
+        { ...summative, plan: plan({ required: ["lt3"], selected: ["lt3"], locked: ["lt3"] }) },
+        now
+      )
+    ).toMatchObject({ state: "closed", cycle: "relearning", askCounts: false });
   });
 
   it("follows the corrections rule: cap to 100%, teacher unlocks, CVTC rules", () => {
@@ -225,5 +244,63 @@ describe("deriveCardState (who owes what)", () => {
     expect(
       deriveCardState({ ...corrected, type: "summative", correctionsCap: false }, now).quizPractice
     ).toEqual([]);
+  });
+
+  it("asks, then reopens: a closed test's retake through the teacher (R4–R6, Oct 14 2026)", () => {
+    // Viola: a closed capped quiz at 40%, corrections approved (80%), first try 10 days ago, so
+    // the cap's 7-day window has passed too.
+    const closed = {
+      ...base,
+      closesAt: ago(2),
+      corrections: "approved" as const,
+      finalPercent: 80,
+      firstSubmittedAt: ago(10),
+    };
+    // The window bounds a retake on an open test only: on a closed one the teacher decides.
+    expect(deriveCardState(closed, now)).toMatchObject({
+      status: "closed",
+      state: "ask_to_retake",
+      cycle: "retake_available",
+      retakeBy: null,
+      windowClosed: false,
+      askCounts: false,
+      retakeRequested: false,
+      reopenedUntil: null,
+    });
+    // Asked: waiting on the teacher, with "Retakes need my OK" or without.
+    for (const retakesNeedUnlock of [false, true])
+      expect(
+        deriveCardState({ ...closed, retakesNeedUnlock, requestedNext: true }, now)
+      ).toMatchObject({ state: "awaiting_unlock", retakeRequested: true });
+    // Approved through the end of tomorrow: open for her alone, the window ignored.
+    const until = new Date(now.getTime() + DAY);
+    const reopened = { ...closed, unlockedThrough: 2, openUntil: until };
+    expect(deriveCardState(reopened, now)).toMatchObject({
+      status: "open",
+      state: "retake_available",
+      reopenedUntil: until,
+      retakeBy: null,
+      windowClosed: false,
+    });
+    expect(deriveCardState({ ...reopened, retakesNeedUnlock: true }, now).state).toBe(
+      "retake_available"
+    );
+    // Taking it: the open attempt keeps the reopen until it ends.
+    expect(deriveCardState({ ...reopened, attemptsUsed: 2, inProgress: true }, now)).toMatchObject({
+      status: "open",
+      state: "in_progress",
+      reopenedUntil: until,
+    });
+    // Once the reopen ends, the test reads closed again and she may ask again.
+    expect(deriveCardState(reopened, new Date(until.getTime() + 1))).toMatchObject({
+      status: "closed",
+      state: "ask_to_retake",
+      reopenedUntil: null,
+    });
+    // A request on an open test without "Retakes need my OK" is a leftover: not "requested".
+    expect(deriveCardState({ ...closed, closesAt: null, requestedNext: true }, now)).toMatchObject({
+      state: "done",
+      retakeRequested: false,
+    });
   });
 });

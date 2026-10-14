@@ -412,10 +412,12 @@ describe("R3: practice on every missed target before a quiz retake", () => {
       done: false,
     });
     expect((await card(ids.viola, "lt1Quiz")).cycle).toBe("relearning");
-    // 80%: done. The closed quiz has nothing left to do until a retake is possible again.
+    // 80%: done. The closed quiz's retake is ready, so Viola may ask for it (R6): optional, since
+    // corrections already lifted the quiz to 80%.
     expect((await build(ids.viola, ids.bio, ids.lt.lt1, 4)).percent).toBe(80);
     expect(await card(ids.viola, "lt1Quiz")).toMatchObject({
-      state: "closed",
+      state: "ask_to_retake",
+      askCounts: false,
       cycle: "retake_available",
       quizPractice: [{ code: "U2.LT1", best: 80, done: true }],
     });

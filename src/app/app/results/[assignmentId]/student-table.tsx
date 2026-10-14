@@ -32,6 +32,8 @@ type Props = {
   corrections: CorrectionsProgressRow[] | null;
   summative: boolean;
   retakesNeedUnlock: boolean;
+  /** The test has closed: a student's "Ask to retake" is answered here too (Oct 14 2026, R4). */
+  closed: boolean;
   attemptsAllowed: number | null;
 };
 
@@ -52,6 +54,7 @@ export function StudentResultsTable({
   corrections,
   summative,
   retakesNeedUnlock,
+  closed,
   attemptsAllowed,
 }: Props) {
   const [open, setOpen] = useState<Set<string>>(() => new Set());
@@ -122,8 +125,11 @@ export function StudentResultsTable({
               const isOpen = open.has(s.studentId);
               const inProgress = s.attempts.some((t) => t.status === "in_progress");
               const next = s.attempts.length + 1;
+              // On a closed test, with the setting or without, a student who asked to retake (or
+              // was reopened) gets the same controls; Approve reopens it for them (R4).
               const offerUnlock =
-                retakesNeedUnlock &&
+                (retakesNeedUnlock ||
+                  (closed && (s.requestedAt !== null || s.unlockedThrough >= next))) &&
                 s.attempts.length > 0 &&
                 !inProgress &&
                 (attemptsAllowed === null || next <= attemptsAllowed);

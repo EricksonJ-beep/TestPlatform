@@ -8,10 +8,11 @@
  * - one row of counts and newest moments across everything the page shows for the teacher (the
  *   "Needs you" list covers all their courses): attempts starting, submitting, pausing, asked
  *   about, graded; corrections sent in, approved or returned (not drafts, which change no tag);
- *   retake unlocks and requests; final scores; relearning gates; check-offs; practice the
- *   class students finish (a quiz's relearning reads it, Oct 14 2026); assignment settings
- *   and windows opening or closing; rosters; unmatched worksheet emails (one per worksheet and
- *   email, as the inbox counts them); resume codes issued (the header shows the live one); and
+ *   retake unlocks and requests, and a closed test's reopen ending (Oct 14 2026); final scores;
+ *   relearning gates; check-offs; practice the class students finish (a quiz's relearning reads
+ *   it, Oct 14 2026); assignment settings and windows opening or closing; rosters; unmatched
+ *   worksheet emails (one per worksheet and email, as the inbox counts them); resume codes
+ *   issued (the header shows the live one); and
  *   the time boundaries that change a tag with nothing written: a retake wait ending on a test
  *   that needs the teacher's OK ("Unlocked · after 2:15", "Can start after"), the cap's retake
  *   window closing, and its 48-hour "Retake by" mark (each a count of boundaries already passed);
@@ -28,6 +29,8 @@ import { db, schema } from "@/db";
 import { feedGroups, parseFeedFilter, type FeedFilter } from "@/lib/activity-filter";
 import { newestActivityAt } from "@/lib/activity-log";
 import { openTestsPart, stampOf } from "@/lib/live-refresh";
+import { attemptOpenUntil } from "@/lib/queries/reopen";
+import { effectiveClose } from "@/lib/reopen";
 
 /** Newest moment of a column as epoch seconds (0 when none); a fixed text form for the stamp. */
 const newest = (col: string) => sql.raw(`coalesce(extract(epoch from max(${col})), 0)`);
@@ -49,7 +52,8 @@ export async function getDashboardVersion(
       .select({
         attempts: sql<string>`(select concat_ws(':', count(*), count(a.submitted_at), count(a.paused_at), count(a.resume_requested_at), count(a.graded_at), ${newest("a.started_at")}, ${newest("a.submitted_at")}, ${newest("a.paused_at")}, ${newest("a.resume_requested_at")}, ${newest("a.graded_at")}) from ${schema.attempts} a where a.assignment_id in ${mine})`,
         corrections: sql<string>`(select concat_ws(':', count(*) filter (where c.status = 'submitted'), count(*) filter (where c.status = 'approved'), count(*) filter (where c.status = 'returned'), ${newest("c.submitted_at")}, ${newest("c.reviewed_at")}) from ${schema.corrections} c join ${schema.attempts} a on a.id = c.attempt_id where a.assignment_id in ${mine})`,
-        unlocks: sql<string>`(select concat_ws(':', count(*), count(u.granted_at), ${newest("u.requested_at")}, ${newest("u.granted_at")}) from ${schema.attemptUnlocks} u where u.assignment_id in ${mine})`,
+        // A reopened closed test (Oct 14 2026) closes again for its student at `open_until`.
+        unlocks: sql<string>`(select concat_ws(':', count(*), count(u.granted_at), ${newest("u.requested_at")}, ${newest("u.granted_at")}, count(*) filter (where u.open_until <= ${at})) from ${schema.attemptUnlocks} u where u.assignment_id in ${mine})`,
         finals: sql<string>`(select concat_ws(':', count(*), ${newest("f.computed_at")}) from ${schema.assignmentFinalScores} f where f.assignment_id in ${mine})`,
         gates: sql<string>`(select concat_ws(':', count(*), count(*) filter (where g.corrections_ok), count(*) filter (where g.activity_ok), count(*) filter (where g.practice_ok), count(*) filter (where g.opted_in), count(g.unlocked_at)) from ${schema.retakeGates} g where g.assignment_id in ${mine})`,
         assignments: sql<string>`(select concat_ws(':', count(*), count(*) filter (where s.opens_at <= ${at}), count(*) filter (where s.closes_at <= ${at}), ${newest("s.updated_at")}) from ${schema.assignments} s where s.owner_id = ${teacherId})`,
@@ -81,6 +85,7 @@ export async function getDashboardVersion(
             pauseReason: schema.attempts.pauseReason,
             lastActiveAt: schema.attempts.lastActiveAt,
             closesAt: schema.assignments.closesAt,
+            openUntil: attemptOpenUntil,
           })
           .from(schema.attempts)
           .innerJoin(schema.assignments, eq(schema.attempts.assignmentId, schema.assignments.id))
@@ -115,6 +120,10 @@ export async function getDashboardVersion(
     s?.worksheets,
     s?.resumeCodes,
     s?.boundaries,
-    openTestsPart(open, now),
+    // The student's own close: a reopened retake pauses when its reopen ends (R5).
+    openTestsPart(
+      open.map((r) => ({ ...r, closesAt: effectiveClose(r.closesAt, r.openUntil) })),
+      now
+    ),
   ]);
 }

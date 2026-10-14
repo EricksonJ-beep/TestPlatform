@@ -162,6 +162,24 @@ describe("canStartAttempt", () => {
       canStartAttempt({ assignment: { ...open, attemptsAllowed: null }, attemptsUsed: 99, now })
     ).toEqual({ ok: true });
   });
+  it("a retake approved after the close starts until its reopen ends, the cap's window ignored (Oct 14 2026)", () => {
+    const closed = { ...open, closesAt: at("2026-09-20T05:00:00Z"), retakeWindowDays: 7 };
+    const retake = {
+      assignment: closed,
+      attemptsUsed: 1,
+      firstSubmittedAt: at("2026-09-01T14:00:00Z"),
+    };
+    expect(canStartAttempt({ ...retake, now })).toMatchObject({ reason: "closed" });
+    const openUntil = at("2026-09-23T04:59:59.999Z");
+    expect(canStartAttempt({ ...retake, openUntil, now })).toEqual({ ok: true });
+    // Everything else still applies: the attempt limit, and the end of the reopen.
+    expect(canStartAttempt({ ...retake, attemptsUsed: 3, openUntil, now })).toMatchObject({
+      reason: "no_attempts_left",
+    });
+    expect(canStartAttempt({ ...retake, openUntil, now: openUntil })).toMatchObject({
+      reason: "closed",
+    });
+  });
 });
 
 describe("attemptDueAt", () => {

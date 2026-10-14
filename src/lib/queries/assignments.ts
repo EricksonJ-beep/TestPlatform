@@ -10,6 +10,7 @@ import { deriveCardState, type StudentCardState } from "@/lib/card-state";
 import type { PracticeResult, QuizPracticeTarget } from "@/lib/quiz-practice";
 import { getCorrectionsSummary, type CorrectionsSetSummary } from "@/lib/queries/corrections";
 import { loadPracticeResults, loadPracticeTargets } from "@/lib/queries/quiz-practice";
+import { openUntilInPlay } from "@/lib/queries/reopen";
 import { getRetakeStatus, type RetakeStatus } from "@/lib/queries/retakes";
 import type { CorrectionsRule, CycleState } from "@/lib/retakes";
 
@@ -157,8 +158,15 @@ export type StudentAssignment = {
    * corrections (and a quiz's practice) are done (Jon, Oct 14 2026, decision 4).
    */
   retakesNeedUnlock: boolean;
-  /** The student has asked for the next attempt and the teacher hasn't answered yet. */
+  /**
+   * The student has asked for the next attempt and the teacher hasn't answered yet, on a test
+   * that needs the teacher's OK or has closed (Jon, Oct 14 2026: ask to retake, R4).
+   */
   retakeRequested: boolean;
+  /** The test closed and the teacher reopened it for this student until then (R4–R5). */
+  reopenedUntil: Date | null;
+  /** "Ask to retake" is a counted to-do: the retake would be required if the test were open (R6). */
+  askCounts: boolean;
   /**
    * Corrections cap (formatives, Jon Oct 8 2026) as it applies here (never in a CVTC course), and
    * the threshold it lifts to.
@@ -177,6 +185,7 @@ export type StudentAssignment = {
   firstPercent: number | null;
   /** The counting score as the gradebook has it, and how it came about. */
   final: { percent: number; basis: FinalBasis | null } | null;
+  /** The window as it stands for this student: the close, or a later approved reopen (R5). */
   status: AssignmentStatus;
   attemptsUsed: number;
   inProgressAttemptId: string | null;
@@ -257,7 +266,10 @@ export async function listStudentAssignments(
           (v: unknown) => (typeof v === "string" ? JSON.parse(v) : v) as Record<string, number>
         ),
       unlockedThrough: sql<number>`(select coalesce(max(u.attempt_number), 0)::int from ${schema.attemptUnlocks} u where u.assignment_id = ${schema.assignments.id} and u.student_id = ${studentId} and u.granted_at is not null)`,
-      requestedThrough: sql<number>`(select coalesce(max(u.attempt_number), 0)::int from ${schema.attemptUnlocks} u where u.assignment_id = ${schema.assignments.id} and u.student_id = ${studentId} and u.granted_at is null)`,
+      // A request for the next try (attempts + 1) the teacher hasn't answered.
+      requestedNext: sql<boolean>`exists (select 1 from ${schema.attemptUnlocks} u where u.assignment_id = ${schema.assignments.id} and u.student_id = ${studentId} and u.granted_at is null and u.attempt_number = (select count(*) + 1 from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId}))`,
+      // A retake the teacher approved after the close (Jon, Oct 14 2026, R5).
+      openUntil: openUntilInPlay(sql`${schema.assignments.id}`, sql`${studentId}`),
       attemptsUsed: sql<number>`(select count(*)::int from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId})`,
       inProgressAttemptId: sql<
         string | null
@@ -323,7 +335,8 @@ export async function listStudentAssignments(
         finalBasis,
         retakeWindowDays,
         unlockedThrough,
-        requestedThrough,
+        requestedNext,
+        openUntil,
         correctionsCap,
         cvtcRules: cvtcRaw,
         ...r
@@ -353,6 +366,8 @@ export async function listStudentAssignments(
             inProgress: !!r.inProgressAttemptId,
             awaitingGrade: !!r.awaitingGrade,
             unlockedThrough,
+            requestedNext: !!requestedNext,
+            openUntil,
             firstPercent,
             firstSubmittedAt: firstSubmittedAt ? new Date(firstSubmittedAt) : null,
             bestPercent: r.bestPercent === null ? null : Number(r.bestPercent),
@@ -396,8 +411,11 @@ export async function listStudentAssignments(
             ? { answered: Math.min(inProgressAnswered, inProgressTotal), total: inProgressTotal }
             : null,
           bestPercent: r.bestPercent === null ? null : Number(r.bestPercent),
-          nextAttemptAt: next && next > now ? next : null,
-          retakeRequested: r.retakesNeedUnlock && requestedThrough === r.attemptsUsed + 1,
+          // The wait means nothing while the test is closed to the student (ask to retake).
+          nextAttemptAt: next && next > now && card.status === "open" ? next : null,
+          retakeRequested: card.retakeRequested,
+          reopenedUntil: card.reopenedUntil,
+          askCounts: card.askCounts,
         };
       }
     )

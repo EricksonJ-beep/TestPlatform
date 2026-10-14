@@ -21,6 +21,8 @@ import { correctionsCapOn } from "@/lib/grading";
 import { practiceOwed, practiceOwedText, quizPracticeNeeds } from "@/lib/quiz-practice";
 import { getCorrectionsSummary, latestFinishedAttemptId } from "@/lib/queries/corrections";
 import { getQuizPracticeData } from "@/lib/queries/quiz-practice";
+import { openUntilFor } from "@/lib/queries/reopen";
+import { effectiveClose } from "@/lib/reopen";
 import { getRetakeStatus } from "@/lib/queries/retakes";
 import { BLOCKER_TEXT, correctionsRule, TO_FULL_TEXT } from "@/lib/retakes";
 import {
@@ -130,7 +132,8 @@ async function assertRetakePrerequisites(
 }
 
 /**
- * Start (or resume) an attempt. Rules: enrolled student only; inside the window;
+ * Start (or resume) an attempt. Rules: enrolled student only; inside the student's
+ * window (the close, or a reopen the teacher approved after it: Oct 14 2026, R5);
  * access code if set; attempts remaining; nothing waiting for a grade; then what
  * `assertRetakePrerequisites` checks (corrections, quiz practice), and a summative's
  * relearning gates: the same rules the student card follows. An in-progress attempt
@@ -224,6 +227,8 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
     lastSubmittedAt,
     firstSubmittedAt,
     unlockedThrough: unlock?.through ?? 0,
+    // A retake the teacher approved after the close (Jon, Oct 14 2026, R5).
+    openUntil: used > 0 ? await openUntilFor(assignmentId, access.userId, used + 1) : null,
     accessCode,
     now,
   });
@@ -283,16 +288,22 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
 });
 
 /**
- * Ask the teacher to unlock the next attempt (Jon, Oct 1 2026). Rules: the
- * assignment has "Retakes need my OK" on; a finished attempt exists and none is
- * open or waiting for a grade; attempts remain; corrections are clear and a
- * quiz's missed targets practised (Jon, Oct 14 2026, decisions 4–5: "To-do, then
- * ask"), and a summative's relearning gates open, as `startAttempt` checks them.
- * The row is a request until the teacher grants it.
+ * Ask the teacher for the next attempt (Jon, Oct 1 2026). Rules: the assignment has
+ * "Retakes need my OK" on, or it has closed for this student, with the setting or
+ * without (Jon, Oct 14 2026, decision 1: "Students ask, I approve"; R4); a finished
+ * attempt exists and none is open or waiting for a grade; attempts remain;
+ * corrections are clear and a quiz's missed targets practised (decisions 4–5:
+ * "To-do, then ask"), and a summative's relearning gates open, as `startAttempt`
+ * checks them. The cap's retake window doesn't stop a closed test's request: the
+ * teacher decides (decision 2). The row is a request until the teacher grants it.
+ * Idempotent: asking again changes nothing (and logs nothing). On a closed test an
+ * unlock that can no longer open it (given before the close, or a reopen that has
+ * ended) becomes a fresh request, so it reaches the teacher's Needs you.
  */
 export const requestRetake = withAuthz(async (assignmentId: string) => {
   const access = await requireAssignmentAccess(assignmentId);
   if (access.as !== "student") throw new ActionError("Students only.", 403);
+  const now = new Date();
   const [assignment] = await db
     .select({
       attemptsAllowed: schema.assignments.attemptsAllowed,
@@ -309,10 +320,6 @@ export const requestRetake = withAuthz(async (assignmentId: string) => {
     .where(eq(schema.assignments.id, assignmentId))
     .limit(1);
   if (!assignment) throw new ActionError("Not found.", 404);
-  if (!assignment.retakesNeedUnlock)
-    throw new ActionError("This assignment doesn't need a request.", 409);
-  if (assignment.closesAt && assignment.closesAt <= new Date())
-    throw new ActionError("This assignment has closed.", 403);
   const [counts] = await db
     .select({
       used: sql<number>`count(*)::int`,
@@ -327,10 +334,18 @@ export const requestRetake = withAuthz(async (assignmentId: string) => {
       )
     );
   const used = counts?.used ?? 0;
+  const next = used + 1;
+  // The student's own close (R5): the assignment's, or a reopen already approved for this try.
+  const close = effectiveClose(
+    assignment.closesAt,
+    used > 0 ? await openUntilFor(assignmentId, access.userId, next) : null
+  );
+  const closed = !!close && close <= now;
+  if (!closed && !assignment.retakesNeedUnlock)
+    throw new ActionError("This assignment doesn't need a request.", 409);
   if (used === 0) throw new ActionError("Take the quiz once first.", 409);
   if ((counts?.open ?? 0) > 0) throw new ActionError("Finish the attempt you're on first.", 409);
   if ((counts?.ungraded ?? 0) > 0) throw new ActionError(AWAITING_GRADE_TEXT, 409);
-  const next = used + 1;
   if (assignment.attemptsAllowed !== null && next > assignment.attemptsAllowed)
     throw new ActionError("You've used every attempt.", 409);
   // To-do, then ask (Jon, Oct 14 2026): the same prerequisites the start checks.
@@ -340,22 +355,26 @@ export const requestRetake = withAuthz(async (assignmentId: string) => {
     if (retake && !retake.plan.canStart)
       throw new ActionError(BLOCKER_TEXT[retake.plan.blocker!], 403);
   }
-  // Idempotent: a second request, or a request after the teacher already unlocked, changes nothing.
-  await db
-    .insert(schema.attemptUnlocks)
-    .values({
+  const u = schema.attemptUnlocks;
+  const insert = db
+    .insert(u)
+    .values({ assignmentId, studentId: access.userId, attemptNumber: next, requestedAt: now });
+  const written = await (
+    closed
+      ? insert.onConflictDoUpdate({
+          target: [u.assignmentId, u.studentId, u.attemptNumber],
+          set: { requestedAt: now, grantedAt: null, grantedBy: null, openUntil: null },
+          setWhere: isNotNull(u.grantedAt),
+        })
+      : insert.onConflictDoNothing()
+  ).returning({ id: u.id });
+  if (written.length)
+    await logActivity({
+      userId: access.userId,
+      kind: "retake_requested",
       assignmentId,
-      studentId: access.userId,
-      attemptNumber: next,
-      requestedAt: new Date(),
-    })
-    .onConflictDoNothing();
-  await logActivity({
-    userId: access.userId,
-    kind: "retake_requested",
-    assignmentId,
-    detail: { attemptNumber: next },
-  });
+      detail: { attemptNumber: next },
+    });
   revalidate(assignmentId);
   revalidatePath("/app");
   return { attemptNumber: next };

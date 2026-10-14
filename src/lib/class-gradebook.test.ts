@@ -19,6 +19,9 @@ const card = (c: Partial<CardState>): CardState => ({
   retakeBy: null,
   windowClosed: false,
   quizPractice: [],
+  reopenedUntil: null,
+  retakeRequested: false,
+  askCounts: false,
   ...c,
 });
 const input = (i: Partial<CellInput>): CellInput => ({

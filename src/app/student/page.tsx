@@ -40,7 +40,9 @@ export default async function StudentHome() {
       a.state === "corrections_to_full" ||
       a.state === "corrections_returned" ||
       a.state === "relearning" ||
-      a.state === "retake_required"
+      a.state === "retake_required" ||
+      // Asking to retake a closed test counts when the retake would be required (R6).
+      (a.state === "ask_to_retake" && a.askCounts)
   ).length;
   const sections = sectionAssessments(assignments);
 

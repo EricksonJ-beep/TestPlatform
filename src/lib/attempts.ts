@@ -24,6 +24,8 @@ import { recomputeGates } from "@/lib/gates";
 import { loadBuilderSections } from "@/lib/queries/assessments";
 import { loadGradableQuestions } from "@/lib/queries/attempts";
 import { getCorrectionsSummary } from "@/lib/queries/corrections";
+import { openUntilFor } from "@/lib/queries/reopen";
+import { effectiveClose } from "@/lib/reopen";
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -37,7 +39,9 @@ function shuffle<T>(arr: T[]): T[] {
 /**
  * Create the next attempt for a student: the exact question set (fixed items,
  * pool draws avoiding questions seen on earlier attempts, randomization per the
- * assessment), option order, and the deadline with accommodations.
+ * assessment), option order, and the deadline with accommodations, capped at the
+ * student's close: a retake the teacher approved after the close runs to its
+ * reopen's end, never already past due (Jon, Oct 14 2026, R5).
  */
 export async function createAttempt(input: {
   assignmentId: string;
@@ -120,11 +124,14 @@ export async function createAttempt(input: {
       eq(schema.enrollments.studentId, input.studentId)
     ),
   });
+  const openUntil = row.closesAt
+    ? await openUntilFor(input.assignmentId, input.studentId, number)
+    : null;
   const dueAt = attemptDueAt({
     startedAt: now,
     timeLimitMinutes: row.timeLimitMinutes,
     extraTimePercent: enrollment?.extraTimePercent ?? 0,
-    closesAt: row.closesAt,
+    closesAt: effectiveClose(row.closesAt, openUntil),
   });
   const [attempt] = await db
     .insert(schema.attempts)

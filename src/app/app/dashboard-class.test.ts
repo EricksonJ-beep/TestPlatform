@@ -217,7 +217,12 @@ describe("the cell panel's retake controls", () => {
 
   it("Unlock try N, a request, Approve, Take back keeping the request, and Decline", async () => {
     let cell = await cal();
-    expect(cell.unlock).toEqual({ attemptNumber: 2, state: "locked", requestedAt: null });
+    expect(cell.unlock).toEqual({
+      attemptNumber: 2,
+      state: "locked",
+      requestedAt: null,
+      reopensUntil: null,
+    });
     expect(tagLabel(cell.tag)).toBe("Ready, needs your OK");
 
     as(ids.cal, "student");

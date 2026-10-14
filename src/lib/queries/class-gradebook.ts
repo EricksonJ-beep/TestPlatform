@@ -24,6 +24,7 @@ import { correctionsCapOn } from "@/lib/grading";
 import { requestBlocker, staleRequest, type RequestBlocker } from "@/lib/needs-you";
 import { currentPause, outOfTime } from "@/lib/pause";
 import { practiceOwed, type QuizPracticeTarget } from "@/lib/quiz-practice";
+import { effectiveClose, endOfNextSchoolDay } from "@/lib/reopen";
 import { loadCorrectionScopes, scopeSummary } from "@/lib/queries/corrections";
 import { loadPracticeResults, practiceTargetColumns } from "@/lib/queries/quiz-practice";
 import {
@@ -100,12 +101,15 @@ export type ClassGradebookCell = {
   /** Quiz relearning (R3): the missed targets that need practice before a retake, as the card has them. */
   quizPractice: QuizPracticeTarget[];
   /**
-   * "Retakes need my OK": the student's next try and where it stands (locked, asked for, or
-   * unlocked by the teacher), for the cell panel's Approve / Decline, Unlock try N, Take back.
-   * Null when the setting is off, before attempt 1, while an attempt is open, or with no try left;
-   * also when `rule` is "to_full" (no retake at their score) and nothing was asked for or unlocked.
+   * "Retakes need my OK", or a closed test the student asked to retake or was reopened on (Jon,
+   * Oct 14 2026, R4): the student's next try and where it stands (locked, asked for, or unlocked
+   * by the teacher), for the cell panel's Approve / Decline, Unlock try N, Take back. Null when
+   * neither applies, before attempt 1, while an attempt is open, or with no try left; also when
+   * `rule` is "to_full" (no retake at their score) and nothing was asked for or unlocked.
    */
   unlock: UnlockState | null;
+  /** The test closed and the teacher reopened it for this student until then (R4–R5). */
+  reopenedUntil: Date | null;
   /** Under the cap: the last moment a retake may start. */
   retakeBy: Date | null;
   /** Most tab switches on any attempt. */
@@ -119,6 +123,8 @@ export type UnlockState = {
   state: "locked" | "requested" | "unlocked";
   /** The student's request for that try, if they made one. */
   requestedAt: Date | null;
+  /** The test has closed: Approve (or Unlock) reopens it for the student until then (R4). */
+  reopensUntil: Date | null;
 };
 
 export type ClassGradebook = {
@@ -316,6 +322,7 @@ export async function getClassGradebook(
         attemptNumber: schema.attemptUnlocks.attemptNumber,
         requestedAt: schema.attemptUnlocks.requestedAt,
         grantedAt: schema.attemptUnlocks.grantedAt,
+        openUntil: schema.attemptUnlocks.openUntil,
       })
       .from(schema.attemptUnlocks)
       .where(
@@ -403,6 +410,12 @@ export async function getClassGradebook(
       0,
       ...pairUnlocks.filter((u) => u.grantedAt).map((u) => u.attemptNumber)
     );
+    // A closed test reopened for this student (Jon, Oct 14 2026, R5): the approved unlock for the
+    // attempt in play (the open one, or the next), as `openUntilInPlay` reads it for the student.
+    const openUntil =
+      pairUnlocks.find((u) => u.grantedAt && u.attemptNumber === finished.length + 1)?.openUntil ??
+      null;
+    const closedTest = !!a.closesAt && a.closesAt.getTime() <= now.getTime();
     const cvtcRules = !!a.cvtcRules;
 
     // Corrections on the latest finished attempt, scoped as `getCorrectionsSummary` scopes them.
@@ -457,6 +470,8 @@ export async function getClassGradebook(
         inProgress: !!open,
         awaitingGrade: finished.some((x) => x.status === "submitted"),
         unlockedThrough,
+        requestedNext: pairUnlocks.some((u) => !u.grantedAt && u.attemptNumber === used + 1),
+        openUntil,
         firstPercent: finished[0]?.percent ?? null,
         firstSubmittedAt,
         bestPercent: percents.length ? Math.max(...percents) : null,
@@ -476,9 +491,11 @@ export async function getClassGradebook(
       now
     );
 
-    // The teacher's part: what the inbox counts for this pair, and who is testing now.
-    const pause = open ? currentPause(open, a.closesAt, now) : null;
-    const timeUp = !!open && outOfTime(open, a.closesAt, now);
+    // The teacher's part: what the inbox counts for this pair, and who is testing now (by the
+    // student's own close: a reopened retake pauses when its reopen ends).
+    const studentClose = effectiveClose(a.closesAt, openUntil);
+    const pause = open ? currentPause(open, studentClose, now) : null;
+    const timeUp = !!open && outOfTime(open, studentClose, now);
     const requested = pairUnlocks.some(
       (u) =>
         !u.grantedAt &&
@@ -486,6 +503,7 @@ export async function getClassGradebook(
           attemptNumber: u.attemptNumber,
           used,
           retakesNeedUnlock: a.retakesNeedUnlock,
+          closed: closedTest,
           attemptsAllowed: a.attemptsAllowed,
           // The roster is the class's enrollments, so every student here is in the class.
           enrolled: true,
@@ -497,7 +515,7 @@ export async function getClassGradebook(
     // Approved, but something else still stops the try (checked the way `startAttempt` checks).
     let unlockedBlocker: RequestBlocker | null = null;
     const nextUnlocked =
-      a.retakesNeedUnlock &&
+      (a.retakesNeedUnlock || !!card.reopenedUntil) &&
       used > 0 &&
       !open &&
       unlockedThrough >= used + 1 &&
@@ -509,6 +527,7 @@ export async function getClassGradebook(
         used,
         lastSubmittedAt,
         firstSubmittedAt,
+        reopenUntil: openUntil,
         now,
       });
       const plan = retake?.plan;
@@ -521,20 +540,26 @@ export async function getClassGradebook(
       else if (!unlockedBlocker && owed.length)
         unlockedBlocker = { reason: "practice", codes: owed.map((t) => t.code) };
     }
-    // The next try under "Retakes need my OK", as the results table offers it (Oct 1 2026). With
-    // no retake at their score there is nothing to unlock early; a request or an unlock already
-    // there stays, so the teacher can still answer it or take it back.
+    // The next try under "Retakes need my OK", as the results table offers it (Oct 1 2026), and
+    // on a closed test the student's request or reopen, with the setting or without (Oct 14 2026,
+    // R4). With no retake at their score there is nothing to unlock early; a request or an unlock
+    // already there stays, so the teacher can still answer it or take it back.
     const next = used + 1;
     const nextRow = pairUnlocks.find((u) => u.attemptNumber === next) ?? null;
     const unlockState: UnlockState["state"] =
       unlockedThrough >= next ? "unlocked" : requested ? "requested" : "locked";
     const unlock: UnlockState | null =
-      a.retakesNeedUnlock &&
+      (a.retakesNeedUnlock || (closedTest && (requested || !!card.reopenedUntil))) &&
       used > 0 &&
       !open &&
       (a.attemptsAllowed === null || next <= a.attemptsAllowed) &&
       !(noRetake && unlockState === "locked")
-        ? { attemptNumber: next, state: unlockState, requestedAt: nextRow?.requestedAt ?? null }
+        ? {
+            attemptNumber: next,
+            state: unlockState,
+            requestedAt: nextRow?.requestedAt ?? null,
+            reopensUntil: closedTest && unlockState !== "unlocked" ? endOfNextSchoolDay(now) : null,
+          }
         : null;
     const selected = new Set(retake?.plan.selected ?? []);
     const activitiesToCheck = new Set(
@@ -597,6 +622,7 @@ export async function getClassGradebook(
       retake,
       quizPractice: card.quizPractice,
       unlock,
+      reopenedUntil: card.reopenedUntil,
       retakeBy: card.retakeBy,
       tabSwitches: Math.max(0, ...mine.map((x) => x.tabSwitches)),
       movedUpThisWeek: !!final && movedUp(final, week),
