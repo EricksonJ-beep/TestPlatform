@@ -107,6 +107,8 @@ export type NumericConfig = {
   min?: number;
   max?: number;
   unit?: string | null;
+  /** Answers that earn part of the points, e.g. the neutral-atom count on an ion question. Credit is a fraction (0.5 = half). */
+  partial?: { answer: number; credit: number }[];
 };
 
 /** Spelled-out and abbreviated unit names students type, mapped to the symbol a key would use. */
@@ -215,21 +217,31 @@ export function gradeNumeric(q: GradableQuestion, a: Answer): GradeResult {
     return wrong(q, `Expected the unit ${cfg.unit}.`);
   const x = parsed.value;
   const mode = cfg.mode ?? "exact";
+  // A partial-credit answer matches the way the key does: within the same ± or %, exactly in range mode.
+  const near = (target: number) => {
+    if (mode === "tolerance") return Math.abs(x - target) <= (cfg.tolerance ?? 0) + 1e-12;
+    if (mode === "percent_tolerance")
+      return Math.abs(x - target) <= (Math.abs(target) * (cfg.percent ?? 0)) / 100 + 1e-12;
+    return Math.abs(x - target) <= Math.max(1e-9, Math.abs(target) * 1e-9);
+  };
   let ok = false;
   if (mode === "range")
     ok = cfg.min !== undefined && cfg.max !== undefined && x >= cfg.min && x <= cfg.max;
   else if (cfg.answer === undefined || cfg.answer === null) ok = false;
-  else if (mode === "exact")
-    ok = Math.abs(x - cfg.answer) <= Math.max(1e-9, Math.abs(cfg.answer) * 1e-9);
-  else if (mode === "tolerance") ok = Math.abs(x - cfg.answer) <= (cfg.tolerance ?? 0) + 1e-12;
-  else if (mode === "percent_tolerance")
-    ok = Math.abs(x - cfg.answer) <= (Math.abs(cfg.answer) * (cfg.percent ?? 0)) / 100 + 1e-12;
-  return ok
-    ? right(q)
-    : wrong(
-        q,
-        mode === "range" ? "Outside the accepted range." : "Not within the accepted tolerance."
-      );
+  else ok = near(cfg.answer);
+  if (ok) return right(q);
+  const partial = (cfg.partial ?? []).find((p) => p.credit > 0 && p.credit < 1 && near(p.answer));
+  if (partial)
+    return {
+      pointsPossible: q.points,
+      pointsEarned: round2(q.points * partial.credit),
+      isCorrect: false,
+      note: `Partial credit (${Math.round(partial.credit * 100)}%).`,
+    };
+  return wrong(
+    q,
+    mode === "range" ? "Outside the accepted range." : "Not within the accepted tolerance."
+  );
 }
 
 export function gradeMatching(q: GradableQuestion, a: Answer): GradeResult {

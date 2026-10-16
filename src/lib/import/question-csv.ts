@@ -4,6 +4,7 @@
  * targets, pools, units, standards, and stimuli and writes the rows.
  */
 import type { BloomLevel, GradingConfig, GradingMode } from "@/db/types";
+import { parsePartialCredit } from "@/lib/grading/partial-credit";
 import {
   BLOOM_LEVELS,
   IMPORTABLE_TYPES,
@@ -44,6 +45,7 @@ export const CSV_COLUMNS = [
   "image_url",
   "video_url",
   "tags",
+  "partial_credit",
 ] as const;
 
 /** Columns that must be present as headers for the file to be accepted at all. */
@@ -280,6 +282,14 @@ export function parseQuestionRecord(raw: RawRecord, line: number): ParsedRow {
         else cfg.percent = tolNum;
       } else if (tol !== null) {
         warn("tolerance is ignored unless tolerance_mode is abs or percent.", "tolerance");
+      }
+      const partialRaw = blank(raw.partial_credit);
+      if (partialRaw) {
+        const pc = parsePartialCredit(partialRaw);
+        if (!pc.ok) error(pc.error, "partial_credit");
+        else if (mode !== "range" && pc.partial.some((p) => p.answer === cfg.answer))
+          error("A partial-credit answer can't be the correct answer.", "partial_credit");
+        else cfg.partial = pc.partial;
       }
       gradingConfig = cfg as GradingConfig;
       break;

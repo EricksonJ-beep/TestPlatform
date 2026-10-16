@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   computeFinalScore,
+  correctAnswerText,
   correctionsCapOn,
+  formatPartialCredit,
   gradeResponse,
   parseNumericInput,
+  parsePartialCredit,
   retakeTargets,
   scoreAttempt,
   tierFor,
@@ -241,6 +244,63 @@ describe("numeric", () => {
       pointsEarned: 0,
       note: "No answer.",
     });
+  });
+  it("partial-credit answers earn their share; the key still earns full points", () => {
+    // Li⁺ electrons (Jon, Oct 16 2026): 2 is right for 2 pts; 3 (the neutral count) earns half.
+    const li = q("numeric", {
+      points: 2,
+      gradingConfig: {
+        mode: "exact",
+        answer: 2,
+        unit: "electrons",
+        partial: [{ answer: 3, credit: 0.5 }],
+      },
+    });
+    expect(gradeResponse(li, { kind: "text", text: "2" })).toMatchObject({
+      pointsEarned: 2,
+      isCorrect: true,
+    });
+    expect(gradeResponse(li, { kind: "text", text: "3 electrons" })).toMatchObject({
+      pointsEarned: 1,
+      isCorrect: false,
+      note: "Partial credit (50%).",
+    });
+    expect(gradeResponse(li, { kind: "text", text: "4" })).toMatchObject({
+      pointsEarned: 0,
+      isCorrect: false,
+    });
+    // A partial answer matches within the key's own ± tolerance.
+    const tol = q("numeric", {
+      gradingConfig: {
+        mode: "tolerance",
+        answer: 10,
+        tolerance: 0.5,
+        partial: [{ answer: 1, credit: 0.25 }],
+      },
+    });
+    expect(gradeResponse(tol, { kind: "text", text: "1.4" })).toMatchObject({ pointsEarned: 0.5 });
+    expect(gradeResponse(tol, { kind: "text", text: "1.6" })).toMatchObject({ pointsEarned: 0 });
+    expect(correctAnswerText({ ...li, gradingConfig: li.gradingConfig })).toBe(
+      "2 electrons (partial credit: 3 electrons earns 50%)"
+    );
+  });
+  it("reads partial credit the way a teacher types it", () => {
+    expect(parsePartialCredit("3 = 50%")).toEqual({
+      ok: true,
+      partial: [{ answer: 3, credit: 0.5 }],
+    });
+    expect(parsePartialCredit("3=0.5; -4 : 25% | 1,000=10%")).toEqual({
+      ok: true,
+      partial: [
+        { answer: 3, credit: 0.5 },
+        { answer: -4, credit: 0.25 },
+        { answer: 1000, credit: 0.1 },
+      ],
+    });
+    expect(parsePartialCredit("")).toEqual({ ok: true, partial: [] });
+    expect(parsePartialCredit("3 = 100%").ok).toBe(false);
+    expect(parsePartialCredit("three = 50%").ok).toBe(false);
+    expect(formatPartialCredit([{ answer: 3, credit: 0.5 }])).toBe("3 = 50%");
   });
 });
 

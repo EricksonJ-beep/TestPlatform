@@ -19,6 +19,7 @@ import {
   TYPE_LABEL,
   type ImportableType,
 } from "@/lib/question-types";
+import { formatPartialCredit, parsePartialCredit, type PartialCredit } from "@/lib/grading";
 import { RICHTEXT_HELP } from "@/lib/richtext";
 import { createQuestion, updateQuestion } from "./actions";
 
@@ -31,6 +32,7 @@ type NumericState = {
   min: string;
   max: string;
   unit: string;
+  partial: string;
 };
 
 export type EditorProps = {
@@ -83,6 +85,7 @@ function initialNumeric(q: QuestionForEdit | null | undefined): NumericState {
     min: s(c.min),
     max: s(c.max),
     unit: s(c.unit),
+    partial: formatPartialCredit(c.partial as PartialCredit[] | undefined),
   };
 }
 
@@ -114,6 +117,7 @@ export function QuestionEditor({
   );
   const stemRef = useRef<HTMLTextAreaElement>(null);
   const { run, pending, error, fieldErrors } = useAction();
+  const [partialError, setPartialError] = useState<string | null>(null);
   const cfg = (question?.gradingConfig ?? {}) as Record<string, unknown>;
 
   function changeType(next: ImportableType) {
@@ -153,6 +157,9 @@ export function QuestionEditor({
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
+    const partial = parsePartialCredit(type === "numeric" ? numeric.partial : "");
+    setPartialError(partial.ok ? null : partial.error);
+    if (!partial.ok) return;
     const list = (name: string, sep: RegExp) =>
       String(fd.get(name) ?? "")
         .split(sep)
@@ -198,6 +205,7 @@ export function QuestionEditor({
               min: num(numeric.min),
               max: num(numeric.max),
               unit: numeric.unit,
+              partial: partial.partial,
             }
           : null,
     };
@@ -585,6 +593,20 @@ export function QuestionEditor({
           <p className="text-xs text-muted-foreground">
             With a unit set, answers with or without that unit both match.
           </p>
+          <div className="grid gap-1.5">
+            <Label htmlFor="qe-partial">Partial credit (optional)</Label>
+            <Input
+              id="qe-partial"
+              value={numeric.partial}
+              onChange={(e) => setNumeric({ ...numeric, partial: e.target.value })}
+              placeholder="3 = 50%"
+            />
+            <p className="text-xs text-muted-foreground">
+              A wrong answer that still earns some points, like &ldquo;3 = 50%&rdquo;. Separate more
+              than one with a semicolon.
+            </p>
+            {partialError ? <p className="text-xs text-error-foreground">{partialError}</p> : null}
+          </div>
           <FieldError errors={fieldErrors} name="numeric" />
         </fieldset>
       ) : null}

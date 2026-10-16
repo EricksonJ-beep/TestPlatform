@@ -197,6 +197,14 @@ describe("per-type rules", () => {
     expect(n({ correct: "abc" }).status).toBe("error");
     expect(n({ correct: "5", tolerance_mode: "abs" }).status).toBe("error");
     expect(n({ correct: "5", tolerance: "1" }).status).toBe("warning");
+    expect(n({ correct: "2", partial_credit: "3 = 50%" }).gradingConfig).toEqual({
+      mode: "exact",
+      unit: null,
+      answer: 2,
+      partial: [{ answer: 3, credit: 0.5 }],
+    });
+    expect(n({ correct: "2", partial_credit: "3 = 150%" }).status).toBe("error");
+    expect(n({ correct: "2", partial_credit: "2 = 50%" }).status).toBe("error");
   });
 
   it("ordering: correct is a permutation of the provided letters", () => {
