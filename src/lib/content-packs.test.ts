@@ -15,8 +15,9 @@ vi.mock("@/db", async () => {
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db, schema } from "@/db";
+import { gradeResponse } from "@/lib/grading";
 import { applyAllPacks, applyPack, listPacks } from "./content-packs";
 
 const ids = { teacher: "", course: "", cls: "" };
@@ -393,6 +394,95 @@ describe("content packs", () => {
         (t) => t.learningTargetId === lt3.id && phItems.some((i) => i.question.id === t.questionId)
       )
     ).toHaveLength(15);
+    // Physical Science Unit 2 quizzes (Oct 16 2026): LT3 is 12 items / 15 pts with half credit
+    // for 3 on item 4 (Li⁺ electrons); LT4 is 24 items / 30 pts. Author's order, key as written.
+    const psUnit2 = (await db.query.units.findFirst({
+      where: eq(schema.units.name, "Unit 2 · Atomic Structure"),
+    }))!;
+    for (const [name, title, code, count, total, key] of [
+      [
+        "ps-u2-lt3-quiz",
+        "7.2 Atomic Calculations & Isotopes Quiz",
+        "U2.LT3",
+        12,
+        15,
+        "21,1,A,2,C,C,8,D,D,D,20,C",
+      ],
+      [
+        "ps-u2-lt4-quiz",
+        "Periodic Table & Bohr Models Quiz",
+        "U2.LT4",
+        24,
+        30,
+        "D,A,D,D,D,A,C,D,B,C,B,A,B,A,3,2,D,B,5,B,B,A,C,C",
+      ],
+    ] as const) {
+      const out = first.find((o) => o.name === name)!;
+      expect(out.status).toBe("applied");
+      if (out.status === "applied")
+        expect(out.summary).toMatchObject({ questions: count, unitId: psUnit2.id, errors: [] });
+      const quiz = (await db.query.assessments.findFirst({
+        where: eq(schema.assessments.title, title),
+      }))!;
+      expect(quiz).toMatchObject({
+        type: "formative",
+        isPublished: true,
+        courseId: ps.id,
+        unitId: psUnit2.id,
+        randomizeOptions: false,
+      });
+      const [sec] = await db
+        .select()
+        .from(schema.assessmentSections)
+        .where(eq(schema.assessmentSections.assessmentId, quiz.id));
+      const items = await db
+        .select({ question: schema.questions })
+        .from(schema.assessmentQuestions)
+        .innerJoin(schema.questions, eq(schema.questions.id, schema.assessmentQuestions.questionId))
+        .where(eq(schema.assessmentQuestions.sectionId, sec.id))
+        .orderBy(schema.assessmentQuestions.sortOrder);
+      const prefix = name === "ps-u2-lt3-quiz" ? "PS-U2-LT3-Q" : "PS-U2-LT4-Q";
+      expect(items.map((i) => i.question.externalId)).toEqual(
+        Array.from({ length: count }, (_, i) => `${prefix}${String(i + 1).padStart(3, "0")}`)
+      );
+      expect(items.reduce((sum, i) => sum + i.question.points, 0)).toBe(total);
+      const got: string[] = [];
+      for (const { question } of items) {
+        if (question.type === "numeric") {
+          got.push(String((question.gradingConfig as { answer: number }).answer));
+          continue;
+        }
+        const opts = await db
+          .select()
+          .from(schema.questionOptions)
+          .where(eq(schema.questionOptions.questionId, question.id))
+          .orderBy(schema.questionOptions.sortOrder);
+        got.push(opts.map((o, i) => (o.isCorrect ? "ABCD"[i] : "")).join(""));
+      }
+      expect(got.join(",")).toBe(key);
+      const target = (await db.query.learningTargets.findFirst({
+        where: and(
+          eq(schema.learningTargets.courseId, ps.id),
+          eq(schema.learningTargets.code, code)
+        ),
+      }))!;
+      expect(target.title).toBe(`Unit 2 target ${code.slice(-1)}`); // the existing target, untouched
+      const tagged = await db
+        .select()
+        .from(schema.questionTargets)
+        .where(eq(schema.questionTargets.learningTargetId, target.id));
+      expect(tagged.filter((t) => items.some((i) => i.question.id === t.questionId))).toHaveLength(
+        count
+      );
+      if (name === "ps-u2-lt3-quiz") {
+        const li = items[3].question;
+        const gradable = { ...li, options: [] };
+        expect(li.points).toBe(2);
+        expect(gradeResponse(gradable, { kind: "text", text: "2" }).pointsEarned).toBe(2);
+        expect(gradeResponse(gradable, { kind: "text", text: "3" }).pointsEarned).toBe(1);
+        expect(gradeResponse(gradable, { kind: "text", text: "4" }).pointsEarned).toBe(0);
+      }
+    }
     // The osteon activity pack: no bank or CSV; it completes the hand-made draft (same page),
     // renames it, tags U2, and publishes it.
     const osteon = first.find((o) => o.name === "anatomy-u2-activity-osteon-labeling")!;

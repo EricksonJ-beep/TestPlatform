@@ -1,0 +1,13 @@
+{
+  "name": "ps-u2-lt3-quiz",
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science A",
+  "unit": "Unit 2 · Atomic Structure",
+  "bank": "PS · U2.LT3 · Quiz",
+  "assessment": {
+    "title": "7.2 Atomic Calculations & Isotopes Quiz",
+    "type": "formative",
+    "instructions": "Twelve questions on atomic calculations and isotopes: finding protons, neutrons, and electrons from atomic number, mass number, and charge, and spotting isotopes and ions. Have your periodic table out. For number questions, type just the number."
+  },
+  "assign": []
+}
