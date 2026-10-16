@@ -54,6 +54,13 @@ const numericSchema = z.object({
     .optional()
     .nullable()
     .transform((v) => v || null),
+  /** Answers worth part of the points; credit is a fraction between 0 and 1. */
+  partial: z
+    .array(z.object({ answer: z.number(), credit: z.number() }))
+    .max(10)
+    .optional()
+    .nullable()
+    .transform((v) => v ?? []),
 });
 
 /** Absolute http(s) URL or a media path the app serves itself. */
@@ -225,6 +232,13 @@ export function validatePayload(p: QuestionPayload): {
           if (n.percent == null) err("numeric", "Enter the % tolerance.");
           cfg.percent = n.percent;
         }
+      }
+      if (n.partial.length) {
+        if (n.partial.some((pc) => !(pc.credit > 0 && pc.credit < 1)))
+          err("numeric", "Partial credit must be more than 0% and less than 100%.");
+        if (n.mode !== "range" && n.partial.some((pc) => pc.answer === n.answer))
+          err("numeric", "A partial-credit answer can't be the correct answer.");
+        cfg.partial = n.partial;
       }
       options = [];
       gradingConfig = cfg as GradingConfig;

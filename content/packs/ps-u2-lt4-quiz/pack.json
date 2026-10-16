@@ -1,0 +1,13 @@
+{
+  "name": "ps-u2-lt4-quiz",
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science A",
+  "unit": "Unit 2 · Atomic Structure",
+  "bank": "PS · U2.LT4 · Quiz",
+  "assessment": {
+    "title": "Periodic Table & Bohr Models Quiz",
+    "type": "formative",
+    "instructions": "Twenty-four questions on reading the periodic table (groups, periods, families, and reactivity) and on electron arrangement and Bohr models. Have your periodic table out. For number questions, type just the number."
+  },
+  "assign": []
+}

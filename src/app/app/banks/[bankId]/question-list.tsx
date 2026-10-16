@@ -26,6 +26,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { useAction } from "@/components/use-action";
+import { formatPartialCredit, type PartialCredit } from "@/lib/grading";
 import type { BankQuestionRow, QuestionForEdit } from "@/lib/queries/banks";
 import { BLOOM_LABEL, TYPE_LABEL } from "@/lib/question-types";
 import { groupByStimulus } from "@/lib/stimulus-groups";
@@ -50,10 +51,13 @@ function gradingSummary(q: BankQuestionRow): string | null {
         : "Graded by hand";
     case "numeric": {
       const unit = c.unit ? ` ${c.unit}` : "";
-      if (c.mode === "range") return `Answer: ${c.min}–${c.max}${unit}`;
-      if (c.mode === "tolerance") return `Answer: ${c.answer}${unit} ± ${c.tolerance}`;
-      if (c.mode === "percent_tolerance") return `Answer: ${c.answer}${unit} ± ${c.percent}%`;
-      return `Answer: ${c.answer}${unit}`;
+      const partial = formatPartialCredit(c.partial as PartialCredit[] | undefined);
+      const extra = partial ? ` · Partial: ${partial}` : "";
+      if (c.mode === "range") return `Answer: ${c.min}–${c.max}${unit}${extra}`;
+      if (c.mode === "tolerance") return `Answer: ${c.answer}${unit} ± ${c.tolerance}${extra}`;
+      if (c.mode === "percent_tolerance")
+        return `Answer: ${c.answer}${unit} ± ${c.percent}%${extra}`;
+      return `Answer: ${c.answer}${unit}${extra}`;
     }
     case "extended_response":
       return "Graded by hand";

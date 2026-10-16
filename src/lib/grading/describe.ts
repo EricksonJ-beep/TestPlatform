@@ -60,10 +60,15 @@ export function correctAnswerText(q: DescribableQuestion): string | null {
     case "numeric": {
       const mode = (cfg.mode as string | undefined) ?? "exact";
       const unit = cfg.unit ? ` ${cfg.unit}` : "";
-      if (mode === "range") return `${cfg.min} to ${cfg.max}${unit}`;
-      if (mode === "tolerance") return `${cfg.answer} ± ${cfg.tolerance}${unit}`;
-      if (mode === "percent_tolerance") return `${cfg.answer}${unit} ± ${cfg.percent}%`;
-      return cfg.answer === undefined ? null : `${cfg.answer}${unit}`;
+      const partial = ((cfg.partial as { answer: number; credit: number }[] | undefined) ?? [])
+        .map((p) => `${p.answer}${unit} earns ${Math.round(p.credit * 100)}%`)
+        .join("; ");
+      const withPartial = (key: string) => (partial ? `${key} (partial credit: ${partial})` : key);
+      if (mode === "range") return withPartial(`${cfg.min} to ${cfg.max}${unit}`);
+      if (mode === "tolerance") return withPartial(`${cfg.answer} ± ${cfg.tolerance}${unit}`);
+      if (mode === "percent_tolerance")
+        return withPartial(`${cfg.answer}${unit} ± ${cfg.percent}%`);
+      return cfg.answer === undefined ? null : withPartial(`${cfg.answer}${unit}`);
     }
     case "matching":
       return (
