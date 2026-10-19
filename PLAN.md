@@ -365,6 +365,7 @@ Repo, Next.js + Tailwind + shadcn scaffold, Neon project + Drizzle schema/migrat
 | Sharing at launch = | You + one physical science colleague, shared bank |
 | Skyward = | Track highest + CSV export; no direct integration in v1 |
 | Formative attempts = | Default 3, configurable per assignment |
+| Summative attempts = | **Default 2** — the test plus one targeted retake (Oct 19, 2026; was 1 since Sept 28, which left no retake). Assignments made before keep their number; edit one to allow the retake |
 | Corrections review = | Per-assignment: auto-unlock or teacher-approved (AI first-pass) |
 
 **Still open (defaults assumed):** standards framework (assume your own learning targets + NGSS codes optional); score threshold that *requires* corrections vs. makes them optional (assume: corrections required for any retake, optional otherwise).

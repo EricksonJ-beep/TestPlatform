@@ -166,9 +166,11 @@ describe("createAssignments", () => {
       className: "Biology · Period 3",
       accessCode: "AB3-K9Q",
       timeLimitMinutes: 20,
-      attemptsAllowed: 1,
+      attemptsAllowed: 2, // the test plus one retake (Oct 19 2026)
       enrolled: 2,
       retakeWaitHours: 24,
+      // A test's retakes always wait for the teacher's OK, even unchecked (Oct 19 2026).
+      retakesNeedUnlock: true,
     });
     expect(row.opensAt?.toISOString()).toBe("2026-09-22T13:00:00.000Z"); // 8:00 Central Daylight
     expect(row.closesAt?.toISOString()).toBe("2026-09-22T20:00:00.000Z");

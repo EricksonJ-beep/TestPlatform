@@ -8,8 +8,15 @@ over an 80% on any learning target then they could choose to retake that… belo
 want them to do a retake on that… build kind of that custom assessment with the test banks… I
 obviously want to maintain… the same integrity of the tests… same point values."
 
-Status: **plan only, nothing built.** PLAN.md §2, §4 and §10 are updated with the decisions below.
-Build waits for Jon's go-ahead, ticket by ticket, with a schema checkpoint before ticket R2.
+Status: **R1–R4 built (Oct 19 2026)**; Jon approved the plan as written, including the default
+answers to the open questions below and the R2 schema shape. R5 is content work. PLAN.md §2, §4
+and §10 carry the decisions.
+
+Built notes: R2's shortfall is reported at import and in the builder (each section shows its
+retake bank size and any point value it can't cover); the teacher's attempt view does not yet mark
+which retake questions were reused originals. R4 also changed the summative attempt default from 1
+to 2 (the test plus one retake), since one attempt leaves no retake; existing assignments keep
+their number. Migration 0030 turns "Retakes need my OK" on for existing test assignments.
 
 ## Jon's decisions (Oct 19 2026)
 

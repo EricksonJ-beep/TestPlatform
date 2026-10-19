@@ -352,13 +352,21 @@ export function AssignmentDialog({
               </p>
               <FieldError errors={fieldErrors} name="retakeWaitHours" />
             </div>
-            <Toggle
-              key={`u-${assessmentId}`}
-              name="retakesNeedUnlock"
-              label="Retakes need my OK"
-              help="Each student's next attempt stays locked until you unlock it on the results page or approve their request. Students do their corrections first (and on a quiz, practice the targets they missed), exactly as without this setting, then ask. Under the corrections cap at or above the threshold, corrections are the way to 100% and there is no retake."
-              defaultChecked={existing?.retakesNeedUnlock ?? false}
-            />
+            {assessment?.type === "summative" ? (
+              <p className="text-sm text-muted-foreground" data-test-retakes-need-ok>
+                <span className="font-medium text-foreground">Retakes need my OK</span> is always on
+                for a test: when a student finishes corrections and one relearning item for each
+                target, their request comes to you to approve.
+              </p>
+            ) : (
+              <Toggle
+                key={`u-${assessmentId}`}
+                name="retakesNeedUnlock"
+                label="Retakes need my OK"
+                help="Each student's next attempt stays locked until you unlock it on the results page or approve their request. Students do their corrections first (and on a quiz, practice the targets they missed), exactly as without this setting, then ask. Under the corrections cap at or above the threshold, corrections are the way to 100% and there is no retake."
+                defaultChecked={existing?.retakesNeedUnlock ?? false}
+              />
+            )}
             <Toggle
               key={`c-${assessmentId}`}
               name="correctionsCap"

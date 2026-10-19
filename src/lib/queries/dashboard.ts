@@ -150,6 +150,11 @@ export type RetakeRequest = {
   reopensUntil: Date | null;
   /** That end comes from the cap's window having passed on an open test (not a close). */
   windowEnded: boolean;
+  /**
+   * A test's retake: the target codes it will cover, required plus opted in (Jon, Oct 19 2026:
+   * "Maya · Unit 2 Test — retake: LT2 · LT3 · LT4"). Empty for a quiz.
+   */
+  retakeTargets: string[];
 };
 
 /**
@@ -266,7 +271,7 @@ export async function listRetakeRequests(
               now,
             });
     }
-    return { r, stale, blocker, rule, reopensUntil, windowEnded };
+    return { r, stale, blocker, rule, reopensUntil, windowEnded, retakeTargets: [] as string[] };
   });
 
   // A current quiz request with nothing else in the way: its corrections, then its practice
@@ -380,6 +385,8 @@ export async function listRetakeRequests(
         attemptsUsed: x.r.used,
         attemptsAllowed: x.r.attemptsAllowed,
       });
+      const codeOf = new Map(targets.map((t) => [t.id, t.code]));
+      x.retakeTargets = plan.selected.map((id) => codeOf.get(id) ?? "");
       if (!plan.canStart && plan.blocker)
         x.blocker = {
           reason: plan.blocker === "no_attempts" ? "no_attempts_left" : plan.blocker,
@@ -387,7 +394,7 @@ export async function listRetakeRequests(
     }
   }
 
-  return out.map(({ r, stale, blocker, reopensUntil, windowEnded }) => ({
+  return out.map(({ r, stale, blocker, reopensUntil, windowEnded, retakeTargets }) => ({
     id: r.id,
     assignmentId: r.assignmentId,
     studentId: r.studentId,
@@ -403,6 +410,7 @@ export async function listRetakeRequests(
     blocker,
     reopensUntil: stale ? null : reopensUntil,
     windowEnded: !stale && windowEnded,
+    retakeTargets,
   }));
 }
 

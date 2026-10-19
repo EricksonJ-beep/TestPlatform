@@ -25,6 +25,7 @@ import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { and, eq, isNull, or, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
+import { retakesNeedUnlockFor } from "@/lib/assignments";
 import { parseCsvRecords } from "@/lib/csv";
 import { parseQuestionRecords } from "@/lib/import/question-csv";
 import { commitImport } from "@/lib/import/question-import";
@@ -464,7 +465,10 @@ async function applyQuiz(
         classId: cls.id,
         attemptsAllowed: target.attemptsAllowed === undefined ? 3 : target.attemptsAllowed,
         retakeWaitHours: target.retakeWaitHours ?? 0,
-        retakesNeedUnlock: target.retakesNeedUnlock ?? false,
+        retakesNeedUnlock: retakesNeedUnlockFor(
+          def.assessment.type,
+          target.retakesNeedUnlock ?? false
+        ),
       });
       assignments.push(cls.name);
     }

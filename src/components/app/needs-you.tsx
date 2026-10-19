@@ -422,6 +422,9 @@ function RequestRow({
   const meta = (
     <>
       <Where assignmentId={r.assignmentId} title={r.title} place={r.place} />
+      {r.retakeTargets.length ? (
+        <span data-retake-targets>{` · retake: ${r.retakeTargets.join(" · ")}`}</span>
+      ) : null}
       {r.bestPercent !== null && !hideScores ? ` · best ${Math.round(r.bestPercent)}%` : ""}
       {r.requestedAt ? (
         <>

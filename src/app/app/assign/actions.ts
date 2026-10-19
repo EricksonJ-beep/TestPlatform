@@ -4,7 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db, schema } from "@/db";
-import { defaultAttempts, parseLocalDateTime } from "@/lib/assignments";
+import { defaultAttempts, parseLocalDateTime, retakesNeedUnlockFor } from "@/lib/assignments";
 import { recomputeGatesForAssignment } from "@/lib/practice";
 import { ActionError, requireOwner, requireShared, requireTeacher, withAuthz } from "@/lib/authz";
 
@@ -131,6 +131,7 @@ export const createAssignments = withAuthz(async (formData: FormData) => {
 
   const settings = settingsFrom(parsed.data);
   if (parsed.data.useTypeDefault) settings.attemptsAllowed = defaultAttempts(assessment.type);
+  settings.retakesNeedUnlock = retakesNeedUnlockFor(assessment.type, settings.retakesNeedUnlock);
   const rows = await db
     .insert(schema.assignments)
     .values(
@@ -150,10 +151,15 @@ export const updateAssignment = withAuthz(async (assignmentId: string, formData:
   await requireOwner({ type: "assignment", id: assignmentId });
   const parsed = settingsSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) throw invalid(parsed.error);
-  await db
-    .update(schema.assignments)
-    .set(settingsFrom(parsed.data))
-    .where(eq(schema.assignments.id, assignmentId));
+  const [row] = await db
+    .select({ type: schema.assessments.type })
+    .from(schema.assignments)
+    .innerJoin(schema.assessments, eq(schema.assignments.assessmentId, schema.assessments.id))
+    .where(eq(schema.assignments.id, assignmentId))
+    .limit(1);
+  const settings = settingsFrom(parsed.data);
+  if (row) settings.retakesNeedUnlock = retakesNeedUnlockFor(row.type, settings.retakesNeedUnlock);
+  await db.update(schema.assignments).set(settings).where(eq(schema.assignments.id, assignmentId));
   revalidate();
   return { ok: true };
 });

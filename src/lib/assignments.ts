@@ -208,9 +208,24 @@ export function attemptDueAt(input: {
   return due;
 }
 
-/** Attempt defaults: practice unlimited, formative 3, summative 1 (Jon, Sept 28 2026; PLAN.md §2 said 1 + 1 retake). */
+/**
+ * Attempt defaults: practice unlimited, formative 3, summative 2 — the test plus one targeted
+ * retake (PLAN.md §2, §4; Jon, Oct 19 2026: the relearning cycle ends in a retake. Was 1 since
+ * Sept 28 2026, which left no retake).
+ */
 export function defaultAttempts(type: "practice" | "formative" | "summative"): number | null {
-  return type === "practice" ? null : type === "formative" ? 3 : 1;
+  return type === "practice" ? null : type === "formative" ? 3 : 2;
+}
+
+/**
+ * Rule (Jon, Oct 19 2026, docs/retake-cycle-plan.md R4): a test's retakes always wait for the
+ * teacher's OK; elsewhere the assignment's "Retakes need my OK" setting decides.
+ */
+export function retakesNeedUnlockFor(
+  type: "practice" | "formative" | "summative",
+  setting: boolean
+): boolean {
+  return type === "summative" || setting;
 }
 
 /**
