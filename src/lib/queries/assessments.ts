@@ -4,7 +4,13 @@
  */
 import { and, asc, count, desc, eq, inArray, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
-import type { BuilderItem, BuilderSection, PoolQuestion } from "@/lib/assessments/serve";
+import type {
+  BuilderItem,
+  BuilderSection,
+  PoolQuestion,
+  RetakeQuestion,
+} from "@/lib/assessments/serve";
+import { mirrorShortfall } from "@/lib/test-sections";
 import type { BankQuestionRow } from "./banks";
 import { listBankQuestions } from "./banks";
 
@@ -85,6 +91,11 @@ export type SectionDetail = {
   learningTargetId: string | null;
   learningTarget: { id: string; code: string; title: string } | null;
   items: SectionItem[];
+  /**
+   * The test's retake bank for this target (Jon, Oct 19 2026): its size, and the point values at
+   * which it has fewer questions than the section (a retake reuses originals there). Null = none.
+   */
+  retakeBank: { size: number; shortAt: number[] } | null;
 };
 
 export type AssessmentDetail = {
@@ -146,6 +157,7 @@ export async function getAssessmentDetail(assessmentId: string): Promise<Assessm
       learningTargetId: schema.assessmentSections.learningTargetId,
       ltCode: schema.learningTargets.code,
       ltTitle: schema.learningTargets.title,
+      retakePoolId: schema.assessmentSections.retakePoolId,
     })
     .from(schema.assessmentSections)
     .leftJoin(
@@ -249,6 +261,22 @@ export async function getAssessmentDetail(assessmentId: string): Promise<Assessm
       title: t.title,
     });
 
+  const retakePoolIds = sectionRows.flatMap((s) => (s.retakePoolId ? [s.retakePoolId] : []));
+  const bankPoints = new Map<string, number[]>();
+  if (retakePoolIds.length)
+    for (const b of await db
+      .select({ poolId: schema.poolQuestions.poolId, points: schema.questions.points })
+      .from(schema.poolQuestions)
+      .innerJoin(
+        schema.questions,
+        and(
+          eq(schema.poolQuestions.questionId, schema.questions.id),
+          eq(schema.questions.isArchived, false)
+        )
+      )
+      .where(inArray(schema.poolQuestions.poolId, retakePoolIds)))
+      (bankPoints.get(b.poolId) ?? bankPoints.set(b.poolId, []).get(b.poolId)!).push(b.points);
+
   const sections: SectionDetail[] = sectionRows.map((s) => ({
     id: s.id,
     title: s.title,
@@ -292,6 +320,17 @@ export async function getAssessmentDetail(assessmentId: string): Promise<Assessm
               },
             }
       ),
+    retakeBank: s.retakePoolId
+      ? {
+          size: bankPoints.get(s.retakePoolId)?.length ?? 0,
+          shortAt: mirrorShortfall(
+            itemRows
+              .filter((i) => i.sectionId === s.id && i.questionId)
+              .map((i) => i.points ?? i.qPoints ?? 1),
+            bankPoints.get(s.retakePoolId) ?? []
+          ),
+        }
+      : null,
   }));
 
   return { ...a, sections };
@@ -427,10 +466,55 @@ export async function loadBuilderSections(assessmentId: string): Promise<Builder
         targetIds: tBy.get(r.questionId) ?? [],
       });
   }
+  // Retake banks (Jon, Oct 19 2026): each section's bank questions, and the fixed questions'
+  // difficulty, so a targeted retake can mirror the section.
+  const retakeBy = new Map<string, RetakeQuestion[]>();
+  const retakeRows = await db
+    .select({
+      sectionId: schema.assessmentSections.id,
+      questionId: schema.questions.id,
+      points: schema.questions.points,
+      stimulusId: schema.questions.stimulusId,
+      difficulty: schema.questions.difficulty,
+    })
+    .from(schema.assessmentSections)
+    .innerJoin(
+      schema.poolQuestions,
+      eq(schema.poolQuestions.poolId, schema.assessmentSections.retakePoolId)
+    )
+    .innerJoin(
+      schema.questions,
+      and(
+        eq(schema.poolQuestions.questionId, schema.questions.id),
+        eq(schema.questions.isArchived, false)
+      )
+    )
+    .where(eq(schema.assessmentSections.assessmentId, assessmentId));
+  for (const r of retakeRows)
+    (retakeBy.get(r.sectionId) ?? retakeBy.set(r.sectionId, []).get(r.sectionId)!).push({
+      questionId: r.questionId,
+      points: r.points,
+      stimulusId: r.stimulusId,
+      difficulty: r.difficulty,
+      targetIds: [],
+    });
+  const fixedIds = detail.sections.flatMap((s) =>
+    s.items.flatMap((i) => (i.kind === "question" ? [i.question.id] : []))
+  );
+  const difficultyBy = new Map(
+    (fixedIds.length && retakeRows.length
+      ? await db
+          .select({ id: schema.questions.id, difficulty: schema.questions.difficulty })
+          .from(schema.questions)
+          .where(inArray(schema.questions.id, fixedIds))
+      : []
+    ).map((q) => [q.id, q.difficulty])
+  );
   return detail.sections.map((s) => ({
     id: s.id,
     learningTargetId: s.learningTargetId,
     sortOrder: s.sortOrder,
+    retakePool: retakeBy.get(s.id) ?? null,
     items: s.items.map((i): BuilderItem =>
       i.kind === "question"
         ? {
@@ -440,6 +524,7 @@ export async function loadBuilderSections(assessmentId: string): Promise<Builder
             points: i.points ?? i.question.points,
             stimulusId: i.question.stimulusId,
             sortOrder: i.sortOrder,
+            difficulty: difficultyBy.get(i.question.id),
           }
         : {
             kind: "pool",

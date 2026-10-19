@@ -203,3 +203,134 @@ export async function resectionAllTests(): Promise<
   }
   return out;
 }
+
+/** The pool name of a test's retake bank for one target. */
+export const retakePoolName = (testTitle: string, code: string) =>
+  `${testTitle} · ${code} retake bank`;
+
+export type RetakeBankOutcome = {
+  /** Bank questions attached to a target section. */
+  attached: number;
+  /** Bank questions whose target has no section on the test (not used). */
+  unplaced: number;
+  /** Target codes whose bank cannot mirror the section at every point value. */
+  short: string[];
+};
+
+/**
+ * Rule: a test's retake bank (Jon, Oct 19 2026) is one pool per target section, named
+ * "<test> · <code> retake bank" and tagged to the target; the section's `retake_pool_id` points
+ * at it. Applying again replaces the pool's questions. A target is "short" when its bank has fewer
+ * questions at some point value than the section has, so a retake would reuse original questions.
+ */
+export async function attachRetakeBank(input: {
+  assessmentId: string;
+  ownerId: string;
+  courseId: string | null;
+  testTitle: string;
+  questionIds: string[];
+}): Promise<RetakeBankOutcome> {
+  const sections = await db
+    .select({
+      id: schema.assessmentSections.id,
+      learningTargetId: schema.assessmentSections.learningTargetId,
+      code: schema.learningTargets.code,
+    })
+    .from(schema.assessmentSections)
+    .innerJoin(
+      schema.learningTargets,
+      eq(schema.assessmentSections.learningTargetId, schema.learningTargets.id)
+    )
+    .where(eq(schema.assessmentSections.assessmentId, input.assessmentId));
+  const sectionBy = new Map(sections.map((s) => [s.learningTargetId!, s]));
+  const { targets, tagsBy } = await loadTargets(input.courseId, input.questionIds);
+  const plan = planTargetSections(
+    input.questionIds.map((questionId) => ({
+      questionId,
+      // Only targets the test has a section for can take bank questions.
+      targetIds: (tagsBy.get(questionId) ?? []).filter((id) => sectionBy.has(id)),
+    })),
+    targets
+  );
+  let attached = 0;
+  let unplaced = 0;
+  const short: string[] = [];
+  for (const p of plan) {
+    const section = p.learningTargetId ? sectionBy.get(p.learningTargetId) : null;
+    if (!section) {
+      unplaced += p.items.length;
+      continue;
+    }
+    const name = retakePoolName(input.testTitle, section.code);
+    let pool = await db.query.questionPools.findFirst({
+      columns: { id: true },
+      where: and(
+        input.courseId
+          ? eq(schema.questionPools.courseId, input.courseId)
+          : eq(schema.questionPools.ownerId, input.ownerId),
+        sql`lower(${schema.questionPools.name}) = ${name.toLowerCase()}`
+      ),
+    });
+    if (!pool)
+      [pool] = await db
+        .insert(schema.questionPools)
+        .values({ ownerId: input.ownerId, courseId: input.courseId, name })
+        .returning({ id: schema.questionPools.id });
+    await db
+      .insert(schema.poolTargets)
+      .values({ poolId: pool.id, learningTargetId: section.learningTargetId! })
+      .onConflictDoNothing();
+    await db.delete(schema.poolQuestions).where(eq(schema.poolQuestions.poolId, pool.id));
+    await db
+      .insert(schema.poolQuestions)
+      .values(p.items.map((q) => ({ poolId: pool.id, questionId: q.questionId })));
+    await db
+      .update(schema.assessmentSections)
+      .set({ retakePoolId: pool.id })
+      .where(eq(schema.assessmentSections.id, section.id));
+    attached += p.items.length;
+    if (
+      !(await bankMirrors(
+        section.id,
+        p.items.map((q) => q.questionId)
+      ))
+    )
+      short.push(section.code);
+  }
+  // A target section that got no bank questions at all re-serves its own questions on a retake.
+  const banked = new Set(plan.map((p) => p.learningTargetId));
+  for (const s of sections) if (!banked.has(s.learningTargetId)) short.push(s.code);
+  return { attached, unplaced, short };
+}
+
+/** Whether a bank has, at every point value, at least as many questions as the section's fixed items. */
+async function bankMirrors(sectionId: string, bankIds: string[]): Promise<boolean> {
+  const fixed = await db
+    .select({ override: schema.assessmentQuestions.points, points: schema.questions.points })
+    .from(schema.assessmentQuestions)
+    .innerJoin(schema.questions, eq(schema.assessmentQuestions.questionId, schema.questions.id))
+    .where(eq(schema.assessmentQuestions.sectionId, sectionId));
+  const bank = bankIds.length
+    ? await db
+        .select({ points: schema.questions.points })
+        .from(schema.questions)
+        .where(inArray(schema.questions.id, bankIds))
+    : [];
+  return (
+    mirrorShortfall(
+      fixed.map((f) => f.override ?? f.points),
+      bank.map((b) => b.points)
+    ).length === 0
+  );
+}
+
+/** Rule: the point values at which a bank has fewer questions than the section (empty = it mirrors). */
+export function mirrorShortfall(sectionPoints: number[], bankPoints: number[]): number[] {
+  const need = new Map<number, number>();
+  for (const p of sectionPoints) need.set(p, (need.get(p) ?? 0) + 1);
+  for (const p of bankPoints) if (need.has(p)) need.set(p, need.get(p)! - 1);
+  return [...need.entries()]
+    .filter(([, n]) => n > 0)
+    .map(([p]) => p)
+    .sort((a, b) => a - b);
+}

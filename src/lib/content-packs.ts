@@ -17,6 +17,9 @@
  * Practice packs (Jon, Oct 13 2026: a bank of about 50 per learning target):
  * `practiceSet` publishes a set that deals from the pack's bank, and the
  * activity can be a reading or guided notes written right in the pack.
+ *
+ * Unit tests (Jon, Oct 19 2026): a summative is built one section per learning target, and CSV
+ * rows with `pool` = "retake" form the test's retake bank instead of appearing on attempt 1.
  */
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
@@ -25,7 +28,7 @@ import { db, schema } from "@/db";
 import { parseCsvRecords } from "@/lib/csv";
 import { parseQuestionRecords } from "@/lib/import/question-csv";
 import { commitImport } from "@/lib/import/question-import";
-import { sectionByTarget } from "@/lib/test-sections";
+import { attachRetakeBank, sectionByTarget, type RetakeBankOutcome } from "@/lib/test-sections";
 
 export type PackDefinition = {
   name: string;
@@ -111,6 +114,9 @@ export type PackOutcome =
   | { name: string; status: "skipped"; reason: string };
 
 const key = (s: string) => s.trim().toLowerCase();
+
+/** The `pool` value that puts a test pack's row in the test's retake bank (Jon, Oct 19 2026). */
+export const RETAKE_POOL = "retake";
 
 /** The name a pack's application is recorded under: revision 1 keeps the bare name. */
 export function appliedName(def: Pick<PackDefinition, "name" | "revision">): string {
@@ -325,8 +331,22 @@ async function applyQuiz(
   const csvText = readFileSync(join(root, def.name, "questions.csv"), "utf8");
   const { records } = parseCsvRecords(csvText);
   const rows = parseQuestionRecords(records);
+  // A test's retake bank (Jon, Oct 19 2026): rows with pool "retake" stay off attempt 1 and go into
+  // the test's per-target retake pools instead of a pool literally named "retake".
+  const retakeLines = new Set<number>();
+  if (def.assessment?.type === "summative")
+    for (const row of rows)
+      if (row.pool && key(row.pool) === RETAKE_POOL) {
+        retakeLines.add(row.line);
+        row.pool = null;
+      }
   const result = await commitImport(bank.id, rows);
-  const questionIds = result.rows.flatMap((r) => (r.questionId ? [r.questionId] : []));
+  const questionIds = result.rows.flatMap((r) =>
+    r.questionId && !retakeLines.has(r.line) ? [r.questionId] : []
+  );
+  const retakeIds = result.rows.flatMap((r) =>
+    r.questionId && retakeLines.has(r.line) ? [r.questionId] : []
+  );
   errors.push(...result.rows.filter((r) => r.error).map((r) => `line ${r.line}: ${r.error}`));
 
   // The shelf: resolved after the import so a unit the CSV just created counts.
@@ -350,6 +370,7 @@ async function applyQuiz(
       .where(and(eq(schema.questionBanks.id, bank.id), isNull(schema.questionBanks.unitId)));
 
   let assessmentId: string | null = null;
+  let retakeBank: RetakeBankOutcome | null = null;
   const assignments: string[] = [];
   if (def.assessment && questionIds.length) {
     const existing = await db.query.assessments.findFirst({
@@ -400,6 +421,23 @@ async function applyQuiz(
           );
       }
     }
+    if (retakeIds.length) {
+      retakeBank = await attachRetakeBank({
+        assessmentId,
+        ownerId: teacherId,
+        courseId,
+        testTitle: def.assessment.title,
+        questionIds: retakeIds,
+      });
+      if (retakeBank.unplaced)
+        errors.push(
+          `${retakeBank.unplaced} retake question(s) are on a learning target the test has no section for; not used`
+        );
+      if (retakeBank.short.length)
+        errors.push(
+          `retake bank too small to mirror the test for ${retakeBank.short.join(", ")}: a retake reuses original questions where the bank runs out at a point value`
+        );
+    }
     for (const target of def.assign ?? []) {
       const cls = await db.query.classes.findFirst({
         columns: { id: true, name: true },
@@ -437,6 +475,7 @@ async function applyQuiz(
     unitId,
     imported: result.counts,
     questions: questionIds.length,
+    ...(retakeBank ? { retakeBank } : {}),
     assessmentId,
     assignedTo: assignments,
   };

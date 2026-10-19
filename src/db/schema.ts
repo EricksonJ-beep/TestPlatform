@@ -599,6 +599,14 @@ export const assessmentSections = pgTable(
     learningTargetId: uuid("learning_target_id").references(() => learningTargets.id, {
       onDelete: "set null",
     }),
+    /**
+     * The test's retake bank for this target (Jon, Oct 19 2026): a retake serves new questions from
+     * it, mirroring the section's count, points, and difficulty mix. Null = a retake re-serves the
+     * section's own items (pool draws still draw fresh).
+     */
+    retakePoolId: uuid("retake_pool_id").references(() => questionPools.id, {
+      onDelete: "set null",
+    }),
     ...timestamps,
   },
   (t) => [index("assessment_sections_assessment_idx").on(t.assessmentId)]

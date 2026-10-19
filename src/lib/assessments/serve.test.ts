@@ -4,10 +4,12 @@ import {
   dealByDifficulty,
   difficultyBand,
   drawFromPool,
+  mirrorFromRetakeBank,
   nominalPoints,
   seededRng,
   type BuilderSection,
   type PoolQuestion,
+  type RetakeQuestion,
 } from "./serve";
 
 const pq = (id: string, stim: string | null = null, points = 1): PoolQuestion => ({
@@ -174,5 +176,112 @@ describe("dealByDifficulty", () => {
     expect(
       dealByDifficulty(flat, 20, { drawStimulusGroups: false, rng: seededRng(1) })
     ).toHaveLength(12);
+  });
+});
+
+describe("retake bank (Jon, Oct 19 2026)", () => {
+  const rq = (id: string, points: number, difficulty: number): RetakeQuestion => ({
+    questionId: id,
+    points,
+    difficulty,
+    stimulusId: null,
+    targetIds: [],
+  });
+  const slot = (id: string, points: number, difficulty: number) => ({
+    questionId: id,
+    points,
+    difficulty,
+    stimulusId: null,
+  });
+
+  it("fills every slot with a bank question at the same points and band, in the section's order", () => {
+    const out = mirrorFromRetakeBank(
+      [slot("o1", 1, 1), slot("o2", 4, 3), slot("o3", 1, 5)],
+      [rq("h1", 1, 5), rq("e1", 1, 2), rq("m4", 4, 3), rq("m1", 1, 3)],
+      { rng: seededRng(2) }
+    );
+    expect(out.map((q) => [q.questionId, q.points, q.fromBank])).toEqual([
+      ["e1", 1, true],
+      ["m4", 4, true],
+      ["h1", 1, true],
+    ]);
+  });
+
+  it("takes the closest band when its own is empty, and unseen questions before seen ones", () => {
+    const out = mirrorFromRetakeBank(
+      [slot("o1", 1, 1)],
+      [rq("hard", 1, 5), rq("med-seen", 1, 3), rq("med", 1, 3)],
+      { rng: seededRng(1), avoid: new Set(["med-seen"]) }
+    );
+    expect(out[0].questionId).toBe("med");
+  });
+
+  it("never changes points: a slot keeps its original question when the bank has nothing at that value", () => {
+    const out = mirrorFromRetakeBank([slot("o1", 4, 3), slot("o2", 1, 3)], [rq("b1", 1, 3)], {
+      rng: seededRng(3),
+    });
+    expect(out.map((q) => [q.questionId, q.points, q.fromBank])).toEqual([
+      ["o1", 4, false],
+      ["b1", 1, true],
+    ]);
+  });
+
+  it("a targeted retake serves the section from its bank; attempt 1 and sections without a bank are unchanged", () => {
+    const sections: BuilderSection[] = [
+      {
+        id: "s1",
+        learningTargetId: "LT1",
+        sortOrder: 0,
+        items: [
+          {
+            kind: "question",
+            id: "i1",
+            questionId: "q1",
+            points: 1,
+            stimulusId: null,
+            sortOrder: 0,
+            difficulty: 2,
+          },
+          {
+            kind: "question",
+            id: "i2",
+            questionId: "q2",
+            points: 2,
+            stimulusId: null,
+            sortOrder: 1,
+            difficulty: 4,
+          },
+        ],
+        retakePool: [rq("r1", 1, 2), rq("r2", 2, 4), rq("r3", 1, 1)],
+      },
+      {
+        id: "s2",
+        learningTargetId: "LT2",
+        sortOrder: 1,
+        items: [
+          {
+            kind: "question",
+            id: "i3",
+            questionId: "q3",
+            points: 1,
+            stimulusId: null,
+            sortOrder: 0,
+          },
+        ],
+      },
+    ];
+    const first = buildQuestionSet(sections, { randomizeQuestions: false, rng: seededRng(4) });
+    expect(first.map((q) => q.questionId)).toEqual(["q1", "q2", "q3"]);
+    const retake = buildQuestionSet(sections, {
+      randomizeQuestions: false,
+      scope: ["LT1", "LT2"],
+      rng: seededRng(4),
+      avoidQuestionIds: new Set(["q1", "q2", "q3"]),
+    });
+    expect(retake.map((q) => [q.questionId, q.points, q.learningTargetId])).toEqual([
+      ["r1", 1, "LT1"],
+      ["r2", 2, "LT1"],
+      ["q3", 1, "LT2"],
+    ]);
   });
 });

@@ -137,6 +137,21 @@ export function SectionCard({
               {fixedPoints} fixed {fixedPoints === 1 ? "point" : "points"}
               {section.instructions ? ` · ${section.instructions}` : ""}
             </p>
+            {section.retakeBank ? (
+              <p
+                className={
+                  section.retakeBank.shortAt.length
+                    ? "text-xs text-[#B93E27]"
+                    : "text-xs text-muted-foreground"
+                }
+              >
+                Retake bank: {section.retakeBank.size}{" "}
+                {section.retakeBank.size === 1 ? "question" : "questions"}
+                {section.retakeBank.shortAt.length
+                  ? ` · too few ${section.retakeBank.shortAt.join(", ")}-point questions; a retake reuses originals there`
+                  : ""}
+              </p>
+            ) : null}
           </div>
         )}
         {canEdit && !editing ? (

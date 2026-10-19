@@ -611,6 +611,70 @@ describe("content packs", () => {
     }))!;
     expect(un.isPublished).toBe(false);
   });
+  it("a test pack's pool=retake rows become the test's per-target retake bank, never on attempt 1", async () => {
+    const root = mkdtempSync(join(tmpdir(), "bloom-packs-"));
+    const name = "test-ps-u2-test";
+    mkdirSync(join(root, name));
+    writeFileSync(
+      join(root, name, "questions.csv"),
+      [
+        "external_id,course,learning_target,pool,type,stem,correct,points",
+        "RB-1,Physical Science A,U1.LT1,,true_false,Test LT1 a,true,1",
+        "RB-2,Physical Science A,U1.LT2,,true_false,Test LT2 a,true,2",
+        "RB-3,Physical Science A,U1.LT1,retake,true_false,Bank LT1 a,true,1",
+        "RB-4,Physical Science A,U1.LT1,Retake,true_false,Bank LT1 b,false,1",
+        "RB-5,Physical Science A,U1.LT3,retake,true_false,Bank LT3 (no section),true,1",
+      ].join("\n")
+    );
+    const out = await applyPack(
+      {
+        name,
+        teacherEmail: "EricksonJ@cadott.k12.wi.us",
+        course: "Physical Science A",
+        bank: "PS · Retake bank test",
+        assessment: { title: "PS retake bank test", type: "summative" },
+      },
+      root
+    );
+    expect(out.status).toBe("applied");
+    if (out.status !== "applied") return;
+    expect(out.summary).toMatchObject({
+      questions: 2,
+      retakeBank: { attached: 2, unplaced: 1, short: ["U1.LT2"] },
+    });
+    expect((out.summary.errors as string[]).join(" ")).toMatch(/retake bank too small.*U1\.LT2/);
+    const test = (await db.query.assessments.findFirst({
+      where: eq(schema.assessments.title, "PS retake bank test"),
+    }))!;
+    const sections = await db
+      .select()
+      .from(schema.assessmentSections)
+      .where(eq(schema.assessmentSections.assessmentId, test.id))
+      .orderBy(schema.assessmentSections.sortOrder);
+    expect(sections.map((s) => s.title)).toEqual([
+      expect.stringMatching(/^U1\.LT1 · /),
+      expect.stringMatching(/^U1\.LT2 · /),
+    ]);
+    const onTest = await db.select().from(schema.assessmentQuestions);
+    const stems = await db.select().from(schema.questions);
+    const stemOf = (id: string | null) => stems.find((q) => q.id === id)?.stem;
+    expect(
+      onTest
+        .filter((r) => sections.some((s) => s.id === r.sectionId))
+        .map((r) => stemOf(r.questionId))
+        .sort()
+    ).toEqual(["Test LT1 a", "Test LT2 a"]);
+    const bank = await db
+      .select()
+      .from(schema.poolQuestions)
+      .where(eq(schema.poolQuestions.poolId, sections[0].retakePoolId!));
+    expect(bank.map((b) => stemOf(b.questionId)).sort()).toEqual(["Bank LT1 a", "Bank LT1 b"]);
+    // No pool literally named "retake" is made.
+    expect(
+      (await db.select().from(schema.questionPools)).some((p) => p.name.toLowerCase() === "retake")
+    ).toBe(false);
+  });
+
   it("a practice pack makes a bank with hints, a set that deals from it, and a guided-notes reading", async () => {
     const root = mkdtempSync(join(tmpdir(), "bloom-packs-"));
     const name = "test-ps-u1-lt3-practice";

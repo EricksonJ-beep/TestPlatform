@@ -20,6 +20,8 @@ export type BuilderItem =
       points: number;
       stimulusId: string | null;
       sortOrder: number;
+      /** 1–5; a retake from the retake bank mirrors it (absent = medium). */
+      difficulty?: number;
     }
   | {
       kind: "pool";
@@ -31,11 +33,16 @@ export type BuilderItem =
       sortOrder: number;
     };
 
+/** A question in a test's retake bank: a retake mirrors the section from these. */
+export type RetakeQuestion = PoolQuestion & { difficulty: number };
+
 export type BuilderSection = {
   id: string;
   learningTargetId: string | null;
   sortOrder: number;
   items: BuilderItem[];
+  /** The section's retake bank (Jon, Oct 19 2026); a targeted retake serves from it. */
+  retakePool?: RetakeQuestion[] | null;
 };
 
 export type ServeOptions = {
@@ -183,6 +190,67 @@ export function dealByDifficulty(
   return BANDS.flatMap((b) => shuffle(picked.get(b)!, opts.rng));
 }
 
+const BAND_RANK: Record<DifficultyBand, number> = { easy: 0, medium: 1, hard: 2 };
+
+/**
+ * A retake from the retake bank (Jon, Oct 19 2026: "maintain… the same integrity of the tests…
+ * same point values"). Rule: each of the section's fixed questions is a slot; a slot is filled by a
+ * bank question with the **same point value**, the same difficulty band first, then the closest
+ * band; questions the student has not seen come before ones they have; when the bank has nothing
+ * left at that point value the slot keeps its original question. So the retake has the section's
+ * count and points possible, always. Slots keep the section's order.
+ */
+export function mirrorFromRetakeBank(
+  slots: { questionId: string; points: number; stimulusId: string | null; difficulty: number }[],
+  bank: RetakeQuestion[],
+  opts: { rng: () => number; avoid?: Set<string> }
+): { questionId: string; points: number; stimulusId: string | null; fromBank: boolean }[] {
+  const avoid = opts.avoid ?? new Set<string>();
+  const taken = new Set<string>(slots.map((s) => s.questionId));
+  // Fresh first, then seen; shuffled within each so two students rarely get the same retake.
+  const ordered = [
+    ...shuffle(
+      bank.filter((q) => !avoid.has(q.questionId)),
+      opts.rng
+    ),
+    ...shuffle(
+      bank.filter((q) => avoid.has(q.questionId)),
+      opts.rng
+    ),
+  ];
+  const fill: (RetakeQuestion | null)[] = slots.map(() => null);
+  const pick = (i: number, ok: (q: RetakeQuestion) => boolean) => {
+    const q = ordered.find((c) => !taken.has(c.questionId) && ok(c));
+    if (!q) return;
+    fill[i] = q;
+    taken.add(q.questionId);
+  };
+  // Pass 1: same points, same band. Pass 2: same points, closest band (any freshness order kept).
+  slots.forEach((s, i) =>
+    pick(
+      i,
+      (q) => q.points === s.points && difficultyBand(q.difficulty) === difficultyBand(s.difficulty)
+    )
+  );
+  for (const distance of [1, 2])
+    slots.forEach((s, i) => {
+      if (fill[i]) return;
+      const want = BAND_RANK[difficultyBand(s.difficulty)];
+      pick(
+        i,
+        (q) =>
+          q.points === s.points &&
+          Math.abs(BAND_RANK[difficultyBand(q.difficulty)] - want) === distance
+      );
+    });
+  return slots.map((s, i) => {
+    const q = fill[i];
+    return q
+      ? { questionId: q.questionId, points: s.points, stimulusId: q.stimulusId, fromBank: true }
+      : { questionId: s.questionId, points: s.points, stimulusId: s.stimulusId, fromBank: false };
+  });
+}
+
 /** Resolve sections into the served list. Section order is kept; within a section, fixed items keep their order unless randomized. */
 export function buildQuestionSet(sections: BuilderSection[], opts: ServeOptions): ServedQuestion[] {
   const rng = opts.rng ?? Math.random;
@@ -193,8 +261,37 @@ export function buildQuestionSet(sections: BuilderSection[], opts: ServeOptions)
   for (const section of [...sections].sort((a, b) => a.sortOrder - b.sortOrder)) {
     if (scope && (!section.learningTargetId || !scope.has(section.learningTargetId))) continue;
     let picked: { questionId: string; points: number; stimulusId: string | null }[] = [];
+    // A targeted retake with a retake bank: the section's fixed questions are mirrored from it.
+    const mirrored =
+      scope && section.retakePool?.length
+        ? mirrorFromRetakeBank(
+            section.items.flatMap((i) =>
+              i.kind === "question"
+                ? [
+                    {
+                      questionId: i.questionId,
+                      points: i.points,
+                      stimulusId: i.stimulusId,
+                      difficulty: i.difficulty ?? 3,
+                    },
+                  ]
+                : []
+            ),
+            section.retakePool,
+            { rng, avoid: opts.avoidQuestionIds }
+          )
+        : null;
+    const mirroredBy = new Map(
+      section.items
+        .filter((i) => i.kind === "question")
+        .map((i, n) => [i.id, mirrored?.[n]] as const)
+    );
     for (const item of [...section.items].sort((a, b) => a.sortOrder - b.sortOrder)) {
-      if (item.kind === "question") {
+      if (item.kind === "question" && mirrored) {
+        const m = mirroredBy.get(item.id)!;
+        if (!usedIds.has(m.questionId))
+          picked.push({ questionId: m.questionId, points: m.points, stimulusId: m.stimulusId });
+      } else if (item.kind === "question") {
         if (!usedIds.has(item.questionId))
           picked.push({
             questionId: item.questionId,

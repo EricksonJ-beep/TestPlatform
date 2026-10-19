@@ -413,6 +413,7 @@ Template: `question_import_template.csv` (also `question_import_template.xlsx` w
 **Other rules**
 - `external_id` present + already in the bank → **update** that question (new version), else insert. Absent → always insert.
 - `learning_target` and `pool` are matched by name (case-insensitive, trimmed) within the course; auto-create if missing and report "created N new targets/pools."
+- **Retake bank rows (Oct 19, 2026):** in a unit-test content pack, `pool` = `retake` keeps the row off attempt 1 and puts it in the test's retake bank for its learning target (one pool per target, "<test> · <code> retake bank"). The import reports any target whose bank has fewer questions than the test at some point value.
 - `points` default 1; `difficulty` 1–5 default 3; `bloom` ∈ remember/understand/apply/analyze/evaluate/create; `grading` default `auto` (forced `manual` for extended_response).
 - `image_url` / `video_url`: absolute URL → stored as link; relative filename → expect a matching file in the accompanying upload (zip or multi-file) → stored in Cloudflare R2. YouTube URLs allowed for video.
 - `tags` comma-separated, trimmed, deduped.
