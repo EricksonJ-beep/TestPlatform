@@ -3,6 +3,7 @@
 *Author: Jonathan Erickson · Audience: you + Claude Code · Updated: Sept 15, 2026*
 *Name **Bloom** is final: Bloom's taxonomy (the `bloom` tag on every question) + students growing through the relearning cycle. Register the domain you'll use (a `.app` or `.school` is fine — expect `bloom.<something>`, not `bloom.com`).*
 *v2.1 (Sept 21, 2026): infrastructure switched to **Neon + Drizzle + Auth.js + R2** (see §7). v2 changes: added the learning cycle (formative/summative attempts + corrections + retakes), **targeted summative retakes by learning target (80% threshold)**, **live tier board**, practice sets, student auth decision, import moved to Phase 1, two-teacher sharing at launch.*
+*v2.2 (Oct 19, 2026): **unit-test relearning cycle tightened** (Jon): corrections → relearning (a practice set counts as relearning) → teacher approval → targeted retake from a **per-test retake bank** with matched points and difficulty. Tests only; quizzes unchanged. Tickets in `docs/retake-cycle-plan.md`.*
 
 ---
 
@@ -48,7 +49,7 @@ Every assessment has a **type**, and the type drives the rules. This is the core
 |---|---|---|---|---|
 | **Practice** | Unlimited | None | Not graded (tracked for you) | "Practice" tab, always open |
 | **Formative** (quiz) | Default 3 (configurable) | **Corrections** on missed questions | **Highest** attempt | "Assignments" when open |
-| **Summative** (test) | 1 + 1 retake (configurable) | **Three gates per target: corrections approved → relearning activity completed → practice set completed**, then a **targeted retake** with new questions from each target's pool. Targets **below 80% are required** ("Must retake"); targets **at/above 80% are optional** ("Retake available") | **Highest per target**, combined | "Assignments" when open |
+| **Summative** (test) | 1 + 1 retake (configurable) | **Per target, in order: corrections (approved if review is on) → one relearning item (an activity or a practice set) → teacher approves the retake** (Oct 19, 2026), then a **targeted retake** with new questions from the test's **retake bank** for each target. Targets **below 80% are required** ("Must retake"); targets **at/above 80% are optional** ("Retake available") | **Highest per target**, combined | "Assignments" when open |
 
 **Formative retake:** same assessment; may be re-randomized (order/answers) but same question set unless you attach a pool.
 **Summative retake (targeted):** a summative is built as **one section per learning target**, each backed by its own pool. After attempt 1, the platform scores each target separately. Any target below the **80% threshold** (configurable) is labeled **Must retake** — the platform assigns it automatically, no teacher action needed. Targets at or above 80% are labeled **Retake available**: the student may opt in to any of them to raise the score. The retake serves a fresh set of questions for *only the selected targets*, the same number as the original section. Example: 10/10 on LT1–LT3 and 7/10 on LT4 → LT4 is required; the student may also choose LT1–LT3 but doesn't have to.
@@ -187,22 +188,22 @@ This is the workflow Claude Code must implement exactly.
 
 **Flow**
 1. Student submits attempt 1 → auto-grade → score shown (or withheld until you release).
-2. For every **required** target (and any optional one the student opts into), a **Relearning checklist** appears with three items per target: **Corrections** (every missed question with its stem, their answer, and two fields: *Correct answer* + *Why*), **Relearning activity** (pick any tagged activity, or the one you pinned), and **Practice set** (complete one tagged set). Items can be done in any order except that the retake needs all three.
+2. For every **required** target (and any optional one the student opts into), a **Relearning checklist** appears with two steps per target, **in order** (Oct 19, 2026): **Corrections** (every missed question with its stem, their answer, and two fields: *Correct answer* + *Why*), then **Relearning** — one item: any tagged activity (reading, video, link, guided notes, worksheet, interactive) **or** a tagged practice set, or the one you pinned. Relearning stays locked until that target's corrections are submitted (and approved, if review is on). In a CVTC course (no corrections) relearning is open at once.
 3. Student submits corrections.
 4. **Review gate** (corrections only) — choose per assignment:
    - *Auto:* corrections submitted → retake unlocks immediately (fast, low-friction), or
    - *Teacher-approved:* you (with an AI first-pass flagging thin explanations) approve → retake unlocks.
 5. Retake:
    - **Formative:** same assessment, up to the attempt limit (default 3). Corrections required before each retake.
-   - **Summative (targeted):** the platform marks every target below the threshold (default **80%**) as **required** and every target at/above it as **optional**. The student sees both lists and confirms which optional targets (if any) to add. The retake serves **new questions from each selected target's pool**, matching the original section size. One retake by default.
+   - **Summative (targeted):** the platform marks every target below the threshold (default **80%**) as **required** and every target at/above it as **optional**. The student sees both lists and confirms which optional targets (if any) to add. When every selected target's checklist is done, the student **asks for the retake**; the request lands in your **Needs you** list naming the student and the targets, and **always waits for your approval** on a test (Oct 19, 2026). Approved, it is open for that student through the next school day. The retake serves **new questions from the test's retake bank for each selected target**, mirroring the original section: same question count, same point value per question, same easy/medium/hard mix, nothing the student has seen. One retake by default.
 6. **Highest score** becomes the recorded grade. For summatives this is computed **per target**: each target's final score = max(attempt 1, retake), then targets are summed into the test score. All attempts + corrections are kept for the growth view.
 
 **Worked example (summative, 4 targets × 10 pts):**
-Attempt 1 → LT1 10, LT2 10, LT3 10, LT4 7 = 37/40 (92.5%). LT4 is 70% → below 80% → corrections on the 3 missed LT4 items → retake = 10 new LT4 questions → scores 9. Final = 10+10+10+**9** = 39/40.
+Attempt 1 → LT1 10, LT2 10, LT3 10, LT4 7 = 37/40 (92.5%). LT4 is 70% → below 80% → corrections on the 3 missed LT4 items → one LT4 relearning item → asks, teacher approves → retake = 10 new LT4 questions from the retake bank, same points and mix → scores 9. Final = 10+10+10+**9** = 39/40.
 
 **Rules**
 - Corrections are required on the *missed* items within the targets being retaken (all missed items for formatives).
-- None of the three gates can be skipped — the retake button stays locked until corrections are submitted (and approved, if that mode is on), one relearning activity is complete, and one practice set is complete for **every** target being retaken. Practice is completion-based, not score-based.
+- No step can be skipped (summatives, Oct 19, 2026) — the student cannot ask for the retake until, for **every** target being retaken, corrections are submitted (and approved, if that mode is on) and then one relearning item (an activity or a practice set) is complete; then the teacher approves. Relearning is completion-based, not score-based. Quizzes keep their own rules (corrections, the cap, practice before a retake) and have no relearning step.
 - A target can never score lower after a retake (highest per target).
 - **Corrections cap (formatives; Jon and colleague, Oct 8 2026, on by default per assignment):** attempt 1 below the threshold → *Must do corrections*; finishing them lifts the score to the threshold and no higher. Attempt 1 at or above it → corrections optional; finishing them lifts the score to 100%. A retake's score stands on its own (no correction credit), highest counts, up to the attempt limit (3), and it must start within the retake window (7 days from attempt 1); corrections stay open after the window. The results page and the Skyward CSV carry the counting score and how it came about.
 - Threshold (80%), attempt limits, and review mode are set per assignment (defaults per type). Optional retakes for targets ≥80% are **on by default** (can be disabled per assignment).
@@ -346,10 +347,13 @@ Repo, Next.js + Tailwind + shadcn scaffold, Neon project + Drizzle schema/migrat
 | Summative retake = | **Targeted:** targets below 80% are **required**; targets ≥80% are **optional** (student opts in, on by default); new questions from each selected target's pool, same question count as the original section |
 | Relearning monitor = | Per-student view of the three gates + time on task per target with a readiness summary; class table sortable by readiness (Phase 1, alongside the tier board) |
 | Worksheets = | Existing Apps Script worksheets count as practice sets (or activities) via a signed webhook on final submit; student Bloom email = Cadott Google email; section titles carry LT labels so one worksheet can satisfy several targets |
-| Retake gates = | Per required (or opted-in) target: corrections approved + ≥1 relearning activity completed + ≥1 practice set completed (completion, not score). Any tagged item counts by default; teacher may pin specific ones per assignment |
+| Retake gates = | *(Revised Oct 19, 2026)* Per required (or opted-in) target, **in order**: corrections approved → **one** relearning item completed, where a practice set counts as a relearning item (completion, not score) → teacher approves the retake. Any tagged item counts by default; teacher may pin specific ones per assignment. *(Was: corrections + activity + practice set, any order.)* |
+| Relearning cycle applies to = | **Unit tests (summatives) only** (Oct 19, 2026). Quizzes keep corrections → retake with no relearning step |
+| Test retake approval = | **Always teacher-approved** on summatives (Oct 19, 2026): the request appears in Needs you with the student's targets; Approve opens it through the next school day |
+| Retake questions = | A **retake bank per test** (Oct 19, 2026): extra questions per learning target, held back from practice. A retake mirrors the original section — same count, same points per question, same difficulty mix, unseen questions only |
 | Retake threshold = | 80% per learning target (configurable per assignment) |
 | Grade after retake = | Highest counts — per target for summatives (max per target, then summed); per attempt for formatives |
-| Summative structure = | One section per learning target, each with its own pool |
+| Summative structure = | One section per learning target, each with its own pool. **Imported tests must follow this too** (Oct 19, 2026): today a content pack puts the whole test in one untargeted "Questions" section, so per-target scores and targeted retakes never start |
 | Tier board = | Tier 1: 0 targets < 80% · Tier 2: 1–2 · Tier 3: 3+ (boundaries configurable); live via polling, push later if wanted |
 | Competitor review (Sept 15, 2026) — approved additions | **Shared stimulus** (Phase 1) · **Numeric grading modes + units** (Phase 1) · **Dynamic numeric variants** (Phase 2) · **Google Classroom roster import** (Phase 2) |
 
