@@ -25,6 +25,7 @@ import { db, schema } from "@/db";
 import { parseCsvRecords } from "@/lib/csv";
 import { parseQuestionRecords } from "@/lib/import/question-csv";
 import { commitImport } from "@/lib/import/question-import";
+import { sectionByTarget } from "@/lib/test-sections";
 
 export type PackDefinition = {
   name: string;
@@ -380,15 +381,24 @@ async function applyQuiz(
         })
         .returning({ id: schema.assessments.id });
       assessmentId = a.id;
-      const [sec] = await db
-        .insert(schema.assessmentSections)
-        .values({ assessmentId: a.id, title: "Questions", sortOrder: 0 })
-        .returning({ id: schema.assessmentSections.id });
-      await db
-        .insert(schema.assessmentQuestions)
-        .values(
-          questionIds.map((questionId, i) => ({ sectionId: sec.id, questionId, sortOrder: i }))
-        );
+      if (def.assessment.type === "summative") {
+        // One section per learning target (Jon, Oct 19 2026): what targeted retakes read.
+        const built = await sectionByTarget(a.id, courseId, questionIds);
+        if (built.untargeted)
+          errors.push(
+            `${built.untargeted} question(s) have no learning target in the course; they sit in an "Other" section that is scored but never retaken`
+          );
+      } else {
+        const [sec] = await db
+          .insert(schema.assessmentSections)
+          .values({ assessmentId: a.id, title: "Questions", sortOrder: 0 })
+          .returning({ id: schema.assessmentSections.id });
+        await db
+          .insert(schema.assessmentQuestions)
+          .values(
+            questionIds.map((questionId, i) => ({ sectionId: sec.id, questionId, sortOrder: i }))
+          );
+      }
     }
     for (const target of def.assign ?? []) {
       const cls = await db.query.classes.findFirst({

@@ -19,6 +19,11 @@ if (r.status !== 0) process.exit(r.status ?? 1);
 console.log("migrate-on-build: applying content packs…");
 spawnSync("npx", ["tsx", "scripts/apply-packs.ts"], { stdio: "inherit", shell: true });
 
+// Unit tests by learning target (Jon, Oct 19 2026): single-section tests nobody has started.
+// Production deploys only, like the CVTC step below.
+console.log("migrate-on-build: sectioning tests by learning target…");
+spawnSync("npx", ["tsx", "scripts/section-tests.ts"], { stdio: "inherit", shell: true });
+
 // CVTC rules (Jon, Oct 13 2026): scores lifted by corrections before a course turned the rules on.
 // Production deploys only: the script skips itself on a preview build (live database, main's code).
 console.log("migrate-on-build: settling CVTC scores…");

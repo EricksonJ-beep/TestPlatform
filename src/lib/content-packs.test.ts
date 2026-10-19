@@ -322,6 +322,24 @@ describe("content packs", () => {
       isPublished: true,
       unitId: bioUnit2.id,
     });
+    // A test is one section per learning target (Jon, Oct 19 2026), so targeted retakes work.
+    const bctSections = await db
+      .select()
+      .from(schema.assessmentSections)
+      .where(eq(schema.assessmentSections.assessmentId, bctAssessment.id))
+      .orderBy(schema.assessmentSections.sortOrder);
+    const bioCode = new Map(bioTargets.map((t) => [t.id, t.code]));
+    const bctRows = await db.select().from(schema.assessmentQuestions);
+    expect(
+      bctSections.map((s) => [
+        s.learningTargetId && bioCode.get(s.learningTargetId),
+        bctRows.filter((r) => r.sectionId === s.id).length,
+      ])
+    ).toEqual([
+      ["U2.LT1", 8],
+      ["U2.LT4", 20],
+      ["U2.LT5", 4],
+    ]);
     // The Biology pH quiz (Oct 14 2026): 15 multiple choice on U2.LT3 in the author's order,
     // pictures on items 6–9, answer key as written, options never shuffled.
     const ph = first.find((o) => o.name === "bio-u2-quiz-ph")!;
