@@ -154,7 +154,10 @@ export function readinessState(t: TargetReadiness): ReadinessState {
   return t.gate.unlocked ? "ready" : "not_ready";
 }
 
-/** "LT4: corrections ✓ · activity ✓ (watched blood-flow video) · practice ✓ (best 85%) · retake unlocked" */
+/**
+ * "LT4: corrections ✓ · relearning ✓ (watched blood-flow video) · retake unlocked". One relearning
+ * step since Oct 19 2026: an activity or a practice set, whichever the student did.
+ */
 export function readinessLine(t: TargetReadiness): string {
   const mark = (ok: boolean, detail?: string | null) =>
     `${ok ? "✓" : "✗"}${detail ? ` (${detail})` : ""}`;
@@ -163,8 +166,7 @@ export function readinessLine(t: TargetReadiness): string {
   if (state === "retaken") return `${t.code}: retaken, now ${Math.round(t.percent)}%`;
   return [
     `${t.code}: corrections ${mark(t.gate.correctionsOk, t.correctionsDetail)}`,
-    `activity ${mark(t.gate.activityOk, t.activityDetail)}`,
-    `practice ${mark(t.gate.practiceOk, t.practiceDetail)}`,
+    `relearning ${mark(t.gate.activityOk && t.gate.practiceOk, t.activityDetail ?? t.practiceDetail)}`,
     t.gate.unlocked ? "retake unlocked" : "retake locked",
   ].join(" · ");
 }

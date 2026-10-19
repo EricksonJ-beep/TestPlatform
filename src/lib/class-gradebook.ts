@@ -107,7 +107,11 @@ const GROUP_TONE: Record<CellGroup, CellTone> = {
   done: "success",
 };
 
-/** What a summative's locked retake targets still need, in checklist order. */
+/**
+ * What a summative's locked retake targets still need, in checklist order. Since Oct 19 2026 a
+ * test has one relearning step (an activity or a practice set), reported as "activity"; "practice"
+ * stays for a quiz's practice before its retake.
+ */
 export type RelearningNeed = "corrections" | "activity" | "practice";
 
 export function relearningNeeds(targets: RetakeTarget[], plan: RetakePlan): RelearningNeed[] {
@@ -116,8 +120,7 @@ export function relearningNeeds(targets: RetakeTarget[], plan: RetakePlan): Rele
   for (const t of targets) {
     if (!locked.has(t.id)) continue;
     if (!t.gate.correctionsOk) out.add("corrections");
-    if (!t.gate.activityOk) out.add("activity");
-    if (!t.gate.practiceOk) out.add("practice");
+    if (!t.gate.activityOk || !t.gate.practiceOk) out.add("activity");
   }
   return (["corrections", "activity", "practice"] as const).filter((n) => out.has(n));
 }
@@ -298,7 +301,7 @@ export const CENTRAL: TagFormat = {
 
 const NEED_TEXT: Record<RelearningNeed, string> = {
   corrections: "corrections",
-  activity: "activity",
+  activity: "relearning item",
   practice: "practice",
 };
 

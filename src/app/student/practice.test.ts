@@ -266,7 +266,8 @@ describe("Ticket 1.13: practice sets and relearning activities as retake gates",
       )
     );
     await ok(setActivityPublished(activityId, true));
-    expect(await gate()).toMatchObject({ activityOk: false, practiceOk: true, unlocked: false });
+    // One relearning step (Jon, Oct 19 2026): activity_ok and practice_ok carry the same answer.
+    expect(await gate()).toMatchObject({ activityOk: false, practiceOk: false, unlocked: false });
 
     const { practiceSetId } = await ok(
       createPracticeSet(fd({ title: "LT4 practice", courseId: ids.course }))
@@ -325,7 +326,7 @@ describe("Ticket 1.13: practice sets and relearning activities as retake gates",
     await fails(startPractice(ids.set), 403); // teachers don't take practice
   });
 
-  it("a half-watched video is refused; 90% completes it and opens the activity gate", async () => {
+  it("a half-watched video is refused; 90% completes it, which alone finishes relearning", async () => {
     asUser(ids.student, "student");
     await fails(finishActivity(ids.video, { watchPercent: 50 }), 400);
     expect(await gate()).toMatchObject({ activityOk: false });
@@ -333,10 +334,11 @@ describe("Ticket 1.13: practice sets and relearning activities as retake gates",
       completed: true,
       awaitingTeacher: false,
     });
-    expect(await gate()).toMatchObject({ activityOk: true, practiceOk: false, unlocked: false });
+    // One relearning item is enough (Jon, Oct 19 2026): the practice set is now optional.
+    expect(await gate()).toMatchObject({ activityOk: true, practiceOk: true, unlocked: true });
   });
 
-  it("the practice set checks Apps Script style, completes when every question is closed, and opens the gate", async () => {
+  it("the practice set checks Apps Script style and completes when every question is closed", async () => {
     asUser(ids.student, "student");
     const { attemptId, resumed } = await ok(startPractice(ids.set));
     expect(resumed).toBe(false);
@@ -386,7 +388,6 @@ describe("Ticket 1.13: practice sets and relearning activities as retake gates",
       400
     );
 
-    expect(await gate()).toMatchObject({ practiceOk: false });
     // Show answer closes a question as not correct, with the key and explanation.
     const shown = await ok(revealPractice(attemptId, q2.id));
     expect(shown.feedback).toMatchObject({
@@ -447,7 +448,9 @@ describe("Ticket 1.13: practice sets and relearning activities as retake gates",
       )
     );
     await ok(setActivityPublished(activityId, true));
-    expect(await gate()).toMatchObject({ activityOk: true }); // the video still satisfies "any"
+    // Relearning counts from the latest attempt's corrections on (Jon, Oct 19 2026): the video was
+    // watched before the retake above, so it no longer counts.
+    expect(await gate()).toMatchObject({ activityOk: false });
     await fails(
       setAssignmentPin(ids.assignment, {
         learningTargetId: lt4(),

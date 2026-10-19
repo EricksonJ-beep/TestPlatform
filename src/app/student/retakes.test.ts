@@ -227,7 +227,7 @@ describe("PLAN.md §4 worked example", () => {
     expect(board.mostMissed).toMatchObject({ code: "LT4", below: 1 });
     const monitor = (await getRelearningMonitor(ids.assignment, ids.student))!;
     expect(monitor.targets.find((t) => t.code === "LT4")!.line).toBe(
-      "LT4: corrections ✗ (0 of 3) · activity ✓ · practice ✓ · retake locked"
+      "LT4: corrections ✗ (0 of 3) · relearning ✓ · retake locked"
     );
   });
 
@@ -260,7 +260,7 @@ describe("PLAN.md §4 worked example", () => {
     expect(board.cards[0]).toMatchObject({ tier: 2, stage: "retake_ready" });
     const monitor = (await getRelearningMonitor(ids.assignment, ids.student))!;
     expect(monitor.targets.find((t) => t.code === "LT4")!.line).toBe(
-      "LT4: corrections ✓ (3 of 3 approved) · activity ✓ · practice ✓ · retake unlocked"
+      "LT4: corrections ✓ (3 of 3 approved) · relearning ✓ · retake unlocked"
     );
     expect(monitor.stage).toBe("retake_ready");
   });

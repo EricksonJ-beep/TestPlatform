@@ -45,8 +45,7 @@ export function ToDoRowBody({
             <li key={t.code} className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
               <span className="font-medium tabular">{t.code}</span>
               <Gate label="corrections" ok={t.corrections} />
-              <Gate label="activity" ok={t.activity} />
-              <Gate label="practice" ok={t.practice} />
+              <Gate label="relearning" ok={t.activity && t.practice} />
             </li>
           ))}
         </ul>

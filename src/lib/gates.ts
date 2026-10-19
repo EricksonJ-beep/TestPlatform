@@ -7,10 +7,12 @@
  *
  * Per target: corrections_ok = every missed item on the latest attempt that
  * covered the target has an approved correction (always true in a course with
- * CVTC rules, Jon Oct 13 2026); activity_ok / practice_ok =
- * the student completed a published item tagged to the target (the pinned one
- * when the teacher pinned one), or nothing is published for it yet, so the
- * gate cannot block on content that doesn't exist.
+ * CVTC rules, Jon Oct 13 2026). Then relearning (Jon, Oct 19 2026,
+ * docs/retake-cycle-plan.md R3): **one** published item tagged to the target,
+ * an activity *or* a practice set (the pinned ones when the teacher pinned
+ * any), completed **after** the target's corrections were done; or nothing is
+ * published for it yet, so the gate cannot block on content that doesn't exist.
+ * activity_ok and practice_ok both store that one relearning answer.
  */
 import { and, desc, eq, inArray, isNotNull, ne } from "drizzle-orm";
 import { db, schema } from "@/db";
@@ -63,19 +65,33 @@ export async function recomputeGates(assignmentId: string, studentId: string): P
   const prior = new Map(existing.map((g) => [g.learningTargetId, g]));
 
   // CVTC rules (Jon, Oct 13 2026): corrections are never owed, so that gate is always open.
-  const correctionsOk = asg.cvtcRules
-    ? new Map<string, boolean>()
-    : await correctionsByTarget(assignmentId, studentId, targetIds);
-  const activityOk = await activitiesByTarget(assignmentId, studentId, targetIds);
-  const practiceOk = await practiceByTarget(assignmentId, studentId, targetIds);
+  const corrections = await correctionsByTarget(
+    assignmentId,
+    studentId,
+    targetIds,
+    !!asg.cvtcRules
+  );
+  // Relearning counts only once corrections are done (Jon, Oct 19 2026: "once they have the
+  // corrections completed that should then unlock a relearning activity").
+  const since = new Map(
+    targetIds.map((id) => {
+      const c = corrections.get(id);
+      return [id, !c ? new Date(0) : c.ok ? c.doneAt : null] as const;
+    })
+  );
+  const activity = await activitiesByTarget(assignmentId, studentId, targetIds, since);
+  const practice = await practiceByTarget(assignmentId, studentId, targetIds, since);
 
   const now = new Date();
   const rows: GateRow[] = targetIds.map((id) => {
     const p = prior.get(id);
+    const a = activity.get(id) ?? { offered: 0, done: false };
+    const pr = practice.get(id) ?? { offered: 0, done: false };
+    const relearningOk = (a.offered === 0 && pr.offered === 0) || a.done || pr.done;
     const flags = {
-      correctionsOk: correctionsOk.get(id) ?? true,
-      activityOk: activityOk.get(id) ?? true,
-      practiceOk: practiceOk.get(id) ?? true,
+      correctionsOk: corrections.get(id)?.ok ?? true,
+      activityOk: relearningOk,
+      practiceOk: relearningOk,
     };
     const required = final.perTarget[id].percent < asg.threshold;
     const optedIn = p?.optedIn ?? false;
@@ -110,14 +126,23 @@ export async function recomputeGates(assignmentId: string, studentId: string): P
   return rows;
 }
 
-/** Per target: no missed item on the latest attempt covering it lacks an approved correction. */
+/**
+ * Per target: no missed item on the latest attempt covering it lacks an approved correction, and
+ * when that became true (the attempt's submission, or the last of those corrections' approval).
+ */
 async function correctionsByTarget(
   assignmentId: string,
   studentId: string,
-  targetIds: string[]
-): Promise<Map<string, boolean>> {
+  targetIds: string[],
+  cvtcRules: boolean
+): Promise<Map<string, { ok: boolean; doneAt: Date }>> {
   const attempts = await db
-    .select({ id: schema.attempts.id, questionSet: schema.attempts.questionSet })
+    .select({
+      id: schema.attempts.id,
+      questionSet: schema.attempts.questionSet,
+      submittedAt: schema.attempts.submittedAt,
+      startedAt: schema.attempts.startedAt,
+    })
     .from(schema.attempts)
     .where(
       and(
@@ -127,7 +152,7 @@ async function correctionsByTarget(
       )
     )
     .orderBy(desc(schema.attempts.number));
-  const out = new Map<string, boolean>();
+  const out = new Map<string, { ok: boolean; doneAt: Date }>();
   if (attempts.length === 0) return out;
   const attemptIds = attempts.map((a) => a.id);
   const responses = await db
@@ -144,12 +169,19 @@ async function correctionsByTarget(
       attemptId: schema.corrections.attemptId,
       questionId: schema.corrections.questionId,
       status: schema.corrections.status,
+      reviewedAt: schema.corrections.reviewedAt,
+      submittedAt: schema.corrections.submittedAt,
     })
     .from(schema.corrections)
     .where(inArray(schema.corrections.attemptId, attemptIds));
   const rBy = new Map(responses.map((r) => [`${r.attemptId}:${r.questionId}`, r]));
-  const approved = new Set(
-    corrections.filter((c) => c.status === "approved").map((c) => `${c.attemptId}:${c.questionId}`)
+  const approvedAt = new Map(
+    corrections
+      .filter((c) => c.status === "approved")
+      .map((c): [string, Date | null] => [
+        `${c.attemptId}:${c.questionId}`,
+        c.reviewedAt ?? c.submittedAt,
+      ])
   );
   for (const targetId of targetIds) {
     const attempt = attempts.find((a) =>
@@ -157,25 +189,38 @@ async function correctionsByTarget(
     );
     if (!attempt) continue;
     let ok = true;
+    let doneAt = attempt.submittedAt ?? attempt.startedAt;
     for (const s of attempt.questionSet) {
-      if (s.learningTargetId !== targetId) continue;
+      if (cvtcRules || s.learningTargetId !== targetId) continue;
       const r = rBy.get(`${attempt.id}:${s.questionId}`);
       const earned = r ? (r.manualScore ?? r.autoScore) : 0;
       const missed = earned !== null && earned < s.points;
-      if (missed && !approved.has(`${attempt.id}:${s.questionId}`)) ok = false;
+      if (!missed) continue;
+      const key = `${attempt.id}:${s.questionId}`;
+      if (!approvedAt.has(key)) ok = false;
+      const at = approvedAt.get(key);
+      if (at && at > doneAt) doneAt = at;
     }
-    out.set(targetId, ok);
+    out.set(targetId, { ok, doneAt });
   }
   return out;
 }
 
-/** Per target: a completed published activity tagged to it (the pinned one when pinned); true when none is published. */
+/** Per target: how many relearning items of one kind are offered, and whether one was done in time. */
+type Offered = { offered: number; done: boolean };
+
+/** Credited only when completed at or after `since` (null = corrections not done: nothing counts). */
+const inTime = (completedAt: Date | null, since: Date | null | undefined) =>
+  !!completedAt && !!since && completedAt >= since;
+
+/** Per target: published activities tagged to it (the pinned ones when pinned), and whether one was completed in time. */
 async function activitiesByTarget(
   assignmentId: string,
   studentId: string,
-  targetIds: string[]
-): Promise<Map<string, boolean>> {
-  const out = new Map<string, boolean>();
+  targetIds: string[],
+  since: Map<string, Date | null>
+): Promise<Map<string, Offered>> {
+  const out = new Map<string, Offered>();
   const tagged = await db
     .select({
       activityId: schema.activityTargets.activityId,
@@ -210,6 +255,7 @@ async function activitiesByTarget(
       activityId: schema.activityCompletions.activityId,
       teacherVerified: schema.activityCompletions.teacherVerified,
       evidence: schema.activityCompletions.evidence,
+      completedAt: schema.activityCompletions.completedAt,
     })
     .from(schema.activityCompletions)
     .where(eq(schema.activityCompletions.studentId, studentId));
@@ -220,34 +266,36 @@ async function activitiesByTarget(
       ? tagged.filter((t) => pinned.includes(t.activityId))
       : tagged.filter((t) => t.learningTargetId === targetId);
     if (candidates.length === 0 && pinned.length === 0) {
-      out.set(targetId, true);
+      out.set(targetId, { offered: 0, done: false });
       continue;
     }
     const pool = candidates.length
       ? candidates
       : pinned.map((id) => ({ activityId: id, requiresVerification: false }));
-    out.set(
-      targetId,
-      pool.some((c) => {
+    out.set(targetId, {
+      offered: pool.length,
+      done: pool.some((c) => {
         const d = doneBy.get(c.activityId);
         return (
           !!d &&
           (!c.requiresVerification || d.teacherVerified) &&
-          creditsTarget(d.evidence?.creditedTargetIds, targetId)
+          creditsTarget(d.evidence?.creditedTargetIds, targetId) &&
+          inTime(d.completedAt, since.get(targetId))
         );
-      })
-    );
+      }),
+    });
   }
   return out;
 }
 
-/** Per target: a completed attempt on a published practice set tagged to it (the pinned one when pinned); true when none is published. */
+/** Per target: published practice sets tagged to it (the pinned ones when pinned), and whether one was completed in time. */
 async function practiceByTarget(
   assignmentId: string,
   studentId: string,
-  targetIds: string[]
-): Promise<Map<string, boolean>> {
-  const out = new Map<string, boolean>();
+  targetIds: string[],
+  since: Map<string, Date | null>
+): Promise<Map<string, Offered>> {
+  const out = new Map<string, Offered>();
   const tagged = await db
     .select({
       practiceSetId: schema.practiceSetTargets.practiceSetId,
@@ -280,6 +328,7 @@ async function practiceByTarget(
     .select({
       practiceSetId: schema.practiceAttempts.practiceSetId,
       answers: schema.practiceAttempts.answers,
+      completedAt: schema.practiceAttempts.completedAt,
     })
     .from(schema.practiceAttempts)
     .where(
@@ -290,28 +339,29 @@ async function practiceByTarget(
       )
     );
   // Worksheet-backed attempts carry the targets their submit credited; ordinary attempts credit every target.
-  const creditedBy = new Map<string, unknown[]>();
+  const creditedBy = new Map<string, { targets: unknown; completedAt: Date | null }[]>();
   for (const d of done)
     if (d.practiceSetId)
       (
         creditedBy.get(d.practiceSetId) ?? creditedBy.set(d.practiceSetId, []).get(d.practiceSetId)!
-      ).push(
-        (d.answers as { _worksheet?: { creditedTargetIds?: unknown } })._worksheet
-          ?.creditedTargetIds
-      );
+      ).push({
+        targets: (d.answers as { _worksheet?: { creditedTargetIds?: unknown } })._worksheet
+          ?.creditedTargetIds,
+        completedAt: d.completedAt,
+      });
   for (const targetId of targetIds) {
     const pinned = pins.filter((p) => p.learningTargetId === targetId).map((p) => p.practiceSetId!);
     const candidates = pinned.length
       ? pinned
       : tagged.filter((t) => t.learningTargetId === targetId).map((t) => t.practiceSetId);
-    out.set(
-      targetId,
-      candidates.length === 0
-        ? true
-        : candidates.some((id) =>
-            (creditedBy.get(id) ?? []).some((c) => creditsTarget(c, targetId))
-          )
-    );
+    out.set(targetId, {
+      offered: candidates.length,
+      done: candidates.some((id) =>
+        (creditedBy.get(id) ?? []).some(
+          (c) => creditsTarget(c.targets, targetId) && inTime(c.completedAt, since.get(targetId))
+        )
+      ),
+    });
   }
   return out;
 }

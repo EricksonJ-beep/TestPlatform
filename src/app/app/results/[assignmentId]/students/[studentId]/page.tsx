@@ -132,7 +132,7 @@ export default async function RelearningMonitorPage({
                 </dd>
               </div>
               <div className="flex gap-2">
-                <dt className="w-24 shrink-0 text-muted-foreground">Activity</dt>
+                <dt className="w-24 shrink-0 text-muted-foreground">Relearning</dt>
                 <dd>
                   <Mark ok={t.gate.activityOk} />{" "}
                   {t.activities.length === 0 ? (
@@ -160,7 +160,7 @@ export default async function RelearningMonitorPage({
                 </dd>
               </div>
               <div className="flex gap-2">
-                <dt className="w-24 shrink-0 text-muted-foreground">Practice</dt>
+                <dt className="w-24 shrink-0 text-muted-foreground">or practice</dt>
                 <dd>
                   <Mark ok={t.gate.practiceOk} />{" "}
                   {t.practice.length === 0 ? (

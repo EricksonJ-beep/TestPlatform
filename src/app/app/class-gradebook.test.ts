@@ -551,7 +551,7 @@ describe("getClassGradebook", () => {
       Ben: "Corrections needed 0/2",
       Cal: "Check corrections",
       Dee: "Retake needed (LT1)",
-      Eli: "Relearning (needs: practice)",
+      Eli: "Relearning (needs: relearning item)",
       Fay: "Not started",
       Gus: "Check off activity",
       Hal: "Not started",

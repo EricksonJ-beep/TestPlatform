@@ -97,8 +97,7 @@ export function RetakePicker({
                     {inScope ? (
                       <span className="flex flex-wrap items-center gap-x-2 text-foreground tabular">
                         <Gate label="corrections" ok={t.gate.correctionsOk} />
-                        <Gate label="activity" ok={t.gate.activityOk} />
-                        <Gate label="practice" ok={t.gate.practiceOk} />
+                        <Gate label="relearning" ok={t.gate.activityOk && t.gate.practiceOk} />
                         <span
                           className={cn(
                             "font-medium",

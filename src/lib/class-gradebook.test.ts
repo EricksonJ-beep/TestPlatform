@@ -178,9 +178,10 @@ describe("cellTag precedence", () => {
       targets: [target("lt1", { activityOk: false }), target("lt2", { practiceOk: false })],
       plan: plan({ required: ["lt1", "lt2"], selected: ["lt1", "lt2"], locked: ["lt1", "lt2"] }),
     };
-    expect(relearningNeeds(retake.targets, retake.plan)).toEqual(["activity", "practice"]);
+    // One relearning step on a test (Jon, Oct 19 2026): either flag missing is the same need.
+    expect(relearningNeeds(retake.targets, retake.plan)).toEqual(["activity"]);
     expect(label({ card: card({ cycle: "relearning" }), retake })).toBe(
-      "Relearning (needs: activity, practice)"
+      "Relearning (needs: relearning item)"
     );
     expect(label({ card: card({ cycle: "relearning" }), retake, activitiesToCheck: 1 })).toBe(
       "Check off activity"

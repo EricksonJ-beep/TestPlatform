@@ -13,7 +13,7 @@ import { ActivityCard, PracticeSetCard } from "./practice-cards";
 /**
  * The student's Practice tab (PLAN.md §5 screen 2): "Needed before your
  * retake" first, for tests open to the student (Jon, Oct 14 2026): a
- * summative's three-item checklist per target, and a quiz's missed targets to
+ * summative's two-step checklist per target (corrections, then one relearning item), and a quiz's missed targets to
  * practise to 80% (R3); then everything published on their courses, always
  * open, in the teacher's order.
  */
@@ -211,7 +211,12 @@ function QuizNeededRow({ t, canBuild }: { t: QuizNeededTarget; canBuild: boolean
   );
 }
 
+/**
+ * One test target's relearning checklist (Jon, Oct 19 2026): corrections first, then **one**
+ * relearning item, an activity or a practice set. Relearning stays locked until corrections are done.
+ */
 function NeededRow({ t }: { t: NeededTarget }) {
+  const relearningOk = t.activityOk && t.practiceOk;
   return (
     <li className="flex flex-col gap-2 px-4 py-3" data-needed-target={t.code}>
       <div className="flex flex-wrap items-center gap-2 text-sm">
@@ -222,30 +227,26 @@ function NeededRow({ t }: { t: NeededTarget }) {
           tone={t.required ? "required" : "optional"}
         />
         <span className="ml-auto flex flex-wrap items-center gap-x-3 text-xs tabular">
-          <Gate label="corrections" ok={t.correctionsOk} href={t.correctionsHref} />
-          <Gate label="activity" ok={t.activityOk} />
-          <Gate label="practice" ok={t.practiceOk} />
+          <Gate label="1. corrections" ok={t.correctionsOk} href={t.correctionsHref} />
+          <Gate label="2. relearning" ok={relearningOk} />
         </span>
       </div>
-      {!t.activityOk || !t.practiceOk ? (
-        <ul className="flex flex-col gap-2">
-          {!t.activityOk
-            ? t.activities.map((a) => <ActivityCard key={`a:${a.id}`} a={a} compact />)
-            : null}
-          {!t.practiceOk
-            ? t.sets.map((s) => <PracticeSetCard key={`s:${s.id}`} s={s} compact />)
-            : null}
-          {!t.activityOk && t.activities.length === 0 ? (
-            <li className="text-xs text-muted-foreground">
-              No activity is published for {t.code} yet. Ask your teacher.
-            </li>
-          ) : null}
-          {!t.practiceOk && t.sets.length === 0 ? (
-            <li className="text-xs text-muted-foreground">
-              No practice set is published for {t.code} yet. Ask your teacher.
-            </li>
-          ) : null}
-        </ul>
+      {!t.correctionsOk ? (
+        <p className="text-xs text-muted-foreground" data-relearning-locked={t.code}>
+          Finish your corrections for {t.code} first. Then pick one relearning item.
+        </p>
+      ) : !relearningOk ? (
+        <>
+          <p className="text-xs text-muted-foreground">Do one of these:</p>
+          <ul className="flex flex-col gap-2">
+            {t.activities.map((a) => (
+              <ActivityCard key={`a:${a.id}`} a={a} compact />
+            ))}
+            {t.sets.map((s) => (
+              <PracticeSetCard key={`s:${s.id}`} s={s} compact />
+            ))}
+          </ul>
+        </>
       ) : null}
     </li>
   );

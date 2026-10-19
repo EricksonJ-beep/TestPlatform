@@ -128,7 +128,7 @@ describe("readiness", () => {
     };
     expect(readinessState(ready)).toBe("ready");
     expect(readinessLine(ready)).toBe(
-      "LT4: corrections ✓ · activity ✓ (watched blood-flow video) · practice ✓ (best 85%) · retake unlocked"
+      "LT4: corrections ✓ · relearning ✓ (watched blood-flow video) · retake unlocked"
     );
     const stuck = {
       ...ready,
@@ -139,7 +139,7 @@ describe("readiness", () => {
     };
     expect(readinessState(stuck)).toBe("not_ready");
     expect(readinessLine(stuck)).toBe(
-      "LT4: corrections ✗ (returned) · activity ✗ · practice ✗ (0 of 1) · retake locked"
+      "LT4: corrections ✗ (returned) · relearning ✗ (0 of 1) · retake locked"
     );
     expect(readinessState({ ...ready, required: false, percent: 100 })).toBe("proficient");
     expect(readinessLine({ ...ready, required: false, percent: 100 })).toBe(
