@@ -8,6 +8,7 @@ import {
   correctionsActionLabel,
   correctionsProgress,
   correctionsWhy,
+  homeLanes,
   homeTab,
   showsScore,
   type ToDoRow,
@@ -603,6 +604,35 @@ describe("the student to-do list", () => {
   });
 });
 
+describe("the home's lanes", () => {
+  const row = (key: string, kind: ToDoRow["kind"], group: ToDoRow["group"] = "todo") =>
+    ({ key, kind, group }) as ToDoRow;
+
+  it("puts tests to take in Now, corrections and unlock steps in Fix it, retakes in Level up", () => {
+    const lanes = homeLanes({
+      todo: [
+        row("going", "keep_going"),
+        row("back", "sent_back"),
+        row("corr", "corrections"),
+        row("prac", "practice"),
+        row("relearn", "relearning"),
+        row("retake", "retake"),
+        row("ask", "ask"),
+        row("start", "start"),
+      ],
+      higher: [row("optional", "retake", "higher")],
+      waiting: [row("grade", "awaiting_grade", "waiting")],
+      count: 8,
+      headline: "",
+    });
+    const keys = (rs: ToDoRow[]) => rs.map((r) => r.key);
+    expect(keys(lanes.now)).toEqual(["going", "start"]);
+    expect(keys(lanes.fix)).toEqual(["back", "corr", "prac", "relearn"]);
+    expect(keys(lanes.level)).toEqual(["retake", "ask", "optional"]);
+    expect(keys(lanes.waiting)).toEqual(["grade"]);
+  });
+});
+
 describe("the Assessments tab", () => {
   it("groups by status: open (soonest due first), opens soon, closed newest first", () => {
     // Braeden's screen (Oct 8 2026): the closed Sep 25 quiz sorted above the one in progress.
@@ -638,10 +668,11 @@ describe("the Assessments tab", () => {
     expect(closedCorrectionsCount(s.closed)).toBe(1);
   });
 
-  it("reads the tab from ?tab=, Assessments otherwise", () => {
+  it("reads the tab from ?tab=, Home otherwise", () => {
     expect(homeTab("practice")).toBe("practice");
+    expect(homeTab("assessments")).toBe("assessments");
     expect(homeTab(["results", "practice"])).toBe("results");
-    expect(homeTab("grades")).toBe("assessments");
-    expect(homeTab(undefined)).toBe("assessments");
+    expect(homeTab("grades")).toBe("home");
+    expect(homeTab(undefined)).toBe("home");
   });
 });
