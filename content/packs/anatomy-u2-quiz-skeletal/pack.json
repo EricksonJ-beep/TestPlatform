@@ -1,0 +1,13 @@
+{
+  "name": "anatomy-u2-quiz-skeletal",
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Anatomy and Physiology",
+  "unit": "Unit 2",
+  "bank": "AP · Unit 2 Quiz: Skeletal System",
+  "assessment": {
+    "title": "Unit 2 Quiz: Skeletal System",
+    "type": "formative",
+    "instructions": "Twenty questions on the skeletal system: bone tissue and growth, the axial and appendicular skeleton, joints and movements, and bone and joint disorders. Your best attempt counts."
+  },
+  "assign": []
+}
