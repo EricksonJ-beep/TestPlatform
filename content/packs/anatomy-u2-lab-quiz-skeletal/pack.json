@@ -1,0 +1,13 @@
+{
+  "name": "anatomy-u2-lab-quiz-skeletal",
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Anatomy and Physiology",
+  "unit": "Unit 2",
+  "bank": "AP · Unit 2 Lab Quiz: Skeletal System",
+  "assessment": {
+    "title": "Unit 2 Lab Quiz: Skeletal System",
+    "type": "formative",
+    "instructions": "Ten questions on the skeletal lab: name bones from photos of the lab models, carpal and tarsal bones, sutures, and a few bone facts. Your best attempt counts."
+  },
+  "assign": []
+}
