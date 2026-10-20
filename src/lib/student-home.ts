@@ -646,16 +646,50 @@ export function buildStudentToDo(input: {
 }
 
 // ---------------------------------------------------------------------------
+// The home's lanes
+// ---------------------------------------------------------------------------
+
+/** The three lanes the home shows the to-do rows in (Jon, Oct 20 2026: "Three lanes"). */
+export type HomeLane = "now" | "fix" | "level";
+
+const LANE_OF: Partial<Record<ToDoKind, HomeLane>> = {
+  keep_going: "now",
+  start: "now",
+  sent_back: "fix",
+  corrections: "fix",
+  practice: "fix",
+  relearning: "fix",
+  retake: "level",
+  ask: "level",
+};
+
+export type HomeLanes = Record<HomeLane, ToDoRow[]> & { waiting: ToDoRow[] };
+
+/**
+ * Rule (Jon, Oct 20 2026: "the most current item at the top… then the other corrections or retake
+ * options in separate sections"): **Now** is a test to take (an open attempt first, then open
+ * tests not started, soonest due first); **Fix it** is corrections and the steps that unlock a
+ * retake; **Level up** is a retake, asking for one, and every "Want a higher score?" row. Waiting
+ * on your teacher stays its own list. Each lane keeps `buildStudentToDo`'s order.
+ */
+export function homeLanes(list: StudentToDo): HomeLanes {
+  const out: HomeLanes = { now: [], fix: [], level: [], waiting: list.waiting };
+  for (const r of list.todo) out[LANE_OF[r.kind] ?? "fix"].push(r);
+  out.level.push(...list.higher);
+  return out;
+}
+
+// ---------------------------------------------------------------------------
 // The tabs
 // ---------------------------------------------------------------------------
 
-export const HOME_TABS = ["assessments", "practice", "results"] as const;
+export const HOME_TABS = ["home", "assessments", "practice", "results"] as const;
 export type HomeTab = (typeof HOME_TABS)[number];
 
 /** `?tab=` on the student home, so a row can open a tab and Back returns to the last one. */
 export function homeTab(v: string | string[] | null | undefined): HomeTab {
   const s = Array.isArray(v) ? v[0] : v;
-  return HOME_TABS.find((t) => t === s) ?? "assessments";
+  return HOME_TABS.find((t) => t === s) ?? "home";
 }
 
 // ---------------------------------------------------------------------------
