@@ -1,0 +1,13 @@
+{
+  "name": "anatomy-u2-test-lecture",
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Anatomy and Physiology",
+  "unit": "Unit 2",
+  "bank": "AP · Unit 2 Lecture Exam",
+  "assessment": {
+    "title": "Unit 2 Lecture Exam",
+    "type": "summative",
+    "instructions": "84 questions on Unit 2: the skin (layers, glands, sensation, burns, skin color, and skin cancer), the skeletal system (bone tissue, growth and remodeling, calcium balance, bone shapes, joints and movements), and the muscular system. Questions 1 to 80 are worth 1 point each. The four written responses at the end are worth 5 points each and are graded by your teacher."
+  },
+  "assign": []
+}

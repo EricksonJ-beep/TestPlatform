@@ -1,0 +1,13 @@
+{
+  "name": "anatomy-u2-practice-test",
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Anatomy and Physiology",
+  "unit": "Unit 2",
+  "bank": "AP · Unit 2 · Practice Test",
+  "assessment": {
+    "title": "Unit 2 Practice Test",
+    "type": "practice",
+    "instructions": "Forty practice questions for the Unit 2 test: the skin, bones and joints, and muscles. This is practice only and does not count toward your grade."
+  },
+  "assign": []
+}

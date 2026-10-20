@@ -357,6 +357,9 @@ describe("content packs", () => {
     for (const [name, title, type, n] of [
       ["anatomy-u2-quiz-skeletal", "Unit 2 Quiz: Skeletal System", "formative", 20],
       ["anatomy-u2-practice-lab-practical", "Unit 2 Practice Lab Practical", "practice", 20],
+      ["anatomy-u2-lab-quiz-skeletal", "Unit 2 Lab Quiz: Skeletal System", "formative", 10],
+      ["anatomy-u2-practice-test", "Unit 2 Practice Test", "practice", 40],
+      ["anatomy-u2-test-lecture", "Unit 2 Lecture Exam", "summative", 84],
     ] as const) {
       const out = first.find((o) => o.name === name)!;
       expect(out.status).toBe("applied");
@@ -366,6 +369,16 @@ describe("content packs", () => {
         await db.query.assessments.findFirst({ where: eq(schema.assessments.title, title) })
       ).toMatchObject({ type, isPublished: true, courseId: ids.course });
     }
+    // The lecture exam is a summative: one section per learning target, every question in one.
+    const lecture = (await db.query.assessments.findFirst({
+      where: eq(schema.assessments.title, "Unit 2 Lecture Exam"),
+    }))!;
+    const lectureSections = await db
+      .select()
+      .from(schema.assessmentSections)
+      .where(eq(schema.assessmentSections.assessmentId, lecture.id));
+    expect(lectureSections.length).toBeGreaterThan(1);
+    expect(lectureSections.every((sec) => sec.learningTargetId)).toBe(true);
     const labQs = await db
       .select()
       .from(schema.questions)
