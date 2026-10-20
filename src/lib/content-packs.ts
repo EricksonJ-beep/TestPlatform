@@ -6,8 +6,8 @@
  *
  * Applying a pack: find the teacher by email and their course by name, create
  * the bank if missing, import the CSV through the same importer the Import page
- * uses, build a published assessment from the imported questions in CSV order,
- * and assign it to the named classes with the given attempt policy.
+ * uses, build a published assessment from the imported questions in CSV order
+ * (a summative gets one section per learning target), and assign it to the named classes with the given attempt policy.
  *
  * A pack can also ship a relearning activity (Jon, Oct 6 2026: "you can just do
  * the adding for me"): `activity` names an interactive page Bloom hosts under
@@ -25,6 +25,7 @@ import { db, schema } from "@/db";
 import { parseCsvRecords } from "@/lib/csv";
 import { parseQuestionRecords } from "@/lib/import/question-csv";
 import { commitImport } from "@/lib/import/question-import";
+import { insertTargetSections } from "@/lib/target-sections";
 
 export type PackDefinition = {
   name: string;
@@ -380,15 +381,20 @@ async function applyQuiz(
         })
         .returning({ id: schema.assessments.id });
       assessmentId = a.id;
-      const [sec] = await db
-        .insert(schema.assessmentSections)
-        .values({ assessmentId: a.id, title: "Questions", sortOrder: 0 })
-        .returning({ id: schema.assessmentSections.id });
-      await db
-        .insert(schema.assessmentQuestions)
-        .values(
-          questionIds.map((questionId, i) => ({ sectionId: sec.id, questionId, sortOrder: i }))
-        );
+      // A summative is one section per learning target (PLAN.md §3.4): its targets score it,
+      // decide its corrections, and scope its retake (Jon, Oct 20 2026).
+      if (def.assessment.type === "summative") await insertTargetSections(a.id, questionIds);
+      else {
+        const [sec] = await db
+          .insert(schema.assessmentSections)
+          .values({ assessmentId: a.id, title: "Questions", sortOrder: 0 })
+          .returning({ id: schema.assessmentSections.id });
+        await db
+          .insert(schema.assessmentQuestions)
+          .values(
+            questionIds.map((questionId, i) => ({ sectionId: sec.id, questionId, sortOrder: i }))
+          );
+      }
     }
     for (const target of def.assign ?? []) {
       const cls = await db.query.classes.findFirst({
