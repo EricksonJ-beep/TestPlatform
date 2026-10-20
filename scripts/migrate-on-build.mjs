@@ -23,4 +23,9 @@ spawnSync("npx", ["tsx", "scripts/apply-packs.ts"], { stdio: "inherit", shell: t
 // Production deploys only: the script skips itself on a preview build (live database, main's code).
 console.log("migrate-on-build: settling CVTC scores…");
 spawnSync("npx", ["tsx", "scripts/cvtc-leftovers.ts"], { stdio: "inherit", shell: true });
+
+// Summatives from content packs (Jon, Oct 20 2026): one section per learning target, and the
+// attempts already taken get their targets, so corrections and retakes appear. Production only.
+console.log("migrate-on-build: splitting pack summatives by target…");
+spawnSync("npx", ["tsx", "scripts/summative-targets.ts"], { stdio: "inherit", shell: true });
 process.exit(0);
