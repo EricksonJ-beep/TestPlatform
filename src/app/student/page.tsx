@@ -77,10 +77,7 @@ export default async function StudentHome({ searchParams }: PageProps<"/student"
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="flex flex-col gap-2">
           <h1 className="text-3xl">Hi, {session.firstName}</h1>
-          <p
-            className="sr-only sm:not-sr-only sm:text-sm sm:text-muted-foreground"
-            data-todo-count={list.count}
-          >
+          <p className="sr-only" data-todo-count={list.count}>
             {list.headline}
           </p>
           {chips.length ? (
