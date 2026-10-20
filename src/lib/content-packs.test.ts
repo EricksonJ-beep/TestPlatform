@@ -15,7 +15,7 @@ vi.mock("@/db", async () => {
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { gradeResponse } from "@/lib/grading";
 import { applyAllPacks, applyPack, listPacks } from "./content-packs";
@@ -101,6 +101,7 @@ beforeAll(async () => {
   await db.insert(schema.learningTargets).values(
     [
       ["U2.LT1", "Atoms, molecules, and bonds"],
+      ["U2.LT2", "Water's structure and properties"],
       ["U2.LT3", "pH, acids, and bases"],
       ["U2.LT4", "The four macromolecules"],
       ["U2.LT5", "Enzymes"],
@@ -265,7 +266,7 @@ describe("content packs", () => {
       .select()
       .from(schema.learningTargets)
       .where(eq(schema.learningTargets.unitId, bioUnit2.id));
-    expect(bioTargets).toHaveLength(4); // the seeded U2 targets only; no stray targets
+    expect(bioTargets).toHaveLength(5); // the seeded U2 targets only; no stray targets
     const carbAssessment = (await db.query.assessments.findFirst({
       where: eq(schema.assessments.title, "Unit 2 Quiz: Carbohydrates"),
     }))!;
@@ -311,9 +312,46 @@ describe("content packs", () => {
         (t) => t.learningTargetId === target.id && bctQs.some((q) => q.id === t.questionId)
       );
       expect(mine).toHaveLength(
-        { "U2.LT1": 8, "U2.LT3": 0, "U2.LT4": 20, "U2.LT5": 4 }[target.code]!
+        { "U2.LT1": 8, "U2.LT2": 0, "U2.LT3": 0, "U2.LT4": 20, "U2.LT5": 4 }[target.code]!
       );
     }
+    // The Biology Unit 2 retake bank (Oct 20 2026): at least 20 one-point questions per target,
+    // each target in its own pool for drawing a retake, shelved under Unit 2, no assessment.
+    const retake = first.find((o) => o.name === "bio-u2-retake-bank")!;
+    expect(retake.status).toBe("applied");
+    if (retake.status === "applied")
+      expect(retake.summary).toMatchObject({ questions: 121, unitId: bioUnit2.id, errors: [] });
+    const retakeBank = (await db.query.questionBanks.findFirst({
+      where: eq(schema.questionBanks.name, "Bio · Unit 2 · Retake Bank"),
+    }))!;
+    expect(retakeBank).toMatchObject({ unitId: bioUnit2.id, openPractice: false });
+    const retakeQs = await db
+      .select()
+      .from(schema.questions)
+      .where(eq(schema.questions.bankId, retakeBank.id));
+    expect(retakeQs).toHaveLength(121);
+    expect(retakeQs.every((q) => q.points === 1)).toBe(true);
+    const retakePools = await db
+      .select({
+        name: schema.questionPools.name,
+        code: schema.learningTargets.code,
+        size: sql<number>`(select count(*)::int from ${schema.poolQuestions} pq where pq.pool_id = ${schema.questionPools.id})`,
+      })
+      .from(schema.questionPools)
+      .innerJoin(schema.poolTargets, eq(schema.poolTargets.poolId, schema.questionPools.id))
+      .innerJoin(
+        schema.learningTargets,
+        eq(schema.learningTargets.id, schema.poolTargets.learningTargetId)
+      )
+      .where(sql`${schema.questionPools.name} like 'Bio U2.LT% Retake Pool'`)
+      .orderBy(schema.questionPools.name);
+    expect(retakePools.map((p) => [p.name, p.code, p.size])).toEqual([
+      ["Bio U2.LT1 Retake Pool", "U2.LT1", 24],
+      ["Bio U2.LT2 Retake Pool", "U2.LT2", 24],
+      ["Bio U2.LT3 Retake Pool", "U2.LT3", 24],
+      ["Bio U2.LT4 Retake Pool", "U2.LT4", 25],
+      ["Bio U2.LT5 Retake Pool", "U2.LT5", 24],
+    ]);
     const bctAssessment = (await db.query.assessments.findFirst({
       where: eq(schema.assessments.title, "Unit 2 Test: Biochemistry"),
     }))!;
