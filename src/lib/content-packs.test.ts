@@ -352,6 +352,31 @@ describe("content packs", () => {
       ["Bio U2.LT4 Retake Pool", "U2.LT4", 25],
       ["Bio U2.LT5 Retake Pool", "U2.LT5", 24],
     ]);
+    // Anatomy Unit 2 (Oct 20 2026): the skeletal quiz (20 one-point questions on U2.LT7–LT13) and
+    // the practice lab practical (20 picture fill-ins: bones, osteon, skin, and three mitosis slides).
+    for (const [name, title, type, n] of [
+      ["anatomy-u2-quiz-skeletal", "Unit 2 Quiz: Skeletal System", "formative", 20],
+      ["anatomy-u2-practice-lab-practical", "Unit 2 Practice Lab Practical", "practice", 20],
+    ] as const) {
+      const out = first.find((o) => o.name === name)!;
+      expect(out.status).toBe("applied");
+      if (out.status === "applied")
+        expect(out.summary).toMatchObject({ questions: n, assignedTo: [], errors: [] });
+      expect(
+        await db.query.assessments.findFirst({ where: eq(schema.assessments.title, title) })
+      ).toMatchObject({ type, isPublished: true, courseId: ids.course });
+    }
+    const labQs = await db
+      .select()
+      .from(schema.questions)
+      .where(sql`${schema.questions.externalId} like 'ANAT-LABP-%'`);
+    expect(labQs).toHaveLength(20);
+    expect(labQs.every((q) => q.type === "fill_blank")).toBe(true);
+    expect(
+      labQs.every((q) =>
+        q.mediaUrl?.startsWith("/quiz-images/anatomy-u2-practice-lab-practical/lab_q")
+      )
+    ).toBe(true);
     const bctAssessment = (await db.query.assessments.findFirst({
       where: eq(schema.assessments.title, "Unit 2 Test: Biochemistry"),
     }))!;
