@@ -12,7 +12,7 @@ vi.mock("@/db", async () => {
   return { db, schema, dbDriver: "pg" };
 });
 
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { and, eq, sql } from "drizzle-orm";
@@ -360,6 +360,7 @@ describe("content packs", () => {
       ["anatomy-u2-lab-quiz-skeletal", "Unit 2 Lab Quiz: Skeletal System", "formative", 10],
       ["anatomy-u2-practice-test", "Unit 2 Practice Test", "practice", 40],
       ["anatomy-u2-test-lecture", "Unit 2 Lecture Exam", "summative", 84],
+      ["anatomy-u2-test-lab-practical-1", "Lab Practical I", "summative", 50],
     ] as const) {
       const out = first.find((o) => o.name === name)!;
       expect(out.status).toBe("applied");
@@ -388,6 +389,26 @@ describe("content packs", () => {
     expect(
       labQs.every((q) =>
         q.mediaUrl?.startsWith("/quiz-images/anatomy-u2-practice-lab-practical/lab_q")
+      )
+    ).toBe(true);
+    // Lab Practical I (Oct 21 2026): 50 two-point picture fill-ins shelved in their own
+    // "Lab Practicals" unit, since the year's three practicals span units.
+    const lp1 = (await db.query.assessments.findFirst({
+      where: eq(schema.assessments.title, "Lab Practical I"),
+    }))!;
+    const lpUnit = await db.query.units.findFirst({ where: eq(schema.units.id, lp1.unitId!) });
+    expect(lpUnit?.name).toBe("Lab Practicals");
+    const lp1Qs = await db
+      .select()
+      .from(schema.questions)
+      .where(sql`${schema.questions.externalId} like 'ANAT-LP1-%'`);
+    expect(lp1Qs).toHaveLength(50);
+    expect(lp1Qs.every((q) => q.type === "fill_blank" && Number(q.points) === 2)).toBe(true);
+    expect(
+      lp1Qs.every(
+        (q) =>
+          q.mediaUrl?.startsWith("/quiz-images/anatomy-u2-test-lab-practical-1/lp1_q") &&
+          existsSync(join(process.cwd(), "public", q.mediaUrl))
       )
     ).toBe(true);
     const bctAssessment = (await db.query.assessments.findFirst({
