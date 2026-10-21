@@ -53,6 +53,8 @@ export type PackDefinition = {
     formerTitles?: string[];
     type: "practice" | "formative" | "summative";
     instructions?: string;
+    /** Attempts the assign dialog starts from; default 3 on a formative, none otherwise. */
+    attemptLimit?: number;
   };
   assign?: {
     class: string;
@@ -376,7 +378,8 @@ async function applyQuiz(
           type: def.assessment.type,
           title: def.assessment.title,
           instructions: def.assessment.instructions ?? null,
-          attemptLimit: def.assessment.type === "formative" ? 3 : null,
+          attemptLimit:
+            def.assessment.attemptLimit ?? (def.assessment.type === "formative" ? 3 : null),
           isPublished: true,
         })
         .returning({ id: schema.assessments.id });
