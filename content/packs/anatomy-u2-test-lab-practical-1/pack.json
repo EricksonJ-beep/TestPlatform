@@ -6,7 +6,8 @@
   "bank": "AP · Lab Practicals · Lab Practical I",
   "assessment": {
     "title": "Lab Practical I",
-    "type": "summative",
+    "type": "formative",
+    "attemptLimit": 1,
     "instructions": "Welcome to the General A&P Lab Practical I. This lab exam has 50 fill-in-the-blank picture questions, each worth 2 points: bones and bone landmarks, bone tissue, skin structures and layers, and phases of mitosis. No word banks, books, notes, Internet, or resources of any kind may be used. Spelling does count on this exam. This is a timed exam and must be completed in 60 minutes."
   },
   "assign": []

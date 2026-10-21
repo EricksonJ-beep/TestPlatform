@@ -360,7 +360,7 @@ describe("content packs", () => {
       ["anatomy-u2-lab-quiz-skeletal", "Unit 2 Lab Quiz: Skeletal System", "formative", 10],
       ["anatomy-u2-practice-test", "Unit 2 Practice Test", "practice", 40],
       ["anatomy-u2-test-lecture", "Unit 2 Lecture Exam", "summative", 84],
-      ["anatomy-u2-test-lab-practical-1", "Lab Practical I", "summative", 50],
+      ["anatomy-u2-test-lab-practical-1", "Lab Practical I", "formative", 50],
     ] as const) {
       const out = first.find((o) => o.name === name)!;
       expect(out.status).toBe("applied");
@@ -392,10 +392,26 @@ describe("content packs", () => {
       )
     ).toBe(true);
     // Lab Practical I (Oct 21 2026): 50 two-point picture fill-ins shelved in their own
-    // "Lab Practicals" unit, since the year's three practicals span units.
+    // "Lab Practicals" unit, since the year's three practicals span units. One try, in Jon's
+    // order (a formative's single section), as CVTC Anatomy has no retakes.
     const lp1 = (await db.query.assessments.findFirst({
       where: eq(schema.assessments.title, "Lab Practical I"),
     }))!;
+    expect(lp1.attemptLimit).toBe(1);
+    const lp1Sections = await db
+      .select({ id: schema.assessmentSections.id })
+      .from(schema.assessmentSections)
+      .where(eq(schema.assessmentSections.assessmentId, lp1.id));
+    expect(lp1Sections).toHaveLength(1);
+    const lp1Order = await db
+      .select({ externalId: schema.questions.externalId })
+      .from(schema.assessmentQuestions)
+      .innerJoin(schema.questions, eq(schema.assessmentQuestions.questionId, schema.questions.id))
+      .where(eq(schema.assessmentQuestions.sectionId, lp1Sections[0].id))
+      .orderBy(schema.assessmentQuestions.sortOrder);
+    expect(lp1Order.map((q) => q.externalId)).toEqual(
+      Array.from({ length: 50 }, (_, i) => `ANAT-LP1-${String(i + 1).padStart(3, "0")}`)
+    );
     const lpUnit = await db.query.units.findFirst({ where: eq(schema.units.id, lp1.unitId!) });
     expect(lpUnit?.name).toBe("Lab Practicals");
     const lp1Qs = await db
