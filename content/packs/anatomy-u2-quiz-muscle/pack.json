@@ -1,0 +1,13 @@
+{
+  "name": "anatomy-u2-quiz-muscle",
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Anatomy and Physiology",
+  "unit": "Unit 2",
+  "bank": "AP · Unit 2 Quiz: Muscular System",
+  "assessment": {
+    "title": "Unit 2 Quiz: Muscular System",
+    "type": "formative",
+    "instructions": "Twenty questions on the muscular system: muscle tissue and its properties, connective tissue wrappings, contraction, muscle roles, and muscle and joint disorders. Your best attempt counts."
+  },
+  "assign": []
+}
