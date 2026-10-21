@@ -360,6 +360,7 @@ describe("content packs", () => {
       ["anatomy-u2-lab-quiz-skeletal", "Unit 2 Lab Quiz: Skeletal System", "formative", 10],
       ["anatomy-u2-practice-test", "Unit 2 Practice Test", "practice", 40],
       ["anatomy-u2-test-lecture", "Unit 2 Lecture Exam", "summative", 84],
+      ["anatomy-u2-quiz-muscle", "Unit 2 Quiz: Muscular System", "formative", 20],
       ["anatomy-u2-test-lab-practical-1", "Lab Practical I", "formative", 50],
     ] as const) {
       const out = first.find((o) => o.name === name)!;
