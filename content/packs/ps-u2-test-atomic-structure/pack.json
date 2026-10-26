@@ -1,0 +1,13 @@
+{
+  "name": "ps-u2-test-atomic-structure",
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science A",
+  "unit": "Unit 2 · Atomic Structure",
+  "bank": "PS · Unit 2 Test",
+  "assessment": {
+    "title": "Unit 2 Test: Atomic Structure",
+    "type": "summative",
+    "instructions": "32 questions on Unit 2 (Chapter 7), 40 points: atomic models, the parts of the atom, atomic calculations and isotopes, reading the periodic table, and electron arrangement and Bohr models. Have your periodic table out. Questions marked 2 points are worth more; on number questions, type just the number. Show your work on scratch paper."
+  },
+  "assign": []
+}
