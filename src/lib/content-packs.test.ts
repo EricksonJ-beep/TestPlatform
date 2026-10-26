@@ -597,6 +597,75 @@ describe("content packs", () => {
         expect(gradeResponse(gradable, { kind: "text", text: "4" }).pointsEarned).toBe(0);
       }
     }
+    // Physical Science Unit 2 Test (Oct 26 2026): 32 items / 40 pts from Jon's Chapter 7 PDF and
+    // key, one section per target (LT1 models, LT2 parts of the atom, LT3 calculations, LT4 the
+    // periodic table and Bohr models). Item 14 (average atomic mass) gives half credit for 36.
+    const psTestOut = first.find((o) => o.name === "ps-u2-test-atomic-structure")!;
+    expect(psTestOut.status).toBe("applied");
+    if (psTestOut.status === "applied")
+      expect(psTestOut.summary).toMatchObject({
+        questions: 32,
+        unitId: psUnit2.id,
+        assignedTo: [],
+        errors: [],
+      });
+    const psTest = (await db.query.assessments.findFirst({
+      where: eq(schema.assessments.title, "Unit 2 Test: Atomic Structure"),
+    }))!;
+    expect(psTest).toMatchObject({
+      type: "summative",
+      isPublished: true,
+      courseId: ps.id,
+      unitId: psUnit2.id,
+    });
+    const psTestSections = await db
+      .select({ id: schema.assessmentSections.id, code: schema.learningTargets.code })
+      .from(schema.assessmentSections)
+      .innerJoin(
+        schema.learningTargets,
+        eq(schema.learningTargets.id, schema.assessmentSections.learningTargetId)
+      )
+      .where(eq(schema.assessmentSections.assessmentId, psTest.id))
+      .orderBy(schema.assessmentSections.sortOrder);
+    const psTestKey: Record<string, [number, number, string]> = {
+      "U2.LT1": [3, 5, "B,B,C"],
+      "U2.LT2": [5, 5, "C,B,D,B,A"],
+      "U2.LT3": [8, 10, "A,D,8,13,3,35.5,A,17"],
+      "U2.LT4": [16, 20, "B,3,B,D,C,A,B,C,D,8,B,2,8,D,B,A"],
+    };
+    expect(psTestSections.map((s) => s.code)).toEqual(Object.keys(psTestKey));
+    for (const sec of psTestSections) {
+      const items = await db
+        .select({ question: schema.questions })
+        .from(schema.assessmentQuestions)
+        .innerJoin(schema.questions, eq(schema.questions.id, schema.assessmentQuestions.questionId))
+        .where(eq(schema.assessmentQuestions.sectionId, sec.id))
+        .orderBy(schema.assessmentQuestions.sortOrder);
+      const [count, total, key] = psTestKey[sec.code];
+      expect(items).toHaveLength(count);
+      expect(items.reduce((sum, i) => sum + i.question.points, 0)).toBe(total);
+      const got: string[] = [];
+      for (const { question } of items) {
+        if (question.type === "numeric") {
+          got.push(String((question.gradingConfig as { answer: number }).answer));
+          continue;
+        }
+        const opts = await db
+          .select()
+          .from(schema.questionOptions)
+          .where(eq(schema.questionOptions.questionId, question.id))
+          .orderBy(schema.questionOptions.sortOrder);
+        got.push(opts.map((o, i) => (o.isCorrect ? "ABCD"[i] : "")).join(""));
+      }
+      expect(got.join(",")).toBe(key);
+      if (sec.code === "U2.LT3") {
+        const avg = { ...items[5].question, options: [] };
+        expect(avg.externalId).toBe("PS-U2T-014");
+        expect(gradeResponse(avg, { kind: "text", text: "35.5" }).pointsEarned).toBe(2);
+        expect(gradeResponse(avg, { kind: "text", text: "36" }).pointsEarned).toBe(1);
+        expect(gradeResponse(avg, { kind: "text", text: "37" }).pointsEarned).toBe(0);
+      }
+    }
     // The osteon activity pack: no bank or CSV; it completes the hand-made draft (same page),
     // renames it, tags U2, and publishes it.
     const osteon = first.find((o) => o.name === "anatomy-u2-activity-osteon-labeling")!;
