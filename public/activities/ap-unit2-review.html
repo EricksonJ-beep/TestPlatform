@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A&amp;P Unit 2 Review Activities</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1d2733; --muted:#5b6876; --paper:#ffffff; --wash:#f2f5f8; --line:#d5dce4;
+  --navy:#0b3a66; --sel:#2b5fa8; --sel-wash:#eaf1fb;
+  --ok:#0f7a5c; --ok-wash:#e3f4ee; --miss:#b4233c; --miss-wash:#fbe6ea; --warn:#9a5b00; --warn-wash:#fff4e0;
+  --font:"Atkinson Hyperlegible", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.45}
+.wrap{max-width:900px;margin:0 auto;padding:16px}
+.banner{background:var(--navy);color:#fff;border-radius:8px;padding:14px 18px;text-align:center}
+.banner .course{font-size:.95rem;opacity:.9}
+.banner h1{font-size:1.5rem;margin:4px 0 0}
+.tabs{display:flex;gap:6px;margin:16px 0 0;border-bottom:2px solid var(--line)}
+.tab{font:700 1rem var(--font);color:var(--muted);background:none;border:none;border-bottom:3px solid transparent;margin-bottom:-2px;padding:10px 14px;cursor:pointer}
+.tab[aria-selected="true"]{color:var(--navy);border-bottom-color:var(--navy)}
+.tab:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--sel);outline-offset:2px}
+.panel{padding-top:16px}
+.panel[hidden]{display:none}
+button{font-family:var(--font)}
+.btn{border:1px solid var(--sel);background:var(--sel);color:#fff;border-radius:999px;padding:8px 18px;font-size:1rem;font-weight:700;cursor:pointer}
+.btn.ghost{background:var(--paper);color:var(--sel)}
+.btn:disabled{opacity:.45;cursor:default}
+.round{width:42px;height:42px;border-radius:50%;border:none;background:var(--sel);color:#fff;font-size:1.3rem;font-weight:700;cursor:pointer;display:grid;place-items:center}
+.round:disabled{opacity:.35;cursor:default}
+
+/* ---------- flashcards ---------- */
+.tools{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin-bottom:12px;font-size:.95rem}
+.tools label{display:flex;align-items:center;gap:6px;color:var(--muted)}
+.tools select{font:inherit;padding:5px 8px;border:1px solid var(--line);border-radius:6px;color:var(--ink);background:#fff}
+.card-stage{perspective:1200px}
+.card{position:relative;width:100%;min-height:260px;cursor:pointer;transform-style:preserve-3d;transition:transform .45s;border:none;background:none;padding:0;font:inherit;color:inherit;display:block}
+.card.flipped{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border:1px solid var(--line);border-radius:10px;box-shadow:0 4px 14px rgba(20,40,70,.10);background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 26px 40px;text-align:center}
+.face.back{transform:rotateY(180deg);background:#fbfcfe}
+.face .term{font-size:1.7rem;font-weight:700}
+.face .def{font-size:1.15rem;max-width:560px}
+.face .tag{position:absolute;top:10px;left:14px;font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.face .hint{position:absolute;bottom:10px;font-size:.8rem;color:var(--muted)}
+.face .flag{position:absolute;top:10px;right:14px;font-size:.78rem;color:var(--warn);font-weight:700}
+.card-nav{display:flex;align-items:center;justify-content:space-between;margin-top:14px;gap:10px}
+.counter{color:var(--muted)}
+.card-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:14px}
+.btn.learn.on{background:var(--warn);border-color:var(--warn);color:#fff}
+.btn.learn{border-color:var(--warn);color:var(--warn);background:#fff}
+.empty{padding:30px;text-align:center;color:var(--muted);background:var(--wash);border-radius:8px}
+
+/* ---------- questions ---------- */
+.q-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;color:var(--muted);font-size:.95rem}
+.bar{height:6px;background:var(--wash);border-radius:3px;overflow:hidden;margin:6px 0 14px}
+.bar span{display:block;height:100%;width:0;background:var(--ok);transition:width .3s}
+.qbox{border:1px solid var(--line);border-radius:10px;padding:18px}
+.qtype{font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:6px}
+.stem{font-size:1.12rem;font-weight:700;margin:0 0 14px}
+.opts{display:grid;gap:8px}
+.opt{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:var(--wash);border:1.5px solid transparent;border-radius:8px;padding:10px 12px;font:400 1rem var(--font);color:var(--ink);cursor:pointer}
+.opt .dot{flex:none;width:18px;height:18px;border-radius:50%;border:2px solid #8a97a5;background:#fff}
+.opt.sel{border-color:var(--sel);background:var(--sel-wash)}
+.opt.sel .dot{border-color:var(--sel);box-shadow:inset 0 0 0 3px #fff;background:var(--sel)}
+.opt.right{border-color:var(--ok);background:var(--ok-wash)}
+.opt.wrong{border-color:var(--miss);background:var(--miss-wash)}
+.opt:disabled{cursor:default}
+.blank-line{margin:0 0 12px;font-size:1.05rem}
+.blank-line input{font:inherit;border:none;border-bottom:2px solid #8a97a5;padding:2px 4px;width:190px;max-width:100%;background:var(--wash);border-radius:4px 4px 0 0}
+.blank-line input.right{border-bottom-color:var(--ok);background:var(--ok-wash)}
+.blank-line input.wrong{border-bottom-color:var(--miss);background:var(--miss-wash)}
+.blank-line .key{color:var(--ok);font-weight:700;margin-left:6px}
+.feedback{min-height:1.4em;margin:12px 0 0;font-weight:700}
+.feedback.ok{color:var(--ok)} .feedback.miss{color:var(--miss)}
+.q-controls{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-top:14px}
+.q-controls .left{display:flex;gap:8px;flex-wrap:wrap}
+.q-controls .right{display:flex;gap:8px}
+.dots{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:16px}
+.dots button{width:16px;height:16px;border-radius:50%;border:2px solid #8a97a5;background:#fff;padding:0;cursor:pointer}
+.dots button.cur{border-color:var(--sel);box-shadow:0 0 0 2px var(--sel-wash)}
+.dots button.ok{background:var(--ok);border-color:var(--ok)}
+.dots button.miss{background:var(--miss);border-color:var(--miss)}
+.finish{display:none;margin-top:18px;padding:16px;border-radius:8px;background:var(--ok-wash);border:1px solid #b9e0d2}
+.finish.show{display:block}
+.finish h2{margin:0 0 6px;font-size:1.2rem}
+.finish ul{margin:8px 0 0;padding-left:20px}
+@media (max-width:520px){.face .term{font-size:1.35rem}.face .def{font-size:1.02rem}.card{min-height:300px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="banner">
+    <div class="course">General Anatomy and Physiology</div>
+    <h1>Unit 2 Review Activities</h1>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tab-cards" aria-controls="panel-cards" aria-selected="true">Vocabulary Review</button>
+    <button class="tab" role="tab" id="tab-qs" aria-controls="panel-qs" aria-selected="false">Practice Questions</button>
+  </div>
+
+  <!-- ===== Flashcards ===== -->
+  <section class="panel" id="panel-cards" role="tabpanel" aria-labelledby="tab-cards">
+    <div class="tools">
+      <label>System
+        <select id="filter">
+          <option value="all">All systems</option>
+          <option value="Integumentary">Integumentary</option>
+          <option value="Skeletal">Skeletal</option>
+          <option value="Joints">Joints</option>
+          <option value="Muscular">Muscular</option>
+          <option value="learning">Still learning only</option>
+        </select>
+      </label>
+      <label><input type="checkbox" id="shuffle"> Shuffle</label>
+      <label><input type="checkbox" id="defFirst"> Definition first</label>
+    </div>
+    <div id="cardArea">
+      <div class="card-stage">
+        <button class="card" id="card" aria-live="polite">
+          <div class="face front"><span class="tag" id="tagF"></span><span class="flag" id="flagF"></span><div id="front"></div><span class="hint">Tap card or press Space to turn</span></div>
+          <div class="face back"><span class="tag" id="tagB"></span><span class="flag" id="flagB"></span><div id="back"></div><span class="hint">Tap card or press Space to turn</span></div>
+        </button>
+      </div>
+      <div class="card-nav">
+        <button class="round" id="prev" aria-label="Previous card">&#8249;</button>
+        <span class="counter" id="counter"></span>
+        <button class="round" id="next" aria-label="Next card">&#8250;</button>
+      </div>
+      <div class="card-actions">
+        <button class="btn" id="turn">&#8635; Turn</button>
+        <button class="btn learn" id="learn" aria-pressed="false">Still learning</button>
+      </div>
+    </div>
+    <div class="empty" id="cardEmpty" hidden>No cards marked "Still learning" yet. Mark a card while you study, then come back here.</div>
+  </section>
+
+  <!-- ===== Practice questions ===== -->
+  <section class="panel" id="panel-qs" role="tabpanel" aria-labelledby="tab-qs" hidden>
+    <div class="q-head"><span id="qpos"></span><span>Score: <b id="score">0</b> / <span id="possible"></span> first-try points</span></div>
+    <div class="bar"><span id="qbar"></span></div>
+    <div class="qbox" id="qbox"></div>
+    <div class="q-controls">
+      <div class="left">
+        <button class="btn" id="check">Check</button>
+        <button class="btn ghost" id="retry" hidden>Retry</button>
+        <button class="btn ghost" id="show" hidden>Show answer</button>
+      </div>
+      <div class="right">
+        <button class="round" id="qprev" aria-label="Previous question">&#8249;</button>
+        <button class="round" id="qnext" aria-label="Next question">&#8250;</button>
+      </div>
+    </div>
+    <div class="dots" id="dots"></div>
+    <div class="finish" id="finish">
+      <h2>Practice complete</h2>
+      <div id="summary"></div>
+      <div id="missedList"></div>
+      <p style="margin:12px 0 0"><button class="btn ghost" id="startOver">Start over</button></p>
+    </div>
+  </section>
+</div>
+
+<script>
+/* =====================================================================
+   CONTENT — mirrored word-for-word from the CVTC 806-177 Unit II Review
+   Page (H5P Dialog Cards + H5P Question Set). Edit here to change content.
+   ===================================================================== */
+const ITEM = {
+  id: "ap-unit2-review",
+  title: "A&P Unit 2 Review Activities",
+  cards: [
+    ["Integumentary","pseudostratified","appearing to have multiple layers but has only one layer"],
+    ["Integumentary","Pacinian Corpuscle","Skin receptor that detects deep pressure"],
+    ["Integumentary","cyanosis","abnormal condition of bluish color (usually due to a lack of oxygen)"],
+    ["Integumentary","hypodermis","layer of fat and connective tissue found below the dermis.  Also called the subcutaneous layer"],
+    ["Integumentary","Stratum Corneum","The top outer layer of the epidermis that is continously sloughed off"],
+    ["Integumentary","keratinocytes","One of the 2 major types of skin cells - provides strength and structure to the skin.  Also helps to waterproof the skin"],
+    ["Skeletal","Osteoporosis","A decrease in bone density that can lead to a weakening of the bones and spontaneous fractures"],
+    ["Integumentary","melanocytes","cells that produce melanin (a yellow-brown-blackish pigment)"],
+    ["Integumentary","Striae","Also known as stretch marks - small tears in the dermis layer of the skin."],
+    ["Integumentary","hair follicle","skin sheath that surrounds the hair root"],
+    ["Integumentary","sudoriferous glands","Also known as sweat glands.  Exocrine glands that secrete sweat through a duct onto the surface of the skin.  Helps regulate body temperature"],
+    ["Integumentary","First degree burn","A mild burn (such as a sunburn) that only involves the epidermis"],
+    ["Integumentary","Urticaria","The medical term for hives - itchy swollen spots or patches often seen in allergic reactions"],
+    ["Skeletal","osteon","The basic unit of compact bone"],
+    ["Skeletal","osteocytes","mature, living bone cells"],
+    ["Skeletal","Open Fracture","A fracture in which the broken bones protrude through the skin"],
+    ["Skeletal","osteomalacia","A condition of soft bones in adulthood (caused by the bones failing to calcify)"],
+    ["Skeletal","Sesamoid bones","Bones completely enclosed within a tendon (such as the patella)"],
+    ["Skeletal","Sinuses","Air spaces in the cranial and facial bones - lined with a mucous membranes"],
+    ["Skeletal","Scoliosis","A lateral curvature of the spine"],
+    ["Joints","Amphiarthrosis","A partially moveable joint (such as the pubic symphysis)"],
+    ["Joints","Arthroscopy","Surgical examination or viewing of a joint"],
+    ["Joints","Gout","Build-up of uric acid in the blood which can be deposited into joints and soft tissues. Often seen in the toes and fingers."],
+    ["Muscular","Fascia","Sheet of fibrous connective tissue which surrounds muscles and lines body walls."],
+    ["Muscular","Sarcomere","The basic unit of muscle contraction"],
+    ["Muscular","Rigor Mortis","A state of muscular rigidity which begins after death"],
+    ["Muscular","Muscle Tone","A small amount of taughtness or tension in muscle"],
+    ["Muscular","Muscular Dystrophy","An inherited disease in which there is progressive destruction (atrophy) of skeletal muscle"],
+    ["Muscular","Muscle strain","A tear in a muscle"],
+    ["Muscular","Muscle orgin","Tendon attachment of a muscle to a stationary/less movable bone"],
+    ["Muscular","Prime mover (agonist)","The muscle contracting"],
+    ["Muscular","Synergists","Assist the agonist by stabilizing other joints"],
+    ["Muscular","Atrophy","A decrease in muscle size - often from not being used"],
+    ["Muscular","Tremor","Rhythmic contraction (shaking)"],
+    ["Muscular","Isometric Contraction","A muscle contraction that does not produce movement, but tension builds up in muscle"],
+    ["Muscular","Muscle Fatigue","Instability of a muscle to maintain its strength of contraction or tension"],
+    ["Muscular","Tendon","A cord of dense regular connective tissue that connects a muscle to a bone"],
+    ["Muscular","Elasticity","Ability to return to its original shape after contraction"],
+    ["Joints","Subluxation","A partial dislocation of a bone"],
+    ["Joints","Dislocation","Also known as a luxation: Bone is displaced or moved out of joint cavity"],
+    ["Joints","Rheumatoid Arthritis","Autoimmune disease in which the immune system attacks and destroys cartilage in the joints"],
+    ["Joints","Osteoarthritis","The articular cartilage on the ends of the bones breaks down, resulting in bone rubbing against bone"],
+    ["Joints","Ball and Socket Joint","Head of one bone fits into cuplike depression of 2nd bone (examples include the shoulder and the hip)"],
+    ["Joints","Extension","Increasing a joint angle"],
+    ["Joints","Strain","Twisting of a joint that stretches or tears ligaments"],
+    ["Joints","Bursa","A sac of fluid located at a friction point in a joint"],
+    ["Joints","Diarthrosis","A freely moveable joint (synovial joint)"],
+    ["Joints","Sutures","Immovable joint between the cranial bones in adults"],
+    ["Skeletal","Parathyroid hormone","Hormone that increases blood calcium"],
+    ["Skeletal","Appositional growth","How bones increase in width"]
+  ],
+  /* type: "blanks" (each blank = 1 point), "tf", "mc" (options shuffled; first listed = correct) */
+  questions: [
+    {type:"blanks", stem:"Review the Epidermal Layers by filling in the missing words", lines:[
+      ["The most inferior or bottom layer of the epidermis is the ", "stratum basalis", ""],
+      ["The layer of the epidermis responsible for waterproofing is the ", "stratum granulosum", ""],
+      ["The layer of epidermis missing in thin skin is the ", "stratum lucidum", ""],
+      ["The layer of the epidermis that provides strength and flexibility is the ", "stratum spinosum", ""],
+      ["The top or superior layer of the epidermis that is continuously being shed off is the ", "stratum cornuem", "."]
+    ]},
+    {type:"tf", stem:"Bones are continously remodeling throughout life.", answer:true},
+    {type:"mc", stem:"Which of the following hormones decreases blood calcium?", answer:"Calcitonin", wrong:["parathyroid hormone","hGH (Human Growth Hormone)","TSH (Thyroid Stimulating Hormone)"]},
+    {type:"mc", stem:"The word \"foramen\" means:", answer:"hole", wrong:["depression","valve","tendon"]},
+    {type:"tf", stem:"Scoliosis is a lateral curvature of the spine.", answer:true},
+    {type:"mc", stem:"A freely moveable joint is known as a:", answer:"diarthrosis", wrong:["synarthrosis","amphiarthrosis"]},
+    {type:"mc", stem:"Which of the following is an example of a synarthrosis?", answer:"suture joint", wrong:["Knee joint","Shoulder joint","pubic symphysis"]},
+    {type:"mc", stem:"Extending a joint past its natural anatomic position is called:", answer:"hyperextension", wrong:["flexion","extension","lateral flexion"]},
+    {type:"mc", stem:"Your carpals and tarsals are examples of ____________ joints.", answer:"planar", wrong:["saddle","condyloid"]},
+    {type:"mc", stem:"Which of the following is NOT a function of muscle tissue?", answer:"Protection", wrong:["Maintaining posture","Generating heat","Moving substances through the body"]},
+    {type:"mc", stem:"The ability for muscle tissue to contract when stretched is called:", answer:"extensibility", wrong:["contractility","elasticity","electrical excitability"]},
+    {type:"mc", stem:"The outer layer of fascia surrounding the entire muscle:", answer:"epimysium", wrong:["perimysium","endomysium"]},
+    {type:"tf", stem:"The thin filament found in the sarcomere is myosin.", answer:false},
+    {type:"mc", stem:"Which of the following can cause muscle fatigue?", answer:"All of these may lead to muscle fatigue", wrong:["Build-up of lactic acid","Lack of oxygen","Depletion of glycogen"], keepLast:true},
+    {type:"tf", stem:"A muscle contraction creating movement is an isotonic contraction.", answer:true},
+    {type:"mc", stem:"A painful spasm is a:", answer:"cramp", wrong:["tremor","twitch","shiver"]},
+    {type:"mc", stem:"The fleshy part of the muscle is called the:", answer:"belly", wrong:["insertion","origin","synergist"]},
+    {type:"mc", stem:"A painful inflammation of tendons and synovial membrane of joints, often seen in the elbow, wrists and shoulders:", answer:"tendinitis", wrong:["osteoporosis","atrophy","fibromyalgia"]},
+    {type:"tf", stem:"Muscular dystrophy is more common in boys.", answer:true}
+  ]
+};
+
+/* ===================================================================== */
+const $ = id => document.getElementById(id);
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const store = {
+  get(k, d){ try { const v = localStorage.getItem(ITEM.id + ':' + k); return v == null ? d : JSON.parse(v); } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem(ITEM.id + ':' + k, JSON.stringify(v)); } catch(e){} }
+};
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(x => x.setAttribute('aria-selected', x === t));
+  $('panel-cards').hidden = t.id !== 'tab-cards';
+  $('panel-qs').hidden = t.id !== 'tab-qs';
+}));
+
+/* ---------- flashcards ---------- */
+const learning = new Set(store.get('learning', []));
+let deck = [], pos = 0;
+
+function buildDeck(){
+  const f = $('filter').value;
+  let idx = ITEM.cards.map((_, i) => i);
+  if (f === 'learning') idx = idx.filter(i => learning.has(i));
+  else if (f !== 'all') idx = idx.filter(i => ITEM.cards[i][0] === f);
+  deck = $('shuffle').checked ? shuffle(idx) : idx;
+  pos = 0;
+  showCard();
+}
+function showCard(){
+  const has = deck.length > 0;
+  $('cardArea').hidden = !has; $('cardEmpty').hidden = has;
+  if (!has) return;
+  const i = deck[pos], [sys, term, def] = ITEM.cards[i];
+  const defFirst = $('defFirst').checked;
+  $('card').classList.remove('flipped');
+  $('front').innerHTML = ''; $('back').innerHTML = '';
+  const t = document.createElement('div'); t.className = 'term'; t.textContent = term;
+  const d = document.createElement('div'); d.className = 'def'; d.textContent = def;
+  (defFirst ? $('back') : $('front')).appendChild(t);
+  (defFirst ? $('front') : $('back')).appendChild(d);
+  $('tagF').textContent = $('tagB').textContent = sys;
+  const on = learning.has(i);
+  $('flagF').textContent = $('flagB').textContent = on ? 'Still learning' : '';
+  $('learn').classList.toggle('on', on);
+  $('learn').setAttribute('aria-pressed', on);
+  $('learn').textContent = on ? '✓ Still learning' : 'Still learning';
+  $('counter').textContent = 'Card ' + (pos + 1) + ' of ' + deck.length;
+  $('prev').disabled = pos === 0;
+  $('next').disabled = pos === deck.length - 1;
+}
+const flip = () => $('card').classList.toggle('flipped');
+$('card').addEventListener('click', flip);
+$('turn').addEventListener('click', flip);
+$('prev').addEventListener('click', () => { if (pos > 0) { pos--; showCard(); } });
+$('next').addEventListener('click', () => { if (pos < deck.length - 1) { pos++; showCard(); } });
+$('learn').addEventListener('click', () => {
+  const i = deck[pos];
+  learning.has(i) ? learning.delete(i) : learning.add(i);
+  store.set('learning', [...learning]);
+  if ($('filter').value === 'learning' && !learning.has(i)) {
+    deck.splice(pos, 1); if (pos >= deck.length) pos = Math.max(0, deck.length - 1);
+  }
+  showCard();
+});
+['filter', 'shuffle', 'defFirst'].forEach(id => $(id).addEventListener('change', id === 'defFirst' ? showCard : buildDeck));
+document.addEventListener('keydown', e => {
+  if ($('panel-cards').hidden || /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
+  if (e.key === 'ArrowRight') $('next').click();
+  else if (e.key === 'ArrowLeft') $('prev').click();
+  else if (e.key === ' ' && e.target.tagName !== 'BUTTON') { e.preventDefault(); flip(); }
+});
+
+/* ---------- practice questions ---------- */
+const Q = ITEM.questions;
+const pts = q => q.type === 'blanks' ? q.lines.length : 1;
+const POSSIBLE = Q.reduce((s, q) => s + pts(q), 0);
+let qs, cur, startTime, finished;
+
+function norm(s){ return (s || '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim(); }
+function lev(a, b){
+  const m = a.length, n = b.length, d = Array.from({length: m + 1}, (_, i) => [i]);
+  for (let j = 1; j <= n; j++) d[0][j] = j;
+  for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++)
+    d[i][j] = Math.min(d[i-1][j] + 1, d[i][j-1] + 1, d[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1));
+  return d[m][n];
+}
+/* Accepts case/spacing differences, the word "stratum" left off, and small misspellings
+   (up to 2 letters off), so "stratum basale" and "stratum corneum" also count. */
+function blankOK(given, key){
+  const g = norm(given), k = norm(key);
+  if (!g) return false;
+  const kShort = k.replace(/^stratum /, ''), gShort = g.replace(/^stratum /, '');
+  return lev(gShort, kShort) <= 2;
+}
+
+function resetQuiz(){
+  qs = Q.map(q => ({
+    order: q.type === 'mc' ? (q.keepLast ? shuffle(q.wrong).concat([q.answer]) : shuffle([q.answer].concat(q.wrong))) : null,
+    choice: null, inputs: q.type === 'blanks' ? q.lines.map(() => '') : null,
+    checked: false, firstScore: null, revealed: false, lastRight: null
+  }));
+  cur = 0; startTime = Date.now(); finished = false;
+  $('finish').classList.remove('show');
+  $('possible').textContent = POSSIBLE;
+  renderQ();
+}
+
+function renderQ(){
+  const q = Q[cur], s = qs[cur], box = $('qbox');
+  box.innerHTML = '';
+  const type = document.createElement('div'); type.className = 'qtype';
+  type.textContent = {mc: 'Multiple choice', tf: 'True or false', blanks: 'Fill in the blanks'}[q.type];
+  const stem = document.createElement('p'); stem.className = 'stem'; stem.textContent = q.stem;
+  box.append(type, stem);
+
+  if (q.type === 'blanks') {
+    q.lines.forEach((ln, i) => {
+      const p = document.createElement('p'); p.className = 'blank-line';
+      p.append(document.createTextNode(ln[0]));
+      const inp = document.createElement('input');
+      inp.type = 'text'; inp.value = s.inputs[i]; inp.setAttribute('aria-label', 'Blank ' + (i + 1));
+      inp.autocomplete = 'off'; inp.spellcheck = false;
+      inp.addEventListener('input', () => { s.inputs[i] = inp.value; });
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter') $('check').click(); });
+      if (s.checked) {
+        const ok = blankOK(s.inputs[i], ln[1]);
+        inp.classList.add(ok ? 'right' : 'wrong'); inp.disabled = true;
+      }
+      p.append(inp, document.createTextNode(ln[2]));
+      if (s.revealed) { const k = document.createElement('span'); k.className = 'key'; k.textContent = '(' + ln[1] + ')'; p.append(k); }
+      box.append(p);
+    });
+  } else {
+    const opts = document.createElement('div'); opts.className = 'opts'; opts.setAttribute('role', 'radiogroup');
+    const list = q.type === 'tf' ? ['True', 'False'] : s.order;
+    const correct = q.type === 'tf' ? (q.answer ? 'True' : 'False') : q.answer;
+    list.forEach(o => {
+      const b = document.createElement('button'); b.className = 'opt'; b.setAttribute('role', 'radio');
+      b.setAttribute('aria-checked', s.choice === o);
+      const dot = document.createElement('span'); dot.className = 'dot';
+      b.append(dot, document.createTextNode(o));
+      if (s.choice === o) b.classList.add('sel');
+      if (s.checked) {
+        b.disabled = true;
+        if (s.choice === o) b.classList.add(o === correct ? 'right' : 'wrong');
+        if (s.revealed && o === correct) b.classList.add('right');
+      } else b.addEventListener('click', () => { s.choice = o; renderQ(); });
+      opts.append(b);
+    });
+    box.append(opts);
+  }
+  const fb = document.createElement('p'); fb.className = 'feedback'; fb.id = 'fb';
+  if (s.checked) {
+    const got = scoreNow(cur), tot = pts(q);
+    if (got === tot) { fb.textContent = 'Correct!'; fb.classList.add('ok'); }
+    else if (s.revealed) { fb.textContent = 'Answer shown.'; fb.classList.add('miss'); }
+    else { fb.textContent = q.type === 'blanks' ? got + ' of ' + tot + ' blanks correct. Try again or show the answer.' : 'Not quite. Try again or show the answer.'; fb.classList.add('miss'); }
+  }
+  box.append(fb);
+
+  const right = s.checked && scoreNow(cur) === pts(q);
+  $('check').hidden = s.checked;
+  $('check').disabled = q.type === 'blanks' ? false : s.choice == null;
+  $('retry').hidden = !s.checked || right || s.revealed;
+  $('show').hidden = !s.checked || right || s.revealed;
+  $('qprev').disabled = cur === 0;
+  $('qnext').disabled = cur === Q.length - 1;
+  $('qpos').textContent = 'Question ' + (cur + 1) + ' of ' + Q.length;
+  renderStatus();
+}
+
+function scoreNow(i){
+  const q = Q[i], s = qs[i];
+  if (q.type === 'blanks') return q.lines.filter((ln, k) => blankOK(s.inputs[k], ln[1])).length;
+  const correct = q.type === 'tf' ? (q.answer ? 'True' : 'False') : q.answer;
+  return s.choice === correct ? 1 : 0;
+}
+
+function renderStatus(){
+  const done = qs.filter(s => s.firstScore != null).length;
+  const score = qs.reduce((t, s) => t + (s.firstScore || 0), 0);
+  $('score').textContent = score;
+  $('qbar').style.width = (done / Q.length * 100) + '%';
+  const dots = $('dots'); dots.innerHTML = '';
+  Q.forEach((q, i) => {
+    const d = document.createElement('button');
+    d.setAttribute('aria-label', 'Go to question ' + (i + 1));
+    const s = qs[i];
+    if (s.firstScore != null) d.classList.add(s.firstScore === pts(q) ? 'ok' : 'miss');
+    if (i === cur) d.classList.add('cur');
+    d.addEventListener('click', () => { cur = i; renderQ(); });
+    dots.append(d);
+  });
+}
+
+$('check').addEventListener('click', () => {
+  const s = qs[cur], q = Q[cur];
+  if (q.type !== 'blanks' && s.choice == null) return;
+  s.checked = true;
+  if (s.firstScore == null) s.firstScore = scoreNow(cur);
+  renderQ();
+  if (!finished && qs.every(x => x.firstScore != null)) finish();
+});
+$('retry').addEventListener('click', () => {
+  const s = qs[cur], q = Q[cur];
+  s.checked = false;
+  if (q.type === 'blanks') s.inputs = s.inputs.map((v, k) => blankOK(v, q.lines[k][1]) ? v : '');
+  else s.choice = null;
+  renderQ();
+});
+$('show').addEventListener('click', () => {
+  const s = qs[cur], q = Q[cur];
+  s.revealed = true;
+  if (q.type !== 'blanks') s.choice = s.choice; // keep their pick visible as wrong
+  renderQ();
+});
+$('qprev').addEventListener('click', () => { if (cur > 0) { cur--; renderQ(); } });
+$('qnext').addEventListener('click', () => { if (cur < Q.length - 1) { cur++; renderQ(); } });
+$('startOver').addEventListener('click', resetQuiz);
+
+function finish(){
+  finished = true;
+  const score = qs.reduce((t, s) => t + s.firstScore, 0);
+  const secs = Math.round((Date.now() - startTime) / 1000);
+  const missed = Q.map((q, i) => ({q, i, s: qs[i]})).filter(x => x.s.firstScore < pts(x.q));
+  const pct = Math.round(score / POSSIBLE * 100);
+  $('summary').textContent = 'You earned ' + score + ' of ' + POSSIBLE + ' points on your first try (' + pct + '%).';
+  const ml = $('missedList'); ml.innerHTML = '';
+  if (missed.length) {
+    const p = document.createElement('p'); p.style.margin = '10px 0 0'; p.textContent = 'Review these:';
+    const ul = document.createElement('ul');
+    missed.forEach(x => {
+      const li = document.createElement('li'); const a = document.createElement('a');
+      a.href = '#'; a.textContent = 'Q' + (x.i + 1) + ': ' + x.q.stem;
+      a.addEventListener('click', e => { e.preventDefault(); cur = x.i; renderQ(); window.scrollTo({top: 0, behavior: 'smooth'}); });
+      li.append(a); ul.append(li);
+    });
+    ml.append(p, ul);
+  }
+  $('finish').classList.add('show');
+  try {
+    window.parent.postMessage({source: 'bloom-practice', activity: ITEM.id, type: 'complete',
+      total: POSSIBLE, firstTry: score, misses: missed.length,
+      missedTerms: missed.map(x => 'Q' + (x.i + 1) + ': ' + x.q.stem), seconds: secs}, '*');
+  } catch(e) {}
+}
+
+buildDeck();
+resetQuiz();
+</script>
+</body>
+</html>
