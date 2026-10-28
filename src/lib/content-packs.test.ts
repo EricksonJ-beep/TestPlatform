@@ -129,6 +129,7 @@ describe("content packs", () => {
     expect(names).toContain("anatomy-u1-quiz-intro-lab-mitosis");
     expect(names).toContain("ps-u1-test-form-b");
     expect(names).toContain("anatomy-u2-activity-osteon-labeling");
+    expect(names).toContain("anatomy-u2-activity-review");
   });
   it("applies each pack once: bank, questions with repo-hosted pictures, published assessment, assignment", async () => {
     const first = await applyAllPacks();
@@ -698,6 +699,26 @@ describe("content packs", () => {
         .from(schema.activityTargets)
         .where(eq(schema.activityTargets.activityId, acts[0].id))
     ).toEqual([{ activityId: acts[0].id, learningTargetId: u2.id }]);
+    // The Unit 2 review page (Oct 28 2026): no draft by hand, so the pack creates it on U2.
+    const review = first.find((o) => o.name === "anatomy-u2-activity-review")!;
+    expect(review.status).toBe("applied");
+    if (review.status === "applied") {
+      expect(review.summary).toMatchObject({
+        activity: { reused: false, targets: 1, published: true },
+        errors: [],
+      });
+    }
+    const [reviewAct] = await db
+      .select()
+      .from(schema.relearningActivities)
+      .where(eq(schema.relearningActivities.url, "/activities/ap-unit2-review.html"));
+    expect(reviewAct).toMatchObject({ kind: "interactive", courseId: ids.course, isPublished: true });
+    expect(
+      await db
+        .select()
+        .from(schema.activityTargets)
+        .where(eq(schema.activityTargets.activityId, reviewAct.id))
+    ).toEqual([{ activityId: reviewAct.id, learningTargetId: u2.id }]);
     // Second run: nothing changes.
     const second = await applyAllPacks();
     expect(second.every((o) => o.status === "already_applied")).toBe(true);

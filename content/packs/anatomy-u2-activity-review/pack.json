@@ -1,0 +1,13 @@
+{
+  "name": "anatomy-u2-activity-review",
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Anatomy and Physiology",
+  "activity": {
+    "kind": "interactive",
+    "title": "A&P Unit 2 review: vocabulary cards and practice questions",
+    "url": "/activities/ap-unit2-review.html",
+    "instructions": "Study the Vocabulary Review cards first (filter by system, and mark the ones you are still learning). Then open Practice Questions and check every question. The activity is done when every question has been checked once; your first-try score is what your teacher sees.",
+    "targets": ["U2"],
+    "published": true
+  }
+}
