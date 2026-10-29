@@ -1,0 +1,13 @@
+{
+  "name": "bio-u1-test-science-of-biology",
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "unit": "Unit 1 · The Science of Biology",
+  "bank": "Bio · Unit 1 Test: The Science of Biology",
+  "assessment": {
+    "title": "Unit 1 Test: The Science of Biology",
+    "type": "summative",
+    "instructions": "23 questions on Unit 1: the scientific method and hypotheses, control groups and independent, dependent, and constant variables, characteristics of life, the parts of a microscope, and reading graphs and data tables."
+  },
+  "assign": []
+}
