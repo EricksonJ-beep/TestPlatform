@@ -304,7 +304,7 @@ describe("content packs", () => {
     const stimuli = await db
       .select()
       .from(schema.stimuli)
-      .where(eq(schema.stimuli.courseId, bio.id));
+      .where(and(eq(schema.stimuli.courseId, bio.id), eq(schema.stimuli.ref, "enzyme-temp-graph")));
     expect(stimuli).toHaveLength(1);
     expect(bctQs.filter((q) => q.stimulusId === stimuli[0].id)).toHaveLength(2);
     const bctTagged = await db.select().from(schema.questionTargets);
@@ -353,6 +353,54 @@ describe("content packs", () => {
       ["Bio U2.LT4 Retake Pool", "U2.LT4", 25],
       ["Bio U2.LT5 Retake Pool", "U2.LT5", 24],
     ]);
+    // Biology Unit 1 test and retake (Oct 29 2026, from Jon's Google Forms): 23 one-point
+    // multiple choice each, summative, unassigned, the same microscope section in both, each
+    // test's shared pictures and data tables as one stimulus per ref, and the two graph pictures
+    // on the test's own questions.
+    for (const [name, bank, title, questionPictures, refs] of [
+      [
+        "bio-u1-test-science-of-biology",
+        "Bio · Unit 1 Test: The Science of Biology",
+        "Unit 1 Test: The Science of Biology",
+        2,
+        { "bio-u1-test-microscope": 5, "bio-u1-test-tomato": 4, "bio-u1-test-sunfish": 3 },
+      ],
+      [
+        "bio-u1-retake-science-of-biology",
+        "Bio · Unit 1 · Retake",
+        "Unit 1 Retake Test: The Science of Biology",
+        0,
+        { "bio-u1-retake-microscope": 5, "bio-u1-retake-bean": 4, "bio-u1-retake-goldfish": 3 },
+      ],
+    ] as const) {
+      const out = first.find((o) => o.name === name)!;
+      expect(out.status).toBe("applied");
+      if (out.status === "applied")
+        expect(out.summary).toMatchObject({ questions: 23, assignedTo: [], errors: [] });
+      const u1Bank = (await db.query.questionBanks.findFirst({
+        where: eq(schema.questionBanks.name, bank),
+      }))!;
+      const u1Qs = await db
+        .select()
+        .from(schema.questions)
+        .where(eq(schema.questions.bankId, u1Bank.id));
+      expect(u1Qs).toHaveLength(23);
+      expect(u1Qs.every((q) => q.type === "multiple_choice" && q.points === 1)).toBe(true);
+      expect(u1Qs.filter((q) => q.mediaUrl?.startsWith(`/quiz-images/${name}/`))).toHaveLength(
+        questionPictures
+      );
+      for (const [ref, n] of Object.entries(refs)) {
+        const [stim] = await db
+          .select()
+          .from(schema.stimuli)
+          .where(and(eq(schema.stimuli.courseId, bio.id), eq(schema.stimuli.ref, ref)));
+        expect(u1Qs.filter((q) => q.stimulusId === stim.id)).toHaveLength(n);
+      }
+      const u1Assessment = (await db.query.assessments.findFirst({
+        where: eq(schema.assessments.title, title),
+      }))!;
+      expect(u1Assessment).toMatchObject({ type: "summative", isPublished: true });
+    }
     // Anatomy Unit 2 (Oct 20 2026): the skeletal quiz (20 one-point questions on U2.LT7–LT13) and
     // the practice lab practical (20 picture fill-ins: bones, osteon, skin, and three mitosis slides).
     for (const [name, title, type, n] of [
@@ -712,7 +760,11 @@ describe("content packs", () => {
       .select()
       .from(schema.relearningActivities)
       .where(eq(schema.relearningActivities.url, "/activities/ap-unit2-review.html"));
-    expect(reviewAct).toMatchObject({ kind: "interactive", courseId: ids.course, isPublished: true });
+    expect(reviewAct).toMatchObject({
+      kind: "interactive",
+      courseId: ids.course,
+      isPublished: true,
+    });
     expect(
       await db
         .select()
