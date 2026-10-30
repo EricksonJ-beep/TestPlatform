@@ -7,7 +7,14 @@
   "assessment": {
     "title": "Unit 3 Test: Cell Structure and Function",
     "type": "summative",
-    "instructions": "50 points on Unit 3: the cell theory (LT1), prokaryotic and eukaryotic cells (LT2), organelles and their jobs (LT3), and the cell membrane and cellular transport (LT4). The three matching questions count one point per pair. Several questions use a picture or graph."
+    "instructions": "50 points on Unit 3: the cell theory (LT1), prokaryotic and eukaryotic cells (LT2), organelles and their jobs (LT3), and the cell membrane and cellular transport (LT4). The three matching questions count one point per pair. Several questions use a picture or graph.",
+    "retakePools": {
+      "U3.LT1": "Bio U3.LT1 Retake Pool",
+      "U3.LT2": "Bio U3.LT2 Retake Pool",
+      "U3.LT3": "Bio U3.LT3 Retake Pool",
+      "U3.LT4": "Bio U3.LT4 Retake Pool"
+    },
+    "retakeDrawCount": 10
   },
   "assign": []
 }
