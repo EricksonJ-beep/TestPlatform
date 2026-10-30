@@ -177,6 +177,24 @@ function CellPanel({
             ))}
           </ul>
         ) : null}
+        {!hideScores && cell.growth ? (
+          <div className="text-sm" data-growth>
+            <p>
+              First try {Math.round(cell.growth.first)}% → now{" "}
+              <span className="font-semibold">{Math.round(cell.growth.now)}%</span>
+            </p>
+            {cell.growth.targets.length ? (
+              <ul className="text-xs text-muted-foreground" aria-label="Retaken targets">
+                {cell.growth.targets.map((t) => (
+                  <li key={t.code} className="tabular" data-growth-target={t.code}>
+                    {t.code}: {Math.round(t.first)}% →{" "}
+                    <span className="font-semibold text-foreground">{Math.round(t.now)}%</span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        ) : null}
         {marks.retakeBy || marks.tabSwitches > 0 ? (
           <p className="flex flex-wrap gap-x-3 text-xs text-muted-foreground">
             {marks.retakeBy ? (

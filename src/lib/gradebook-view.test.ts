@@ -99,6 +99,7 @@ const cell = (
     retakeWindowClosed: false,
     tabSwitches: 0,
     movedUpThisWeek: false,
+    growth: null,
     ...rest,
   };
 };

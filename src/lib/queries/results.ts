@@ -8,6 +8,7 @@ import type { QuestionType } from "@/db/types";
 import { answerToText, correctAnswerText, type Answer, type GradableOption } from "@/lib/grading";
 import type { StimulusInfo } from "@/lib/stimulus-groups";
 import type { FinalBasis } from "@/db/schema";
+import { growthFor, type Growth } from "@/lib/retakes";
 
 export type GradebookAttempt = {
   id: string;
@@ -54,13 +55,18 @@ export type GradebookRow = {
     targetsBelowThreshold: number;
     basis: FinalBasis | null;
   } | null;
+  /** After a retake: attempt 1's percent → the counting percent, and per retaken target (`growthFor`). */
+  growth:
+    (Omit<Growth, "targets"> & { targets: { code: string; first: number; now: number }[] }) | null;
 };
 
 export async function getGradebook(assignmentId: string): Promise<GradebookRow[]> {
-  const asg = await db.query.assignments.findFirst({
-    columns: { classId: true },
-    where: eq(schema.assignments.id, assignmentId),
-  });
+  const asg = await db
+    .select({ classId: schema.assignments.classId, type: schema.assessments.type })
+    .from(schema.assignments)
+    .innerJoin(schema.assessments, eq(schema.assessments.id, schema.assignments.assessmentId))
+    .where(eq(schema.assignments.id, assignmentId))
+    .then((r) => r[0]);
   if (!asg) return [];
   const roster = await db
     .select({
@@ -89,6 +95,10 @@ export async function getGradebook(assignmentId: string): Promise<GradebookRow[]
       paused: sql<boolean>`(attempts.status = 'in_progress' and (attempts.paused_at is not null or attempts.last_active_at < now() - interval '10 minutes'))`,
       askedAt: schema.attempts.resumeRequestedAt,
       scope: schema.attempts.scope,
+      targetPercents: sql<Record<
+        string,
+        number
+      > | null>`(select jsonb_object_agg(t.learning_target_id, t.percent) from ${schema.attemptTargetScores} t where t.attempt_id = attempts.id)`,
       pendingManual: sql<number>`(select count(*)::int from ${schema.responses} r where r.attempt_id = attempts.id and r.auto_score is null and r.manual_score is null)`,
       correctionsTotal: sql<number>`(select count(*)::int from ${schema.corrections} c where c.attempt_id = attempts.id)`,
       correctionsApproved: sql<number>`(select count(*)::int from ${schema.corrections} c where c.attempt_id = attempts.id and c.status = 'approved')`,
@@ -103,7 +113,12 @@ export async function getGradebook(assignmentId: string): Promise<GradebookRow[]
     .from(schema.assignmentFinalScores)
     .where(eq(schema.assignmentFinalScores.assignmentId, assignmentId));
   const finalBy = new Map(finals.map((f) => [f.studentId, f]));
-  const scopeIds = [...new Set(attempts.flatMap((a) => a.scope ?? []))];
+  const scopeIds = [
+    ...new Set([
+      ...attempts.flatMap((a) => a.scope ?? []),
+      ...finals.flatMap((f) => Object.keys(f.perTarget)),
+    ]),
+  ];
   const codes = scopeIds.length
     ? await db
         .select({ id: schema.learningTargets.id, code: schema.learningTargets.code })
@@ -122,6 +137,7 @@ export async function getGradebook(assignmentId: string): Promise<GradebookRow[]
           correctionsSubmitted,
           correctionsReturned,
           scope,
+          targetPercents: _t,
           ...a
         }): GradebookAttempt => ({
           ...a,
@@ -150,6 +166,21 @@ export async function getGradebook(assignmentId: string): Promise<GradebookRow[]
       null
     );
     const f = finalBy.get(s.studentId);
+    const growth = growthFor({
+      attempts: attempts
+        .filter((a) => a.studentId === s.studentId && a.status !== "in_progress")
+        .map((a) => ({
+          number: a.number,
+          percent: a.percent,
+          perTarget: toPercents(a.targetPercents),
+        })),
+      now: f
+        ? {
+            percent: f.percent,
+            perTarget: asg.type === "summative" ? percentsOf(f.perTarget) : null,
+          }
+        : null,
+    });
     return {
       ...s,
       requestedAt: s.requestedAt ? new Date(s.requestedAt) : null,
@@ -165,8 +196,25 @@ export async function getGradebook(assignmentId: string): Promise<GradebookRow[]
             basis: f.basis,
           }
         : null,
+      growth: growth && {
+        ...growth,
+        targets: growth.targets.map(({ learningTargetId, ...t }) => ({
+          code: codeBy.get(learningTargetId) ?? "?",
+          ...t,
+        })),
+      },
     };
   });
+}
+
+/** A jsonb target → percent map as the driver hands it back (the object, or its JSON text). */
+function toPercents(raw: unknown): Record<string, number> {
+  const obj = (typeof raw === "string" ? JSON.parse(raw) : raw) as Record<string, unknown> | null;
+  return Object.fromEntries(Object.entries(obj ?? {}).map(([k, v]) => [k, Number(v)]));
+}
+
+function percentsOf(perTarget: Record<string, { percent: number }>): Record<string, number> {
+  return Object.fromEntries(Object.entries(perTarget).map(([id, t]) => [id, t.percent]));
 }
 
 // ---------------------------------------------------------------------------
@@ -181,6 +229,8 @@ export type MasteryRow = {
   lastName: string;
   /** Target id → best percent; a target the student hasn't been scored on is absent. */
   percents: Record<string, number>;
+  /** Summatives: target id → first-try percent, for each target a retake covered (`growthFor`). */
+  firstPercents: Record<string, number>;
   overall: number | null;
 };
 
@@ -241,12 +291,41 @@ export async function getMasteryGrid(assignmentId: string): Promise<MasteryGrid>
   const finalBy = new Map(finals.map((f) => [f.studentId, f]));
 
   const percentsBy = new Map<string, Record<string, number>>();
+  const firstBy = new Map<string, Record<string, number>>();
   if (asg.type === "summative") {
-    for (const f of finals)
-      percentsBy.set(
-        f.studentId,
-        Object.fromEntries(Object.entries(f.perTarget).map(([id, t]) => [id, t.percent]))
+    const done = await db
+      .select({
+        studentId: schema.attempts.studentId,
+        number: schema.attempts.number,
+        percent: schema.attempts.percent,
+        targetPercents: sql<unknown>`(select jsonb_object_agg(t.learning_target_id, t.percent) from ${schema.attemptTargetScores} t where t.attempt_id = attempts.id)`,
+      })
+      .from(schema.attempts)
+      .where(
+        and(
+          eq(schema.attempts.assignmentId, assignmentId),
+          ne(schema.attempts.status, "in_progress")
+        )
       );
+    for (const f of finals) {
+      const perTarget = percentsOf(f.perTarget);
+      percentsBy.set(f.studentId, perTarget);
+      const growth = growthFor({
+        attempts: done
+          .filter((a) => a.studentId === f.studentId)
+          .map((a) => ({
+            number: a.number,
+            percent: a.percent,
+            perTarget: toPercents(a.targetPercents),
+          })),
+        now: { percent: f.percent, perTarget },
+      });
+      if (growth)
+        firstBy.set(
+          f.studentId,
+          Object.fromEntries(growth.targets.map((t) => [t.learningTargetId, t.first]))
+        );
+    }
   } else {
     // The attempt that counts is the best total; tie → the later attempt (computeFinalScore).
     const attempts = await db
@@ -298,6 +377,7 @@ export async function getMasteryGrid(assignmentId: string): Promise<MasteryGrid>
     rows: roster.map((s) => ({
       ...s,
       percents: percentsBy.get(s.studentId) ?? {},
+      firstPercents: firstBy.get(s.studentId) ?? {},
       overall: finalBy.get(s.studentId)?.percent ?? null,
     })),
   };

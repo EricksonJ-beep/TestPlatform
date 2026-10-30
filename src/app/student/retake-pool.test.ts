@@ -2,7 +2,8 @@
  * Targeted retake from a retake pool (Jon, Oct 30 2026: "Easton should be able to generate a
  * retake that has around 10 questions for the learning target he needs to improve in"). A
  * summative of fixed questions, like a test from a content pack: LT1 has 4 questions, LT4 has 20,
- * and LT4's section draws a retake of 10 from a 24-question retake pool. 100% on LT1 and 70% on
+ * and LT4's section draws a retake of 10 from the 24-question "Bio U2.LT4 Retake Pool", picked
+ * automatically because it is tagged to LT4 and named "Retake". 100% on LT1 and 70% on
  * LT4 → LT4 required, LT1 optional; the retake serves 10 pool questions on LT4 only, none from the
  * test; 9/10 counts as 90% of LT4's 20 points.
  */
@@ -25,7 +26,10 @@ vi.mock("@/db", async () => {
 import { eq } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { listFinalScores } from "@/lib/queries/attempts";
+import { getAssessmentDetail } from "@/lib/queries/assessments";
+import { getClassGradebook } from "@/lib/queries/class-gradebook";
 import { getRetakeStatus } from "@/lib/queries/retakes";
+import { getGradebook, getMasteryGrid } from "@/lib/queries/results";
 import { setSectionRetakePool } from "@/app/app/assessments/actions";
 import { saveAnswer, startAttempt, submitAttempt } from "./actions";
 import { saveCorrection, submitCorrections } from "./corrections/actions";
@@ -39,6 +43,7 @@ const ids = {
   lt1: "",
   lt4: "",
   lt4Section: "",
+  cls: "",
   retakePool: "",
   test: [] as string[],
   pool: [] as string[],
@@ -82,6 +87,7 @@ beforeAll(async () => {
     .insert(schema.classes)
     .values({ ownerId: t.id, courseId: course.id, name: "Bio 2" })
     .returning();
+  ids.cls = cls.id;
   await db.insert(schema.enrollments).values({ classId: cls.id, studentId: s.id });
   const [bank] = await db
     .insert(schema.questionBanks)
@@ -187,11 +193,26 @@ describe("a targeted retake drawn from a retake pool", () => {
     expect(
       await setSectionRetakePool(ids.assessment, ids.lt4Section, ids.retakePool, 0)
     ).toMatchObject({ ok: false, status: 400 });
-    await ok(setSectionRetakePool(ids.assessment, ids.lt4Section, ids.retakePool, 10));
+    await ok(setSectionRetakePool(ids.assessment, ids.lt4Section, ids.retakePool, 12));
     const sec = (await db.query.assessmentSections.findFirst({
       where: eq(schema.assessmentSections.id, ids.lt4Section),
     }))!;
-    expect(sec).toMatchObject({ retakePoolId: ids.retakePool, retakeDrawCount: 10 });
+    expect(sec).toMatchObject({ retakePoolId: ids.retakePool, retakeDrawCount: 12 });
+    // Back to automatic: no pool of its own.
+    await ok(setSectionRetakePool(ids.assessment, ids.lt4Section, null, 10));
+  });
+
+  it("with nothing set, a section uses its target's retake pool automatically (10 questions)", async () => {
+    const detail = (await getAssessmentDetail(ids.assessment))!;
+    const [lt1Section, lt4Section] = detail.sections;
+    expect(lt4Section.retake).toMatchObject({
+      poolId: ids.retakePool,
+      poolName: "Bio U2.LT4 Retake Pool",
+      drawCount: 10,
+      size: 24,
+      auto: true,
+    });
+    expect(lt1Section.retake).toBeNull(); // no retake pool for LT1: its retake repeats the section
   });
 
   it("attempt 1 is the test itself: 100% on LT1, 14/20 on LT4 → LT4 required, LT1 optional", async () => {
@@ -239,5 +260,21 @@ describe("a targeted retake drawn from a retake pool", () => {
       targetsBelowThreshold: 0,
       tier: 1,
     });
+  });
+
+  it("every gradebook shows the first try beside the retake: overall 75% → 92%, LT4 70% → 90%", async () => {
+    asUser(ids.teacher, "teacher");
+    const [row] = await getGradebook(ids.assignment);
+    expect(row.growth).toEqual({
+      first: 75,
+      now: 91.67,
+      targets: [{ code: "U2.LT4", first: 70, now: 90 }],
+    });
+    const grid = await getMasteryGrid(ids.assignment);
+    expect(grid.rows[0].firstPercents).toEqual({ [ids.lt4]: 70 });
+    expect(grid.rows[0].percents).toEqual({ [ids.lt1]: 100, [ids.lt4]: 90 });
+    const gb = (await getClassGradebook(ids.cls))!;
+    const cell = gb.rows[0].cells.find((c) => c.assignmentId === ids.assignment)!;
+    expect(cell.growth).toEqual(row.growth);
   });
 });

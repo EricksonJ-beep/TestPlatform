@@ -268,3 +268,55 @@ function readyState(input: Parameters<typeof cycleState>[0]): CycleState {
   if (plan.optional.length) return "retake_available";
   return "done";
 }
+
+// ---------------------------------------------------------------------------
+// First try → now
+// ---------------------------------------------------------------------------
+
+export type Growth = {
+  /** Percent on attempt 1 (the whole test). */
+  first: number;
+  /** The counting percent now. */
+  now: number;
+  /** Summatives: each target a later attempt covered again, first try → counting percent. */
+  targets: { learningTargetId: string; first: number; now: number }[];
+};
+
+/**
+ * Rule (Jon, Oct 30 2026: "show the retake score verse the first scores to show the difference"):
+ * once a student has more than one finished attempt, show attempt 1's percent beside the counting
+ * percent; on a summative, also each target covered again, from the first attempt that had it to
+ * its counting percent (the higher always counts, so `now` never drops below `first`). Null with
+ * fewer than two finished attempts or no counting score. The results table, the mastery grid and
+ * the class gradebook all read this, so they agree.
+ */
+export function growthFor(input: {
+  /** Finished attempts, any order; `perTarget` is target id → percent on that attempt. */
+  attempts: { number: number; percent: number | null; perTarget: Record<string, number> }[];
+  /** The counting percent, and (summatives) the counting percent per target. */
+  now: { percent: number; perTarget: Record<string, number> | null } | null;
+}): Growth | null {
+  const done = [...input.attempts].sort((a, b) => a.number - b.number);
+  if (done.length < 2 || !input.now || done[0].percent === null) return null;
+  const firstBy = new Map<string, number>();
+  const seen = new Map<string, number>();
+  for (const a of done)
+    for (const [id, p] of Object.entries(a.perTarget)) {
+      if (!firstBy.has(id)) firstBy.set(id, p);
+      seen.set(id, (seen.get(id) ?? 0) + 1);
+    }
+  const perTarget = input.now.perTarget;
+  return {
+    first: done[0].percent,
+    now: input.now.percent,
+    targets: perTarget
+      ? [...firstBy]
+          .filter(([id]) => (seen.get(id) ?? 0) > 1 && id in perTarget)
+          .map(([learningTargetId, first]) => ({
+            learningTargetId,
+            first,
+            now: perTarget[learningTargetId],
+          }))
+      : [],
+  };
+}

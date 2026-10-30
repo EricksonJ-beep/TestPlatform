@@ -784,6 +784,15 @@ function CellButton({
           ) : null}
         </span>
       </span>
+      {!hideScores && cell.growth ? (
+        <span
+          className="text-[10px] text-muted-foreground tabular"
+          title={`First try ${Math.round(cell.growth.first)}%, now ${Math.round(cell.growth.now)}%`}
+          data-growth
+        >
+          from {Math.round(cell.growth.first)}%
+        </span>
+      ) : null}
       <TagPill tag={cell.tag} />
     </button>
   );

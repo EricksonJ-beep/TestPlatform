@@ -237,7 +237,8 @@ function RetakeRow({
   // This target's pools first, then the rest of the course's.
   const onTarget = (p: BuilderPool) => p.targets.some((t) => t.id === section.learningTargetId);
   const sorted = [...pools.filter(onTarget), ...pools.filter((p) => !onTarget(p))];
-  const suggested = retake?.poolId ?? sorted.find(onTarget)?.id ?? "";
+  // "" saves no pool of its own: the automatic retake pool when there is one, else a repeat.
+  const suggested = retake && !retake.auto ? retake.poolId : "";
   const [poolId, setPoolId] = useState(suggested);
   const [drawCount, setDrawCount] = useState(String(retake?.drawCount ?? 10));
 
@@ -272,7 +273,9 @@ function RetakeRow({
             onChange={(e) => setPoolId(e.target.value)}
             className={selectClass}
           >
-            <option value="">No pool (repeat this section)</option>
+            <option value="">
+              {retake?.auto ? `Automatic (${retake.poolName})` : "No pool (repeat this section)"}
+            </option>
             {sorted.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name} ({p.size})
@@ -294,9 +297,10 @@ function RetakeRow({
                 Retake draws <span className="tabular">{retake.drawCount}</span> fresh from{" "}
                 <span className="font-medium text-foreground">{retake.poolName}</span>{" "}
                 <span className="tabular">({retake.size})</span>
+                {retake.auto ? " · automatic" : ""}
               </>
             ) : (
-              "Retake repeats this section's questions. Set a retake pool for fresh ones."
+              'Retake repeats this section\'s questions. Set a retake pool, or tag a pool with "Retake" in its name to this target.'
             )}
           </span>
           {canEdit ? (

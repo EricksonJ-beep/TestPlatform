@@ -19,7 +19,7 @@ const HEAT_CLASS: Record<HeatBand, string> = {
   low: "bg-error text-white",
 };
 
-/** Students down the side, one column per learning target, heat-coded by best percent. */
+/** Students down the side, one column per learning target, heat-coded by best percent; a retaken target reads "first → best". */
 export function MasteryHeatmap({ grid }: { grid: MasteryGrid }) {
   const { targets, rows } = grid;
   const avg = classAverages(
@@ -78,12 +78,22 @@ export function MasteryHeatmap({ grid }: { grid: MasteryGrid }) {
                       </td>
                     );
                   const band = heatBand(p);
+                  const first = s.firstPercents[t.id];
                   return (
                     <td key={t.id} className="p-1">
                       <span
                         className={`block rounded-md py-1 text-center font-semibold tabular ${HEAT_CLASS[band]}`}
                         data-band={band}
+                        data-first={first}
+                        title={
+                          first === undefined
+                            ? undefined
+                            : `First try ${Math.round(first)}%, after retake ${Math.round(p)}%`
+                        }
                       >
+                        {first === undefined ? null : (
+                          <span className="font-normal opacity-80">{Math.round(first)} → </span>
+                        )}
                         {Math.round(p)}%
                       </span>
                     </td>
