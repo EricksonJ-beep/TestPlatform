@@ -30,10 +30,12 @@ import { effectiveClose, endOfNextSchoolDay } from "@/lib/reopen";
 import { loadCorrectionScopes, scopeSummary } from "@/lib/queries/corrections";
 import { loadPracticeResults, practiceTargetColumns } from "@/lib/queries/quiz-practice";
 import {
+  growthFor,
   planRetake,
   retakeTargets,
   type CorrectionsRule,
   type CycleState,
+  type Growth,
   type RetakePlan,
   type RetakeTarget,
 } from "@/lib/retakes";
@@ -127,6 +129,12 @@ export type ClassGradebookCell = {
   tabSwitches: number;
   /** Summatives: the last tier change, since Monday, was up. */
   movedUpThisWeek: boolean;
+  /** After a retake: attempt 1's percent → the counting percent, and per retaken target (`growthFor`). */
+  growth: {
+    first: number;
+    now: number;
+    targets: { code: string; first: number; now: number }[];
+  } | null;
 };
 
 export type UnlockState = {
@@ -171,6 +179,16 @@ export type ClassGradebook = {
 const pairKey = (assignmentId: string, studentId: string) => `${assignmentId}:${studentId}`;
 /** A json aggregate as an object, whether the driver parsed it already or handed back text. */
 const fromJson = <T>(v: unknown): T => (typeof v === "string" ? JSON.parse(v) : v) as T;
+
+const growthCodes = (g: Growth | null, codeBy: Map<string, string>): ClassGradebookCell["growth"] =>
+  g && {
+    first: g.first,
+    now: g.now,
+    targets: g.targets.map(({ learningTargetId, ...t }) => ({
+      code: codeBy.get(learningTargetId) ?? "?",
+      ...t,
+    })),
+  };
 
 function groupBy<T>(rows: T[], key: (r: T) => string): Map<string, T[]> {
   const out = new Map<string, T[]>();
@@ -696,6 +714,27 @@ export async function getClassGradebook(
       })),
       openAttemptId: open?.id ?? null,
       latestAttemptId: latest?.id ?? null,
+      growth: growthCodes(
+        growthFor({
+          attempts: finished.map((x) => ({
+            number: x.number,
+            percent: x.percent,
+            perTarget: x.targetPercents,
+          })),
+          now: final
+            ? {
+                percent: final.percent,
+                perTarget:
+                  a.type === "summative"
+                    ? Object.fromEntries(
+                        Object.entries(final.perTarget).map(([id, t]) => [id, t.percent])
+                      )
+                    : null,
+              }
+            : null,
+        }),
+        codeBy
+      ),
       corrections,
       retake,
       quizPractice: card.quizPractice,

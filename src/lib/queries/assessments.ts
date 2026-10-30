@@ -85,9 +85,21 @@ export type SectionDetail = {
   learningTargetId: string | null;
   learningTarget: { id: string; code: string; title: string } | null;
   items: SectionItem[];
-  /** A targeted retake of this section draws `drawCount` from this pool instead of the items. */
-  retake: { poolId: string; poolName: string; drawCount: number; size: number } | null;
+  /**
+   * A targeted retake of this section draws `drawCount` from this pool instead of the items:
+   * the pool set on the section, or else (`auto`) the course's retake pool for its target.
+   */
+  retake: {
+    poolId: string;
+    poolName: string;
+    drawCount: number;
+    size: number;
+    auto: boolean;
+  } | null;
 };
+
+/** Default questions per target on a targeted retake (Jon, Oct 30 2026: "Always 10"). */
+export const RETAKE_DRAW_COUNT = 10;
 
 export type AssessmentDetail = {
   id: string;
@@ -165,6 +177,33 @@ export async function getAssessmentDetail(assessmentId: string): Promise<Assessm
     .orderBy(asc(schema.assessmentSections.sortOrder));
   const sectionIds = sectionRows.map((s) => s.id);
 
+  // A summative target section with no retake pool of its own uses the course's retake pool for
+  // its target (Jon, Oct 30 2026: automatic): a pool tagged to the target with "retake" in its
+  // name, the first by name when there are several.
+  const autoTargets = sectionRows
+    .filter((s) => s.learningTargetId && !s.retakePoolId)
+    .map((s) => s.learningTargetId!);
+  const autoBy = new Map<string, { id: string; name: string }>();
+  if (a.type === "summative" && a.courseId && autoTargets.length) {
+    const rows = await db
+      .select({
+        id: schema.questionPools.id,
+        name: schema.questionPools.name,
+        learningTargetId: schema.poolTargets.learningTargetId,
+      })
+      .from(schema.questionPools)
+      .innerJoin(schema.poolTargets, eq(schema.poolTargets.poolId, schema.questionPools.id))
+      .where(
+        and(
+          eq(schema.questionPools.courseId, a.courseId),
+          inArray(schema.poolTargets.learningTargetId, autoTargets),
+          sql`${schema.questionPools.name} ilike '%retake%'`
+        )
+      )
+      .orderBy(asc(schema.questionPools.name));
+    for (const r of rows) if (!autoBy.has(r.learningTargetId)) autoBy.set(r.learningTargetId, r);
+  }
+
   const itemRows = sectionIds.length
     ? await db
         .select({
@@ -198,6 +237,7 @@ export async function getAssessmentDetail(assessmentId: string): Promise<Assessm
   const poolIds = [
     ...itemRows.map((i) => i.poolId),
     ...sectionRows.map((s) => s.retakePoolId),
+    ...[...autoBy.values()].map((p) => p.id),
   ].filter((x): x is string => !!x);
   const [qTargets, poolSizes, poolTargets] = await Promise.all([
     questionIds.length
@@ -308,10 +348,19 @@ export async function getAssessmentDetail(assessmentId: string): Promise<Assessm
       ? {
           poolId: s.retakePoolId,
           poolName: s.retakePoolName ?? "Pool",
-          drawCount: s.retakeDrawCount ?? 10,
+          drawCount: s.retakeDrawCount ?? RETAKE_DRAW_COUNT,
           size: sizeByPool.get(s.retakePoolId) ?? 0,
+          auto: false,
         }
-      : null,
+      : s.learningTargetId && autoBy.has(s.learningTargetId)
+        ? {
+            poolId: autoBy.get(s.learningTargetId)!.id,
+            poolName: autoBy.get(s.learningTargetId)!.name,
+            drawCount: RETAKE_DRAW_COUNT,
+            size: sizeByPool.get(autoBy.get(s.learningTargetId)!.id) ?? 0,
+            auto: true,
+          }
+        : null,
   }));
 
   return { ...a, sections };

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { correctionsRule, cycleState, gateOpen, planRetake } from "./retakes";
+import { correctionsRule, cycleState, gateOpen, growthFor, planRetake } from "./retakes";
 
 const open = { correctionsOk: true, activityOk: true, practiceOk: true };
 const closed = { correctionsOk: false, activityOk: true, practiceOk: true };
@@ -422,5 +422,29 @@ describe("cycleState with quiz relearning (Jon, Oct 14 2026, decision 5)", () =>
         windowClosed: true,
       })
     ).toBe("done");
+  });
+});
+
+describe("growthFor (Jon, Oct 30 2026: first scores vs retake)", () => {
+  const a1 = { number: 1, percent: 75, perTarget: { LT1: 100, LT4: 70 } };
+  it("one finished attempt: nothing to compare", () => {
+    expect(growthFor({ attempts: [a1], now: { percent: 75, perTarget: null } })).toBeNull();
+  });
+  it("a summative retake of LT4: overall and LT4 first → now; LT1 was not retaken", () => {
+    const retake = { number: 2, percent: 90, perTarget: { LT4: 90 } };
+    expect(
+      growthFor({
+        attempts: [retake, a1],
+        now: { percent: 92, perTarget: { LT1: 100, LT4: 90 } },
+      })
+    ).toEqual({ first: 75, now: 92, targets: [{ learningTargetId: "LT4", first: 70, now: 90 }] });
+  });
+  it("a formative: overall only", () => {
+    const a2 = { number: 2, percent: 85, perTarget: { LT1: 85 } };
+    expect(growthFor({ attempts: [a1, a2], now: { percent: 85, perTarget: null } })).toEqual({
+      first: 75,
+      now: 85,
+      targets: [],
+    });
   });
 });

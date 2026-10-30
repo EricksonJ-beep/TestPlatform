@@ -18,7 +18,10 @@ export const HOSTED_ACTIVITY_PAGES: { path: string; title: string; height?: numb
     title: "Osteon (Haversian system): label the structures",
     height: 1750,
   },
-  { path: "/activities/ap-unit2-review.html", title: "A&P Unit 2 review: vocabulary cards and practice questions" },
+  {
+    path: "/activities/ap-unit2-review.html",
+    title: "A&P Unit 2 review: vocabulary cards and practice questions",
+  },
 ];
 
 /** Iframe height for an activity url: the hosted page's own, else the default. */

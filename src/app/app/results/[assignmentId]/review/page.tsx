@@ -24,7 +24,10 @@ export default async function ClassReviewPage({
     if (isAuthzError(err)) notFound();
     throw err;
   }
-  const [a, items] = await Promise.all([getAssignmentRow(assignmentId), getClassReview(assignmentId)]);
+  const [a, items] = await Promise.all([
+    getAssignmentRow(assignmentId),
+    getClassReview(assignmentId),
+  ]);
   if (!a) notFound();
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-5">
