@@ -85,6 +85,8 @@ export type SectionDetail = {
   learningTargetId: string | null;
   learningTarget: { id: string; code: string; title: string } | null;
   items: SectionItem[];
+  /** A targeted retake of this section draws `drawCount` from this pool instead of the items. */
+  retake: { poolId: string; poolName: string; drawCount: number; size: number } | null;
 };
 
 export type AssessmentDetail = {
@@ -146,11 +148,18 @@ export async function getAssessmentDetail(assessmentId: string): Promise<Assessm
       learningTargetId: schema.assessmentSections.learningTargetId,
       ltCode: schema.learningTargets.code,
       ltTitle: schema.learningTargets.title,
+      retakePoolId: schema.assessmentSections.retakePoolId,
+      retakeDrawCount: schema.assessmentSections.retakeDrawCount,
+      retakePoolName: schema.questionPools.name,
     })
     .from(schema.assessmentSections)
     .leftJoin(
       schema.learningTargets,
       eq(schema.assessmentSections.learningTargetId, schema.learningTargets.id)
+    )
+    .leftJoin(
+      schema.questionPools,
+      eq(schema.assessmentSections.retakePoolId, schema.questionPools.id)
     )
     .where(eq(schema.assessmentSections.assessmentId, assessmentId))
     .orderBy(asc(schema.assessmentSections.sortOrder));
@@ -186,7 +195,10 @@ export async function getAssessmentDetail(assessmentId: string): Promise<Assessm
     : [];
 
   const questionIds = itemRows.map((i) => i.questionId).filter((x): x is string => !!x);
-  const poolIds = itemRows.map((i) => i.poolId).filter((x): x is string => !!x);
+  const poolIds = [
+    ...itemRows.map((i) => i.poolId),
+    ...sectionRows.map((s) => s.retakePoolId),
+  ].filter((x): x is string => !!x);
   const [qTargets, poolSizes, poolTargets] = await Promise.all([
     questionIds.length
       ? db
@@ -292,6 +304,14 @@ export async function getAssessmentDetail(assessmentId: string): Promise<Assessm
               },
             }
       ),
+    retake: s.retakePoolId
+      ? {
+          poolId: s.retakePoolId,
+          poolName: s.retakePoolName ?? "Pool",
+          drawCount: s.retakeDrawCount ?? 10,
+          size: sizeByPool.get(s.retakePoolId) ?? 0,
+        }
+      : null,
   }));
 
   return { ...a, sections };
@@ -381,12 +401,14 @@ export async function listBanksForCourse(teacherId: string, courseId: string) {
 export async function loadBuilderSections(assessmentId: string): Promise<BuilderSection[]> {
   const detail = await getAssessmentDetail(assessmentId);
   if (!detail) return [];
-  const poolIds = detail.sections.flatMap((s) =>
-    s.items
+  const poolIds = detail.sections.flatMap((s) => [
+    ...s.items
       .filter((i) => i.kind === "pool")
-      .map((i) => (i as Extract<SectionItem, { kind: "pool" }>).pool.id)
-  );
-  const poolQuestions = new Map<string, PoolQuestion[]>();
+      .map((i) => (i as Extract<SectionItem, { kind: "pool" }>).pool.id),
+    ...(s.retake ? [s.retake.poolId] : []),
+  ]);
+  const poolQuestions = new Map<string, (PoolQuestion & { difficulty: number })[]>();
+  const groupedPools = new Set<string>();
   if (poolIds.length) {
     const rows = await db
       .select({
@@ -394,6 +416,8 @@ export async function loadBuilderSections(assessmentId: string): Promise<Builder
         questionId: schema.questions.id,
         points: schema.questions.points,
         stimulusId: schema.questions.stimulusId,
+        difficulty: schema.questions.difficulty,
+        drawStimulusGroups: schema.questionPools.drawStimulusGroups,
       })
       .from(schema.poolQuestions)
       .innerJoin(
@@ -403,6 +427,7 @@ export async function loadBuilderSections(assessmentId: string): Promise<Builder
           eq(schema.questions.isArchived, false)
         )
       )
+      .innerJoin(schema.questionPools, eq(schema.questionPools.id, schema.poolQuestions.poolId))
       .where(inArray(schema.poolQuestions.poolId, poolIds));
     const qIds = rows.map((r) => r.questionId);
     const tRows = qIds.length
@@ -419,13 +444,16 @@ export async function loadBuilderSections(assessmentId: string): Promise<Builder
       (tBy.get(t.questionId) ?? tBy.set(t.questionId, []).get(t.questionId)!).push(
         t.learningTargetId
       );
-    for (const r of rows)
+    for (const r of rows) {
+      if (r.drawStimulusGroups) groupedPools.add(r.poolId);
       (poolQuestions.get(r.poolId) ?? poolQuestions.set(r.poolId, []).get(r.poolId)!).push({
         questionId: r.questionId,
         points: r.points,
         stimulusId: r.stimulusId,
+        difficulty: r.difficulty,
         targetIds: tBy.get(r.questionId) ?? [],
       });
+    }
   }
   return detail.sections.map((s) => ({
     id: s.id,
@@ -451,6 +479,14 @@ export async function loadBuilderSections(assessmentId: string): Promise<Builder
             sortOrder: i.sortOrder,
           }
     ),
+    retake: s.retake
+      ? {
+          poolId: s.retake.poolId,
+          drawCount: s.retake.drawCount,
+          drawStimulusGroups: groupedPools.has(s.retake.poolId),
+          questions: poolQuestions.get(s.retake.poolId) ?? [],
+        }
+      : null,
   }));
 }
 

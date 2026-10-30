@@ -220,6 +220,7 @@ export function Builder({
                 index={i}
                 count={detail.sections.length}
                 targets={targets}
+                pools={pools}
                 canEdit={canEdit}
                 summative={summative}
               />

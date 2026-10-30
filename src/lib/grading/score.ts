@@ -129,15 +129,27 @@ export function computeFinalScore(
     };
   }
 
+  // A retake can serve a different number of questions for a target than the test did (a retake
+  // pool draws its own count), so the best is the highest percent, and it counts at the weight the
+  // target had on the first attempt that covered it: 10/10 on a retake of a 20-point target is 20/20.
   const perTarget: FinalScore["perTarget"] = {};
-  for (const att of attempts) {
+  const weight = new Map<string, number>();
+  for (const att of [...attempts].sort((a, b) => a.number - b.number)) {
     for (const t of att.perTarget) {
+      if (!weight.has(t.learningTargetId)) weight.set(t.learningTargetId, t.pointsPossible);
+      const possible = weight.get(t.learningTargetId)!;
+      const earned =
+        t.pointsPossible === possible
+          ? t.pointsEarned
+          : t.pointsPossible > 0
+            ? round2((t.pointsEarned / t.pointsPossible) * possible)
+            : 0;
       const cur = perTarget[t.learningTargetId];
-      if (!cur || t.pointsEarned > cur.pointsEarned) {
+      if (!cur || earned > cur.pointsEarned) {
         perTarget[t.learningTargetId] = {
-          pointsEarned: t.pointsEarned,
-          pointsPossible: t.pointsPossible,
-          percent: t.percent,
+          pointsEarned: earned,
+          pointsPossible: possible,
+          percent: pct(earned, possible),
           fromAttemptId: att.attemptId,
         };
       }

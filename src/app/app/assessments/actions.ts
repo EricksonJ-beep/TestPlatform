@@ -236,6 +236,8 @@ export const duplicateAssessment = withAuthz(async (assessmentId: string) => {
         instructions: s.instructions,
         sortOrder: s.sortOrder,
         learningTargetId: s.learningTargetId,
+        retakePoolId: s.retakePoolId,
+        retakeDrawCount: s.retakeDrawCount,
       })
       .returning({ id: schema.assessmentSections.id });
     const items = await db.query.assessmentQuestions.findMany({
@@ -359,6 +361,34 @@ export const updateSection = withAuthz(
     await db
       .update(schema.assessmentSections)
       .set(parsed.data)
+      .where(eq(schema.assessmentSections.id, sectionId));
+    revalidate(assessmentId);
+    return { ok: true };
+  }
+);
+
+/**
+ * A section's retake pool (Jon, Oct 30 2026): a targeted retake covering the section's target
+ * draws `drawCount` fresh questions from the pool instead of re-serving the section. Null clears it.
+ */
+export const setSectionRetakePool = withAuthz(
+  async (assessmentId: string, sectionId: string, poolId: string | null, drawCount: number) => {
+    await requireShared({ ...edit, id: assessmentId }, "co_edit");
+    await assertSection(assessmentId, sectionId);
+    if (poolId !== null) {
+      if (!Number.isInteger(drawCount) || drawCount < 1 || drawCount > 100)
+        throw new ActionError("Draw between 1 and 100 questions.", 400);
+      const courseId = await courseOf(assessmentId);
+      const pool = await db.query.questionPools.findFirst({
+        columns: { courseId: true },
+        where: eq(schema.questionPools.id, poolId),
+      });
+      if (!pool || !courseId || pool.courseId !== courseId)
+        throw new ActionError("That pool isn't on this assessment's course.", 400);
+    }
+    await db
+      .update(schema.assessmentSections)
+      .set({ retakePoolId: poolId, retakeDrawCount: poolId === null ? null : drawCount })
       .where(eq(schema.assessmentSections.id, sectionId));
     revalidate(assessmentId);
     return { ok: true };

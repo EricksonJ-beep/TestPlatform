@@ -55,6 +55,14 @@ export type PackDefinition = {
     instructions?: string;
     /** Attempts the assign dialog starts from; default 3 on a formative, none otherwise. */
     attemptLimit?: number;
+    /**
+     * Summative only (Jon, Oct 30 2026): target code → the pool a targeted retake of that
+     * target's section draws fresh questions from. Set on every deploy for a section that has
+     * no retake pool yet, so a choice made in the builder is never overwritten.
+     */
+    retakePools?: Record<string, string>;
+    /** Questions a retake draws per target from its retake pool; default 10. */
+    retakeDrawCount?: number;
   };
   assign?: {
     class: string;
@@ -213,7 +221,10 @@ export async function applyPack(
   const done = await db.query.contentPacks.findFirst({
     where: eq(schema.contentPacks.name, appliedName(def)),
   });
-  if (done) return { name: def.name, status: "already_applied", renamed };
+  if (done) {
+    renamed.push(...(await syncRetakePools(def, teacher.id)));
+    return { name: def.name, status: "already_applied", renamed };
+  }
   const course = await db.query.courses.findFirst({
     columns: { id: true, name: true },
     where: and(
@@ -242,9 +253,61 @@ export async function applyPack(
   }
   if (def.activity)
     summary.activity = await applyActivity(def.activity, teacher.id, course.id, errors);
+  const retakePools = await syncRetakePools(def, teacher.id);
+  if (retakePools.length) summary.retakePools = retakePools;
   summary.errors = errors;
   await db.insert(schema.contentPacks).values({ name: appliedName(def), summary });
   return { name: def.name, status: "applied", summary };
+}
+
+/**
+ * Point the pack's summative sections at their retake pools (`assessment.retakePools`): a section
+ * whose target code is listed and that has no retake pool yet gets the named pool (a pool on the
+ * assessment's course) and the draw count. Runs on every deploy; returns what it set.
+ */
+async function syncRetakePools(def: PackDefinition, teacherId: string): Promise<string[]> {
+  const a = def.assessment;
+  if (!a?.retakePools || a.type !== "summative") return [];
+  const assessment = await db.query.assessments.findFirst({
+    columns: { id: true, courseId: true },
+    where: and(
+      eq(schema.assessments.ownerId, teacherId),
+      sql`lower(${schema.assessments.title}) = ${key(a.title)}`
+    ),
+  });
+  if (!assessment?.courseId) return [];
+  const sections = await db
+    .select({ id: schema.assessmentSections.id, code: schema.learningTargets.code })
+    .from(schema.assessmentSections)
+    .innerJoin(
+      schema.learningTargets,
+      eq(schema.learningTargets.id, schema.assessmentSections.learningTargetId)
+    )
+    .where(
+      and(
+        eq(schema.assessmentSections.assessmentId, assessment.id),
+        isNull(schema.assessmentSections.retakePoolId)
+      )
+    );
+  const set: string[] = [];
+  for (const s of sections) {
+    const poolName = a.retakePools[s.code];
+    if (!poolName) continue;
+    const pool = await db.query.questionPools.findFirst({
+      columns: { id: true },
+      where: and(
+        eq(schema.questionPools.courseId, assessment.courseId),
+        sql`lower(${schema.questionPools.name}) = ${key(poolName)}`
+      ),
+    });
+    if (!pool) continue;
+    await db
+      .update(schema.assessmentSections)
+      .set({ retakePoolId: pool.id, retakeDrawCount: a.retakeDrawCount ?? 10 })
+      .where(eq(schema.assessmentSections.id, s.id));
+    set.push(`${s.code} retake → "${poolName}"`);
+  }
+  return set;
 }
 
 /** Create or update the pack's learning targets (by code) and their units (by name). */

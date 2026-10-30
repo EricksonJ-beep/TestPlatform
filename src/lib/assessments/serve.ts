@@ -36,6 +36,13 @@ export type BuilderSection = {
   learningTargetId: string | null;
   sortOrder: number;
   items: BuilderItem[];
+  /** A targeted retake of this section draws `drawCount` fresh questions from this pool instead of `items`. */
+  retake?: {
+    poolId: string;
+    drawCount: number;
+    drawStimulusGroups: boolean;
+    questions: (PoolQuestion & { difficulty: number })[];
+  } | null;
 };
 
 export type ServeOptions = {
@@ -193,7 +200,24 @@ export function buildQuestionSet(sections: BuilderSection[], opts: ServeOptions)
   for (const section of [...sections].sort((a, b) => a.sortOrder - b.sortOrder)) {
     if (scope && (!section.learningTargetId || !scope.has(section.learningTargetId))) continue;
     let picked: { questionId: string; points: number; stimulusId: string | null }[] = [];
-    for (const item of [...section.items].sort((a, b) => a.sortOrder - b.sortOrder)) {
+    // A targeted retake of a section with a retake pool: a fresh deal from the pool, balanced
+    // easy → hard like a practice deal, avoiding questions the student has already seen.
+    const retakePool = scope && section.retake?.questions.length ? section.retake : null;
+    if (retakePool) {
+      picked = dealByDifficulty(
+        retakePool.questions.filter((q) => !usedIds.has(q.questionId)),
+        retakePool.drawCount,
+        {
+          drawStimulusGroups: retakePool.drawStimulusGroups,
+          rng,
+          avoid: new Set([...usedIds, ...(opts.avoidQuestionIds ?? [])]),
+        }
+      ).map((q) => ({ questionId: q.questionId, points: q.points, stimulusId: q.stimulusId }));
+      for (const p of picked) usedIds.add(p.questionId);
+    }
+    for (const item of retakePool
+      ? []
+      : [...section.items].sort((a, b) => a.sortOrder - b.sortOrder)) {
       if (item.kind === "question") {
         if (!usedIds.has(item.questionId))
           picked.push({

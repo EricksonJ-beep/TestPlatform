@@ -111,6 +111,77 @@ describe("buildQuestionSet", () => {
     expect(set.every((q) => q.sectionId === "s2")).toBe(true);
   });
 
+  it("a targeted retake of a section with a retake pool deals fresh questions from the pool", () => {
+    const retakePool = Array.from({ length: 24 }, (_, i) => ({
+      ...pq(`r${i}`),
+      difficulty: (i % 5) + 1,
+    }));
+    const withPool: BuilderSection[] = [
+      {
+        id: "s4",
+        learningTargetId: "LT4",
+        sortOrder: 0,
+        items: [
+          {
+            kind: "question",
+            id: "i1",
+            questionId: "q1",
+            points: 1,
+            stimulusId: null,
+            sortOrder: 0,
+          },
+          {
+            kind: "question",
+            id: "i2",
+            questionId: "q2",
+            points: 1,
+            stimulusId: null,
+            sortOrder: 1,
+          },
+        ],
+        retake: { poolId: "P4", drawCount: 10, drawStimulusGroups: false, questions: retakePool },
+      },
+      {
+        id: "s1",
+        learningTargetId: "LT1",
+        sortOrder: 1,
+        items: [
+          {
+            kind: "question",
+            id: "i3",
+            questionId: "q3",
+            points: 1,
+            stimulusId: null,
+            sortOrder: 0,
+          },
+        ],
+      },
+    ];
+    // Attempt 1 serves the test's own questions; the retake pool is untouched.
+    expect(
+      buildQuestionSet(withPool, { randomizeQuestions: false, rng: seededRng(1) }).map(
+        (q) => q.questionId
+      )
+    ).toEqual(["q1", "q2", "q3"]);
+    // A retake of LT4: 10 from the pool, none seen before, tagged LT4, nothing from LT1.
+    const seen = new Set(["r0", "r1", "r2"]);
+    const retake = buildQuestionSet(withPool, {
+      randomizeQuestions: false,
+      scope: ["LT4"],
+      rng: seededRng(2),
+      avoidQuestionIds: seen,
+    });
+    expect(retake).toHaveLength(10);
+    expect(retake.every((q) => q.questionId.startsWith("r") && !seen.has(q.questionId))).toBe(true);
+    expect(retake.every((q) => q.learningTargetId === "LT4" && q.sectionId === "s4")).toBe(true);
+    // A retake of LT1 (no retake pool) repeats its section.
+    expect(
+      buildQuestionSet(withPool, { randomizeQuestions: false, scope: ["LT1"] }).map(
+        (q) => q.questionId
+      )
+    ).toEqual(["q3"]);
+  });
+
   it("randomization shuffles within a section but still groups stimuli", () => {
     const set = buildQuestionSet(sections, { randomizeQuestions: true, rng: seededRng(11) });
     const first = set.slice(0, 4).map((q) => q.questionId);
