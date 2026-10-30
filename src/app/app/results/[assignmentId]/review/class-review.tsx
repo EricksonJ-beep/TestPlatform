@@ -182,9 +182,7 @@ function ReviewCard({
                     {String.fromCharCode(65 + i)}
                   </span>
                   <RichText text={o.content} as="span" className="flex-1" />
-                  {right ? (
-                    <Check className="size-5 shrink-0 text-success-foreground" aria-hidden />
-                  ) : null}
+                  {right ? <Check className="size-5 shrink-0 text-success-foreground" aria-hidden /> : null}
                   <span className="shrink-0 text-sm text-muted-foreground tabular">
                     {o.picked} · {share}%
                   </span>
@@ -242,7 +240,9 @@ function ReviewCard({
       )}
 
       {item.blank > 0 ? (
-        <p className="mt-3 text-sm text-muted-foreground tabular">{item.blank} left it blank</p>
+        <p className="mt-3 text-sm text-muted-foreground tabular">
+          {item.blank} left it blank
+        </p>
       ) : null}
       {reveal && item.explanation ? (
         <div className="mt-4 rounded-lg bg-muted px-4 py-3 text-base">
