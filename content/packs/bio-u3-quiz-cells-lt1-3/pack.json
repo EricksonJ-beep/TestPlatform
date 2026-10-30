@@ -1,0 +1,13 @@
+{
+  "name": "bio-u3-quiz-cells-lt1-3",
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "unit": "Unit 3 · Cell Structure and Function",
+  "bank": "Bio · Unit 3 Quiz: LT1–LT3",
+  "assessment": {
+    "title": "Unit 3 Quiz LT1, LT2, LT3: Cell Theory & Cell Structure",
+    "type": "formative",
+    "instructions": "Fifteen questions on cells: the modern cell theory (LT1), prokaryotic vs. eukaryotic cells (LT2), and cell structure models (LT3). Questions 11–13 use the labeled animal cell model. Your best attempt counts."
+  },
+  "assign": []
+}
