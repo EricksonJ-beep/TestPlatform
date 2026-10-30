@@ -401,6 +401,37 @@ describe("content packs", () => {
       }))!;
       expect(u1Assessment).toMatchObject({ type: "summative", isPublished: true });
     }
+    // Biology Unit 3 cells quiz (Oct 30 2026, from Jon's PDF): 15 one-point multiple choice,
+    // five per target on U3.LT1–LT3, the labeled animal cell model shared by questions 11–13.
+    const u3 = first.find((o) => o.name === "bio-u3-quiz-cells-lt1-3")!;
+    expect(u3.status).toBe("applied");
+    if (u3.status === "applied")
+      expect(u3.summary).toMatchObject({ questions: 15, assignedTo: [], errors: [] });
+    const u3Bank = (await db.query.questionBanks.findFirst({
+      where: eq(schema.questionBanks.name, "Bio · Unit 3 Quiz: LT1–LT3"),
+    }))!;
+    const u3Qs = await db
+      .select()
+      .from(schema.questions)
+      .where(eq(schema.questions.bankId, u3Bank.id));
+    expect(u3Qs).toHaveLength(15);
+    expect(u3Qs.every((q) => q.type === "multiple_choice" && q.points === 1)).toBe(true);
+    const [cellModel] = await db
+      .select()
+      .from(schema.stimuli)
+      .where(
+        and(eq(schema.stimuli.courseId, bio.id), eq(schema.stimuli.ref, "bio-u3-quiz-cell-model"))
+      );
+    expect(cellModel.mediaUrl).toBe("/quiz-images/bio-u3-quiz-cells-lt1-3/animal_cell_model.jpg");
+    expect(u3Qs.filter((q) => q.stimulusId === cellModel.id)).toHaveLength(3);
+    expect(
+      await db.query.assessments.findFirst({
+        where: eq(
+          schema.assessments.title,
+          "Unit 3 Quiz LT1, LT2, LT3: Cell Theory & Cell Structure"
+        ),
+      })
+    ).toMatchObject({ type: "formative", isPublished: true });
     // Anatomy Unit 2 (Oct 20 2026): the skeletal quiz (20 one-point questions on U2.LT7–LT13) and
     // the practice lab practical (20 picture fill-ins: bones, osteon, skin, and three mitosis slides).
     for (const [name, title, type, n] of [
