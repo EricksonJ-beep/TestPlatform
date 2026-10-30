@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowDown, ArrowUp, Layers, Pencil, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Layers, Pencil, RotateCcw, Trash2, X } from "lucide-react";
 import { TYPE_LABEL } from "@/lib/question-types";
 import type { SectionDetail, SectionItem } from "@/lib/queries/assessments";
 import { Button } from "@/components/ui/button";
@@ -15,9 +15,11 @@ import {
   moveItem,
   moveSection,
   removeItem,
+  setSectionRetakePool,
   updateItem,
   updateSection,
 } from "../actions";
+import type { BuilderPool } from "./bank-pane";
 
 const selectClass =
   "h-8 rounded-lg border border-input bg-background px-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
@@ -32,6 +34,7 @@ export function SectionCard({
   index,
   count,
   targets,
+  pools,
   canEdit,
   summative,
 }: {
@@ -40,6 +43,7 @@ export function SectionCard({
   index: number;
   count: number;
   targets: { id: string; code: string; title: string }[];
+  pools: BuilderPool[];
   canEdit: boolean;
   summative: boolean;
 }) {
@@ -205,7 +209,105 @@ export function SectionCard({
           ))}
         </ol>
       )}
+      {summative && section.learningTargetId ? (
+        <RetakeRow assessmentId={assessmentId} section={section} pools={pools} canEdit={canEdit} />
+      ) : null}
     </section>
+  );
+}
+
+/**
+ * Where a targeted retake of this section gets its questions (Jon, Oct 30 2026): fresh ones
+ * drawn from a retake pool, or, with none set, the section's own questions again.
+ */
+function RetakeRow({
+  assessmentId,
+  section,
+  pools,
+  canEdit,
+}: {
+  assessmentId: string;
+  section: SectionDetail;
+  pools: BuilderPool[];
+  canEdit: boolean;
+}) {
+  const [editing, setEditing] = useState(false);
+  const { run, pending, error } = useAction();
+  const retake = section.retake;
+  // This target's pools first, then the rest of the course's.
+  const onTarget = (p: BuilderPool) => p.targets.some((t) => t.id === section.learningTargetId);
+  const sorted = [...pools.filter(onTarget), ...pools.filter((p) => !onTarget(p))];
+  const suggested = retake?.poolId ?? sorted.find(onTarget)?.id ?? "";
+  const [poolId, setPoolId] = useState(suggested);
+  const [drawCount, setDrawCount] = useState(String(retake?.drawCount ?? 10));
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 border-t border-border bg-muted/40 px-3 py-2 text-xs">
+      <RotateCcw aria-hidden className="size-3.5 text-muted-foreground" />
+      {editing ? (
+        <form
+          className="flex flex-1 flex-wrap items-center gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            run(
+              setSectionRetakePool(assessmentId, section.id, poolId || null, Number(drawCount)),
+              () => setEditing(false)
+            );
+          }}
+        >
+          <Label htmlFor={`rc-${section.id}`}>Retake: draw</Label>
+          <Input
+            id={`rc-${section.id}`}
+            type="number"
+            min={1}
+            max={100}
+            value={drawCount}
+            onChange={(e) => setDrawCount(e.target.value)}
+            className="h-8 w-16"
+          />
+          <Label htmlFor={`rp-${section.id}`}>from</Label>
+          <select
+            id={`rp-${section.id}`}
+            value={poolId}
+            onChange={(e) => setPoolId(e.target.value)}
+            className={selectClass}
+          >
+            <option value="">No pool (repeat this section)</option>
+            {sorted.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name} ({p.size})
+              </option>
+            ))}
+          </select>
+          <Button type="submit" size="sm" disabled={pending}>
+            Save
+          </Button>
+          <Button type="button" size="sm" variant="ghost" onClick={() => setEditing(false)}>
+            Cancel
+          </Button>
+        </form>
+      ) : (
+        <>
+          <span className="mr-auto text-muted-foreground">
+            {retake ? (
+              <>
+                Retake draws <span className="tabular">{retake.drawCount}</span> fresh from{" "}
+                <span className="font-medium text-foreground">{retake.poolName}</span>{" "}
+                <span className="tabular">({retake.size})</span>
+              </>
+            ) : (
+              "Retake repeats this section's questions. Set a retake pool for fresh ones."
+            )}
+          </span>
+          {canEdit ? (
+            <Button size="sm" variant="ghost" onClick={() => setEditing(true)}>
+              {retake ? "Change" : "Set retake pool"}
+            </Button>
+          ) : null}
+        </>
+      )}
+      {error ? <p className="basis-full text-error-foreground">{error}</p> : null}
+    </div>
   );
 }
 

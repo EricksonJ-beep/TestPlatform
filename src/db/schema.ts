@@ -599,6 +599,14 @@ export const assessmentSections = pgTable(
     learningTargetId: uuid("learning_target_id").references(() => learningTargets.id, {
       onDelete: "set null",
     }),
+    /**
+     * Targeted retake (Jon, Oct 30 2026): a retake covering this section's target serves
+     * `retake_draw_count` fresh questions from this pool instead of the section's own items.
+     */
+    retakePoolId: uuid("retake_pool_id").references(() => questionPools.id, {
+      onDelete: "set null",
+    }),
+    retakeDrawCount: integer("retake_draw_count"),
     ...timestamps,
   },
   (t) => [index("assessment_sections_assessment_idx").on(t.assessmentId)]

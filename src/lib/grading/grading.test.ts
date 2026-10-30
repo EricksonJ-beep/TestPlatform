@@ -446,6 +446,43 @@ describe("final score: highest counts", () => {
     );
   });
 
+  it("a retake with a different question count counts by percent at the test's weight", () => {
+    const t = (id: string, e: number, p: number) => ({
+      learningTargetId: id,
+      pointsEarned: e,
+      pointsPossible: p,
+      percent: (e / p) * 100,
+    });
+    const a1 = {
+      attemptId: "a1",
+      number: 1,
+      totalEarned: 22,
+      totalPossible: 28,
+      perTarget: [t("LT1", 8, 8), t("LT4", 14, 20)],
+    };
+    // 10 retake-pool questions on LT4: 9/10 beats 14/20 and counts as 18 of the test's 20.
+    const a2 = {
+      attemptId: "a2",
+      number: 2,
+      totalEarned: 9,
+      totalPossible: 10,
+      perTarget: [t("LT4", 9, 10)],
+    };
+    const final = computeFinalScore("summative", [a2, a1], { threshold: 80 });
+    expect(final).toMatchObject({ totalEarned: 26, totalPossible: 28, targetsBelowThreshold: [] });
+    expect(final.perTarget.LT4).toEqual({
+      pointsEarned: 18,
+      pointsPossible: 20,
+      percent: 90,
+      fromAttemptId: "a2",
+    });
+    // 6/10 is a lower percent than 14/20, so the test's score stands.
+    const low = { ...a2, totalEarned: 6, perTarget: [t("LT4", 6, 10)] };
+    expect(
+      computeFinalScore("summative", [a1, low], { threshold: 80 }).perTarget.LT4
+    ).toMatchObject({ pointsEarned: 14, fromAttemptId: "a1" });
+  });
+
   it("tiers: 0 below → 1, 1–2 → 2, 3+ → 3 (configurable)", () => {
     expect([0, 1, 2, 3, 5].map((n) => tierFor(n))).toEqual([1, 2, 2, 3, 3]);
     expect(tierFor(3, 3)).toBe(2);

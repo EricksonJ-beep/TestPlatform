@@ -516,6 +516,32 @@ describe("content packs", () => {
       isPublished: true,
       unitId: bioUnit2.id,
     });
+    // Targeted retakes (Oct 30 2026): each Unit 2 Test section draws a retake of 10 from its
+    // target's retake pool.
+    const bctRetakes = await db
+      .select({
+        code: schema.learningTargets.code,
+        pool: schema.questionPools.name,
+        count: schema.assessmentSections.retakeDrawCount,
+      })
+      .from(schema.assessmentSections)
+      .innerJoin(
+        schema.learningTargets,
+        eq(schema.learningTargets.id, schema.assessmentSections.learningTargetId)
+      )
+      .innerJoin(
+        schema.questionPools,
+        eq(schema.questionPools.id, schema.assessmentSections.retakePoolId)
+      )
+      .where(eq(schema.assessmentSections.assessmentId, bctAssessment.id))
+      .orderBy(schema.learningTargets.code);
+    expect(bctRetakes).toEqual(
+      ["U2.LT1", "U2.LT4", "U2.LT5"].map((code) => ({
+        code,
+        pool: `Bio ${code} Retake Pool`,
+        count: 10,
+      }))
+    );
     // The Biology pH quiz (Oct 14 2026): 15 multiple choice on U2.LT3 in the author's order,
     // pictures on items 6–9, answer key as written, options never shuffled.
     const ph = first.find((o) => o.name === "bio-u2-quiz-ph")!;
@@ -802,8 +828,23 @@ describe("content packs", () => {
         .from(schema.activityTargets)
         .where(eq(schema.activityTargets.activityId, reviewAct.id))
     ).toEqual([{ activityId: reviewAct.id, learningTargetId: u2.id }]);
-    // Second run: nothing changes.
+    // Second run: nothing changes, and a retake count changed in the builder is kept.
+    const bctTest = (await db.query.assessments.findFirst({
+      where: eq(schema.assessments.title, "Unit 2 Test: Biochemistry"),
+    }))!;
+    await db
+      .update(schema.assessmentSections)
+      .set({ retakeDrawCount: 12 })
+      .where(eq(schema.assessmentSections.assessmentId, bctTest.id));
     const second = await applyAllPacks();
+    expect(
+      (
+        await db
+          .select({ n: schema.assessmentSections.retakeDrawCount })
+          .from(schema.assessmentSections)
+          .where(eq(schema.assessmentSections.assessmentId, bctTest.id))
+      ).every((r) => r.n === 12)
+    ).toBe(true);
     expect(second.every((o) => o.status === "already_applied")).toBe(true);
     expect(
       await db.select().from(schema.questions).where(eq(schema.questions.bankId, bank.id))

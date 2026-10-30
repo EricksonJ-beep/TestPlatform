@@ -7,7 +7,15 @@
   "assessment": {
     "title": "Unit 2 Test: Biochemistry",
     "type": "summative",
-    "instructions": "32 questions on Unit 2: atoms, elements, and chemical bonds; the four macromolecule tests (Benedict's, iodine, Biuret, Sudan IV); carbohydrates, lipids, proteins, and nucleic acids; and enzymes. The two matching questions count one point per pair."
+    "instructions": "32 questions on Unit 2: atoms, elements, and chemical bonds; the four macromolecule tests (Benedict's, iodine, Biuret, Sudan IV); carbohydrates, lipids, proteins, and nucleic acids; and enzymes. The two matching questions count one point per pair.",
+    "retakePools": {
+      "U2.LT1": "Bio U2.LT1 Retake Pool",
+      "U2.LT2": "Bio U2.LT2 Retake Pool",
+      "U2.LT3": "Bio U2.LT3 Retake Pool",
+      "U2.LT4": "Bio U2.LT4 Retake Pool",
+      "U2.LT5": "Bio U2.LT5 Retake Pool"
+    },
+    "retakeDrawCount": 10
   },
   "assign": []
 }
