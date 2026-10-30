@@ -119,6 +119,18 @@ beforeAll(async () => {
       title: `Unit 1 target ${n}`,
     }))
   );
+  const [bioUnit3] = await db
+    .insert(schema.units)
+    .values({ courseId: bio.id, name: "Unit 3 · Cell Structure and Function", sortOrder: 2 })
+    .returning();
+  await db.insert(schema.learningTargets).values(
+    [1, 2, 3, 4].map((n) => ({
+      courseId: bio.id,
+      unitId: bioUnit3.id,
+      code: `U3.LT${n}`,
+      title: `Unit 3 target ${n}`,
+    }))
+  );
   const [cls] = await db
     .insert(schema.classes)
     .values({ ownerId: t.id, courseId: course.id, name: "Anatomy · 5th Hour" })
@@ -663,6 +675,66 @@ describe("content packs", () => {
         .from(schema.assessmentSections)
         .where(eq(schema.assessmentSections.assessmentId, u3tAssessment.id))
     ).toHaveLength(4);
+    // Retake banks (Oct 30 2026): Biology Unit 3 and Physical Science Unit 2, 24 one-point questions
+    // per target, each target in its own retake pool, and the unit test draws 10 from each.
+    for (const [name, courseId, prefix, unit, testTitle] of [
+      ["bio-u3-retake-bank", bio.id, "Bio", "U3", "Unit 3 Test: Cell Structure and Function"],
+      ["ps-u2-retake-bank", ps.id, "PS", "U2", "Unit 2 Test: Atomic Structure"],
+    ] as const) {
+      const out = first.find((o) => o.name === name)!;
+      expect(out.status).toBe("applied");
+      if (out.status === "applied")
+        expect(out.summary).toMatchObject({ questions: 96, errors: [] });
+      const pools = await db
+        .select({
+          name: schema.questionPools.name,
+          code: schema.learningTargets.code,
+          size: sql<number>`(select count(*)::int from ${schema.poolQuestions} pq where pq.pool_id = ${schema.questionPools.id})`,
+        })
+        .from(schema.questionPools)
+        .innerJoin(schema.poolTargets, eq(schema.poolTargets.poolId, schema.questionPools.id))
+        .innerJoin(
+          schema.learningTargets,
+          eq(schema.learningTargets.id, schema.poolTargets.learningTargetId)
+        )
+        .where(
+          and(
+            eq(schema.questionPools.courseId, courseId),
+            sql`${schema.questionPools.name} like ${`${prefix} ${unit}.LT% Retake Pool`}`
+          )
+        )
+        .orderBy(schema.questionPools.name);
+      expect(pools.map((p) => [p.name, p.code, p.size])).toEqual(
+        [1, 2, 3, 4].map((n) => [`${prefix} ${unit}.LT${n} Retake Pool`, `${unit}.LT${n}`, 24])
+      );
+      const test = (await db.query.assessments.findFirst({
+        where: eq(schema.assessments.title, testTitle),
+      }))!;
+      const links = await db
+        .select({
+          code: schema.learningTargets.code,
+          pool: schema.questionPools.name,
+          count: schema.assessmentSections.retakeDrawCount,
+        })
+        .from(schema.assessmentSections)
+        .innerJoin(
+          schema.learningTargets,
+          eq(schema.learningTargets.id, schema.assessmentSections.learningTargetId)
+        )
+        .innerJoin(
+          schema.questionPools,
+          eq(schema.questionPools.id, schema.assessmentSections.retakePoolId)
+        )
+        .where(eq(schema.assessmentSections.assessmentId, test.id))
+        .orderBy(schema.learningTargets.code);
+      expect(links).toEqual(
+        [1, 2, 3, 4].map((n) => ({
+          code: `${unit}.LT${n}`,
+          pool: `${prefix} ${unit}.LT${n} Retake Pool`,
+          count: 10,
+        }))
+      );
+    }
     // The Biology pH quiz (Oct 14 2026): 15 multiple choice on U2.LT3 in the author's order,
     // pictures on items 6–9, answer key as written, options never shuffled.
     const ph = first.find((o) => o.name === "bio-u2-quiz-ph")!;

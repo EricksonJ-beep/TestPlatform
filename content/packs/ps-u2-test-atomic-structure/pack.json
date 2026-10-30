@@ -7,7 +7,14 @@
   "assessment": {
     "title": "Unit 2 Test: Atomic Structure",
     "type": "summative",
-    "instructions": "32 questions on Unit 2 (Chapter 7), 40 points: atomic models, the parts of the atom, atomic calculations and isotopes, reading the periodic table, and electron arrangement and Bohr models. Have your periodic table out. Questions marked 2 points are worth more; on number questions, type just the number. Show your work on scratch paper."
+    "instructions": "32 questions on Unit 2 (Chapter 7), 40 points: atomic models, the parts of the atom, atomic calculations and isotopes, reading the periodic table, and electron arrangement and Bohr models. Have your periodic table out. Questions marked 2 points are worth more; on number questions, type just the number. Show your work on scratch paper.",
+    "retakePools": {
+      "U2.LT1": "PS U2.LT1 Retake Pool",
+      "U2.LT2": "PS U2.LT2 Retake Pool",
+      "U2.LT3": "PS U2.LT3 Retake Pool",
+      "U2.LT4": "PS U2.LT4 Retake Pool"
+    },
+    "retakeDrawCount": 10
   },
   "assign": []
 }
