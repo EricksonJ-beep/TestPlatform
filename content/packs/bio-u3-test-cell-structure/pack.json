@@ -1,0 +1,13 @@
+{
+  "name": "bio-u3-test-cell-structure",
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "unit": "Unit 3 · Cell Structure and Function",
+  "bank": "Bio · Unit 3 Test: Cell Structure and Function",
+  "assessment": {
+    "title": "Unit 3 Test: Cell Structure and Function",
+    "type": "summative",
+    "instructions": "50 points on Unit 3: the cell theory (LT1), prokaryotic and eukaryotic cells (LT2), organelles and their jobs (LT3), and the cell membrane and cellular transport (LT4). The three matching questions count one point per pair. Several questions use a picture or graph."
+  },
+  "assign": []
+}
