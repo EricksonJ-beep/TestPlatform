@@ -574,9 +574,26 @@ describe("content packs", () => {
       )
       .where(sql`${schema.questionPools.name} like 'Bio U1.LT% Retake Pool'`)
       .orderBy(schema.questionPools.name);
+    // The microscope picture pack (Oct 30 2026) adds 8 labeled-picture questions to LT3's pool.
     expect(u1Pools.map((p) => [p.name, p.code, p.size])).toEqual(
-      [1, 2, 3, 4].map((n) => [`Bio U1.LT${n} Retake Pool`, `U1.LT${n}`, 24])
+      [1, 2, 3, 4].map((n) => [`Bio U1.LT${n} Retake Pool`, `U1.LT${n}`, n === 3 ? 32 : 24])
     );
+    const scope = first.find((o) => o.name === "bio-u1-retake-microscope")!;
+    expect(scope.status).toBe("applied");
+    if (scope.status === "applied")
+      expect(scope.summary).toMatchObject({ questions: 8, errors: [] });
+    const scopeQs = await db
+      .select()
+      .from(schema.questions)
+      .where(sql`${schema.questions.externalId} like 'BIO-U1R-LT3-M%'`);
+    expect(scopeQs).toHaveLength(8);
+    expect(
+      scopeQs.every(
+        (q) =>
+          q.mediaUrl === "/quiz-images/bio-u1-retake-microscope/microscope_parts.jpg" &&
+          existsSync(join(process.cwd(), "public", q.mediaUrl))
+      )
+    ).toBe(true);
     const u1Test = (await db.query.assessments.findFirst({
       where: eq(schema.assessments.title, "Unit 1 Test: The Science of Biology"),
     }))!;
