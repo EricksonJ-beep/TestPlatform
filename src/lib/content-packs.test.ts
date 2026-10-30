@@ -107,6 +107,18 @@ beforeAll(async () => {
       ["U2.LT5", "Enzymes"],
     ].map(([code, title]) => ({ courseId: bio.id, unitId: bioUnit2.id, code, title }))
   );
+  const [bioUnit1] = await db
+    .insert(schema.units)
+    .values({ courseId: bio.id, name: "Unit 1 · The Science of Biology", sortOrder: 0 })
+    .returning();
+  await db.insert(schema.learningTargets).values(
+    [1, 2, 3, 4].map((n) => ({
+      courseId: bio.id,
+      unitId: bioUnit1.id,
+      code: `U1.LT${n}`,
+      title: `Unit 1 target ${n}`,
+    }))
+  );
   const [cls] = await db
     .insert(schema.classes)
     .values({ ownerId: t.id, courseId: course.id, name: "Anatomy · 5th Hour" })
@@ -541,6 +553,52 @@ describe("content packs", () => {
         pool: `Bio ${code} Retake Pool`,
         count: 10,
       }))
+    );
+    // The Biology Unit 1 retake bank (Oct 30 2026): 24 one-point questions per target in its own
+    // "Bio U1.LTn Retake Pool", and the Unit 1 Test draws a retake of 10 from each.
+    const u1Retake = first.find((o) => o.name === "bio-u1-retake-bank")!;
+    expect(u1Retake.status).toBe("applied");
+    if (u1Retake.status === "applied")
+      expect(u1Retake.summary).toMatchObject({ questions: 96, errors: [] });
+    const u1Pools = await db
+      .select({
+        name: schema.questionPools.name,
+        code: schema.learningTargets.code,
+        size: sql<number>`(select count(*)::int from ${schema.poolQuestions} pq where pq.pool_id = ${schema.questionPools.id})`,
+      })
+      .from(schema.questionPools)
+      .innerJoin(schema.poolTargets, eq(schema.poolTargets.poolId, schema.questionPools.id))
+      .innerJoin(
+        schema.learningTargets,
+        eq(schema.learningTargets.id, schema.poolTargets.learningTargetId)
+      )
+      .where(sql`${schema.questionPools.name} like 'Bio U1.LT% Retake Pool'`)
+      .orderBy(schema.questionPools.name);
+    expect(u1Pools.map((p) => [p.name, p.code, p.size])).toEqual(
+      [1, 2, 3, 4].map((n) => [`Bio U1.LT${n} Retake Pool`, `U1.LT${n}`, 24])
+    );
+    const u1Test = (await db.query.assessments.findFirst({
+      where: eq(schema.assessments.title, "Unit 1 Test: The Science of Biology"),
+    }))!;
+    const u1Sections = await db
+      .select({
+        code: schema.learningTargets.code,
+        pool: schema.questionPools.name,
+        count: schema.assessmentSections.retakeDrawCount,
+      })
+      .from(schema.assessmentSections)
+      .innerJoin(
+        schema.learningTargets,
+        eq(schema.learningTargets.id, schema.assessmentSections.learningTargetId)
+      )
+      .innerJoin(
+        schema.questionPools,
+        eq(schema.questionPools.id, schema.assessmentSections.retakePoolId)
+      )
+      .where(eq(schema.assessmentSections.assessmentId, u1Test.id))
+      .orderBy(schema.learningTargets.code);
+    expect(u1Sections).toEqual(
+      [1, 2, 3, 4].map((n) => ({ code: `U1.LT${n}`, pool: `Bio U1.LT${n} Retake Pool`, count: 10 }))
     );
     // The Biology pH quiz (Oct 14 2026): 15 multiple choice on U2.LT3 in the author's order,
     // pictures on items 6–9, answer key as written, options never shuffled.

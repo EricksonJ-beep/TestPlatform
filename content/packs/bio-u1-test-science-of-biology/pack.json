@@ -7,7 +7,14 @@
   "assessment": {
     "title": "Unit 1 Test: The Science of Biology",
     "type": "summative",
-    "instructions": "23 questions on Unit 1: the scientific method and hypotheses, control groups and independent, dependent, and constant variables, characteristics of life, the parts of a microscope, and reading graphs and data tables."
+    "instructions": "23 questions on Unit 1: the scientific method and hypotheses, control groups and independent, dependent, and constant variables, characteristics of life, the parts of a microscope, and reading graphs and data tables.",
+    "retakePools": {
+      "U1.LT1": "Bio U1.LT1 Retake Pool",
+      "U1.LT2": "Bio U1.LT2 Retake Pool",
+      "U1.LT3": "Bio U1.LT3 Retake Pool",
+      "U1.LT4": "Bio U1.LT4 Retake Pool"
+    },
+    "retakeDrawCount": 10
   },
   "assign": []
 }
