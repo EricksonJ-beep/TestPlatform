@@ -387,6 +387,15 @@ export default async function StudentAssignmentPage({
                     ? `${t.score} / ${t.maxScore} · ${Math.round(t.percent ?? 0)}%${t.status === "submitted" ? " so far" : ""}`
                     : "Submitted"}
                 </span>
+                {a.type === "practice" && a.resultsReleased && t.status !== "in_progress" ? (
+                  <Link
+                    href={`/student/review/${t.id}`}
+                    className="text-xs font-medium text-brand-deep hover:underline"
+                    data-review-link
+                  >
+                    Review answers
+                  </Link>
+                ) : null}
                 {c && c.attemptId === t.id ? (
                   <Link
                     href={`/student/corrections/${t.id}`}

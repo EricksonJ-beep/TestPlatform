@@ -108,6 +108,15 @@ export function ResultsTab({ results }: { results: StudentResult[] }) {
                       : "Submitted"
                     : ""}
                 </span>
+                {r.type === "practice" && r.released && a.submittedAt ? (
+                  <Link
+                    href={`/student/review/${a.id}`}
+                    className="text-xs font-medium text-brand-deep hover:underline"
+                    data-review-link
+                  >
+                    Review answers
+                  </Link>
+                ) : null}
               </li>
             ))}
           </ul>
