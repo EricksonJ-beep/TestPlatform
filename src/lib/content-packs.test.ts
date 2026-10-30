@@ -617,6 +617,52 @@ describe("content packs", () => {
     expect(u1Sections).toEqual(
       [1, 2, 3, 4].map((n) => ({ code: `U1.LT${n}`, pool: `Bio U1.LT${n} Retake Pool`, count: 10 }))
     );
+    // Biology Unit 3 Test (Oct 30 2026, from Jon's key): 35 multiple choice and 3 five-pair matching
+    // (50 points), 8 question pictures, the membrane, beakers, and osmosis graph shared as stimuli,
+    // and one section per learning target.
+    const u3t = first.find((o) => o.name === "bio-u3-test-cell-structure")!;
+    expect(u3t.status).toBe("applied");
+    if (u3t.status === "applied")
+      expect(u3t.summary).toMatchObject({ questions: 38, assignedTo: [], errors: [] });
+    const u3tBank = (await db.query.questionBanks.findFirst({
+      where: eq(schema.questionBanks.name, "Bio · Unit 3 Test: Cell Structure and Function"),
+    }))!;
+    const u3tQs = await db
+      .select()
+      .from(schema.questions)
+      .where(eq(schema.questions.bankId, u3tBank.id));
+    expect(u3tQs).toHaveLength(38);
+    expect(u3tQs.filter((q) => q.type === "matching")).toHaveLength(3);
+    expect(u3tQs.reduce((sum, q) => sum + q.points, 0)).toBe(50);
+    expect(
+      u3tQs.filter(
+        (q) =>
+          q.mediaUrl?.startsWith("/quiz-images/bio-u3-test-cell-structure/") &&
+          existsSync(join(process.cwd(), "public", q.mediaUrl))
+      )
+    ).toHaveLength(8);
+    for (const [ref, n] of [
+      ["bio-u3-test-membrane", 2],
+      ["bio-u3-test-beakers", 2],
+      ["bio-u3-test-osmosis-graph", 4],
+    ] as const) {
+      const [stim] = await db
+        .select()
+        .from(schema.stimuli)
+        .where(and(eq(schema.stimuli.courseId, bio.id), eq(schema.stimuli.ref, ref)));
+      expect(existsSync(join(process.cwd(), "public", stim.mediaUrl!))).toBe(true);
+      expect(u3tQs.filter((q) => q.stimulusId === stim.id)).toHaveLength(n);
+    }
+    const u3tAssessment = (await db.query.assessments.findFirst({
+      where: eq(schema.assessments.title, "Unit 3 Test: Cell Structure and Function"),
+    }))!;
+    expect(u3tAssessment).toMatchObject({ type: "summative", isPublished: true });
+    expect(
+      await db
+        .select()
+        .from(schema.assessmentSections)
+        .where(eq(schema.assessmentSections.assessmentId, u3tAssessment.id))
+    ).toHaveLength(4);
     // The Biology pH quiz (Oct 14 2026): 15 multiple choice on U2.LT3 in the author's order,
     // pictures on items 6–9, answer key as written, options never shuffled.
     const ph = first.find((o) => o.name === "bio-u2-quiz-ph")!;
