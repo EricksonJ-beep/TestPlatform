@@ -58,6 +58,10 @@ Corrections  Relearn   Practice    80% earned    Retake
 | 22  | Skyward: how Jon enters grades                                       | **Quizzes per learning target** (F_LT1U2, F_LT2U2…). **Tests as one score** (S_LT1,2,3,4U2).                                                                                                               |
 | 23  | Skyward: points or percent                                           | **Export as a percent.** Jon moves every Skyward column to 100 points starting next unit.                                                                                                                  |
 | 24  | Skyward "Other ID"                                                   | **The lunch code, which is the number at the start of the student's school email** (e.g. 2977@…). Bloom reads it from the email; no uploads.                                                                  |
+| 25  | Quiz on several targets: lift per target or whole quiz?              | **Per target.** Each target's percent is raised on its own (LT1 40 → 80 after its path; LT2 at 90 → corrections → 90 → path → 100), matching the per-target Skyward columns.                                 |
+| 26  | Students partway through the old cycle at launch                     | **Finish on the old rules.** Assignments already taken keep the old gates; the new path starts with assignments taken after launch.                                                                          |
+| 27  | Skyward header row                                                   | **Include it**: `Last Name,First Name,ID,Score`. Confirm on the first test import.                                                                                                                          |
+| 28  | "Keep my 80%"                                                        | **Done for now.** It marks the path finished; the retake stays available until the retake window closes.                                                                                                    |
 
 ## Rules
 
@@ -288,19 +292,22 @@ bank health shows no thin band.
 Same as C2.
 **Done when** every Biology target has all three modes.
 
-## Questions to settle before R2 (Claude's best guess in brackets)
+## Settled questions (Jon, Nov 3 2026)
 
-1. **Quiz with several targets and Skyward per-target columns.** Example: a quiz on LT1–LT3
-   where a student scores 40% on LT1 and 90% on LT2 and LT3. Is the 80% / 90% / 100% lift worked
-   out **per target** (LT1 → 80 after its path; LT2 and LT3 → 90 after corrections) or on the
-   **whole quiz**? [Per target, since that's how the scores go into Skyward. Most Physical
-   Science quizzes are one target anyway.]
-2. **Students already partway through** the old cycle when this ships. [Finish on the old rules
-   for assignments already taken; the new path starts with the next assignment.]
-3. **Skyward header row.** Does the import expect a header line (Last Name, First Name, ID)?
-   [Include it, and confirm with Jon's first test import.]
-4. **"Keep my 80%"**: is it a real choice that closes the retake, or just "done for now" with
-   the retake still open until the window closes? [Done for now; the retake stays available.]
+Decisions 25–28 above: the quiz lift works **per target**, students mid-cycle **finish on the old
+rules**, the Skyward file **includes a header row**, and "Keep my 80%" means **done for now**.
+
+What this changes in the rules:
+- **Q1/Q2 apply per target on a quiz.** The quiz's total is the combination of its targets'
+  counting percents. The step path shows one row per target only when the quiz has more than one
+  target that still has work to do. Otherwise it's the single path.
+- **Q3/Q4 are unchanged.** One stitched activity and one 5-question check cover every quiz target
+  still below its lift. Passing the check lifts each of those targets.
+- **R2 adds a launch cutoff:** assignments with an attempt 1 finished before the release date
+  keep the old gates (`gates.ts`, `quiz-practice.ts`), and new ones use `relearning-path.ts`.
+- **K1 adds a header row**, `Last Name,First Name,ID,Score`.
+- **Quiz end screen:** "Keep my 80%" marks the path done, and the retake stays on the card as
+  "Retake available" until the window closes.
 
 ## Not building (parked or out of scope)
 
