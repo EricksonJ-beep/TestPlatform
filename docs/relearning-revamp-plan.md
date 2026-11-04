@@ -645,9 +645,14 @@ the student-account test.
   `claude/focused-goodall-4xyf49`) had already loaded through its preview build.*
   - *P001–P050 update in place, and P051–P100 are added.*
   - *Three set titles stay on their live names, so no second set is made.*
-- *Known tell: in 53% of the multiple-choice questions, the right answer is the longest choice
-  (PS banks: 33%). The keys are right, but it makes guessing easier. A distractor pass would fix
-  it.*
+- *Longest-answer tell fixed (revision 3, Jon's call Nov 4): in 53% of the multiple-choice
+  questions the right answer was the longest choice. Now it is 15% (8% shortest), and no bank is
+  over 22%.*
+  - *Wrong choices got the same kind of detail as the key ("because…", a condition), and a few
+    padded keys were trimmed. About 1,290 choices changed in 32 banks.*
+  - *A guard script confirmed that only option text (and two explanations) changed. No stem,
+    answer letter or correct choice moved. Every edited row was re-read for a single defensible
+    answer.*
 
 ### C4 · Biology Read · Watch · Do (33 targets)
 Same as C2.
