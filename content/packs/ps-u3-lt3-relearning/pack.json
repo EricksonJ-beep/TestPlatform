@@ -1,0 +1,224 @@
+{
+  "name": "ps-u3-lt3-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science A",
+  "relearning": [
+    {
+      "target": "U3.LT3",
+      "mode": "read",
+      "title": "Read: writing formulas from names",
+      "description": "A short reading with the exact-change analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Charges, criss-cross and prefixes",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can take the name of a compound and write its chemical formula, ionic or covalent, including polyatomic ions and transition metals.**\n\n**Think about paying with exact change.** If a snack costs 50 cents and you only have quarters, you need 2 of them. An ionic formula works the same way: the positive and negative charges have to come out even, so the total is **zero**. The subscripts tell you how many of each ion it takes.\n\n**Step 1: ionic or covalent?** Metal + nonmetal = **ionic** (use charges). Two nonmetals = **covalent** (use prefixes). A compound with a polyatomic ion is ionic.\n\n**Ionic: crisscross applesauce.** 1) Write each ion with its charge. Main-group charges come from the **group number**: Group 1 = +1, Group 2 = +2, Group 13 = +3, Group 15 = −3, Group 16 = −2, Group 17 = −1. 2) Each charge drops to the bottom as a **subscript on the opposite ion**, with no sign. 3) **Reduce** if the subscripts share a factor (Fe₂O₂ → FeO). 4) **Check** that the charges cancel to zero. The metal always goes first.\n\n**Covalent:** the **prefixes are the subscripts** (mono 1, di 2, tri 3, tetra 4, penta 5, hexa 6). No prefix on the first element means 1. No criss-cross and no reducing in covalent!\n\n**Worked example:** magnesium nitride. Metal + nonmetal, so ionic. Mg is Group 2 → Mg²⁺. N is Group 15 → N³⁻. Criss-cross: the 3 goes to Mg and the 2 goes to N → Mg₃N₂. 3 and 2 can't be reduced. Check: 3(+2) + 2(−3) = +6 − 6 = 0."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "Calcium forms Ca²⁺ and chlorine forms Cl⁻. What is the formula for calcium chloride?",
+              "options": [
+                { "id": "a", "text": "CaCl" },
+                { "id": "b", "text": "CaCl₂" },
+                { "id": "c", "text": "Ca₂Cl" }
+              ],
+              "answer": "b",
+              "explanation": "Criss-cross: calcium's 2 drops onto chlorine, giving CaCl₂. Check: +2 + 2(−1) = 0. CaCl doesn't balance (+2 − 1), and Ca₂Cl puts the subscript on the wrong ion, which is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "fill_blank",
+              "prompt": "Dinitrogen tetroxide is covalent. How many oxygen atoms are in its formula? Type a number.",
+              "answer": ["4", "four"],
+              "explanation": "Covalent: the prefix is the subscript. tetra- means 4, so the formula is N₂O₄. Reducing it to NO₂ is the common mistake; there is no reducing in covalent."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Transition metals and polyatomic ions",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Transition metals:** the **Roman numeral is the charge**, not a count of atoms. Iron(III) means Fe³⁺, and copper(II) means Cu²⁺.\n\n**Polyatomic ions** stay together. The formula and charge will be given to you (nitrate is NO₃⁻). Never change anything inside, and put **parentheses** around the ion only when you need 2 or more of it: Ca(NO₃)₂, but BaSO₄.\n\n**Worked example 2:** copper(II) hydroxide (hydroxide is OH⁻). Copper(II) → Cu²⁺. Criss-cross: the 2 goes to hydroxide, and the 1 goes to copper. You need 2 hydroxides, so protect OH with parentheses → Cu(OH)₂. Check: +2 + 2(−1) = 0.\n\n**Worked example 3:** diphosphorus trioxide. Phosphorus and oxygen are both nonmetals, so covalent. di = 2 phosphorus, tri = 3 oxygen. Do not criss-cross or reduce. Answer: P₂O₃.\n\n**Watch out for:** using the Roman numeral as a subscript (iron(III) oxide is NOT FeO₃; it is Fe₂O₃), using the number of metal atoms as its charge, forgetting to reduce (Fe₂O₂ should be FeO), charges that don't cancel (NaCl₂), dropping the parentheses or changing the subscripts inside a polyatomic ion, and criss-crossing a covalent compound."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "What is the formula for copper(I) oxide?",
+              "options": [
+                { "id": "a", "text": "CuO" },
+                { "id": "b", "text": "Cu₂O" },
+                { "id": "c", "text": "CuO₂" }
+              ],
+              "answer": "b",
+              "explanation": "Copper(I) means Cu⁺, and oxide is O²⁻. Oxygen's 2 drops onto copper: Cu₂O. Check: 2(+1) + (−2) = 0. The I is the charge, not the number of copper atoms, so CuO is the common mistake."
+            },
+            {
+              "id": "e2",
+              "kind": "fill_blank",
+              "prompt": "Nitrate is NO₃⁻. In the formula for aluminum nitrate, what number goes outside the parentheses? Type a number.",
+              "answer": ["3", "three"],
+              "explanation": "Al³⁺ needs three NO₃⁻ to cancel: +3 + 3(−1) = 0. So the formula is Al(NO₃)₃, with the 3 outside the parentheses. Leaving out the parentheses, or changing the 3 inside nitrate, is the common mistake."
+            }
+          ],
+          "shortAnswer": "Sulfate is SO₄²⁻. Write the formula for chromium(III) sulfate and explain why the parentheses are needed."
+        }
+      ]
+    },
+    {
+      "target": "U3.LT3",
+      "mode": "do",
+      "title": "Do: flip the toolkit, then build a formula step by step",
+      "description": "Flashcards with a 3-question self-quiz, then a formula built one step at a time.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: the formula toolkit",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Ionic or covalent?",
+                "back": "Metal + nonmetal, or any polyatomic ion: ionic, so use charges. Two nonmetals: covalent, so use prefixes."
+              },
+              {
+                "id": "k2",
+                "front": "Charge from the group number",
+                "back": "Group 1 = +1, Group 2 = +2, Group 13 = +3, Group 15 = −3, Group 16 = −2, Group 17 = −1."
+              },
+              {
+                "id": "k3",
+                "front": "Criss-cross",
+                "back": "Each charge drops down as a subscript on the opposite ion, with no sign. Mg²⁺ and N³⁻ give Mg₃N₂."
+              },
+              {
+                "id": "k4",
+                "front": "Reduce, then check",
+                "back": "Divide the subscripts if they share a factor (Ba₂O₂ → BaO). Then check that the charges add to zero."
+              },
+              {
+                "id": "k5",
+                "front": "Roman numeral",
+                "back": "The metal's charge, not a count of atoms. Iron(III) means Fe³⁺."
+              },
+              {
+                "id": "k6",
+                "front": "Polyatomic ion",
+                "back": "Never change what's inside. Use parentheses only when you need 2 or more: Ca(NO₃)₂, but BaSO₄."
+              },
+              {
+                "id": "k7",
+                "front": "Covalent prefixes",
+                "back": "The prefix is the subscript: mono 1, di 2, tri 3, tetra 4, penta 5, hexa 6. No criss-cross, no reducing."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "Sulfur is in Group 16. Which ion does it form?",
+              "options": [
+                { "id": "a", "text": "S²⁺" },
+                { "id": "b", "text": "S²⁻" },
+                { "id": "c", "text": "S⁶⁻" }
+              ],
+              "answer": "b",
+              "explanation": "Group 16 = −2, so sulfur forms S²⁻. Nonmetals make negative ions. Using 6, sulfur's number of outer electrons, as the charge is the common mistake."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "What does the III in iron(III) chloride tell you?",
+              "options": [
+                { "id": "a", "text": "There are 3 iron atoms" },
+                { "id": "b", "text": "The iron ion has a 3+ charge" },
+                { "id": "c", "text": "The compound has 3 elements" }
+              ],
+              "answer": "b",
+              "explanation": "The Roman numeral is the metal's charge: iron(III) is Fe³⁺. Reading it as 3 iron atoms is the common mistake. The formula is FeCl₃: one iron and three chlorides."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "What is the formula for carbon tetrachloride?",
+              "options": [
+                { "id": "a", "text": "CCl₄" },
+                { "id": "b", "text": "C₄Cl" },
+                { "id": "c", "text": "CCl" }
+              ],
+              "answer": "a",
+              "explanation": "Two nonmetals, so use the prefixes: no prefix on carbon means 1, and tetra- means 4 chlorines: CCl₄. Putting the 4 on carbon is the common mistake; the prefix belongs to the element it is attached to."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: iron(III) nitrate",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "Write the formula for iron(III) nitrate. Nitrate is NO₃⁻.",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "Ionic or covalent? Iron is a metal and nitrate is a polyatomic ion, so it is ionic. Use charges."
+              },
+              {
+                "id": "s2",
+                "text": "Write each ion with its charge. The Roman numeral is iron's charge, so iron(III) is Fe³⁺. Nitrate is given: NO₃⁻."
+              },
+              {
+                "id": "s3",
+                "text": "Criss-cross. Iron's 3 drops onto nitrate, and nitrate's 1 drops onto iron. You need 3 nitrates, so protect NO₃ with parentheses: Fe(NO₃)₃."
+              },
+              {
+                "id": "s4",
+                "text": "Reduce? The subscripts are 1 and 3. They share no factor, so the formula stays Fe(NO₃)₃."
+              },
+              { "id": "s5", "text": "Check: 1(+3) + 3(−1) = +3 − 3 = 0. Answer: Fe(NO₃)₃." }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: which ion is copper(II)?",
+              "options": [
+                { "id": "a", "text": "Cu²⁺" },
+                { "id": "b", "text": "Cu₂" },
+                { "id": "c", "text": "Cu²⁻" }
+              ],
+              "answer": "a",
+              "explanation": "The Roman numeral is the charge, and metals make positive ions, so copper(II) is Cu²⁺. Reading II as 2 copper atoms (Cu₂) is the common mistake.",
+              "afterStepId": "s2"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: oxide is O²⁻. What is the formula for tin(IV) oxide?",
+              "options": [
+                { "id": "a", "text": "SnO₄" },
+                { "id": "b", "text": "Sn₂O₄" },
+                { "id": "c", "text": "SnO₂" }
+              ],
+              "answer": "c",
+              "explanation": "Tin(IV) is Sn⁴⁺. Criss-cross gives Sn₂O₄, and both subscripts divide by 2, so reduce to SnO₂. Check: +4 + 2(−2) = 0. Using the Roman numeral as a subscript (SnO₄) or forgetting to reduce (Sn₂O₄) is the common mistake.",
+              "afterStepId": "s5"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
