@@ -1,0 +1,205 @@
+{
+  "name": "ps-u3-lt1-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science A",
+  "relearning": [
+    {
+      "target": "U3.LT1",
+      "mode": "read",
+      "title": "Read: reading chemical formulas",
+      "description": "A short reading with the combo-meal analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "The three rules",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can read a chemical formula and tell what elements are in a compound and how many atoms of each.**\n\n**Think of a combo meal.** One combo is a burger and 2 fries. If the sign says (burger + 2 fries) × 3, you get 3 burgers and 6 fries, because the 3 multiplies everything in the combo. A chemical formula works the same way: parentheses are a combo, and the small number outside them multiplies the whole combo.\n\n**Rule 1.** Each capital letter starts a new element symbol. Na is sodium (one element), not N plus a.\n\n**Rule 2.** A **subscript** (the small number below) counts only the symbol right before it. No subscript means 1. In H₂O there are 2 H and 1 O.\n\n**Rule 3.** A subscript **outside parentheses** multiplies everything inside. In Ba(OH)₂, the 2 doubles both the O and the H.\n\n**Worked example:** Ba(OH)₂. Ba has no subscript, so Ba = 1. O = 1 × 2 = 2. H = 1 × 2 = 2. Total = 1 + 2 + 2 = 5 atoms."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "How many hydrogen atoms are in one molecule of H₂O?",
+              "options": [
+                { "id": "a", "text": "1" },
+                { "id": "b", "text": "2" },
+                { "id": "c", "text": "3" }
+              ],
+              "answer": "b",
+              "explanation": "The subscript 2 follows H, so there are 2 hydrogen atoms. O has no subscript, so there is 1 oxygen atom."
+            },
+            {
+              "id": "c2",
+              "kind": "fill_blank",
+              "prompt": "How many oxygen atoms are in Ca(OH)₂? Type a number.",
+              "answer": ["2", "two"],
+              "explanation": "The 2 outside the parentheses multiplies the O inside: 1 × 2 = 2."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Coefficients and bigger formulas",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Coefficients.** A big number in front multiplies the whole formula. 3H₂O means 3 molecules of water: H = 2 × 3 = 6 and O = 1 × 3 = 3. Always multiply, never add.\n\n**Worked example 2:** (NH₄)₂CO₃. The outside 2 multiplies N and H: N = 1 × 2 = 2, H = 4 × 2 = 8. C and O are outside the parentheses: C = 1, O = 3. Total = 2 + 8 + 1 + 3 = 14 atoms.\n\n**Worked example 3:** 2Al(NO₃)₃. First count one formula unit: Al = 1, N = 1 × 3 = 3, O = 3 × 3 = 9. Then the coefficient 2 doubles everything: Al = 2, N = 6, O = 18. Total = 26 atoms.\n\n**Same total does not mean same substance.** H₂O and CO₂ both have 3 atoms, but they are made of different elements, so they are different substances.\n\n**Watch out for:** counting only inside the parentheses and forgetting the outside subscript, adding numbers instead of multiplying (3 + 2 = 5), using a coefficient on only the first element, and reading a two-letter symbol like Ca or Mn as two elements."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "How many oxygen atoms are in Cu(NO₃)₂?",
+              "options": [
+                { "id": "a", "text": "3" },
+                { "id": "b", "text": "5" },
+                { "id": "c", "text": "6" }
+              ],
+              "answer": "c",
+              "explanation": "There are 3 O inside the parentheses, and the outside 2 doubles them: 3 × 2 = 6. Adding (3 + 2 = 5) is the common mistake."
+            },
+            {
+              "id": "e2",
+              "kind": "fill_blank",
+              "prompt": "How many total atoms are in 2NaCl? Type a number.",
+              "answer": ["4", "four"],
+              "explanation": "One NaCl has 2 atoms (1 Na and 1 Cl). The coefficient 2 doubles the whole formula, so there are 4 atoms."
+            }
+          ],
+          "shortAnswer": "In 2Na₃PO₄, explain what the 2 in front does and what the 3 below does."
+        }
+      ]
+    },
+    {
+      "target": "U3.LT1",
+      "mode": "do",
+      "title": "Do: flip the rules, then count step by step",
+      "description": "Flashcards with a 3-question self-quiz, then a worked problem one step at a time.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: the formula rules",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Chemical formula",
+                "back": "Shows which elements are in a compound and how many atoms of each."
+              },
+              {
+                "id": "k2",
+                "front": "Capital letter",
+                "back": "Starts a new element symbol. Na is one element (sodium), not N plus a."
+              },
+              {
+                "id": "k3",
+                "front": "Subscript",
+                "back": "The small number below. It counts only the symbol right before it. No subscript means 1."
+              },
+              {
+                "id": "k4",
+                "front": "Subscript outside parentheses",
+                "back": "Multiplies every atom inside the parentheses, like (burger + 2 fries) × 3."
+              },
+              {
+                "id": "k5",
+                "front": "Coefficient",
+                "back": "The big number in front. It multiplies the whole formula."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "In CO₂, what does the 2 count?",
+              "options": [
+                { "id": "a", "text": "The carbon atoms" },
+                { "id": "b", "text": "The oxygen atoms" },
+                { "id": "c", "text": "Both the carbon and the oxygen atoms" }
+              ],
+              "answer": "b",
+              "explanation": "A subscript counts only the symbol right before it, so the 2 counts oxygen. CO₂ has 1 C and 2 O."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "Which of these is ONE element symbol?",
+              "options": [
+                { "id": "a", "text": "Ca" },
+                { "id": "b", "text": "CO" },
+                { "id": "c", "text": "NO" }
+              ],
+              "answer": "a",
+              "explanation": "A new element starts at each capital letter. Ca (calcium) has one capital letter. CO and NO each have two capitals, so each is two elements."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "In 3H₂O, what does the 3 do?",
+              "options": [
+                { "id": "a", "text": "It counts only the hydrogen atoms" },
+                { "id": "b", "text": "It multiplies every atom in the formula" },
+                { "id": "c", "text": "It adds 3 atoms to the formula" }
+              ],
+              "answer": "b",
+              "explanation": "A coefficient multiplies the whole formula: 3H₂O is 3 molecules of water, so 6 H and 3 O."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: (NH₄)₃PO₄",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "Count every atom in one formula unit of (NH₄)₃PO₄.",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "List the elements. Each capital letter starts one: N, H, P and O."
+              },
+              {
+                "id": "s2",
+                "text": "Inside the parentheses there is 1 N and 4 H. The outside 3 multiplies both: N = 1 × 3 = 3 and H = 4 × 3 = 12."
+              },
+              {
+                "id": "s3",
+                "text": "Outside the parentheses, P has no subscript, so P = 1. O has the subscript 4, so O = 4."
+              },
+              { "id": "s4", "text": "Add the counts: 3 + 12 + 1 + 4 = 20 atoms." }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "fill_blank",
+              "prompt": "Your turn: how many H atoms are in (NH₄)₂SO₄? Type a number.",
+              "answer": ["8", "eight"],
+              "explanation": "There are 4 H inside the parentheses, and the outside 2 doubles them: 4 × 2 = 8.",
+              "afterStepId": "s2"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "How many total atoms are in Mg(OH)₂?",
+              "options": [
+                { "id": "a", "text": "3" },
+                { "id": "b", "text": "4" },
+                { "id": "c", "text": "5" }
+              ],
+              "answer": "c",
+              "explanation": "Mg = 1. The outside 2 doubles O and H: O = 2 and H = 2. Total = 1 + 2 + 2 = 5.",
+              "afterStepId": "s4"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

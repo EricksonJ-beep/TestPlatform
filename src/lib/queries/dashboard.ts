@@ -6,7 +6,7 @@
  * across ALL their courses, one row per thing, each naming its course · period. The rules for
  * which requests are current and what still blocks them live in `src/lib/needs-you.ts`.
  */
-import { and, asc, eq, inArray, isNull, ne, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull, ne, or, sql } from "drizzle-orm";
 import { alias, type AnyPgColumn } from "drizzle-orm/pg-core";
 import { db, schema } from "@/db";
 import { capRetakeWindow } from "@/lib/assignments";
@@ -561,6 +561,65 @@ export async function listAnswersToGrade(teacherId: string): Promise<GradingRow[
 // The inbox
 // ---------------------------------------------------------------------------
 
+/** A relearning video that won't play for students (relearning revamp A6): one row per video. */
+export type VideoFlagRow = {
+  sectionId: string;
+  optionTitle: string;
+  /** Which part of the option: its core or its extension, and the section's own title. */
+  part: "core" | "extension";
+  sectionTitle: string | null;
+  targetCode: string;
+  youtubeId: string | null;
+  /** Students it failed for since it was last marked fixed. */
+  students: number;
+  hits: number;
+  /** The player's error codes (YouTube 101/150: embedding blocked, e.g. Restricted Mode). */
+  errorCodes: string[];
+  lastSeenAt: Date;
+};
+
+/** The teacher's Watch videos with open "won't play" flags, most recent first. */
+export async function listVideoFlags(teacherId: string): Promise<VideoFlagRow[]> {
+  const f = schema.relearningVideoFlags;
+  const rows = await db
+    .select({
+      sectionId: f.sectionId,
+      optionTitle: schema.relearningOptions.title,
+      part: schema.relearningSections.part,
+      sectionTitle: schema.relearningSections.title,
+      targetCode: schema.learningTargets.code,
+      body: schema.relearningSections.body,
+      students: sql<number>`count(distinct ${f.studentId})::int`,
+      hits: sql<number>`coalesce(sum(${f.hits}), 0)::int`,
+      errorCodes: sql<string[]>`array_remove(array_agg(distinct ${f.errorCode}), null)`,
+      lastSeenAt: sql<Date>`max(${f.lastSeenAt})`.mapWith(f.lastSeenAt),
+    })
+    .from(f)
+    .innerJoin(schema.relearningSections, eq(f.sectionId, schema.relearningSections.id))
+    .innerJoin(
+      schema.relearningOptions,
+      eq(schema.relearningSections.optionId, schema.relearningOptions.id)
+    )
+    .innerJoin(
+      schema.learningTargets,
+      eq(schema.relearningOptions.learningTargetId, schema.learningTargets.id)
+    )
+    .where(and(eq(schema.relearningOptions.ownerId, teacherId), isNull(f.resolvedAt)))
+    .groupBy(
+      f.sectionId,
+      schema.relearningOptions.title,
+      schema.relearningSections.part,
+      schema.relearningSections.title,
+      schema.learningTargets.code,
+      schema.relearningSections.body
+    )
+    .orderBy(desc(sql`max(${f.lastSeenAt})`));
+  return rows.map(({ body, ...r }) => ({
+    ...r,
+    youtubeId: body.type === "video" ? (body.youtubeId ?? null) : null,
+  }));
+}
+
 export type NeedsYou = {
   /** Paused tests whose student pressed "Ask my teacher" (only these count; Jon, Oct 13 2026). */
   asked: PausedAttempt[];
@@ -569,24 +628,28 @@ export type NeedsYou = {
   corrections: CorrectionSetRow[];
   grading: GradingRow[];
   activities: PendingVerification[];
+  /** Relearning videos that won't play for students (A6). */
+  videos: VideoFlagRow[];
   /** Worksheet emails on the teacher's worksheets not yet matched to a student. */
   worksheetEmails: number;
 };
 
 /** Everything waiting on the teacher, across all their courses (Jon, Oct 13 2026). */
 export async function getNeedsYou(teacherId: string, now = new Date()): Promise<NeedsYou> {
-  const [paused, requests, corrections, grading, activities, worksheetEmails] = await Promise.all([
-    listPausedAttempts(teacherId, now),
-    listRetakeRequests(teacherId, now),
-    listCorrectionSets(teacherId),
-    listAnswersToGrade(teacherId),
-    listPendingVerifications(teacherId),
-    countUnmatchedEmails(teacherId),
-  ]);
+  const [paused, requests, corrections, grading, activities, videos, worksheetEmails] =
+    await Promise.all([
+      listPausedAttempts(teacherId, now),
+      listRetakeRequests(teacherId, now),
+      listCorrectionSets(teacherId),
+      listAnswersToGrade(teacherId),
+      listPendingVerifications(teacherId),
+      listVideoFlags(teacherId),
+      countUnmatchedEmails(teacherId),
+    ]);
   const asked = paused
     .filter((p) => p.askedAt)
     .sort((a, b) => a.askedAt!.getTime() - b.askedAt!.getTime());
-  return { asked, requests, corrections, grading, activities, worksheetEmails };
+  return { asked, requests, corrections, grading, activities, videos, worksheetEmails };
 }
 
 export type DashboardCounts = Record<NeedsYouGroup, number> & {

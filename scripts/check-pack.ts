@@ -1,18 +1,33 @@
 /**
  * Check a content pack's questions.csv before it ships: every row parses with
  * the real importer, and the mix is reported (types, difficulty bands, Bloom
- * levels, hints) with duplicate stems flagged.
+ * levels, hints) with duplicate stems flagged. A pack's Read · Watch · Do options (`relearning`,
+ * R4) are checked too; a pack with only those needs no questions.csv.
  *
  *   npx tsx scripts/check-pack.ts content/packs/<name>
  */
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { difficultyBand } from "../src/lib/assessments/serve";
 import { parseCsvRecords } from "../src/lib/csv";
 import { parseQuestionRecords } from "../src/lib/import/question-csv";
+import { relearningIssues, type PackRelearning } from "../src/lib/relearning-pack";
 
 const dir = process.argv[2];
 if (!dir) throw new Error("Pass the pack folder.");
+const def = JSON.parse(readFileSync(join(dir, "pack.json"), "utf8")) as {
+  relearning?: PackRelearning[];
+};
+let relearningProblems = 0;
+for (const r of def.relearning ?? []) {
+  const issues = relearningIssues(r);
+  relearningProblems += issues.length;
+  for (const i of issues) console.log(i);
+  console.log(
+    `relearning ${r.target} ${r.mode}: ${r.sections.length} sections, ${r.sections.reduce((n, x) => n + (x.minutes ?? 3), 0)} min, ${r.sections.reduce((n, x) => n + (x.checks?.length ?? 0), 0)} checks`
+  );
+}
+if (!existsSync(join(dir, "questions.csv"))) process.exit(relearningProblems ? 1 : 0);
 const { records } = parseCsvRecords(readFileSync(join(dir, "questions.csv"), "utf8"));
 const rows = parseQuestionRecords(records);
 const tally = (f: (r: (typeof rows)[number]) => string) => {
@@ -51,4 +66,4 @@ console.log(
     2
   )
 );
-process.exit(problems ? 1 : 0);
+process.exit(problems || relearningProblems ? 1 : 0);

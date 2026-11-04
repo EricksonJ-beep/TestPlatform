@@ -129,13 +129,14 @@ describe("requestBlocker", () => {
 });
 
 describe("needsYouCounts", () => {
-  it("counts one per row, and all worksheet emails as one row", () => {
+  it("counts one per row (a video that won't play is one row), and all worksheet emails as one row", () => {
     const counts = needsYouCounts({
       asked: [1],
       requests: [1, 2],
       corrections: [1],
       grading: [1, 2],
       activities: [],
+      videos: [1],
       worksheetEmails: 3,
     });
     expect(counts).toEqual({
@@ -144,8 +145,9 @@ describe("needsYouCounts", () => {
       corrections: 1,
       grading: 2,
       activities: 0,
+      videos: 1,
       worksheets: 1,
-      total: 7,
+      total: 8,
     });
   });
   it("is zero when nothing waits", () => {

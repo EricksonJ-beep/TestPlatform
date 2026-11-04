@@ -1,8 +1,9 @@
 # Relearning revamp: a shorter, clearer path to the retake (Jon, Nov 2–4 2026)
 
 **Status: approved by Jon, Nov 4 2026. R0 (spec updates), R1 (schema), R2 (the rule), R3
-(the practice check), R6 (the test retake picker) and R7 (score history) are done, and R8
-(Skyward export) is built. Nothing else below is built yet.**
+(the practice check), R6 (the test retake picker) and R7 (score history) are done. R4 (Read ·
+Watch · Do) and R8 (Skyward export) are built and wait on Jon (videos to pick; a test import).
+Nothing else below is built yet.**
 
 Jon's ask: "Right now the students are struggling with the corrections, activity, and then
 practice. I think it is too much for them to 'earn' a retake. The correction piece is working
@@ -389,6 +390,55 @@ counting score update. Tests cover:
 **Done when** one Physical Science target has all three modes working end to end with core and
 extension. A quiz on two targets must stitch their cores into one activity, and a blocked video
 must offer Read or Do and land in Needs you.
+
+*Built Nov 4 (waiting on Jon's video picks for Watch):*
+- *The student page is `/student/relearning/[assignmentId]` (a test adds `?target=`). It shows
+  the picker first: three cards, Read 📖 · Watch 🎬 · Do 🧩, each with "About N min". On a quiz,
+  each 80%+ target is an "Add LT2 (85%) to reach 100%" tick box. Picking a card starts the
+  activity. The student can switch modes until they finish, and switching back picks up where
+  they left off.*
+- *Sections and credit (A3):*
+  - *Read: text, read to the end.*
+  - *Watch: YouTube, or Jon's own upload. The video pauses for each check at its time, and 90%
+    of the segment must play.*
+  - *Do, three kinds: a hosted drag-and-drop page that reports when it's done, flashcards (flip
+    every card, then a self-quiz), or worked steps (one step at a time, with a check after a
+    step before the next one opens).*
+  - *Quick checks are graded on the server with unlimited tries. The key never reaches the
+    browser, and the explanation shows only once the answer is right.*
+  - *The extension's short answer needs a full sentence.*
+- *When every section is done, the server finishes the activity and the page offers the
+  practice check (R3).*
+- *Stitching (Q3): a quiz's required targets, plus any it adds, are one bundle. One target gets
+  core + extension; two or more get cores only. Adding or removing a target before finishing
+  re-serves the sections. A test relearns one required target at a time.*
+- *A5: a target with nothing built shows "Your teacher will give you a relearning activity."
+  The teacher checks it off on the relearning monitor. A quiz's whole activity checks off at
+  once; a test target checks off on its own. The monitor now opens for path quizzes too.*
+- *A6: a player error, or YouTube blocked outright (the script fails, or isn't ready within 15
+  seconds), shows "This video won't play here. Pick Read or Do" with those buttons. It is
+  flagged in Needs you ("Videos that won't play", with how many students hit it), and the
+  teacher marks it "Fixed it".*
+- *Content packs carry Read · Watch · Do (`relearning` in pack.json, checked by
+  `scripts/check-pack.ts`). Sections update in place by position, so a student's progress
+  survives an edit. The first pack is `ps-u3-lt1-relearning`: U3.LT1 Read and Do, each a core
+  and an extension, with every answer checked.*
+- *Watch for U3.LT1 is not in the pack. YouTube can't be reached from where this was built, so
+  no video could be checked. Jon picks the videos and plays them on a student account first
+  (decision 37); they go into the pack as `watch` sections with timestamps.*
+- *Left for later:*
+  - *An in-app builder. Options are written in packs for now.*
+  - *Uploading Jon's own recordings to a section. The player already handles them.*
+  - *The path-aware wording on the tier board's readiness lines (R5).*
+- *Code: rules `src/lib/relearning.ts`; server `src/lib/relearning-server.ts` (every progress
+  write is one atomic statement); actions `src/app/student/relearning/actions.ts` (guard
+  `requireRelearningRowAccess`) and `checkOffRelearning` / `resolveVideoFlag` in
+  `src/app/app/results/actions.ts`.*
+- *Tests: `src/lib/relearning.test.ts` and `src/app/student/relearning/relearning.test.ts` (one
+  target end to end with the practice check opening; two-target stitching with add and remove;
+  mode switching; the test target with nothing built and the teacher's check-off; the video flag
+  through Needs you; another student refused). `src/lib/content-packs.test.ts` covers the
+  relearning pack.*
 
 ### R5 · Step path UI
 - StepPath component, Next step box and Relearn picker.

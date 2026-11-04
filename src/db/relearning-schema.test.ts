@@ -141,7 +141,7 @@ describe("Read · Watch · Do options and their sections", () => {
         optionId: watch.id,
         part: "extension",
         sortOrder: 1,
-        body: { type: "text", html: "<p>More examples</p>" },
+        body: { type: "text", text: "More examples" },
         shortAnswerPrompt: "In one sentence, what was your mistake?",
       },
     ]);
@@ -181,7 +181,7 @@ describe("Read · Watch · Do options and their sections", () => {
       db.insert(schema.relearningSections).values({
         optionId: read.id,
         part: "core",
-        body: { type: "text", html: "<p>x</p>" },
+        body: { type: "text", text: "x" },
         estMinutes: 0,
       })
     );

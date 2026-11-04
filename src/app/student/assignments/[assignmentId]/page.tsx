@@ -62,6 +62,9 @@ export default async function StudentAssignmentPage({
   const check = a.path ? nextCheck(a.path) : null;
   const codesOf = (targetIds: string[]) =>
     targetIds.map((id) => a.path?.targets.find((t) => t.id === id)?.code ?? id);
+  // Read · Watch · Do (R4): the targets whose relearning is open now (R5's step path takes this place).
+  const relearnNow = a.path ? a.path.targets.filter((t) => t.relearn === "current") : [];
+  const relearnStarted = relearnNow.some((t) => t.bundleId);
   // On a closed test the cycle goes on toward asking to retake (Jon, Oct 14 2026, R4).
   const closed = a.status === "closed";
   // Quiz relearning (Jon, Oct 14 2026): the missed targets still to practise before a retake.
@@ -161,6 +164,30 @@ export default async function StudentAssignmentPage({
             onPath={!!a.path}
           />
         </section>
+      ) : null}
+
+      {relearnNow.length && a.state !== "in_progress" ? (
+        <div
+          className="flex flex-col gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm sm:flex-row sm:items-center"
+          data-relearning-gate
+        >
+          <span className="mr-auto">
+            {relearnStarted
+              ? `Keep going on your relearning for ${targetList(relearnNow.map((t) => t.code))}.`
+              : `Relearn ${targetList(relearnNow.map((t) => t.code))}: pick Read 📖, Watch 🎬 or Do 🧩. About 10–15 minutes.`}
+          </span>
+          <Button
+            size="lg"
+            nativeButton={false}
+            render={
+              <Link
+                href={`/student/relearning/${a.id}${a.type === "summative" ? `?target=${relearnNow[0].id}` : ""}`}
+              />
+            }
+          >
+            {relearnStarted ? "Keep relearning" : "Start relearning"}
+          </Button>
+        </div>
       ) : null}
 
       {a.state === "upcoming" ? (

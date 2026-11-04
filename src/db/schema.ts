@@ -1353,7 +1353,8 @@ export const relearningOptions = pgTable(
 
 /** What a section shows (A1). R4 renders each type; JSONB so a new type needs no migration. */
 export type RelearningSectionBody =
-  | { type: "text"; html: string }
+  /** Read: Bloom rich text (src/lib/richtext.ts: **bold**, H_{2}O, $math$); a blank line starts a paragraph. */
+  | { type: "text"; text: string }
   /** Watch: a YouTube clip (or the section's uploaded media asset), optionally trimmed. */
   | { type: "video"; youtubeId?: string; startSeconds?: number; endSeconds?: number }
   /** Do: a hosted drag-and-drop page, e.g. "/activities/osteon-labeling.html". */
@@ -1372,6 +1373,8 @@ export type QuickCheck = {
   explanation?: string;
   /** Watch: seconds into the video where it pauses for this check. */
   atSeconds?: number;
+  /** Do (worked steps): the step this check follows; it shows once that step is revealed. */
+  afterStepId?: string;
 };
 
 export const relearningSections = pgTable(
@@ -1405,7 +1408,15 @@ export const relearningSections = pgTable(
 /** A student's progress through the sections served (A3). Keys are section and check ids. */
 export type RelearningProgress = {
   checks?: Record<string, { correct: boolean; tries: number; at: string }>;
-  sections?: Record<string, { scrolledToEnd?: boolean; watchPercent?: number }>;
+  sections?: Record<
+    string,
+    {
+      scrolledToEnd?: boolean;
+      watchPercent?: number;
+      /** Do: the hosted page reported done, every flashcard was flipped, or every step shown. */
+      completed?: boolean;
+    }
+  >;
   shortAnswers?: Record<string, string>;
 };
 
