@@ -239,6 +239,7 @@ export async function loadPathStates(pairs: PathPair[]): Promise<Map<string, Pat
     const state = pathFor({
       type,
       threshold: asg.threshold,
+      passMark: asg.passMark,
       raises: type === "formative" && asg.correctionsCap,
       targets: names,
       attempts: (attemptsBy.get(k) ?? []).map((a) => ({

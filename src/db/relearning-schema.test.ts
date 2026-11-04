@@ -328,7 +328,13 @@ describe("practice checks and rounds", () => {
         checkId: pathCheck.id,
         number: 1,
         questionSet: [
-          { questionId: crypto.randomUUID(), learningTargetId: ids.lt1, band: "easy", order: 0 },
+          {
+            questionId: crypto.randomUUID(),
+            learningTargetId: ids.lt1,
+            band: "easy",
+            order: 0,
+            points: 1,
+          },
         ],
       })
       .returning();

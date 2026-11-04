@@ -13,6 +13,7 @@ import {
 } from "@/lib/quiz-practice";
 import { getStudentPractice } from "@/lib/queries/practice";
 import { listStudentAttempts } from "@/lib/queries/attempts";
+import { nextCheck } from "@/lib/relearning-path";
 import {
   correctionsActionLabel,
   correctionsProgress,
@@ -22,6 +23,7 @@ import {
 import { LocalTime } from "@/components/local-time";
 import { TargetChip } from "@/components/targets/target-chip";
 import { Button } from "@/components/ui/button";
+import { StartCheckButton } from "../../checks/start-check-button";
 import { PracticeSetCard } from "../../practice-cards";
 import { RetakePicker } from "../../retake-picker";
 import { RequestRetakeButton } from "./request-retake-button";
@@ -56,6 +58,10 @@ export default async function StudentAssignmentPage({
     c.state !== "approved" &&
     c.state !== "none";
   const retaking = a.state === "retake_required" || a.state === "retake_available";
+  // The relearning path (Nov 4 2026): the practice check ready to take, if any (R3).
+  const check = a.path ? nextCheck(a.path) : null;
+  const codesOf = (targetIds: string[]) =>
+    targetIds.map((id) => a.path?.targets.find((t) => t.id === id)?.code ?? id);
   // On a closed test the cycle goes on toward asking to retake (Jon, Oct 14 2026, R4).
   const closed = a.status === "closed";
   // Quiz relearning (Jon, Oct 14 2026): the missed targets still to practise before a retake.
@@ -209,6 +215,23 @@ export default async function StudentAssignmentPage({
                 ? "Revise corrections"
                 : correctionsActionLabel(c)}
           </Button>
+        </div>
+      ) : a.path && check ? (
+        // The relearning path's practice check (R3); R5's step path takes this place.
+        <div
+          className="flex flex-col gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm sm:flex-row sm:items-center"
+          data-practice-check-gate
+        >
+          <span className="mr-auto">
+            {check.kind === "path"
+              ? `Practice check on ${targetList(codesOf(check.targetIds))}: get ${a.path.passMark} of 5 right. Your first answer counts, and you can try a new set of 5 as many times as you need.`
+              : `Before attempt ${check.attemptNumber}, pass a new practice check on ${targetList(codesOf(check.targetIds))}: ${a.path.passMark} of 5 right.`}
+          </span>
+          <StartCheckButton
+            assignmentId={a.id}
+            kind={check.kind}
+            bundleId={check.kind === "path" ? check.bundleId : null}
+          />
         </div>
       ) : a.cycle === "relearning" && !a.retake && owedPractice.length ? (
         <div

@@ -424,3 +424,47 @@ export async function requirePracticeAttemptAccess(
   if (ownerId !== session.userId) throw forbidden();
   return { ...session, as: "teacher", attempt };
 }
+
+export type PracticeCheckAccess = Session & {
+  as: "teacher" | "student";
+  check: { id: string; studentId: string; assignmentId: string };
+};
+
+// Rule: a practice check (relearning revamp, R3) and its rounds belong to one student; only that student, or the teacher who owns the assignment, may touch them.
+export async function requirePracticeCheckAccess(checkId: string): Promise<PracticeCheckAccess> {
+  const session = await requireSession();
+  assertId(checkId);
+  const [row] = await db
+    .select({
+      id: schema.practiceChecks.id,
+      studentId: schema.practiceChecks.studentId,
+      assignmentId: schema.practiceChecks.assignmentId,
+      ownerId: schema.assignments.ownerId,
+    })
+    .from(schema.practiceChecks)
+    .innerJoin(schema.assignments, eq(schema.practiceChecks.assignmentId, schema.assignments.id))
+    .where(eq(schema.practiceChecks.id, checkId))
+    .limit(1);
+  if (!row) throw notFound();
+  const { ownerId, ...check } = row;
+  if (session.role === "student") {
+    if (check.studentId !== session.userId) throw notFound();
+    return { ...session, as: "student", check };
+  }
+  if (ownerId !== session.userId) throw forbidden();
+  return { ...session, as: "teacher", check };
+}
+
+// Rule: a check round is reached through its check (`requirePracticeCheckAccess`).
+export async function requireCheckRoundAccess(
+  roundId: string
+): Promise<PracticeCheckAccess & { roundId: string }> {
+  await requireSession();
+  assertId(roundId);
+  const round = await db.query.practiceCheckRounds.findFirst({
+    columns: { checkId: true },
+    where: eq(schema.practiceCheckRounds.id, roundId),
+  });
+  if (!round) throw notFound();
+  return { ...(await requirePracticeCheckAccess(round.checkId)), roundId };
+}

@@ -1441,6 +1441,8 @@ export type CheckServedQuestion = {
   learningTargetId: string;
   band: "easy" | "medium" | "hard";
   order: number;
+  /** The question's points when served (grading reads them; the check scores right answers). */
+  points: number;
   /** Option ids in the order served (when answer order is randomized). */
   optionOrder?: string[];
 };

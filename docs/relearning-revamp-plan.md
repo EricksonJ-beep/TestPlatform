@@ -1,7 +1,7 @@
 # Relearning revamp: a shorter, clearer path to the retake (Jon, Nov 2–4 2026)
 
-**Status: approved by Jon, Nov 4 2026. R0 (spec updates), R1 (schema) and R2 (the rule) are
-done; R3 is next. Nothing else below is built yet.**
+**Status: approved by Jon, Nov 4 2026. R0 (spec updates), R1 (schema), R2 (the rule) and R3
+(the practice check) are done. Nothing else below is built yet.**
 
 Jon's ask: "Right now the students are struggling with the corrections, activity, and then
 practice. I think it is too much for them to 'earn' a retake. The correction piece is working
@@ -348,7 +348,7 @@ existing tests pass.
   shows yet), "corrections raise it to 90%" (the v2 text says 100%), and Needs you's "no retake"
   line.*
 
-### R3 · Practice check
+### R3 · Practice check ✅ (Nov 4 2026)
 - Dealer (P1): Practice banks, auto-graded only, at most one true/false, 3E/1M/1H across the
   whole check, unseen first, band borrowing.
 - Runner (P2): first try counts, then explanation.
@@ -361,6 +361,20 @@ counting score update. Tests cover:
   with an easy question);
 - the true/false cap;
 - band borrowing.
+
+*Built Nov 4:*
+- *The dealer and scoring are `src/lib/practice-check.ts`; opening a check, dealing rounds and
+  first answers are in `src/lib/practice-check-server.ts`.*
+- *The screen is `/student/checks/[checkId]`, with guards `requirePracticeCheckAccess` and
+  `requireCheckRoundAccess`.*
+- *A "Start practice check" button shows on the assignment page when a check is ready; R5's step
+  path takes it over.*
+- *A Practice bank is any bank in the target's course whose type (column or name) is Practice.
+  A pass recomputes the final score, so the quiz raise and a test's gates follow.*
+- *The dealer reports a thin bank but doesn't store it yet; the teacher's bank health counts come
+  with R4/R5.*
+- *Tests: `src/lib/practice-check.test.ts` (12) and `src/app/student/checks/practice-check.test.ts`
+  (6, end to end). All 632 tests pass.*
 
 ### R4 · Relearning activities: Read · Watch · Do
 - Section renderer for Read (rich text plus inline checks) and Watch (YouTube IFrame API: pause

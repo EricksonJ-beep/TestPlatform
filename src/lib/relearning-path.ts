@@ -135,6 +135,8 @@ export type PathInput = {
   optedIn: string[];
   relearning: PathRelearning[];
   checks: PathCheck[];
+  /** Right first answers out of 5 that pass a practice check (P4); 4 when absent. */
+  passMark?: number;
 };
 
 /** done · waiting (the student's part is in, the teacher's OK is not) · current · locked. */
@@ -191,6 +193,8 @@ export type PathState = {
   type: "formative" | "summative";
   threshold: number;
   raises: boolean;
+  /** The assignment's practice-check pass mark (P4). */
+  passMark: number;
   targets: PathTargetState[];
   /** Below the threshold on attempt 1, in course order. */
   required: string[];
@@ -399,6 +403,7 @@ export function pathFor(input: PathInput): PathState {
     type: input.type,
     threshold: input.threshold,
     raises: input.raises,
+    passMark: input.passMark ?? 4,
     targets,
     required: idsOf(required),
     complete,
@@ -573,6 +578,33 @@ export function pathGates(
       ];
     })
   );
+}
+
+/**
+ * The practice check the student can take now (P5): a relearning bundle whose relearning is all
+ * finished and whose check hasn't passed, else the fresh check before the next attempt (Q6) once
+ * the path itself is done. Null when no check is waiting.
+ */
+export function nextCheck(
+  state: PathState
+):
+  | { kind: "path"; bundleId: string; targetIds: string[] }
+  | { kind: "attempt"; attemptNumber: number; targetIds: string[] }
+  | null {
+  const ready = state.targets.find((t) => t.onPath && t.bundleId && t.practice === "current");
+  if (ready?.bundleId)
+    return {
+      kind: "path",
+      bundleId: ready.bundleId,
+      targetIds: state.targets.filter((t) => t.bundleId === ready.bundleId).map((t) => t.id),
+    };
+  if (state.complete && state.attemptCheck && !state.attemptCheck.passed)
+    return {
+      kind: "attempt",
+      attemptNumber: state.attemptCheck.attemptNumber,
+      targetIds: state.attemptCheck.targetIds,
+    };
+  return null;
 }
 
 /** "U3.LT1", "U3.LT1 and U3.LT2", "U3.LT1, U3.LT2 and U3.LT3". */
