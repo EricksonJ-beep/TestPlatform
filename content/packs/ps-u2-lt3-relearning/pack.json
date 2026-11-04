@@ -1,0 +1,213 @@
+{
+  "name": "ps-u2-lt3-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science A",
+  "relearning": [
+    {
+      "target": "U2.LT3",
+      "mode": "read",
+      "title": "Read: isotopes and isotope notation",
+      "description": "A short reading with the backpack analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Same element, different neutrons",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can explain what isotopes are and use isotope notation to describe them.**\n\n**Think of two backpacks of the same model.** Same brand, same color, same name tag. One has 2 textbooks inside and the other has 4. One is heavier, but it is still the same backpack with the same name tag. In isotopes, the **protons** are the name tag (they give the atom its identity), and the **neutrons** are the extra books (they add mass but don't change what the atom is).\n\n**Isotopes** are atoms of the same element with different numbers of neutrons.\n**Same:** the number of protons, the atomic number, and (in a neutral atom) the number of electrons. Same electrons means isotopes react the same way.\n**Different:** the number of neutrons, so the **mass number** (protons + neutrons) is different too.\n\n**Hyphen notation** is the element name, a dash and the mass number: potassium-40, or C-12. To count: p⁺ = atomic number, n⁰ = mass number − atomic number, and e⁻ = p⁺ in a neutral atom.\n\n**Worked example:** Are carbon-12 and carbon-14 isotopes? Both are carbon, atomic number 6, so both have 6 protons. Neutrons: 12 − 6 = 6 and 14 − 6 = 8. Same protons, different neutrons, so **yes, they are isotopes of carbon.**"
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "Two isotopes of the same element always have the same number of:",
+              "options": [
+                { "id": "a", "text": "Neutrons" },
+                { "id": "b", "text": "Protons" },
+                { "id": "c", "text": "Particles in the nucleus" }
+              ],
+              "answer": "b",
+              "explanation": "Isotopes share the same protons (the name tag) and differ in neutrons. If the protons changed, it would be a different element. Thinking isotopes have different protons is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "fill_blank",
+              "prompt": "Nitrogen has atomic number 7. How many neutrons are in nitrogen-15? Type a number.",
+              "answer": ["8", "eight", "8 neutrons"],
+              "explanation": "The number after the dash is the mass number, 15. n⁰ = 15 − 7 = 8. Reading the 15 as the number of neutrons is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Nuclear notation and average atomic mass",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Nuclear notation** puts the mass number on top and the atomic number on the bottom, to the left of the symbol: $^{40}_{19}\\text{K}$. The bottom number can be left off ($^{40}\\text{K}$) because the symbol already tells you the atomic number.\n\n**Worked example 2:** Write potassium-40 in nuclear notation and count its particles (K, atomic number 19). The mass number is the number after the dash, 40. Put 40 on top and 19 on the bottom: $^{40}_{19}\\text{K}$. p⁺ = 19. n⁰ = 40 − 19 = 21. e⁻ = 19 (neutral).\n\n**Average atomic mass** is the decimal number on the periodic table. It is a weighted average of all the element's isotopes, so it is **closest to the mass number of the most common isotope**. Round it when no mass number is given.\n\n**Worked example 3:** Magnesium (atomic number 12) has an average atomic mass of 24.305. Round to 24, so the most common isotope is magnesium-24, or $^{24}_{12}\\text{Mg}$. n⁰ = 24 − 12 = 12.\n\n**Stability.** Our notes say a nucleus is most stable when the numbers of p⁺ and n⁰ are the same, and an unstable nucleus comes from too many or too few neutrons.\n\n**Watch out for:** writing the atomic number on top, putting the number of neutrons in the hyphen name instead of the mass number, thinking a new top number makes a new element (only a new bottom number, the protons, does that), thinking isotopes have different protons, and mixing up the whole-number mass number with the decimal average atomic mass."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "Iron (Fe) has atomic number 26. Which is the correct nuclear notation for iron-56?",
+              "options": [
+                { "id": "a", "text": "$^{56}_{26}\\text{Fe}$" },
+                { "id": "b", "text": "$^{26}_{56}\\text{Fe}$" },
+                { "id": "c", "text": "$^{30}_{26}\\text{Fe}$" }
+              ],
+              "answer": "a",
+              "explanation": "The mass number, 56, goes on top, and the atomic number, 26, goes on the bottom. Flipping them, or putting the neutrons (56 − 26 = 30) on top, is the common mistake."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "Chlorine has two natural isotopes, chlorine-35 and chlorine-37. Its average atomic mass is 35.45. Which isotope is more common?",
+              "options": [
+                { "id": "a", "text": "Chlorine-35" },
+                { "id": "b", "text": "Chlorine-37" },
+                { "id": "c", "text": "They are equally common" }
+              ],
+              "answer": "a",
+              "explanation": "The average, 35.45, is much closer to 35 than to 37, so most chlorine atoms are chlorine-35. If the two were equally common, the average would be 36. Assuming the isotopes are equally common is the common mistake."
+            }
+          ],
+          "shortAnswer": "Explain why carbon-12 and carbon-13 are still the same element. Use the words protons and neutrons."
+        }
+      ]
+    },
+    {
+      "target": "U2.LT3",
+      "mode": "do",
+      "title": "Do: flip the terms, then write an isotope step by step",
+      "description": "Flashcards with a 3-question self-quiz, then a worked problem one step at a time.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: isotope words",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Isotopes",
+                "back": "Atoms of the same element with different numbers of neutrons."
+              },
+              {
+                "id": "k2",
+                "front": "Protons in isotopes",
+                "back": "The name tag: the same in every isotope of an element. Change them and you get a new element."
+              },
+              {
+                "id": "k3",
+                "front": "Mass number",
+                "back": "Protons + neutrons. It is different in each isotope."
+              },
+              {
+                "id": "k4",
+                "front": "Hyphen notation",
+                "back": "Element name, a dash, then the mass number: potassium-40 or C-12."
+              },
+              {
+                "id": "k5",
+                "front": "Nuclear notation",
+                "back": "Mass number on top, atomic number on the bottom: $^{40}_{19}\\text{K}$."
+              },
+              {
+                "id": "k6",
+                "front": "Average atomic mass",
+                "back": "The decimal on the periodic table. Round it to find the mass number of the most common isotope."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "In $^{14}_{6}\\text{C}$, what does the 14 stand for?",
+              "options": [
+                { "id": "a", "text": "The atomic number" },
+                { "id": "b", "text": "The mass number" },
+                { "id": "c", "text": "The number of neutrons" }
+              ],
+              "answer": "b",
+              "explanation": "The top number is the mass number (protons + neutrons). The bottom 6 is the atomic number, and the neutrons are 14 − 6 = 8. Reading the top number as the neutrons is the common mistake."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "Which pair are isotopes of the same element?",
+              "options": [
+                { "id": "a", "text": "carbon-14 and nitrogen-14" },
+                { "id": "b", "text": "oxygen-16 and oxygen-18" },
+                { "id": "c", "text": "neon-20 and sodium-23" }
+              ],
+              "answer": "b",
+              "explanation": "Oxygen-16 and oxygen-18 are both oxygen (same protons) with different mass numbers. Carbon-14 and nitrogen-14 share a mass number, but they are different elements, so they are not isotopes. Matching by mass number is the common mistake."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "If you change the top number of $^{12}_{6}\\text{C}$ to 13, what do you get?",
+              "options": [
+                { "id": "a", "text": "A different element" },
+                { "id": "b", "text": "A different isotope of carbon" },
+                { "id": "c", "text": "An atom with 13 protons" }
+              ],
+              "answer": "b",
+              "explanation": "The bottom number (6 protons) still says carbon. A new top number is a new mass number, so it is a new isotope, carbon-13. Thinking a new top number makes a new element is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: sulfur-34",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "Sulfur (S) has atomic number 16. An isotope of sulfur has 18 neutrons. Write it in hyphen notation and in nuclear notation, and count its electrons.",
+            "steps": [
+              { "id": "s1", "text": "Protons: sulfur's atomic number is 16, so p⁺ = 16." },
+              { "id": "s2", "text": "Mass number = protons + neutrons = 16 + 18 = 34." },
+              {
+                "id": "s3",
+                "text": "Hyphen notation uses the mass number: sulfur-34 (or S-34)."
+              },
+              {
+                "id": "s4",
+                "text": "Nuclear notation: mass number on top, atomic number on the bottom: $^{34}_{16}\\text{S}$."
+              },
+              { "id": "s5", "text": "Electrons: a neutral atom has e⁻ = p⁺ = 16." }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "fill_blank",
+              "prompt": "Your turn: an isotope of chlorine (atomic number 17) has 20 neutrons. What is its mass number? Type a number.",
+              "answer": ["37", "thirty-seven", "thirty seven"],
+              "explanation": "Mass number = protons + neutrons = 17 + 20 = 37, so it is chlorine-37. Subtracting (20 − 17 = 3) or giving just the neutrons (20) is the common mistake.",
+              "afterStepId": "s2"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: which shows an atom with 6 protons and 7 neutrons?",
+              "options": [
+                { "id": "a", "text": "carbon-7" },
+                { "id": "b", "text": "$^{13}_{6}\\text{C}$" },
+                { "id": "c", "text": "$^{6}_{13}\\text{C}$" }
+              ],
+              "answer": "b",
+              "explanation": "The mass number, 6 + 7 = 13, goes on top, and the atomic number, 6, goes on the bottom. Carbon-7 uses the neutrons instead of the mass number, and the last choice has the numbers flipped. Those are the two common mistakes.",
+              "afterStepId": "s5"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

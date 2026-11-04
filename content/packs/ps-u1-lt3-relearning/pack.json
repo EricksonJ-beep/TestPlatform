@@ -1,0 +1,188 @@
+{
+  "name": "ps-u1-lt3-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science A",
+  "relearning": [
+    {
+      "target": "U1.LT3",
+      "mode": "read",
+      "title": "Read: unit conversions and scientific notation",
+      "description": "A short reading with the money-trading analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Conversion factors and the 5 steps",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can convert numbers into different units (dimensional analysis) and use scientific notation.**\n\n**Think of trading money.** Four quarters and one dollar are the same amount of money, counted in different units. To trade 8 quarters for dollars, you use 4 quarters = 1 dollar and get 2 dollars. You didn't gain or lose money; only the unit changed. Converting units works the same way.\n\n**Unit Relationships and conversion factors.** A **Unit Relationship** says how much of one unit equals another, like 1 ft = 12 in. Use the reference sheet; you don't have to memorize them. A **conversion factor** is the Unit Relationship written as a fraction, like 12 in / 1 ft. The top and bottom are the same amount, so a conversion factor is **equal to one**: it changes the units, not the amount.\n\n**The 5 steps.** 1) **Identify**: given units on the left, wanted units on the right. 2) **Conversion Factors**: find the Unit Relationship. 3) **Set Up**: insert factors so the units cancel. Top vs Bottom: a unit on top cancels the same unit on the bottom. 4) **Calculate**: multiply the tops and divide by the bottoms. 5) **Sig Figs and Label**: no naked numbers!\n\n**Worked example:** Convert 3.40 lb to kg. Unit Relationship: 1 kg = 2.205 lb. Set Up: 3.40 lb × (1 kg / 2.205 lb). The lb cancels: it is on top in 3.40 lb and on the bottom of the factor. Calculate: 3.40 ÷ 2.205 = 1.542. 3.40 has 3 sig figs, so the answer is **1.54 kg**."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "Which setup converts 15.0 kg to lb? (1 kg = 2.205 lb)",
+              "options": [
+                { "id": "a", "text": "15.0 kg × (1 kg / 2.205 lb)" },
+                { "id": "b", "text": "15.0 kg × (2.205 lb / 1 kg)" },
+                { "id": "c", "text": "15.0 kg × (1 lb / 2.205 kg)" }
+              ],
+              "answer": "b",
+              "explanation": "kg is on top in 15.0 kg, so kg goes on the bottom of the factor to cancel: 2.205 lb / 1 kg. Flipping the factor so kg is on top is the common mistake, and 1 lb = 2.205 kg is not a real Unit Relationship."
+            },
+            {
+              "id": "c2",
+              "kind": "fill_blank",
+              "prompt": "A student is 5.5 ft tall. How many inches is that? (1 ft = 12 in) Type a number.",
+              "answer": ["66", "66 in", "66in", "66 inches"],
+              "explanation": "5.5 ft × (12 in / 1 ft) = 66 in. Feet are on the bottom of the factor, so they cancel. Dividing by 12 (about 0.46) is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Chains and scientific notation",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Chains.** When there is no direct Unit Relationship, plan a path and use more than one factor. Every unit you don't want must cancel. Lined up, the factors look like a picket fence.\n\n**Worked example 2:** Convert 1.50 ft to cm. Path: ft → in → cm. Set Up: 1.50 ft × (12 in / 1 ft) × (2.54 cm / 1 in). Feet cancel, then inches cancel. Calculate: 1.50 × 12 × 2.54 = 45.72. 1.50 has 3 sig figs, so the answer is **45.7 cm**. Exact numbers like 12 in = 1 ft have infinite sig figs, so they never limit your answer.\n\n**Scientific notation** is digits with a decimal point after the first digit, times 10 to a power. The exponent is **positive** if you started with a big number (bigger than 1) and **negative** if you started with a small number (less than 1). Keep the same sig figs: 101,000 = 1.01 × 10^{5}.\n\n**Worked example 3:** Write 0.000752 in scientific notation. Move the decimal 4 places right to get 7.52. The starting number is small, so the exponent is negative: **7.52 × 10⁻⁴**. Going back, 6.1 × 10^{3} has a positive exponent, so move the decimal 3 places right: **6,100**.\n\n**Watch out for:** flipping a conversion factor (if the unit you have is on top of the factor, it won't cancel), dividing when you should multiply, giving the exponent the wrong sign, writing 45 × 10^{6} instead of 4.5 × 10^{7} (only one digit goes before the decimal), and leaving off the unit."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "Which shows 0.00385 in scientific notation?",
+              "options": [
+                { "id": "a", "text": "3.85 × 10^{3}" },
+                { "id": "b", "text": "3.85 × 10^{-3}" },
+                { "id": "c", "text": "38.5 × 10^{-4}" }
+              ],
+              "answer": "b",
+              "explanation": "Move the decimal 3 places right to get 3.85. The number is less than 1, so the exponent is negative. A positive exponent is the common mistake, and 38.5 × 10^{-4} has two digits before the decimal, so it isn't scientific notation."
+            },
+            {
+              "id": "e2",
+              "kind": "fill_blank",
+              "prompt": "Convert 3.0 gal to cups. (1 gal = 4 qt, 1 qt = 4 cups) Type a number.",
+              "answer": ["48", "48 cups", "48 cup", "48cups"],
+              "explanation": "3.0 gal × (4 qt / 1 gal) × (4 cups / 1 qt) = 48 cups. Gallons cancel, then quarts cancel. Stopping after the first factor (12 qt) is the common mistake."
+            }
+          ],
+          "shortAnswer": "Convert 5.8 kg to lb (1 kg = 2.205 lb). Write your setup and your answer with its unit, and explain how you knew which unit goes on the bottom of the factor."
+        }
+      ]
+    },
+    {
+      "target": "U1.LT3",
+      "mode": "do",
+      "title": "Do: convert step by step",
+      "description": "Two worked conversions, one step at a time, with quick checks along the way.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Worked problem: kilograms to pounds",
+          "minutes": 4,
+          "body": {
+            "type": "worked_steps",
+            "problem": "A dog has a mass of 22.7 kg. What is its mass in pounds (lb)? (1 kg = 2.205 lb)",
+            "steps": [
+              {
+                "id": "t1",
+                "text": "Identify. Given: 22.7 kg on the left. Wanted: lb on the right."
+              },
+              {
+                "id": "t2",
+                "text": "Conversion Factor. The Unit Relationship is 1 kg = 2.205 lb. It can be written as 2.205 lb / 1 kg or as 1 kg / 2.205 lb."
+              },
+              {
+                "id": "t3",
+                "text": "Set Up. kg is on top in 22.7 kg, so pick the factor with kg on the bottom: 22.7 kg × (2.205 lb / 1 kg). The kg cancel."
+              },
+              { "id": "t4", "text": "Calculate: 22.7 × 2.205 = 50.0535." },
+              {
+                "id": "t5",
+                "text": "Sig Figs and Label. 22.7 has 3 sig figs, so the answer is 50.1 lb."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: to convert 450 g to kg (1 kg = 1,000 g), which factor goes in the setup?",
+              "options": [
+                { "id": "a", "text": "1 kg / 1,000 g" },
+                { "id": "b", "text": "1,000 g / 1 kg" },
+                { "id": "c", "text": "1,000 kg / 1 g" }
+              ],
+              "answer": "a",
+              "explanation": "g is on top in 450 g, so g goes on the bottom of the factor: 1 kg / 1,000 g. Then the grams cancel, leaving kg. Using the factor with g on top is the common mistake, because then nothing cancels.",
+              "afterStepId": "t3"
+            },
+            {
+              "id": "d2",
+              "kind": "fill_blank",
+              "prompt": "Your turn: convert 12.0 in to cm (1 in = 2.54 cm). Use the right sig figs. Type a number.",
+              "answer": ["30.5", "30.5 cm", "30.5cm"],
+              "explanation": "12.0 in × (2.54 cm / 1 in) = 30.48, and 12.0 has 3 sig figs, so the answer is 30.5 cm. Dividing (12.0 ÷ 2.54 = 4.72) is the common mistake.",
+              "afterStepId": "t5"
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: days to seconds",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "A science fair project runs for 2.50 days. How many seconds is that? Write the answer in scientific notation. (1 day = 24 hr, 1 hr = 60 min, 1 min = 60 s)",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "Identify and plan. Given: 2.50 days. Wanted: s. There is no day = s relationship, so plan a path: days → hr → min → s."
+              },
+              {
+                "id": "s2",
+                "text": "Set Up: 2.50 days × (24 hr / 1 day) × (60 min / 1 hr) × (60 s / 1 min). Days cancel, then hours, then minutes, leaving s."
+              },
+              { "id": "s3", "text": "Calculate: 2.50 × 24 × 60 × 60 = 216,000 s." },
+              {
+                "id": "s4",
+                "text": "Scientific notation: move the decimal 5 places left to get 2.16. The number is big (bigger than 1), so the exponent is positive: 2.16 × 10^{5} s. That keeps the 3 sig figs of 2.50."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: which setup converts 3.0 mi to inches? (1 mi = 5,280 ft, 1 ft = 12 in)",
+              "options": [
+                { "id": "a", "text": "3.0 mi × (5,280 ft / 1 mi) × (12 in / 1 ft)" },
+                { "id": "b", "text": "3.0 mi × (1 mi / 5,280 ft) × (1 ft / 12 in)" },
+                { "id": "c", "text": "3.0 mi × (5,280 ft / 1 mi) × (1 ft / 12 in)" }
+              ],
+              "answer": "a",
+              "explanation": "Each factor puts the unit you want to cancel on the bottom: first mi, then ft. In choice c, the second factor is flipped, so ft does not cancel. A flipped factor is the common mistake.",
+              "afterStepId": "s2"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: which shows 6,020,000 in scientific notation?",
+              "options": [
+                { "id": "a", "text": "6.02 × 10^{6}" },
+                { "id": "b", "text": "6.02 × 10^{-6}" },
+                { "id": "c", "text": "60.2 × 10^{5}" }
+              ],
+              "answer": "a",
+              "explanation": "Move the decimal 6 places left to get 6.02. The number is bigger than 1, so the exponent is positive. 60.2 × 10^{5} has the right value but two digits before the decimal, the common mistake.",
+              "afterStepId": "s4"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

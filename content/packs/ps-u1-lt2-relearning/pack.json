@@ -1,0 +1,195 @@
+{
+  "name": "ps-u1-lt2-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science A",
+  "relearning": [
+    {
+      "target": "U1.LT2",
+      "mode": "read",
+      "title": "Read: accuracy, precision and percent error",
+      "description": "A short reading with the free-throw analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Accurate, precise and the smallest division",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can measure accurately and precisely, using the appropriate units, significant figures, averages, and percent error to show how accurate data is.**\n\n**Think about free throws.** A player who swishes the shot is **accurate**: the ball went where it was supposed to go. A player whose shots all hit the same spot on the left side of the rim is **precise**: every shot lands close to the others, but they all miss. You can be precise and still be wrong. We want to be both!\n\n**Accuracy** is how close a measurement is to the true or target value (the **accepted value**). **Precision** is how close the data points are to one another.\n\n**The smallest division rule.** The **smallest division** is the smallest line on a measuring tool. The digits it shows are certain. Then **estimate one place past the smallest division**. That last digit is your estimate. If the level sits exactly on a line, you still write the estimate: 52.0 mL, not 52 mL. Read a graduated cylinder at eye level from the bottom of the meniscus.\n\n**Worked example:** A graduated cylinder is marked every 1 mL. The bottom of the meniscus sits between 52 and 53 mL, about seven-tenths of the way up. The 52 is certain. Estimate the tenths: 7. The reading is **52.7 mL**, and the 7 is the estimated digit."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "Three trials on a 10.0 g standard mass read 8.1 g, 8.2 g and 8.1 g. How is the data described?",
+              "options": [
+                { "id": "a", "text": "Precise but not accurate" },
+                { "id": "b", "text": "Accurate but not precise" },
+                { "id": "c", "text": "Accurate and precise" }
+              ],
+              "answer": "a",
+              "explanation": "The trials are within 0.1 g of each other, so they are precise. But every trial is almost 2 g below 10.0 g, so they are not accurate. Calling close-together data accurate is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "fill_blank",
+              "prompt": "A graduated cylinder is marked every 1 mL. The bottom of the meniscus sits exactly on the 34 mL line. Using the smallest division rule, what should you write? Type a number.",
+              "answer": ["34.0", "34.0 ml", "34.0ml"],
+              "explanation": "The lines are 1 mL apart, so you estimate the tenths. The level is right on the line, so the estimated digit is 0: 34.0 mL. Writing 34 leaves off the estimated digit, the most common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Sig figs, averages and percent error",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Units.** Pick the unit that fits: length in mm, cm, m or km; volume in mL or L; mass in g; temperature in °C; time in s. No naked numbers!\n\n**Significant figures (sig figs)** are the measured digits. They count: non-zero numbers, sandwiched zeroes (405 has 3 sig figs), and trailing zeroes when a decimal is present (3.00 has 3). They do NOT count: placeholder zeroes (0.004 has 1, and 2,500 with no decimal has 2).\n\n**Calculating.** When you **add or subtract**, keep the fewest **decimal places**. When you **multiply or divide**, keep the fewest **sig figs** in the whole number. Example: 12.67 g + 3.4 g = 16.07 on the calculator, but 3.4 has only one decimal place, so the answer is **16.1 g**.\n\n**Average and percent error.** Average: add the trials and divide by how many there are. **% error = |experimental − accepted| ÷ accepted × 100**. Use the average as the experimental value. Percent error is always positive.\n\n**Worked example 2:** Three trials of a sample: 14.2 g, 14.6 g and 14.4 g. The accepted mass is 15.0 g. Average = (14.2 + 14.6 + 14.4) ÷ 3 = 43.2 ÷ 3 = **14.4 g**. % error = |14.4 − 15.0| ÷ 15.0 × 100 = 0.6 ÷ 15.0 × 100 = **4.0%**. The trials are only 0.4 g apart, but every one is low, so the data is more precise than accurate.\n\n**Watch out for:** dividing by the experimental value instead of the accepted value, forgetting that percent error is never negative, counting sig figs when you add (count decimal places instead), counting placeholder zeroes, and calling close-together data accurate."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "fill_blank",
+              "prompt": "The accepted density of aluminum is 2.70 g/cm³. A group measures 2.43 g/cm³. What is their percent error? Type a number.",
+              "answer": [
+                "10",
+                "10.0",
+                "10%",
+                "10.0%",
+                "10 %",
+                "10.0 %",
+                "10 percent",
+                "10.0 percent"
+              ],
+              "explanation": "|2.43 − 2.70| = 0.27, and 0.27 ÷ 2.70 × 100 = 10%. Dividing by 2.43 (the experimental value) gives 11%, the common mistake."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "A box is 3.0 cm wide and 12.25 cm long. The calculator shows 36.75 for the area. Which answer has the correct sig figs?",
+              "options": [
+                { "id": "a", "text": "36.75 cm²" },
+                { "id": "b", "text": "36.8 cm²" },
+                { "id": "c", "text": "37 cm²" }
+              ],
+              "answer": "c",
+              "explanation": "When you multiply, keep the fewest sig figs. 3.0 has 2 sig figs, so the area gets 2: 37 cm². Keeping one decimal place (36.8) uses the add/subtract rule by mistake."
+            }
+          ],
+          "shortAnswer": "Three trials are 9.8 s, 9.9 s and 9.8 s, and the accepted time is 11.0 s. Is the data precise, accurate, both or neither? Explain using the numbers."
+        }
+      ]
+    },
+    {
+      "target": "U1.LT2",
+      "mode": "do",
+      "title": "Do: judge the data, then measure step by step",
+      "description": "Two worked problems, one step at a time, with quick checks along the way.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Worked problem: how accurate is the data?",
+          "minutes": 4,
+          "body": {
+            "type": "worked_steps",
+            "problem": "A group measures a 25.0 g standard mass three times: 23.1 g, 23.3 g and 23.2 g. Find the average and the percent error. Is the data precise, accurate, both or neither?",
+            "steps": [
+              { "id": "t1", "text": "Add the trials: 23.1 + 23.3 + 23.2 = 69.6 g." },
+              {
+                "id": "t2",
+                "text": "Divide by the number of trials: 69.6 ÷ 3 = 23.2 g. That is the average."
+              },
+              {
+                "id": "t3",
+                "text": "Percent error: |23.2 − 25.0| ÷ 25.0 × 100 = 1.8 ÷ 25.0 × 100 = 7.2%. Always divide by the accepted value, 25.0."
+              },
+              {
+                "id": "t4",
+                "text": "Judge it. The trials are only 0.2 g apart (23.3 − 23.1), so the data is precise. Every trial is low and the error is 7.2%, so it is not accurate. The data is precise but not accurate."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "fill_blank",
+              "prompt": "Your turn: the accepted value is 50.0 mL, and a student measures 48.0 mL. What is the percent error? Type a number.",
+              "answer": ["4", "4.0", "4%", "4.0%", "4 %", "4.0 %", "4 percent", "4.0 percent"],
+              "explanation": "|48.0 − 50.0| = 2.0, and 2.0 ÷ 50.0 × 100 = 4.0%. Dividing by 48.0 instead of the accepted 50.0 gives 4.2%, the common mistake.",
+              "afterStepId": "t3"
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "Another group's trials on the same 25.0 g mass are 22.0 g, 25.1 g and 27.9 g. How is their data described?",
+              "options": [
+                { "id": "a", "text": "Accurate but not precise" },
+                { "id": "b", "text": "Precise but not accurate" },
+                { "id": "c", "text": "Accurate and precise" }
+              ],
+              "answer": "a",
+              "explanation": "The average is (22.0 + 25.1 + 27.9) ÷ 3 = 25.0 g, right on the accepted value, so the data is accurate. The trials are 5.9 g apart, so it is not precise. Judging by only the average or only the spread is the common mistake.",
+              "afterStepId": "t4"
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: measure, then calculate",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "A rock is dropped into a graduated cylinder marked every 1 mL. Before, the water sits exactly on the 30 mL line. After, it sits between 41 and 42 mL, about six-tenths of the way past 41. The rock's mass is 28.46 g. Find its volume, then its density (mass ÷ volume), with the right sig figs.",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "Read the start. The lines are 1 mL apart, so estimate the tenths. The water is right on the line, so write 30.0 mL, not 30."
+              },
+              {
+                "id": "s2",
+                "text": "Read the end. The 41 is certain. Estimate the tenths: 41.6 mL."
+              },
+              {
+                "id": "s3",
+                "text": "Subtract: 41.6 − 30.0 = 11.6 mL. When you subtract, keep the fewest decimal places. Both readings have one, so the volume is 11.6 mL."
+              },
+              {
+                "id": "s4",
+                "text": "Divide: 28.46 g ÷ 11.6 mL. The calculator shows 2.4534..."
+              },
+              {
+                "id": "s5",
+                "text": "Round. When you divide, keep the fewest sig figs. 28.46 has 4 and 11.6 has 3, so keep 3: 2.45 g/mL."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "fill_blank",
+              "prompt": "Your turn: 25.62 mL − 13.4 mL. The calculator shows 12.22. What is the answer with the right sig figs? Type a number.",
+              "answer": ["12.2", "12.2 ml", "12.2ml"],
+              "explanation": "When you subtract, keep the fewest decimal places. 13.4 has one, so the answer is 12.2 mL. Keeping all of 12.22 is the common mistake.",
+              "afterStepId": "s3"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "A cart rolls 46.8 m in 3.1 s. Speed = distance ÷ time, and the calculator shows 15.0967... Which answer has the right sig figs?",
+              "options": [
+                { "id": "a", "text": "15.097 m/s" },
+                { "id": "b", "text": "15.1 m/s" },
+                { "id": "c", "text": "15 m/s" }
+              ],
+              "answer": "c",
+              "explanation": "When you divide, keep the fewest sig figs. 3.1 has 2 sig figs, so the speed gets 2: 15 m/s. Keeping one decimal place (15.1) uses the add/subtract rule by mistake.",
+              "afterStepId": "s5"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

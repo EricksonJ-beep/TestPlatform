@@ -1,0 +1,249 @@
+{
+  "name": "ps-u1-lt1-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science A",
+  "relearning": [
+    {
+      "target": "U1.LT1",
+      "mode": "read",
+      "title": "Read: variables and fair tests",
+      "description": "A short reading with the fair-race analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Change one thing, measure one thing",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can use lab equipment correctly and use the scientific method.**\n\n**Think of a fair race.** To find out which shoes make you run faster, run the same distance on the same track on the same day, and change only the shoes. If you also switch from grass to pavement, you can't tell what made the difference. An experiment works the same way: change one thing, measure one thing, and keep everything else the same.\n\n**Variables.** The **independent variable (IV)** is what the experimenter changes. The **dependent variable (DV)** is what is measured during the procedure. **Constants** are kept the same to get reliable data. The **control group** is the baseline group you compare the experimental data to. It gets none of the treatment.\n\n**Hypothesis.** A testable prediction written **If... then... because...** The IV goes in the If part, the DV prediction goes in the then part, and the because gives a reason from what you already know. It is not a guess.\n\n**Lab equipment.** Read a graduated cylinder at eye level from the bottom of the **meniscus**. Zero the digital scale **with the weigh boat on it, before** you add chemicals.\n\n**Worked example:** A group waters bean plants with 25 mL, 50 mL or 75 mL a day and measures their height after 2 weeks. Water was changed, so it is the **IV**. Height was measured, so it is the **DV**. Seed type, soil, sunlight and pot size stay the same, so they are **constants**. Hypothesis: If plants get more water each day, then they will grow taller, because plants use water to grow."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "A group tests how the length of a pendulum's string affects the time for one swing. They use strings 20 cm, 40 cm and 60 cm long. What is the dependent variable?",
+              "options": [
+                { "id": "a", "text": "The length of the string" },
+                { "id": "b", "text": "The time for one swing" },
+                { "id": "c", "text": "The mass on the string" }
+              ],
+              "answer": "b",
+              "explanation": "The group measures the time for one swing, so time is the DV. The string length is what they changed (the IV), and the mass should stay the same (a constant). Mixing up changed and measured is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "multiple_choice",
+              "prompt": "A group tests whether a new plant food helps tomato plants grow. One set of plants gets the plant food. Another set gets the same soil, water and light, but no plant food. What is the set with no plant food called?",
+              "options": [
+                { "id": "a", "text": "A constant" },
+                { "id": "b", "text": "The control group" },
+                { "id": "c", "text": "The dependent variable" }
+              ],
+              "answer": "b",
+              "explanation": "The control group gets none of the treatment, so it is the baseline you compare to. A constant is a thing you keep the same, like the soil, not a group. Mixing up the control group and constants is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Graphs, lab reports and lab tools",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Tables and graphs.** The IV is always the first column of a data table, and it goes on the **x-axis**. The DV goes on the **y-axis**. The title is **DV vs. IV**.\n\n**Worked example 2:** A group heats water for 1, 2, 3 and 4 minutes and measures its temperature. They chose the heating time, so it is the IV: first column and x-axis. They measured the temperature, so it is the DV: second column and y-axis. Title: **Temperature vs. Heating Time**.\n\n**The lab report** follows the scientific method: **Problem, Hypothesis, Procedure, Observations, Analysis, Conclusion.** The problem asks \"How does [IV] affect [DV]?\" Observations hold the data tables. Analysis holds the graphs and calculations.\n\n**Two more words.** A **confounding variable** is an environmental factor beyond your control, like the sun coming out during an outdoor test. **Bias** is an opinion based on beliefs instead of data.\n\n**More on lab equipment.** To measure 5 g of salt: turn on the scale, set the empty weigh boat on it, zero it, then add salt until it reads 5.00 g. Goggles stay on, even through clean up. Fire extinguisher: **PASS** (Pull, Aim, Squeeze, Sweep).\n\n**Watch out for:** calling the control group a constant (the control is a baseline group, not a thing you hold the same), putting the IV on the y-axis or writing the title backwards, changing two things at once, reading the top of the meniscus, and adding chemicals before zeroing the scale."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "A group times how long an ice cube takes to melt in rooms set to 15 °C, 20 °C and 25 °C. What is the correct graph title?",
+              "options": [
+                { "id": "a", "text": "Melting Time vs. Room Temperature" },
+                { "id": "b", "text": "Room Temperature vs. Melting Time" },
+                { "id": "c", "text": "Room Temperature and Melting Time" }
+              ],
+              "answer": "a",
+              "explanation": "The title is DV vs. IV. Melting time was measured (DV) and room temperature was chosen (IV), so it is Melting Time vs. Room Temperature. Writing the title backwards is the common mistake."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "A student sets an empty weigh boat on a digital scale. What should they do next, before adding any salt?",
+              "options": [
+                { "id": "a", "text": "Zero the scale with the weigh boat on it" },
+                { "id": "b", "text": "Take the boat off and pour the salt right onto the scale" },
+                { "id": "c", "text": "Add the salt first, then zero the scale" }
+              ],
+              "answer": "a",
+              "explanation": "Zero the scale with the weigh boat on it before adding chemicals. Then the reading shows only the salt. Zeroing after the salt is in erases the salt's mass, which is the common mistake."
+            }
+          ],
+          "shortAnswer": "A group tests how the temperature of water affects how fast a sugar cube dissolves. Name the IV and the DV, and write a hypothesis in If... then... because... form."
+        }
+      ]
+    },
+    {
+      "target": "U1.LT1",
+      "mode": "do",
+      "title": "Do: flip the variables, then plan a test step by step",
+      "description": "Flashcards with a 3-question self-quiz, then a worked problem one step at a time.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: variables and tools",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Independent variable (IV)",
+                "back": "What the experimenter changes. It goes first in the data table and on the x-axis."
+              },
+              {
+                "id": "k2",
+                "front": "Dependent variable (DV)",
+                "back": "What is measured during the procedure. It goes on the y-axis."
+              },
+              {
+                "id": "k3",
+                "front": "Constants",
+                "back": "Things kept the same so the data is reliable, like the same soil and pot size."
+              },
+              {
+                "id": "k4",
+                "front": "Control group",
+                "back": "The baseline group. It gets none of the treatment, and you compare the other groups to it."
+              },
+              {
+                "id": "k5",
+                "front": "Hypothesis",
+                "back": "A testable prediction written If... then... because... It is not a guess."
+              },
+              {
+                "id": "k6",
+                "front": "Graph title",
+                "back": "DV vs. IV, like Plant Height vs. Water per Day."
+              },
+              {
+                "id": "k7",
+                "front": "Meniscus",
+                "back": "The curve on top of a liquid. Read a graduated cylinder at eye level, from the bottom of the curve."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "A group sets a ramp at 10°, 20° and 30° and measures how far a marble rolls. Where does the ramp angle go on the graph?",
+              "options": [
+                { "id": "a", "text": "The x-axis" },
+                { "id": "b", "text": "The y-axis" },
+                { "id": "c", "text": "It does not go on the graph" }
+              ],
+              "answer": "a",
+              "explanation": "The group changed the ramp angle, so it is the IV, and the IV goes on the x-axis. The distance (the DV) goes on the y-axis. Swapping the axes is the common mistake."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "Which one is a hypothesis?",
+              "options": [
+                { "id": "a", "text": "Do thicker paper towels soak up more water?" },
+                {
+                  "id": "b",
+                  "text": "If paper towels are thicker, then they will soak up more water, because they have more space to hold water."
+                },
+                { "id": "c", "text": "Brand X paper towels are the best." }
+              ],
+              "answer": "b",
+              "explanation": "A hypothesis has all three parts: If (the IV), then (the DV prediction), because (a reason). The first choice is a question, not a prediction, and \"the best\" is an opinion. Writing a question instead of a prediction is the common mistake."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "In a test of whether music helps plants grow, every plant gets the same soil, the same pot and 50 mL of water a day. What are the soil, the pot and the water?",
+              "options": [
+                { "id": "a", "text": "Constants" },
+                { "id": "b", "text": "Control groups" },
+                { "id": "c", "text": "Dependent variables" }
+              ],
+              "answer": "a",
+              "explanation": "Things kept the same for every plant are constants. The control group is a whole group of plants that gets no music. Calling constants the control group is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: plan a fair test",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "A group tests how water temperature affects how fast an antacid tablet dissolves. They use water at 10 °C, 25 °C, 40 °C and 55 °C and time each tablet with a stopwatch. Plan the experiment.",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "Find the IV. The group chose the water temperatures, so the IV is water temperature (°C)."
+              },
+              {
+                "id": "s2",
+                "text": "Find the DV. They time each tablet, so the DV is the time to dissolve (s)."
+              },
+              {
+                "id": "s3",
+                "text": "List the constants: the same amount of water, the same kind and size of tablet, and the same cup. Only the temperature changes."
+              },
+              {
+                "id": "s4",
+                "text": "Write the problem and the hypothesis. Problem: How does water temperature affect the time for a tablet to dissolve? Hypothesis: If the water is warmer, then the tablet will dissolve faster, because the particles in warmer water move faster."
+              },
+              {
+                "id": "s5",
+                "text": "Set up the table and graph. First column and x-axis: Water Temperature (°C). Second column and y-axis: Time to Dissolve (s). Title: Time to Dissolve vs. Water Temperature."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: a group adds 0, 1, 2 or 3 spoonfuls of salt to the same amount of water and measures the temperature at which it boils. What is the DV?",
+              "options": [
+                { "id": "a", "text": "The spoonfuls of salt" },
+                { "id": "b", "text": "The boiling temperature" },
+                { "id": "c", "text": "The amount of water" }
+              ],
+              "answer": "b",
+              "explanation": "The group measures the boiling temperature, so it is the DV. The salt is what they changed (the IV), and the amount of water is a constant. Mixing up changed and measured is the common mistake.",
+              "afterStepId": "s2"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "A group adds 0, 1, 2 or 3 spoonfuls of salt to water and measures the boiling temperature. Which graph setup is correct?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "x-axis: Salt (spoonfuls). y-axis: Boiling Temperature (°C). Title: Boiling Temperature vs. Salt"
+                },
+                {
+                  "id": "b",
+                  "text": "x-axis: Boiling Temperature (°C). y-axis: Salt (spoonfuls). Title: Salt vs. Boiling Temperature"
+                },
+                {
+                  "id": "c",
+                  "text": "x-axis: Salt (spoonfuls). y-axis: Boiling Temperature (°C). Title: Salt vs. Boiling Temperature"
+                }
+              ],
+              "answer": "a",
+              "explanation": "The IV (salt) goes on the x-axis and the DV (boiling temperature) goes on the y-axis. The title is DV vs. IV: Boiling Temperature vs. Salt. Choice c has the right axes but a backwards title, the most common slip.",
+              "afterStepId": "s5"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

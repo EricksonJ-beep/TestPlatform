@@ -1,0 +1,209 @@
+{
+  "name": "ps-u2-lt2-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science A",
+  "relearning": [
+    {
+      "target": "U2.LT2",
+      "mode": "read",
+      "title": "Read: the parts of the atom",
+      "description": "A short reading with the football-stadium analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Three particles and the numbers",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can describe the parts of an atom and use the periodic table to figure out what any element is made of.**\n\n**Think of a football stadium.** If an atom were a stadium, the nucleus would be a marble sitting on the 50-yard line. That tiny marble holds almost all of the mass. The rest of the stadium is the electron cloud. So the **mass** is in the nucleus, and the **volume** is in the electron cloud.\n\n**The three particles.** A **proton** (p⁺) is positive, sits in the nucleus and has a mass of 1 amu. Protons give the atom its identity. A **neutron** (n⁰) has no charge, sits in the nucleus and also has a mass of 1 amu. An **electron** (e⁻) is negative, moves in the electron cloud and has a mass of about 0 amu.\n\n**The numbers.** **Atomic number** = number of protons. **Mass number** = protons + neutrons. The mass number is **not on the periodic table**, so round the average atomic mass (the decimal) to get it. Then: **p⁺ = atomic #**, **n⁰ = mass # − atomic #**, and **e⁻ = p⁺** in a neutral atom.\n\n**Worked example:** Sodium (Na) has atomic number 11 and an average atomic mass of 22.990. p⁺ = 11. Round 22.990 to get the mass number, 23. n⁰ = 23 − 11 = 12. The atom is neutral, so e⁻ = 11. **Answer:** 11 protons, 12 neutrons and 11 electrons."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "Which particle has no charge and sits in the nucleus?",
+              "options": [
+                { "id": "a", "text": "Proton" },
+                { "id": "b", "text": "Neutron" },
+                { "id": "c", "text": "Electron" }
+              ],
+              "answer": "b",
+              "explanation": "The neutron (n⁰) has no charge and adds 1 amu in the nucleus. The proton is positive, and the electron is negative and moves in the electron cloud. Mixing up protons and neutrons is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "fill_blank",
+              "prompt": "Aluminum (Al) has atomic number 13 and an average atomic mass of 26.982. How many neutrons are in its most common isotope? Type a number.",
+              "answer": ["14", "fourteen", "14 neutrons"],
+              "explanation": "Round 26.982 to get the mass number, 27. Then n⁰ = 27 − 13 = 14. Forgetting to round, or adding instead of subtracting, is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Forces and Bohr models",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Three forces.** Opposite charges attract, and like charges repel. (1) The (+) nucleus and the (−) electron cloud attract, which holds the atom together. (2) Electrons repel each other, which gives the electron cloud its volume, like strangers spreading out in an elevator. (3) Protons repel each other, so an insane amount of energy holds the nucleus together. Protons and neutrons are made of **quarks**, the smallest known particles. Electrons are not.\n\n**Bohr models.** Electrons fill the shells (energy levels) **from the inside out**: 2 in the first shell, 8 in the second and 8 in the third. Write the arrangement like 2-8-1.\n\n**Worked example 2:** Describe the Bohr model of a neutral argon atom (atomic number 18). 18 protons, so 18 electrons. The first shell takes 2 (16 left). The second takes 8 (8 left). The third takes the last 8. **Answer:** 2-8-8.\n\n**Worked example 3:** An atom has a mass number of 11 and 6 neutrons. What element is it? Atomic # = mass # − neutrons = 11 − 6 = 5. Atomic number 5 is **boron**, with 5 protons and 5 electrons.\n\n**Watch out for:** adding electrons into the mass number (they are about 0 amu), subtracting backwards (atomic # − mass #), thinking neutrons balance the charge (protons and electrons do that), looking for the mass number on the periodic table, and putting more than 2 electrons in the first shell."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "What is the electron arrangement of a neutral sulfur atom (atomic number 16)?",
+              "options": [
+                { "id": "a", "text": "2-8-6" },
+                { "id": "b", "text": "2-14" },
+                { "id": "c", "text": "6-8-2" }
+              ],
+              "answer": "a",
+              "explanation": "16 electrons fill from the inside out: 2, then 8 (6 left), then the last 6: 2-8-6. 2-14 overfills the second shell, which holds only 8, and 6-8-2 fills from the outside in. Both are common mistakes."
+            },
+            {
+              "id": "e2",
+              "kind": "fill_blank",
+              "prompt": "A neutral atom has a mass number of 40 and 22 neutrons. How many electrons does it have? Type a number.",
+              "answer": ["18", "eighteen", "18 electrons"],
+              "explanation": "Protons = mass # − neutrons = 40 − 22 = 18. A neutral atom has as many electrons as protons, so it has 18. Answering 22 (the neutrons) is the common mistake."
+            }
+          ],
+          "shortAnswer": "Use the football stadium analogy to explain where an atom's mass is and where its volume is."
+        }
+      ]
+    },
+    {
+      "target": "U2.LT2",
+      "mode": "do",
+      "title": "Do: flip the particles, then take apart an atom",
+      "description": "Flashcards with a 3-question self-quiz, then a worked problem one step at a time.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: the parts of the atom",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Proton (p⁺)",
+                "back": "Positive, in the nucleus, 1 amu. The number of protons gives the atom its identity."
+              },
+              { "id": "k2", "front": "Neutron (n⁰)", "back": "No charge, in the nucleus, 1 amu." },
+              {
+                "id": "k3",
+                "front": "Electron (e⁻)",
+                "back": "Negative, in the electron cloud, about 0 amu."
+              },
+              {
+                "id": "k4",
+                "front": "Atomic number",
+                "back": "The number of protons. It identifies the element."
+              },
+              {
+                "id": "k5",
+                "front": "Mass number",
+                "back": "Protons + neutrons. It is not on the periodic table, so round the average atomic mass."
+              },
+              {
+                "id": "k6",
+                "front": "Neutral atom",
+                "back": "Electrons = protons, so the charges cancel out."
+              },
+              {
+                "id": "k7",
+                "front": "Shells (energy levels)",
+                "back": "Fill from the inside out: 2, then 8, then 8. Written like 2-8-1."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "Where is almost all of an atom's mass?",
+              "options": [
+                { "id": "a", "text": "In the nucleus" },
+                { "id": "b", "text": "In the electron cloud" },
+                { "id": "c", "text": "Spread evenly through the atom" }
+              ],
+              "answer": "a",
+              "explanation": "Protons and neutrons (1 amu each) are in the nucleus, and electrons are about 0 amu. The electron cloud holds the volume, not the mass. Mixing up mass and volume is the common mistake."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "A neutral atom has 15 protons and 16 neutrons. How many electrons does it have?",
+              "options": [
+                { "id": "a", "text": "15" },
+                { "id": "b", "text": "16" },
+                { "id": "c", "text": "31" }
+              ],
+              "answer": "a",
+              "explanation": "In a neutral atom, electrons = protons, so there are 15. Neutrons have no charge, so they don't change the count. Using the neutrons (16) is the common mistake."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "Where do you find an element's mass number?",
+              "options": [
+                { "id": "a", "text": "It is the decimal number in the element's box" },
+                { "id": "b", "text": "It is not on the table; round the decimal to get it" },
+                { "id": "c", "text": "It is the whole number in the element's box" }
+              ],
+              "answer": "b",
+              "explanation": "The mass number is not on the periodic table. Round the average atomic mass (the decimal) to get the mass number of the most common isotope. The whole number in the box is the atomic number, which is the common mix-up."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: what is potassium made of?",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "Potassium (K) has atomic number 19 and an average atomic mass of 39.098. Find the protons, neutrons and electrons in a neutral atom of its most common isotope, and its electron arrangement.",
+            "steps": [
+              { "id": "s1", "text": "Protons = atomic number = 19." },
+              {
+                "id": "s2",
+                "text": "Mass number: it is not on the table, so round 39.098 to 39."
+              },
+              { "id": "s3", "text": "Neutrons = mass # − atomic # = 39 − 19 = 20." },
+              { "id": "s4", "text": "Electrons: the atom is neutral, so e⁻ = p⁺ = 19." },
+              {
+                "id": "s5",
+                "text": "Fill the shells from the inside out: 2 (17 left), then 8 (9 left), then 8 (1 left), then 1 in the fourth shell. The arrangement is 2-8-8-1."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "fill_blank",
+              "prompt": "Your turn: fluorine (F) has atomic number 9 and an average atomic mass of 18.998. How many neutrons are in its most common isotope? Type a number.",
+              "answer": ["10", "ten", "10 neutrons"],
+              "explanation": "Round 18.998 to 19, then 19 − 9 = 10 neutrons. Dropping the decimal without rounding (18 − 9 = 9) is the common mistake.",
+              "afterStepId": "s3"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: what is the electron arrangement of a neutral chlorine atom (atomic number 17)?",
+              "options": [
+                { "id": "a", "text": "2-8-7" },
+                { "id": "b", "text": "2-8-8" },
+                { "id": "c", "text": "2-15" }
+              ],
+              "answer": "a",
+              "explanation": "17 electrons: 2, then 8 (7 left), then the last 7 in the third shell: 2-8-7. 2-8-8 holds 18 electrons, one too many, which is the common mistake.",
+              "afterStepId": "s5"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

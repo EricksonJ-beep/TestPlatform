@@ -1,0 +1,234 @@
+{
+  "name": "ps-u2-lt1-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science A",
+  "relearning": [
+    {
+      "target": "U2.LT1",
+      "mode": "read",
+      "title": "Read: the timeline of atomic models",
+      "description": "A short reading with the phone-upgrade analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Five models in order",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can create a timeline showing the major scientists, their dates, and how each one changed the atomic model.**\n\n**Think of your phone.** Each new version fixed something the old one couldn't do. Nobody threw out the idea of a phone; they kept what worked and improved the rest. The atomic model works the same way: **new experiments build on old ideas and sometimes replace them.** Every model so far was wrong in some way, but each one was better than the one before it.\n\n**The five models:**\n**1803, John Dalton: Solid Sphere Model.** The atom is a solid sphere that can't get any smaller.\n**1904, JJ Thomson: Plum Pudding Model.** Evidence: the cathode ray tube. The atom is divisible: a positive sphere with negative particles spread through it, like chips in cookie dough. **No nucleus.**\n**1911, Ernest Rutherford: Nuclear Model.** Evidence: the gold foil experiment. The mass and positive charge are packed in a small, dense nucleus. The atom is mostly empty space.\n**1913, Niels Bohr: Bohr Model.** Electrons travel in **fixed orbits** around the nucleus.\n**1926, Schrödinger and Heisenberg: Electron Cloud Model.** Electrons are in shells, but there are **no fixed orbits**.\n\n**Worked example:** Put Nuclear, Solid Sphere, Electron Cloud, Plum Pudding and Bohr in order. The atom had to be split before anyone could find a center, so Solid Sphere (1803) comes before Plum Pudding (1904). The nucleus came next: Nuclear (1911). Then electrons got fixed orbits: Bohr (1913). Then the fixed orbits were removed: Electron Cloud (1926)."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "Thomson's Plum Pudding Model is a positive sphere with negative particles spread through it. What does it NOT have?",
+              "options": [
+                { "id": "a", "text": "Negative particles" },
+                { "id": "b", "text": "A nucleus" },
+                { "id": "c", "text": "Positive charge" }
+              ],
+              "answer": "b",
+              "explanation": "The Plum Pudding Model has no nucleus. The nucleus came in 1911, from Rutherford's gold foil experiment. Giving Plum Pudding a nucleus is the most common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "fill_blank",
+              "prompt": "In what year did Rutherford propose the Nuclear Model? Type the year.",
+              "answer": ["1911"],
+              "explanation": "Rutherford's gold foil experiment led to the Nuclear Model in 1911, after Thomson (1904) and before Bohr (1913). Mixing up 1911 with Bohr's 1913 is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "The evidence and the periodic table scientists",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**What each step changed:**\nSolid Sphere → Plum Pudding: the atom is divisible and has negative particles (cathode ray tube).\nPlum Pudding → Nuclear: the mass and positive charge are packed into a small, dense nucleus (gold foil).\nNuclear → Bohr: electrons travel in fixed orbits.\nBohr → Electron Cloud: shells, but no fixed orbits.\n\n**Worked example 2:** Out of about 10,000 particles fired at gold foil, about 9,950 passed straight through and about 2 bounced straight back. Most passed through, so the atom is mostly empty space. A few bounced back, so they hit something small, dense and positive: a nucleus. This supports Rutherford's Nuclear Model (1911), which replaced Plum Pudding.\n\n**More names for the timeline.** **400 BC, Democritus** first named the atom (*atomos* = indivisible), using reasoning, not experiments. **1869, Dmitri Mendeleev** made the first periodic table, ordered by **atomic mass**. **1913, Henry Moseley** found that each element has a unique number of protons (the **atomic number**) and ordered the table that way. Today's table follows Moseley.\n\n**Worked example 3:** How many years passed between Dalton's Solid Sphere Model and Rutherford's Nuclear Model? Subtract the earlier year from the later year: 1911 − 1803 = **108 years**.\n\n**Watch out for:** giving the Plum Pudding Model a nucleus (it has none), swapping Mendeleev (atomic **mass**) and Moseley (atomic **number**), mixing up Bohr (**fixed orbits**) and Electron Cloud (**no fixed orbits**), and forgetting that Bohr and Moseley share 1913."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "Mendeleev and Moseley both ordered the periodic table. What did Moseley use?",
+              "options": [
+                { "id": "a", "text": "Atomic mass" },
+                { "id": "b", "text": "Atomic number (the number of protons)" },
+                { "id": "c", "text": "The year each element was found" }
+              ],
+              "answer": "b",
+              "explanation": "Moseley (1913) ordered the elements by atomic number, the number of protons. Mendeleev (1869) used atomic mass. Swapping the two is the common mistake."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "A few particles bounced almost straight back off the gold foil. What did that show?",
+              "options": [
+                { "id": "a", "text": "The atom is mostly empty space" },
+                { "id": "b", "text": "The atom has a small, dense, positive center (a nucleus)" },
+                { "id": "c", "text": "Electrons travel in fixed orbits" }
+              ],
+              "answer": "b",
+              "explanation": "Only something small, dense and positive could push the positive particles straight back: the nucleus. \"Mostly empty space\" comes from the particles that passed straight through. Mixing up those two results is the common mistake."
+            }
+          ],
+          "shortAnswer": "Explain how the gold foil experiment changed the Plum Pudding Model. Use the words nucleus, dense and empty space."
+        }
+      ]
+    },
+    {
+      "target": "U2.LT1",
+      "mode": "do",
+      "title": "Do: flip the scientists, then build the timeline",
+      "description": "Flashcards with a 3-question self-quiz, then the timeline built one step at a time.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: who changed the model",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Democritus, 400 BC",
+                "back": "First to name the atom (atomos = indivisible). Reasoning only, no experiments."
+              },
+              {
+                "id": "k2",
+                "front": "John Dalton, 1803",
+                "back": "Solid Sphere Model: the atom is a solid sphere that can't get any smaller."
+              },
+              {
+                "id": "k3",
+                "front": "JJ Thomson, 1904",
+                "back": "Plum Pudding Model (cathode ray tube): a positive sphere with negative particles spread through it. No nucleus."
+              },
+              {
+                "id": "k4",
+                "front": "Ernest Rutherford, 1911",
+                "back": "Nuclear Model (gold foil): the mass and positive charge are in a small, dense nucleus. The atom is mostly empty space."
+              },
+              {
+                "id": "k5",
+                "front": "Niels Bohr, 1913",
+                "back": "Bohr Model: electrons travel in fixed orbits around the nucleus."
+              },
+              {
+                "id": "k6",
+                "front": "Schrödinger and Heisenberg, 1926",
+                "back": "Electron Cloud Model: electrons are in shells, but with no fixed orbits."
+              },
+              {
+                "id": "k7",
+                "front": "Mendeleev (1869) vs. Moseley (1913)",
+                "back": "Mendeleev ordered the first periodic table by atomic mass. Moseley ordered it by atomic number (protons), like today's table."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "Which evidence did JJ Thomson use?",
+              "options": [
+                { "id": "a", "text": "The gold foil experiment" },
+                { "id": "b", "text": "The cathode ray tube" },
+                { "id": "c", "text": "Reasoning only, no experiments" }
+              ],
+              "answer": "b",
+              "explanation": "Thomson's cathode ray tube showed that atoms have negative particles inside, so the atom is divisible. Gold foil was Rutherford's experiment. Swapping the two is the common mistake."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "Which list is in order from oldest to newest?",
+              "options": [
+                { "id": "a", "text": "Plum Pudding, Solid Sphere, Nuclear" },
+                { "id": "b", "text": "Solid Sphere, Plum Pudding, Nuclear" },
+                { "id": "c", "text": "Solid Sphere, Nuclear, Plum Pudding" }
+              ],
+              "answer": "b",
+              "explanation": "Solid Sphere (1803), then Plum Pudding (1904), then Nuclear (1911). The atom had to be split into parts before anyone could find a nucleus. Putting the Nuclear Model before Plum Pudding is the common mistake."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "What is the main difference between the Bohr Model and the Electron Cloud Model?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Bohr has fixed orbits; the Electron Cloud Model has no fixed orbits"
+                },
+                { "id": "b", "text": "Bohr has no nucleus; the Electron Cloud Model has one" },
+                { "id": "c", "text": "Bohr has no electrons; the Electron Cloud Model has them" }
+              ],
+              "answer": "a",
+              "explanation": "Both models have a nucleus and electrons in shells. Bohr's electrons travel in fixed orbits, and the Electron Cloud Model removes the fixed orbits. Mixing up those two is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: build the timeline",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "Build a timeline of the five atomic models. For each one, give the year, the scientist and what changed. Then find how many years the whole timeline covers.",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "1803: John Dalton's Solid Sphere Model. The atom is a solid sphere that can't get any smaller."
+              },
+              {
+                "id": "s2",
+                "text": "1904: JJ Thomson's Plum Pudding Model. The cathode ray tube showed negative particles inside atoms, so the atom is divisible. There is still no nucleus."
+              },
+              {
+                "id": "s3",
+                "text": "1911: Ernest Rutherford's Nuclear Model. Gold foil showed a small, dense, positive nucleus and a lot of empty space."
+              },
+              {
+                "id": "s4",
+                "text": "1913: Niels Bohr's model. Electrons travel in fixed orbits around the nucleus."
+              },
+              {
+                "id": "s5",
+                "text": "1926: Schrödinger and Heisenberg's Electron Cloud Model. Electrons are in shells, but with no fixed orbits."
+              },
+              {
+                "id": "s6",
+                "text": "Find the span. Subtract the first year from the last: 1926 − 1803 = 123 years."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: if the Plum Pudding Model were right, almost every particle should pass straight through the gold foil. Which result proved it wrong?",
+              "options": [
+                { "id": "a", "text": "Most particles passed straight through" },
+                { "id": "b", "text": "A few particles bounced almost straight back" },
+                { "id": "c", "text": "The gold foil did not melt" }
+              ],
+              "answer": "b",
+              "explanation": "Plum Pudding spreads the positive charge out, so nothing should bounce back. A few did, so there had to be a small, dense, positive nucleus. Most particles passing through was expected, so picking that result is the common mistake.",
+              "afterStepId": "s3"
+            },
+            {
+              "id": "w2",
+              "kind": "fill_blank",
+              "prompt": "Your turn: how many years passed between Thomson's Plum Pudding Model and Bohr's model? Type a number.",
+              "answer": ["9", "nine", "9 years", "nine years"],
+              "explanation": "Plum Pudding was 1904 and Bohr was 1913: 1913 − 1904 = 9 years. Using 1911 (Rutherford) for Bohr gives 7, the common mistake.",
+              "afterStepId": "s6"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
