@@ -632,6 +632,17 @@ the student-account test.
 ### C4 · Biology Read · Watch · Do (33 targets)
 Same as C2.
 
+*Read and Do built Nov 5 for all 33 targets (Watch waits on Jon):*
+- *One pack per target, `bio-uX-ltY-relearning`. Read is a core and an extension text with 4
+  quick checks and one short answer. Do is flashcards with a self-quiz or worked steps, varied by
+  target. It includes Punnett squares drawn as math grids, DNA → mRNA → amino acids with the
+  codons given, and pedigrees.*
+- *Sources: Jon's Biology packs and his Drive files. Fungi and Plants use standard 10th-grade
+  content (no notes found).*
+- *Checks: `scripts/check-pack.ts` is clean on all 33. Each writer re-solved its own checks. I
+  re-solved a random 24 of the 285, and all were right. All 12 math grids render.*
+- *Genotypes are never fill-ins, because fill-in grading ignores case, so "Bb" would match "bb".*
+
 **Done when** every Biology target has all three modes and its videos are approved.
 
 ### L1 · Launch

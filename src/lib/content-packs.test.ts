@@ -94,6 +94,8 @@ beforeAll(async () => {
     );
   // Jon's Biology A course is seeded with named units and per-unit codes (scripts/courses/biology.ts).
   [bio] = await db.insert(schema.courses).values({ ownerId: t.id, name: "Biology A" }).returning();
+  // Biology B carries Units 5–8 (scripts/courses/biology.ts); its relearning packs land there.
+  await db.insert(schema.courses).values({ ownerId: t.id, name: "Biology B" });
   [bioUnit2] = await db
     .insert(schema.units)
     .values({ courseId: bio.id, name: "Unit 2 · Biochemistry", sortOrder: 1 })
