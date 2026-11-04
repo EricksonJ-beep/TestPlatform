@@ -421,6 +421,7 @@ describe("0030, 0031 and 0032 are re-runnable", () => {
       "0030_relearning_revamp.sql",
       "0031_score_history.sql",
       "0032_kept_score.sql",
+      "0033_lunch_code.sql",
     ]) {
       const sql = readFileSync(`drizzle/${file}`, "utf8");
       for (const statement of sql.split("--> statement-breakpoint")) {

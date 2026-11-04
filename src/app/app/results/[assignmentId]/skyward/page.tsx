@@ -66,8 +66,15 @@ export default async function SkywardExportPage({
             {data.missing.length === 1 ? "student" : "students"}
           </p>
           <p className="text-muted-foreground">
-            Their email doesn&apos;t start with a lunch code, so their row goes out with a blank ID.
-            Fix the email on the class roster first, or type the ID in Skyward.
+            Bloom doesn&apos;t have their lunch code yet, so their row goes out with a blank ID. On
+            the class page, use{" "}
+            <Link
+              href={`/app/classes/${data.assignment.classId}`}
+              className="font-medium text-brand-deep hover:underline"
+            >
+              Lunch codes
+            </Link>{" "}
+            and paste the roster once; every export after that has the IDs.
           </p>
           <ul className="list-inside list-disc">
             {data.missing.map((m) => (

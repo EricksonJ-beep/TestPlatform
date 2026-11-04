@@ -111,6 +111,11 @@ export const users = pgTable(
     email: text("email"),
     /** Login name for students created through a join code (e.g. "braeden.allard"). */
     username: text("username"),
+    /**
+     * The student's lunch code, Skyward's "Other ID" (Jon, Nov 5 2026): set from the class roster
+     * when the login isn't the school email the code would otherwise come from.
+     */
+    lunchCode: text("lunch_code"),
     passwordHash: text("password_hash").notNull(),
     role: userRole("role").notNull(),
     firstName: text("first_name").notNull(),

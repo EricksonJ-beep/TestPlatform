@@ -10,6 +10,7 @@ import { clearViewAsCookie, readViewAsCookie, setViewAsCookie } from "@/lib/view
 import { parseCsvRecords } from "@/lib/csv";
 import { rotateJoinCode, uniqueUsername, usernameBase } from "@/lib/join";
 import { parseRosterNames } from "@/lib/roster";
+import { matchLunchCodes, parseLunchCodes } from "@/lib/lunch-codes";
 import { generateTempPassword, hashPassword, passwordPolicy } from "@/lib/password";
 
 // ---------------------------------------------------------------------------
@@ -437,6 +438,40 @@ export const addRosterNames = withAuthz(async (classId: string, formData: FormDa
     await db.insert(schema.rosterNames).values(fresh.map((n) => ({ classId, ...n })));
   revalidatePath(`/app/classes/${classId}`);
   return { added: fresh.length, skipped: names.length - fresh.length };
+});
+
+/**
+ * Lunch codes (Jon, Nov 5 2026): the teacher pastes the school roster and each line's code is
+ * saved on the matching student in this class, so the Skyward export has its "Other ID". Owner
+ * only; students outside the class are never touched. Unmatched lines come back by name.
+ */
+export const setLunchCodes = withAuthz(async (classId: string, text: string) => {
+  await requireOwner({ type: "class", id: classId });
+  const lines = parseLunchCodes(String(text ?? "").slice(0, 100_000));
+  if (lines.length === 0)
+    throw new ActionError("Paste the roster: each line needs a name and a lunch code.", 400);
+  const students = await db
+    .select({
+      id: schema.users.id,
+      firstName: schema.users.firstName,
+      lastName: schema.users.lastName,
+    })
+    .from(schema.enrollments)
+    .innerJoin(schema.users, eq(schema.enrollments.studentId, schema.users.id))
+    .where(eq(schema.enrollments.classId, classId));
+  const { matched, unmatched } = matchLunchCodes(lines, students);
+  for (const m of matched)
+    await db
+      .update(schema.users)
+      .set({ lunchCode: m.code })
+      .where(eq(schema.users.id, m.studentId));
+  revalidatePath(`/app/classes/${classId}`);
+  revalidatePath("/app/results", "layout");
+  return {
+    saved: matched.length,
+    unmatched: unmatched.map((l) => `${l.first} ${l.last}`),
+    withoutCode: students.length - matched.length,
+  };
 });
 
 export const removeRosterName = withAuthz(async (classId: string, nameId: string) => {

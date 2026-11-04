@@ -19,6 +19,15 @@ export function skywardId(email: string | null | undefined): string | null {
   return /^\d+$/.test(local) ? local : null;
 }
 
+/** A student's ID for Skyward: the lunch code set from the roster, else the one in their email. */
+export function studentSkywardId(s: {
+  email: string | null;
+  lunchCode?: string | null;
+}): string | null {
+  const code = s.lunchCode?.trim();
+  return code ? code : skywardId(s.email);
+}
+
 /** A percent as Skyward takes it: a whole number, halves rounded up (K1). Blank when there's none. */
 export function skywardScore(percent: number | null | undefined): number | null {
   if (percent === null || percent === undefined || Number.isNaN(percent)) return null;
@@ -57,6 +66,8 @@ export type SkywardStudent = {
   lastName: string;
   firstName: string;
   email: string | null;
+  /** Set from the class roster (Nov 5 2026); wins over the email. */
+  lunchCode?: string | null;
   /** The counting percent for this file's column; null with no finished attempt. */
   percent: number | null;
 };
@@ -81,16 +92,21 @@ export function skywardCsv(students: SkywardStudent[]): string {
           a.firstName.localeCompare(b.firstName) ||
           (a.email ?? "").localeCompare(b.email ?? "")
       )
-      .map((s) => [s.lastName, s.firstName, skywardId(s.email), skywardScore(s.percent)])
+      .map((s) => [s.lastName, s.firstName, studentSkywardId(s), skywardScore(s.percent)])
   );
 }
 
 /** The students whose email gives no Skyward ID, for the page's list (K2). */
 export function missingIds(
-  students: { lastName: string; firstName: string; email: string | null }[]
+  students: {
+    lastName: string;
+    firstName: string;
+    email: string | null;
+    lunchCode?: string | null;
+  }[]
 ): { name: string; email: string | null }[] {
   return students
-    .filter((s) => skywardId(s.email) === null)
+    .filter((s) => studentSkywardId(s) === null)
     .map((s) => ({ name: `${s.firstName} ${s.lastName}`, email: s.email }))
     .sort((a, b) => a.name.localeCompare(b.name));
 }

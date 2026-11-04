@@ -18,6 +18,7 @@ export type SkywardExport = {
     id: string;
     title: string;
     className: string;
+    classId: string;
     type: "practice" | "formative" | "summative";
   };
   files: SkywardFile[];
@@ -54,6 +55,7 @@ export async function getSkywardExport(assignmentId: string): Promise<SkywardExp
         lastName: schema.users.lastName,
         firstName: schema.users.firstName,
         email: schema.users.email,
+        lunchCode: schema.users.lunchCode,
       })
       .from(schema.enrollments)
       .innerJoin(schema.users, eq(schema.enrollments.studentId, schema.users.id))
@@ -129,6 +131,7 @@ export async function getSkywardExport(assignmentId: string): Promise<SkywardExp
       lastName: s.lastName,
       firstName: s.firstName,
       email: s.email,
+      lunchCode: s.lunchCode,
       percent: f ? percent(f) : null,
     };
   };
@@ -169,7 +172,13 @@ export async function getSkywardExport(assignmentId: string): Promise<SkywardExp
     ];
   }
   return {
-    assignment: { id: asg.id, title: asg.title, className: asg.className, type: asg.type },
+    assignment: {
+      id: asg.id,
+      title: asg.title,
+      className: asg.className,
+      classId: asg.classId,
+      type: asg.type,
+    },
     files,
     missing: missingIds(students),
     note,

@@ -20,7 +20,9 @@ export function StudentFilter({
         value={current ?? ""}
         onChange={(e) => {
           const v = e.target.value;
-          router.push(v ? `/app/classes/${classId}/activity?student=${v}` : `/app/classes/${classId}/activity`);
+          router.push(
+            v ? `/app/classes/${classId}/activity?student=${v}` : `/app/classes/${classId}/activity`
+          );
         }}
         className="h-9 rounded-md border border-input bg-background px-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
         aria-label="Student"

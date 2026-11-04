@@ -11,6 +11,7 @@ import {
   skywardFileName,
   skywardId,
   skywardScore,
+  studentSkywardId,
 } from "./skyward";
 
 describe("skywardId (K2, decision 24)", () => {
@@ -80,5 +81,19 @@ describe("skywardCsv (K1)", () => {
       { name: "Rylan Moore", email: null },
       { name: "Tim Bauer", email: "tim@gmail.com" },
     ]);
+  });
+});
+
+describe("lunch codes from the roster (Nov 5 2026)", () => {
+  it("a saved lunch code wins over the email, and clears the student off the missing list", () => {
+    expect(studentSkywardId({ email: null, lunchCode: "1234" })).toBe("1234");
+    expect(studentSkywardId({ email: "5678@school.org", lunchCode: null })).toBe("5678");
+    expect(studentSkywardId({ email: "jdoe", lunchCode: " " })).toBeNull();
+    expect(
+      missingIds([
+        { lastName: "Doe", firstName: "Jane", email: null, lunchCode: "1234" },
+        { lastName: "Roe", firstName: "Sam", email: null },
+      ]).map((m) => m.name)
+    ).toEqual(["Sam Roe"]);
   });
 });
