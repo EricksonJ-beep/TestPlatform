@@ -1,7 +1,7 @@
 # Relearning revamp: a shorter, clearer path to the retake (Jon, Nov 2–4 2026)
 
-**Status: proposed. Every open question is settled (Nov 4 2026). Waiting on Jon's approval to
-start R0. Nothing below is built yet.**
+**Status: approved by Jon, Nov 4 2026. R0 (spec updates) is done and waiting on Jon's read;
+R1 is next. Nothing else below is built yet.**
 
 Jon's ask: "Right now the students are struggling with the corrections, activity, and then
 practice. I think it is too much for them to 'earn' a retake. The correction piece is working
@@ -254,7 +254,7 @@ waits until all of them are done,** so both courses switch over together (decisi
 Content is the longest part of the job: about **4,575 new practice questions** (1,275 Physical
 Science + 3,300 Biology) and **58 targets × 3 modes**, each with a core and an extension.
 
-### R0 · Spec updates
+### R0 · Spec updates ✅ (Nov 4 2026; waiting on Jon's read)
 - Update PLAN.md (§2 attempt table, §3.7, §4 steps 2–5 and rules, §9 Skyward, §10 student
   screens) and docs/decisions.md with decisions 1–37.
 - Mark the replaced rows as superseded: Retake gates, Practice checking, Corrections cap, and
