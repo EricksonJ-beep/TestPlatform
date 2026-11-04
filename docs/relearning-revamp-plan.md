@@ -1,7 +1,7 @@
 # Relearning revamp: a shorter, clearer path to the retake (Jon, Nov 2–4 2026)
 
-**Status: approved by Jon, Nov 4 2026. R0 (spec updates) is done and waiting on Jon's read;
-R1 is next. Nothing else below is built yet.**
+**Status: approved by Jon, Nov 4 2026. R0 (spec updates) and R1 (schema) are done; R2 is
+next. Nothing else below is built yet.**
 
 Jon's ask: "Right now the students are struggling with the corrections, activity, and then
 practice. I think it is too much for them to 'earn' a retake. The correction piece is working
@@ -262,22 +262,37 @@ Science + 3,300 Biology) and **58 targets × 3 modes**, each with a core and an 
 
 **Done when** PLAN.md and decisions.md match this plan and Jon has read them.
 
-### R1 · Schema
-- New table `relearning_paths`: student, assignment, target (null for a quiz's stitched
-  activity), mode, added optional targets, status, started/finished.
-- New table `relearning_sections`: activity, target, mode, **part (core | extension)**, order,
-  content, checks JSONB, short-answer prompt, est. minutes.
-- New tables `practice_checks` and `practice_check_rounds`: student, assignment, purpose (path |
-  attempt 3), targets, served question ids, answers, score, passed.
-- New `FinalBasis` values `relearning_path` and `corrections_to_90`.
-- `assignments.practice_pass` (default 4).
-- **`courses.relearning_path_from`** (date; null = old rules, so Anatomy stays null).
-- Video flags for A6 (activity, section, student, reason).
+### R1 · Schema ✅ (Nov 4 2026; migration `0030_relearning_revamp`)
+- `relearning_options`: one Read, Watch or Do per target per teacher (owner, target, mode,
+  title, description, published). It's a table of its own rather than a new activity kind, so
+  the v2 activity lists and their completion rules never see it.
+- `relearning_sections`: option, **part (core | extension)**, order, title, a body (text,
+  video, interactive page, flashcards or worked steps), an uploaded video, quick checks (their
+  keys stay on the server), the short-answer prompt, and minutes (1–30).
+- `relearning_paths`: one row per student × assignment × target (unique), with the mode, the
+  option, `added` (an optional quiz target ticked for 100%), the sections served, progress,
+  started/finished, and `checked_off_by` (A5). A quiz's stitched activity is the rows sharing a
+  `bundle_id`; a test target's row is a bundle of its own.
+- `practice_checks`: assignment, student, purpose (path | attempt), the targets, the bundle it
+  follows or the attempt number it unlocks, the pass mark when it began, and when it passed.
+  `practice_check_rounds`: round number, the questions served, first answers, score, finished.
+- `relearning_video_flags`: section, student, assignment, error code, hits, resolved.
+- `assignments.practice_pass` (default 4, 1–5) and **`courses.relearning_path_from`**
+  (a timestamp; null = old rules, so Anatomy stays null).
+- `FinalBasis` gains `relearning_path` and `corrections_to_90`.
 
-This ticket is the migration only; the old gate tables stay readable for history.
+The migration is additive and re-runnable, like 0023–0029, and the old gate tables stay for
+assignments taken before launch.
 
 **Done when** `drizzle-kit generate` is clean, the migration applies to a Neon branch and the
 existing tests pass.
+*Checked Nov 4:*
+- *`drizzle-kit generate` reports no changes.*
+- *All 31 migrations apply with `drizzle-kit migrate` on a local Postgres (PGlite), and a second
+  run is a no-op. 0030 also re-runs on a database that already has it.*
+- *572 tests pass (`src/db/relearning-schema.test.ts` covers the new rules).*
+- *There is no Neon branch: preview builds use the live database, so the first real apply
+  happens when this branch is pushed.*
 
 ### R2 · The rule (pure functions + tests)
 - New `src/lib/relearning-path.ts`: `pathFor({ type, threshold, attempt1PerTarget, corrections,

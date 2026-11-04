@@ -23,6 +23,9 @@ export type MediaKind = (typeof s.mediaKind.enumValues)[number];
 export type ActivityKind = (typeof s.activityKind.enumValues)[number];
 export type WorksheetCountsAs = (typeof s.worksheetCountsAs.enumValues)[number];
 export type WorksheetEventType = (typeof s.worksheetEventType.enumValues)[number];
+export type RelearningMode = (typeof s.relearningMode.enumValues)[number];
+export type RelearningPart = (typeof s.relearningPart.enumValues)[number];
+export type PracticeCheckPurpose = (typeof s.practiceCheckPurpose.enumValues)[number];
 
 // Identity & orgs
 export type SelectOrganization = Select<typeof s.organizations>;
@@ -116,17 +119,36 @@ export type InsertRetakeGate = Insert<typeof s.retakeGates>;
 export type SelectAssignmentPin = Select<typeof s.assignmentPins>;
 export type InsertAssignmentPin = Insert<typeof s.assignmentPins>;
 
+// Relearning revamp (docs/relearning-revamp-plan.md, ticket R1)
+export type SelectRelearningOption = Select<typeof s.relearningOptions>;
+export type InsertRelearningOption = Insert<typeof s.relearningOptions>;
+export type SelectRelearningSection = Select<typeof s.relearningSections>;
+export type InsertRelearningSection = Insert<typeof s.relearningSections>;
+export type SelectRelearningPath = Select<typeof s.relearningPaths>;
+export type InsertRelearningPath = Insert<typeof s.relearningPaths>;
+export type SelectPracticeCheck = Select<typeof s.practiceChecks>;
+export type InsertPracticeCheck = Insert<typeof s.practiceChecks>;
+export type SelectPracticeCheckRound = Select<typeof s.practiceCheckRounds>;
+export type InsertPracticeCheckRound = Insert<typeof s.practiceCheckRounds>;
+export type SelectRelearningVideoFlag = Select<typeof s.relearningVideoFlags>;
+export type InsertRelearningVideoFlag = Insert<typeof s.relearningVideoFlags>;
+
 // Sharing
 export type SelectShare = Select<typeof s.shares>;
 export type InsertShare = Insert<typeof s.shares>;
 
 // JSON column shapes re-exported for convenience
 export type {
+  CheckAnswer,
+  CheckServedQuestion,
   CompletionEvidence,
   GradingConfig,
   NumericGradingConfig,
   PerTargetBest,
   FinalBasis,
+  QuickCheck,
+  RelearningProgress,
+  RelearningSectionBody,
   ServedQuestion,
   TemplateVariable,
 } from "./schema";

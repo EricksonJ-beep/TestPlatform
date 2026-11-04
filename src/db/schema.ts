@@ -86,6 +86,12 @@ export const activityKind = pgEnum("activity_kind", [
 ]);
 export const worksheetCountsAs = pgEnum("worksheet_counts_as", ["practice", "activity", "both"]);
 export const worksheetEventType = pgEnum("worksheet_event_type", ["submit", "progress"]);
+/** Relearning revamp (docs/relearning-revamp-plan.md, A1): the three ways a student relearns a target. */
+export const relearningMode = pgEnum("relearning_mode", ["read", "watch", "do"]);
+/** A2: every option has a short core and an extension; a quiz on 2+ targets uses the cores only. */
+export const relearningPart = pgEnum("relearning_part", ["core", "extension"]);
+/** P5: the check on a relearning path, or the fresh one before a quiz's attempt 3 (decision 32). */
+export const practiceCheckPurpose = pgEnum("practice_check_purpose", ["path", "attempt"]);
 
 // ---------------------------------------------------------------------------
 // Identity & orgs
@@ -142,6 +148,13 @@ export const courses = pgTable(
      * are never owed or required on any assignment of the course; the only way up is a retake.
      */
     cvtcRules: boolean("cvtc_rules").default(false).notNull(),
+    /**
+     * Relearning revamp (Jon, Nov 4 2026; docs/relearning-revamp-plan.md): an assignment whose
+     * attempt 1 finishes at or after this moment uses the new path (corrections → Read · Watch ·
+     * Do → practice check). Null = the v2 rules, so Anatomy stays null. Set for Physical Science
+     * and Biology together at launch (ticket L1).
+     */
+    relearningPathFrom: timestamp("relearning_path_from", { withTimezone: true }),
     ...timestamps,
   },
   (t) => [index("courses_owner_idx").on(t.ownerId)]
@@ -682,6 +695,8 @@ export const assignments = pgTable(
     correctionsCap: boolean("corrections_cap").default(true).notNull(),
     /** Under the cap: days after the first attempt during which a retake may start (0 = no limit). */
     retakeWindowDays: integer("retake_window_days").default(7).notNull(),
+    /** Relearning revamp (P4): right first answers out of 5 that pass a practice check. */
+    practicePass: integer("practice_pass").default(4).notNull(),
     ...timestamps,
   },
   (t) => [
@@ -689,6 +704,7 @@ export const assignments = pgTable(
     index("assignments_assessment_idx").on(t.assessmentId),
     index("assignments_owner_idx").on(t.ownerId),
     check("assignments_threshold_range", sql`${t.retakeThreshold} between 0 and 100`),
+    check("assignments_practice_pass_range", sql`${t.practicePass} between 1 and 5`),
   ]
 );
 
@@ -904,9 +920,18 @@ export const attemptTargetScores = pgTable(
   ]
 );
 
-/** How the counting score came about (the "why" beside the final on the results page and export). */
+/**
+ * How the counting score came about (the "why" beside the final on the results page and export).
+ * `relearning_path` and `corrections_to_90` are the relearning revamp's quiz raises (Q1, Q2).
+ */
 export type FinalBasis =
-  "best_attempt" | "corrections_to_threshold" | "corrections_to_full" | "retake" | "per_target";
+  | "best_attempt"
+  | "corrections_to_threshold"
+  | "corrections_to_full"
+  | "retake"
+  | "per_target"
+  | "relearning_path"
+  | "corrections_to_90";
 
 export type PerTargetBest = Record<
   string,
@@ -1264,6 +1289,256 @@ export const assignmentPins = pgTable(
       "assignment_pins_has_target_item",
       sql`${t.activityId} is not null or ${t.practiceSetId} is not null`
     ),
+  ]
+);
+
+// ---------------------------------------------------------------------------
+// Relearning revamp (Jon, Nov 4 2026; docs/relearning-revamp-plan.md, ticket R1).
+// From a course's `relearning_path_from`, a target's path is corrections → one Read · Watch ·
+// Do option → a 5-question practice check. The v2 gate tables above (retake_gates,
+// activity_completions, practice_attempts as a gate) stay for assignments taken before it.
+// ---------------------------------------------------------------------------
+
+/** One way to relearn one target (A1): a teacher's Read, Watch or Do, made of sections. */
+export const relearningOptions = pgTable(
+  "relearning_options",
+  {
+    id: id(),
+    ownerId: uuid("owner_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    learningTargetId: uuid("learning_target_id")
+      .notNull()
+      .references(() => learningTargets.id, { onDelete: "cascade" }),
+    mode: relearningMode("mode").notNull(),
+    /** The picker card's headline, e.g. "Watch: ionic bonds". */
+    title: text("title").notNull(),
+    /** The card's one line under the title. */
+    description: text("description"),
+    isPublished: boolean("is_published").default(false).notNull(),
+    ...timestamps,
+  },
+  (t) => [
+    uniqueIndex("relearning_options_owner_target_mode_unique").on(
+      t.ownerId,
+      t.learningTargetId,
+      t.mode
+    ),
+    index("relearning_options_target_idx").on(t.learningTargetId),
+  ]
+);
+
+/** What a section shows (A1). R4 renders each type; JSONB so a new type needs no migration. */
+export type RelearningSectionBody =
+  | { type: "text"; html: string }
+  /** Watch: a YouTube clip (or the section's uploaded media asset), optionally trimmed. */
+  | { type: "video"; youtubeId?: string; startSeconds?: number; endSeconds?: number }
+  /** Do: a hosted drag-and-drop page, e.g. "/activities/osteon-labeling.html". */
+  | { type: "interactive"; page: string }
+  | { type: "flashcards"; cards: { id: string; front: string; back: string }[] }
+  | { type: "worked_steps"; problem: string; steps: { id: string; text: string }[] };
+
+/** A quick check inside a section (decision 7): unlimited tries, graded on the server. */
+export type QuickCheck = {
+  id: string;
+  kind: "multiple_choice" | "fill_blank";
+  prompt: string;
+  options?: { id: string; text: string }[];
+  /** The right option id, or the accepted fill-in answers. Never sent to the student. */
+  answer: string | string[];
+  explanation?: string;
+  /** Watch: seconds into the video where it pauses for this check. */
+  atSeconds?: number;
+};
+
+export const relearningSections = pgTable(
+  "relearning_sections",
+  {
+    id: id(),
+    optionId: uuid("option_id")
+      .notNull()
+      .references(() => relearningOptions.id, { onDelete: "cascade" }),
+    part: relearningPart("part").notNull(),
+    sortOrder: integer("sort_order").default(0).notNull(),
+    title: text("title"),
+    body: jsonb("body").$type<RelearningSectionBody>().notNull(),
+    /** Watch: Jon's own recording, stored in Bloom so YouTube filtering never blocks it (A6). */
+    mediaAssetId: uuid("media_asset_id").references(() => mediaAssets.id, {
+      onDelete: "set null",
+    }),
+    checks: jsonb("checks").$type<QuickCheck[]>().default([]).notNull(),
+    /** The option's one short answer, "if needed and it made sense" (decision 7), in its extension. */
+    shortAnswerPrompt: text("short_answer_prompt"),
+    /** Minutes the section takes; the picker adds them up ("About 10 min"). */
+    estMinutes: integer("est_minutes").default(3).notNull(),
+    ...timestamps,
+  },
+  (t) => [
+    index("relearning_sections_option_idx").on(t.optionId, t.part, t.sortOrder),
+    check("relearning_sections_minutes_range", sql`${t.estMinutes} between 1 and 30`),
+  ]
+);
+
+/** A student's progress through the sections served (A3). Keys are section and check ids. */
+export type RelearningProgress = {
+  checks?: Record<string, { correct: boolean; tries: number; at: string }>;
+  sections?: Record<string, { scrolledToEnd?: boolean; watchPercent?: number }>;
+  shortAnswers?: Record<string, string>;
+};
+
+/**
+ * A student's relearning on one target of one assignment (S2, Q3). A quiz's stitched activity is
+ * the rows sharing `bundle_id`, one per target on its path; a test target's row is a bundle of
+ * its own. A target is relearned at most once per assignment (decision 32: attempt 3 needs a
+ * fresh check, not new relearning). Server code writes every row; clients never do.
+ */
+export const relearningPaths = pgTable(
+  "relearning_paths",
+  {
+    id: id(),
+    assignmentId: uuid("assignment_id")
+      .notNull()
+      .references(() => assignments.id, { onDelete: "cascade" }),
+    studentId: uuid("student_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    learningTargetId: uuid("learning_target_id")
+      .notNull()
+      .references(() => learningTargets.id, { onDelete: "cascade" }),
+    bundleId: uuid("bundle_id").notNull(),
+    /** The mode picked (A4: switchable until finished). Null only when Jon checked it off (A5). */
+    mode: relearningMode("mode"),
+    optionId: uuid("option_id").references(() => relearningOptions.id, { onDelete: "set null" }),
+    /** An 80%+ quiz target the student ticked to reach 100% (Q2, decision 31). */
+    added: boolean("added").default(false).notNull(),
+    /** Exact sections served (cores, or core + extension), so progress keys stay stable. */
+    servedSectionIds: jsonb("served_section_ids").$type<string[]>().default([]).notNull(),
+    progress: jsonb("progress").$type<RelearningProgress>().default({}).notNull(),
+    startedAt: timestamp("started_at", { withTimezone: true }).defaultNow().notNull(),
+    finishedAt: timestamp("finished_at", { withTimezone: true }),
+    /** The teacher who checked the step off because no option was built yet (A5). */
+    checkedOffBy: uuid("checked_off_by").references(() => users.id, { onDelete: "set null" }),
+    ...timestamps,
+  },
+  (t) => [
+    uniqueIndex("relearning_paths_target_unique").on(
+      t.assignmentId,
+      t.studentId,
+      t.learningTargetId
+    ),
+    index("relearning_paths_bundle_idx").on(t.bundleId),
+    index("relearning_paths_student_idx").on(t.studentId),
+    check(
+      "relearning_paths_mode_or_checked_off",
+      sql`${t.mode} is not null or ${t.checkedOffBy} is not null`
+    ),
+  ]
+);
+
+/** One question served in a practice check round, in order (P1). */
+export type CheckServedQuestion = {
+  questionId: string;
+  learningTargetId: string;
+  band: "easy" | "medium" | "hard";
+  order: number;
+  /** Option ids in the order served (when answer order is randomized). */
+  optionOrder?: string[];
+};
+
+/** The first, and only, answer to a check question (P2: the first answer counts). */
+export type CheckAnswer = { answer: unknown; correct: boolean; answeredAt: string };
+
+/**
+ * A practice check (P1–P5): 5 auto-graded questions from Practice banks, passed at `pass_mark`
+ * right first answers. `path` follows a relearning bundle (one per test target, one per quiz
+ * path); `attempt` is the fresh check before a quiz attempt (decision 32: attempt 3). Rounds
+ * repeat, with a Look back between them, until one passes.
+ */
+export const practiceChecks = pgTable(
+  "practice_checks",
+  {
+    id: id(),
+    assignmentId: uuid("assignment_id")
+      .notNull()
+      .references(() => assignments.id, { onDelete: "cascade" }),
+    studentId: uuid("student_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    purpose: practiceCheckPurpose("purpose").notNull(),
+    /** The targets its questions cover (split evenly, the extra going to the weakest). */
+    targetIds: jsonb("target_ids").$type<string[]>().notNull(),
+    /** purpose = path: the relearning bundle (`relearning_paths.bundle_id`) it follows. */
+    relearningBundleId: uuid("relearning_bundle_id"),
+    /** purpose = attempt: the attempt number it unlocks (3, after a retake under 80%). */
+    unlocksAttemptNumber: integer("unlocks_attempt_number"),
+    /** The assignment's pass mark when the check began (P4), so a later change can't move it. */
+    passMark: integer("pass_mark").notNull(),
+    passedAt: timestamp("passed_at", { withTimezone: true }),
+    ...timestamps,
+  },
+  (t) => [
+    index("practice_checks_assignment_student_idx").on(t.assignmentId, t.studentId),
+    uniqueIndex("practice_checks_path_unique")
+      .on(t.assignmentId, t.studentId, t.relearningBundleId)
+      .where(sql`${t.purpose} = 'path'`),
+    uniqueIndex("practice_checks_attempt_unique")
+      .on(t.assignmentId, t.studentId, t.unlocksAttemptNumber)
+      .where(sql`${t.purpose} = 'attempt'`),
+    check(
+      "practice_checks_purpose_link",
+      sql`(${t.purpose} = 'path' and ${t.relearningBundleId} is not null and ${t.unlocksAttemptNumber} is null) or (${t.purpose} = 'attempt' and ${t.unlocksAttemptNumber} is not null and ${t.relearningBundleId} is null)`
+    ),
+    check("practice_checks_pass_mark_range", sql`${t.passMark} between 1 and 5`),
+  ]
+);
+
+export const practiceCheckRounds = pgTable(
+  "practice_check_rounds",
+  {
+    id: id(),
+    checkId: uuid("check_id")
+      .notNull()
+      .references(() => practiceChecks.id, { onDelete: "cascade" }),
+    number: integer("number").notNull(),
+    /** Exact questions served, in order: 3 easy · 1 medium · 1 hard, at most one true/false. */
+    questionSet: jsonb("question_set").$type<CheckServedQuestion[]>().notNull(),
+    /** questionId → its first answer. */
+    answers: jsonb("answers").$type<Record<string, CheckAnswer>>().default({}).notNull(),
+    /** Right first answers; set with `finished_at` when the last question is answered. */
+    score: integer("score"),
+    startedAt: timestamp("started_at", { withTimezone: true }).defaultNow().notNull(),
+    finishedAt: timestamp("finished_at", { withTimezone: true }),
+    ...timestamps,
+  },
+  (t) => [
+    uniqueIndex("practice_check_rounds_unique").on(t.checkId, t.number),
+    check("practice_check_rounds_number_positive", sql`${t.number} >= 1`),
+  ]
+);
+
+/** A6: a Watch video that would not play for a student (e.g. Restricted Mode); in Needs you. */
+export const relearningVideoFlags = pgTable(
+  "relearning_video_flags",
+  {
+    id: id(),
+    sectionId: uuid("section_id")
+      .notNull()
+      .references(() => relearningSections.id, { onDelete: "cascade" }),
+    studentId: uuid("student_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    assignmentId: uuid("assignment_id").references(() => assignments.id, { onDelete: "set null" }),
+    /** The player's error code (YouTube: 2, 5, 100, 101 or 150). */
+    errorCode: text("error_code"),
+    hits: integer("hits").default(1).notNull(),
+    lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).defaultNow().notNull(),
+    resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+    resolvedBy: uuid("resolved_by").references(() => users.id, { onDelete: "set null" }),
+    ...timestamps,
+  },
+  (t) => [
+    uniqueIndex("relearning_video_flags_unique").on(t.sectionId, t.studentId),
+    index("relearning_video_flags_resolved_idx").on(t.resolvedAt),
   ]
 );
 
