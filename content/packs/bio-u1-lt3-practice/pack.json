@@ -1,0 +1,15 @@
+{
+  "name": "bio-u1-lt3-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "unit": "Unit 1 · The Science of Biology",
+  "bank": "Bio · U1.LT3 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U1.LT3 Practice: Use a microscope",
+    "description": "Practice naming microscope parts and their jobs, focusing safely, calculating total magnification, making wet mounts, and predicting how the image and field of view change.",
+    "drawCount": 10,
+    "targets": ["U1.LT3"]
+  }
+}

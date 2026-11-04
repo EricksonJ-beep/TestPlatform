@@ -1,0 +1,15 @@
+{
+  "name": "bio-u4-lt4-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "unit": "Unit 4 · Cell Energy",
+  "bank": "Bio · U4.LT4 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U4.LT4 Practice: Investigate factors affecting photosynthesis",
+    "description": "Practice designing and judging photosynthesis experiments: naming independent, dependent, and controlled variables and control groups, writing testable hypotheses, measuring the rate with elodea bubbles, leaf disks, and gas volume, and analyzing data on light, carbon dioxide, and temperature as limiting factors.",
+    "drawCount": 10,
+    "targets": ["U4.LT4"]
+  }
+}

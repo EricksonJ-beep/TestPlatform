@@ -1,0 +1,17 @@
+{
+  "name": "bio-u7-lt3-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "unit": "Unit 7 · DNA, RNA and Protein Synthesis",
+  "bank": "Bio · U7.LT3 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U7.LT3 Practice: Protein synthesis",
+    "description": "Practice illustrating how proteins are made: the three types of RNA, transcribing DNA into mRNA, reading codons and anticodons, start and stop codons, codon math, and where each step happens in the cell.",
+    "drawCount": 10,
+    "targets": [
+      "U7.LT3"
+    ]
+  }
+}

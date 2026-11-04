@@ -1,0 +1,17 @@
+{
+  "name": "bio-u7-lt1-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "unit": "Unit 7 · DNA, RNA and Protein Synthesis",
+  "bank": "Bio · U7.LT1 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U7.LT1 Practice: DNA structure",
+    "description": "Practice describing the DNA double helix: the parts of a nucleotide, the sugar-phosphate backbone, base pairing and complementary strands, Chargaff's rule, and how Franklin, Watson and Crick found the structure.",
+    "drawCount": 10,
+    "targets": [
+      "U7.LT1"
+    ]
+  }
+}

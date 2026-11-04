@@ -1,0 +1,15 @@
+{
+  "name": "bio-u5-lt3-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "unit": "Unit 5 · Cell Growth & Division",
+  "bank": "Bio · U5.LT3 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U5.LT3 Practice: Karyotypes and inheritance",
+    "description": "Practice building and reading karyotypes: autosomes and sex chromosomes, chromosome counts and notation, trisomy, monosomy and nondisjunction, chromosomal disorders, how sex chromosomes are inherited, and what a karyotype can and cannot show.",
+    "drawCount": 10,
+    "targets": ["U5.LT3"]
+  }
+}

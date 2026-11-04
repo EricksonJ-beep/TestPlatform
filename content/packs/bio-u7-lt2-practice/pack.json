@@ -1,0 +1,15 @@
+{
+  "name": "bio-u7-lt2-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "unit": "Unit 7 · DNA, RNA and Protein Synthesis",
+  "bank": "Bio · U7.LT2 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U7.LT2 Practice: DNA replication",
+    "description": "Practice modeling and explaining DNA replication: helicase unzipping the strands, DNA polymerase building complementary strands by base pairing, primase and ligase on the lagging strand, semi-conservative copies, when and where replication happens, and counting copies.",
+    "drawCount": 10,
+    "targets": ["U7.LT2"]
+  }
+}

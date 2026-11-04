@@ -629,6 +629,22 @@ the student-account test.
 
 **Done when** every Biology target has a Practice bank of about 100 questions with no thin band.
 
+*Built Nov 4–5 for all 33 targets, 3,300 questions in all:*
+- *One pack per target, `bio-uX-ltY-practice`. Each has 100 questions: easy 45, medium 30,
+  hard 25. They are open practice with a 10-question draw, like the PS banks.*
+- *Checks:*
+  - *`scripts/check-pack.ts` is clean on all 33.*
+  - *A second writer re-solved every row and made 127 fixes. Most were to wording, hints or
+    distractors, and a few were keys.*
+  - *I re-solved a random 30 of the 3,300, and all were right.*
+- *Not copied from Jon's tests:*
+  - *No stem matches a Biology test or retake question.*
+  - *One near-copy (U1.LT4 P013, repeated trials) was rewritten as a new scenario.*
+- *Genotype fill-ins ("Bb", "hh") are graded case-sensitive (`tolerance_mode=case_sensitive`).*
+- *Known tell: in 53% of the multiple-choice questions, the right answer is the longest choice
+  (PS banks: 33%). The keys are right, but it makes guessing easier. A distractor pass would fix
+  it.*
+
 ### C4 · Biology Read · Watch · Do (33 targets)
 Same as C2.
 

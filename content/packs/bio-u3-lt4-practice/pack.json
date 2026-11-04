@@ -1,0 +1,15 @@
+{
+  "name": "bio-u3-lt4-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "unit": "Unit 3 · Cell Structure and Function",
+  "bank": "Bio · U3.LT4 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U3.LT4 Practice: Cellular transport",
+    "description": "Practice classifying and describing cellular transport: simple and facilitated diffusion, osmosis and tonicity, active transport and pumps, and endocytosis and exocytosis, using real organisms, everyday examples, and lab data.",
+    "drawCount": 10,
+    "targets": ["U3.LT4"]
+  }
+}

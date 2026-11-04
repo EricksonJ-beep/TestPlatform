@@ -1,0 +1,15 @@
+{
+  "name": "bio-u4-lt3-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "unit": "Unit 4 · Cell Energy",
+  "bank": "Bio · U4.LT3 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U4.LT3 Practice: Photosynthesis",
+    "description": "Practice describing photosynthesis: its reactants and products and the balanced equation, the chloroplast and its two stages (light-dependent reactions and the Calvin cycle), light and pigments, gas exchange, the factors that change its rate, and the lab evidence for it.",
+    "drawCount": 10,
+    "targets": ["U4.LT3"]
+  }
+}

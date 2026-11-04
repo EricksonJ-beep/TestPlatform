@@ -1,0 +1,15 @@
+{
+  "name": "bio-u6-lt2-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "unit": "Unit 6 · Genetics & Human Heredity",
+  "bank": "Bio · U6.LT2 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U6.LT2 Practice: Complex inheritance",
+    "description": "Practice identifying incomplete dominance, codominance, multiple alleles, sex-linked and polygenic traits, and predicting the outcomes of blood type, sex-linked and other complex crosses.",
+    "drawCount": 10,
+    "targets": ["U6.LT2"]
+  }
+}

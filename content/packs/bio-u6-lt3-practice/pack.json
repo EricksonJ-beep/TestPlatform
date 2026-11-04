@@ -1,0 +1,15 @@
+{
+  "name": "bio-u6-lt3-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "unit": "Unit 6 · Genetics & Human Heredity",
+  "bank": "Bio · U6.LT3 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U6.LT3 Practice: Pedigrees",
+    "description": "Practice reading pedigree symbols, telling autosomal dominant, autosomal recessive and X-linked recessive patterns apart, working out genotypes and carriers, and predicting the chances for future children.",
+    "drawCount": 10,
+    "targets": ["U6.LT3"]
+  }
+}

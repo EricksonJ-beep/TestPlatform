@@ -1,0 +1,15 @@
+{
+  "name": "bio-u8-lt5-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "unit": "Unit 8 · Kingdoms",
+  "bank": "Bio · U8.LT5 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U8.LT5 Practice: Kingdom Plantae",
+    "description": "Practice describing plants: what all plants share, the four groups (nonvascular, seedless vascular, gymnosperms and angiosperms), xylem and phloem, spores versus seeds, monocots versus dicots, and how roots, stems and leaves help plants live on land.",
+    "drawCount": 10,
+    "targets": ["U8.LT5"]
+  }
+}

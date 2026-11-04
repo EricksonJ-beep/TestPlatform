@@ -1,0 +1,15 @@
+{
+  "name": "bio-u3-lt2-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "unit": "Unit 3 · Cell Structure and Function",
+  "bank": "Bio · U3.LT2 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U3.LT2 Practice: Prokaryotic vs. eukaryotic cells",
+    "description": "Practice comparing and contrasting prokaryotic and eukaryotic cells: the nucleus and membrane-bound organelles, shared structures, DNA location, size, real-organism examples, evidence from the microscope, and the endosymbiotic theory.",
+    "drawCount": 10,
+    "targets": ["U3.LT2"]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "bio-u2-lt2-practice",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "unit": "Unit 2 · Biochemistry",
+  "bank": "Bio · U2.LT2 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U2.LT2 Practice: Water's structure and properties",
+    "description": "Practice explaining how water's polar, hydrogen-bonded structure leads to cohesion, adhesion, capillary action, high specific heat, evaporative cooling, floating ice, and its power as a solvent, and why each matters for living things.",
+    "drawCount": 10,
+    "targets": ["U2.LT2"]
+  }
+}
