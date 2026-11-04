@@ -1,0 +1,330 @@
+{
+  "name": "bio-u1-lt2-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "relearning": [
+    {
+      "target": "U1.LT2",
+      "mode": "read",
+      "title": "Read: what makes something alive",
+      "description": "A short reading with the club-membership analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "The checklist for life",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can compare and contrast the properties of living organisms (biotic) with non-living (abiotic) entities, providing specific examples for each of the characteristics of life.**\n\n**Think of a club with a membership checklist.** To get into the Living Things Club, you have to check every box, not just one or two. A car uses energy and moves, but it only checks a couple of boxes, so it stays out.\n\n**Biotic vs. abiotic.** **Biotic** factors are living things, or things that came from living things: a deer, moss, a fallen leaf. **Abiotic** factors are the nonliving parts of the environment: sunlight, water, temperature, rocks and air.\n\n**The 8 characteristics of life.** Every living thing:\n1. is **made of cells** (one or more),\n2. **reproduces**,\n3. has **DNA**, a genetic code passed to its offspring,\n4. **grows and develops**,\n5. **uses energy** (all its chemical reactions are its **metabolism**),\n6. **responds to its environment** (reacts to a **stimulus**),\n7. keeps its inside stable, which is called **homeostasis**,\n8. **evolves**: as a group, it changes over many generations.\n\n**Worked example:** Is a salt crystal growing in salty water alive? It grows, so it checks one box. But it is not made of cells, has no DNA, doesn't use energy and can't reproduce. It fails most of the list, so it is **abiotic**."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "A pill bug crawls away from a bright light toward a dark, damp spot under a log. Which characteristic of life does this show?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Reproduces"
+                },
+                {
+                  "id": "b",
+                  "text": "Responds to its environment"
+                },
+                {
+                  "id": "c",
+                  "text": "Evolves"
+                }
+              ],
+              "answer": "b",
+              "explanation": "The light is a stimulus, and crawling away from it is a response. Evolving describes a whole group changing over many generations, not one bug moving. Picking evolve for any change is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "multiple_choice",
+              "prompt": "Which list has ONLY abiotic factors?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Sunlight, rocks, temperature"
+                },
+                {
+                  "id": "b",
+                  "text": "Sunlight, moss, water"
+                },
+                {
+                  "id": "c",
+                  "text": "A fallen log, soil, air"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Sunlight, rocks and temperature are all nonliving. Moss is alive, and a fallen log came from a living tree, so both are biotic. Calling dead things that came from living things abiotic is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Tricky cases",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**One box is never enough.** Many nonliving things show one or two characteristics. That's why biologists use the whole list.\n\n**Fire** grows, uses oxygen and spreads. But it has no cells and no DNA, so it is not alive.\n\n**A virus** has genetic material, but it is not made of cells and can only reproduce inside a host cell. Most biologists say it is not alive.\n\n**A seed in a packet** isn't growing yet, but it is made of cells and has DNA. It is alive but **dormant** (resting), and it will grow when it gets water and warmth.\n\n**A dead log** is no longer alive, but it came from a living thing, so it is **biotic**.\n\n**Worked example 2: a tadpole vs. an ice cube.** A tadpole is made of cells, eats for energy, grows legs (develops), swims away from a shadow (responds) and has DNA from its parents. It checks every box. An ice cube changes shape as it melts, but nothing is built from cells, it has no DNA, and it can't reproduce. Only the tadpole is alive.\n\n**Homeostasis vs. responding.** Homeostasis means keeping the inside steady, like shivering to warm up when your body gets cold. Responding means reacting to a stimulus, like pulling your hand off a hot pan. Many responses are how the body keeps homeostasis.\n\n**Evolving is for groups.** One organism does not evolve during its life. A population changes over many generations. A caterpillar turning into a butterfly is **development**, not evolution.\n\n**Watch out for:** calling something alive because it moves, grows or uses energy (cars and fire do too), calling a dead leaf abiotic, calling a dormant seed nonliving, and saying one animal evolves during its life."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "Moss grows on a rock next to a stream. How do you sort the moss, the rock and the stream water?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The moss and the rock are biotic. The water is abiotic."
+                },
+                {
+                  "id": "b",
+                  "text": "All three are biotic because they are in the same ecosystem."
+                },
+                {
+                  "id": "c",
+                  "text": "The moss is biotic. The rock and the water are abiotic."
+                }
+              ],
+              "answer": "c",
+              "explanation": "Moss is a living plant, so it is biotic. Rocks and water are nonliving, so they are abiotic. Being in the same place doesn't make something living, which is the common mistake."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "A robot vacuum uses electricity, moves around a room and turns when it bumps into a wall. Why is it NOT alive?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "It doesn't use energy"
+                },
+                {
+                  "id": "b",
+                  "text": "It is not made of cells, and it can't grow or reproduce"
+                },
+                {
+                  "id": "c",
+                  "text": "It doesn't respond to anything"
+                }
+              ],
+              "answer": "b",
+              "explanation": "The robot does use energy and does respond to bumps, but it fails the other boxes: no cells, no DNA, no growth, no reproduction. Thinking one or two boxes make something alive is the common mistake."
+            }
+          ],
+          "shortAnswer": "Pick one living thing and one nonliving thing that both move or use energy. Use at least two characteristics of life to explain why only one of them is alive."
+        }
+      ]
+    },
+    {
+      "target": "U1.LT2",
+      "mode": "do",
+      "title": "Do: flip the characteristics, then sort living and nonliving",
+      "description": "Flashcards with a 3-question self-quiz, then guess-and-flip cards on tricky cases.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: the characteristics of life",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Biotic",
+                "back": "Living things, or things that came from living things: a deer, moss, a fallen leaf."
+              },
+              {
+                "id": "k2",
+                "front": "Abiotic",
+                "back": "Nonliving parts of the environment: sunlight, water, temperature, rocks, air."
+              },
+              {
+                "id": "k3",
+                "front": "The 8 characteristics of life",
+                "back": "Made of cells, reproduce, have DNA, grow and develop, use energy, respond to the environment, keep homeostasis, evolve as a group."
+              },
+              {
+                "id": "k4",
+                "front": "Metabolism",
+                "back": "All the chemical reactions a living thing uses to get and use energy."
+              },
+              {
+                "id": "k5",
+                "front": "Stimulus and response",
+                "back": "A stimulus is a change around the organism, like light or cold. The response is how the organism reacts to it."
+              },
+              {
+                "id": "k6",
+                "front": "Homeostasis",
+                "back": "Keeping the inside of the body stable, like sweating to stay near 37 °C."
+              },
+              {
+                "id": "k7",
+                "front": "Evolve",
+                "back": "A group (population) changes over many generations. One organism does not evolve during its life."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "A caterpillar turns into a butterfly. Which characteristic of life is this?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Grows and develops"
+                },
+                {
+                  "id": "b",
+                  "text": "Evolves"
+                },
+                {
+                  "id": "c",
+                  "text": "Homeostasis"
+                }
+              ],
+              "answer": "a",
+              "explanation": "One organism changing during its own life is development. Evolution is a whole population changing over many generations. Calling any big change evolution is the common mistake."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "Which one is biotic?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "A puddle of rainwater"
+                },
+                {
+                  "id": "b",
+                  "text": "The sand on a beach"
+                },
+                {
+                  "id": "c",
+                  "text": "A feather lying on the ground"
+                }
+              ],
+              "answer": "c",
+              "explanation": "A feather came from a living bird, so it is biotic even though it is not alive now. Rainwater and sand are abiotic. Thinking only things alive right now are biotic is the common mistake."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "A yeast cell breaks down sugar to get energy. What is the name for all the chemical reactions like this in a living thing?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Homeostasis"
+                },
+                {
+                  "id": "b",
+                  "text": "Reproduction"
+                },
+                {
+                  "id": "c",
+                  "text": "Metabolism"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Metabolism is all the chemical reactions that let an organism get and use energy. Homeostasis is keeping the inside stable. Mixing up metabolism and homeostasis is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Guess, then flip: living or not?",
+          "minutes": 6,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "x1",
+                "front": "A candle flame",
+                "back": "Not alive (abiotic). It grows and uses oxygen, but it has no cells and no DNA."
+              },
+              {
+                "id": "x2",
+                "front": "Bread mold",
+                "back": "Alive (biotic). It is a fungus made of cells, it grows, and it reproduces with spores."
+              },
+              {
+                "id": "x3",
+                "front": "A dry corn kernel in a seed packet",
+                "back": "Alive but dormant (biotic). It is made of cells and has DNA, and it will grow when it gets water and warmth."
+              },
+              {
+                "id": "x4",
+                "front": "A cloud",
+                "back": "Not alive (abiotic). It grows and moves, but it is only water droplets: no cells, no DNA, no reproduction."
+              },
+              {
+                "id": "x5",
+                "front": "A virus",
+                "back": "Not alive, say most biologists. It has genetic material but no cells, and it can only reproduce inside a host cell."
+              },
+              {
+                "id": "x6",
+                "front": "A dead tree stump",
+                "back": "Biotic, even though it is no longer alive, because it came from a living thing."
+              },
+              {
+                "id": "x7",
+                "front": "Bacteria in yogurt",
+                "back": "Alive (biotic). Each bacterium is one cell that uses energy and reproduces by splitting in two."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "A student says an icicle is alive because it grows a little longer every cold night. What is the best response?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "It is alive, because anything that grows is alive."
+                },
+                {
+                  "id": "b",
+                  "text": "Growing alone isn't enough. It has no cells or DNA and can't reproduce."
+                },
+                {
+                  "id": "c",
+                  "text": "It is alive but dormant."
+                }
+              ],
+              "answer": "b",
+              "explanation": "An icicle grows only because water freezes onto it. It isn't made of cells and has no DNA, so it is abiotic. Thinking one characteristic, like growing, makes something alive is the common mistake."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Over many generations, more and more rabbits in a cold place are born with thick fur. Which characteristic of life does this show?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Grows and develops"
+                },
+                {
+                  "id": "b",
+                  "text": "Evolves"
+                },
+                {
+                  "id": "c",
+                  "text": "Homeostasis"
+                }
+              ],
+              "answer": "b",
+              "explanation": "The population changes over many generations, which is evolution. One rabbit growing its fur during its life would be development. Mixing up a group changing and one organism changing is the common mistake."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

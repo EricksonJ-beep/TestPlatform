@@ -1,0 +1,251 @@
+{
+  "name": "bio-u2-lt3-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "relearning": [
+    {
+      "target": "U2.LT3",
+      "mode": "read",
+      "title": "Read: the pH scale, acids and bases",
+      "description": "A short reading with the volume-knob analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Reading the pH scale",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can define pH and describe how acids and bases affect living things.**\n\n**Think of a volume knob where each click makes the music 10 times louder.** Two clicks is not twice as loud: it is 10 × 10 = 100 times louder. The pH scale works like that knob for hydrogen ions. Each step down the scale means 10 times more H⁺.\n\n**What pH measures.** **pH** is a measure of the concentration of hydrogen ions (H⁺) in a solution. The scale runs from 0 to 14.\n**Below 7: acid.** More H⁺ ions. The lower the pH, the stronger the acid.\n**7: neutral.** H⁺ and OH⁻ are balanced, like pure water.\n**Above 7: base.** More hydroxide ions (OH⁻) and fewer H⁺. The higher the pH, the stronger the base.\n\n**Each step is 10 times.** To compare two solutions, count the steps between their pH values, then multiply by 10 for every step.\n1 step = 10 times\n2 steps = 10 × 10 = 100 times\n3 steps = 10 × 10 × 10 = 1,000 times\n\n**Worked example:** Coffee has a pH of 5 and pure water has a pH of 7. Coffee is below 7, so it is an acid. 7 − 5 = 2 steps, so coffee has 10 × 10 = **100 times** more H⁺ than water. It is not 2 times more: that is the common mistake."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "Which list is in order from MOST acidic to MOST basic?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "pH 12, pH 7, pH 6, pH 2"
+                },
+                {
+                  "id": "b",
+                  "text": "pH 2, pH 6, pH 7, pH 12"
+                },
+                {
+                  "id": "c",
+                  "text": "pH 7, pH 6, pH 2, pH 12"
+                }
+              ],
+              "answer": "b",
+              "explanation": "The lowest pH is the most acidic, and the highest pH is the most basic, so the order is 2, 6, 7, 12. Thinking a bigger number means more acidic is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "fill_blank",
+              "prompt": "Solution A has a pH of 3. Solution B has a pH of 6. How many times more H⁺ does solution A have? Type a number.",
+              "answer": ["1000", "1,000", "1 000", "1000 times", "1,000 times", "one thousand"],
+              "explanation": "6 − 3 = 3 steps, and each step is 10 times: 10 × 10 × 10 = 1,000 times more H⁺. Answering 3 (the number of steps) is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Acids, bases and living things",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Acids and bases around you.** **Acids** add H⁺ ions to water: lemon juice, vinegar and stomach acid (about pH 2). **Bases** add OH⁻ ions (or take away H⁺): soap, baking soda and ammonia. When an acid and a base mix, H⁺ and OH⁻ join to make water, and the pH moves toward 7. That is called **neutralization**. An **indicator**, like litmus or universal indicator paper, changes color to show the pH.\n\n**Living things need the right pH.** Your blood stays between about pH 7.35 and 7.45. Each enzyme has a pH where it works best. Pepsin, a stomach enzyme, works best at about pH 2, while enzymes in the small intestine work near pH 8. If the pH moves too far from what a protein or enzyme needs, it changes shape and stops working.\n\n**Buffers.** A **buffer** acts like a sponge for extra H⁺ or OH⁻ ions, so the pH barely changes when an acid or base is added. Buffers in your blood keep it near 7.4.\n\n**Worked example 2: acid rain.** Acid rain lowers a lake from pH 7 to pH 5. That is 2 steps, so the lake has 100 times more H⁺. Fish eggs and other living things in the lake can be harmed because their proteins and enzymes don't work right.\n\n**Worked example 3: heartburn.** Too much stomach acid burns. An antacid is a weak base. It neutralizes some of the acid, so the pH goes up and the burning stops.\n\n**Watch out for:** thinking a higher pH means more acidic, thinking each step is only 1 more instead of 10 times, mixing up H⁺ (acids) and OH⁻ (bases), and thinking a buffer makes a solution neutral (it keeps the pH from changing)."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "Your blood's pH is normally about 7.4. If it dropped to 7.0, what would most likely happen?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Nothing, because 7.0 is neutral and neutral is safe"
+                },
+                {
+                  "id": "b",
+                  "text": "Proteins and enzymes in the blood could change shape and stop working well"
+                },
+                {
+                  "id": "c",
+                  "text": "The blood would become a strong base"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Blood has to stay between about 7.35 and 7.45. A drop to 7.0 is more acidic than the body can handle, and proteins and enzymes change shape. Thinking neutral is always safe is the common mistake: each part of the body needs its own pH."
+            },
+            {
+              "id": "e2",
+              "kind": "fill_blank",
+              "prompt": "A swimming pool tests at pH 8.5, but the owner wants it at 7.5. Should the owner add an acid or a base? Type one word.",
+              "answer": ["acid", "an acid", "add acid", "add an acid"],
+              "explanation": "To lower the pH, add more H⁺, which means adding an acid. Adding a base would raise the pH even higher. Mixing up which way acids move the pH is the common mistake."
+            }
+          ],
+          "shortAnswer": "Explain why a change in pH can stop an enzyme in your body from working."
+        }
+      ]
+    },
+    {
+      "target": "U2.LT3",
+      "mode": "do",
+      "title": "Do: compare pH step by step, then flip the cards",
+      "description": "A worked problem one step at a time, then flashcards on acids, bases and your body.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Worked problem: classify and compare",
+          "minutes": 4,
+          "body": {
+            "type": "worked_steps",
+            "problem": "Orange juice has a pH of 4, milk has a pH of 6, and ammonia cleaner has a pH of 11. Classify each one, then compare the H⁺ in orange juice and milk.",
+            "steps": [
+              {
+                "id": "t1",
+                "text": "Classify each one by comparing it to 7. Orange juice (4) is below 7, so it is an acid. Milk (6) is below 7, so it is a weak acid. Ammonia (11) is above 7, so it is a base."
+              },
+              {
+                "id": "t2",
+                "text": "Rank them. The lowest pH is the strongest acid: orange juice. The highest pH is the strongest base: ammonia."
+              },
+              {
+                "id": "t3",
+                "text": "Count the steps between orange juice and milk: 6 − 4 = 2 steps."
+              },
+              {
+                "id": "t4",
+                "text": "Multiply by 10 for every step: 10 × 10 = 100. Orange juice has 100 times more H⁺ than milk, not 2 times more."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: which pH is basic?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "pH 6.5"
+                },
+                {
+                  "id": "b",
+                  "text": "pH 7.0"
+                },
+                {
+                  "id": "c",
+                  "text": "pH 8.5"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Basic means above 7, so pH 8.5 is basic. pH 7.0 is neutral, and pH 6.5 is a weak acid. Calling anything near 7 neutral is the common mistake.",
+              "afterStepId": "t1"
+            },
+            {
+              "id": "d2",
+              "kind": "fill_blank",
+              "prompt": "Your turn: a solution's pH drops from 8 to 7. How many times more H⁺ does it have now? Type a number.",
+              "answer": ["10", "10 times", "ten", "ten times"],
+              "explanation": "8 − 7 = 1 step, and each step is 10 times, so it has 10 times more H⁺. Lower pH means more H⁺. Answering 1 (the number of steps) is the common mistake.",
+              "afterStepId": "t4"
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Flashcards: acids, bases and your body",
+          "minutes": 6,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "x1",
+                "front": "Acid",
+                "back": "Adds H⁺ ions to water. pH below 7. Examples: lemon juice, vinegar, stomach acid."
+              },
+              {
+                "id": "x2",
+                "front": "Base",
+                "back": "Adds OH⁻ ions to water (or takes away H⁺). pH above 7. Examples: soap, baking soda, ammonia."
+              },
+              {
+                "id": "x3",
+                "front": "Neutralization",
+                "back": "An acid and a base react. H⁺ and OH⁻ make water, and the pH moves toward 7."
+              },
+              {
+                "id": "x4",
+                "front": "Buffer",
+                "back": "Soaks up extra H⁺ or OH⁻ so the pH barely changes. Buffers keep blood near pH 7.4."
+              },
+              {
+                "id": "x5",
+                "front": "Your stomach (about pH 2)",
+                "back": "Strong acid kills germs and gives the enzyme pepsin the low pH it needs to digest protein."
+              },
+              {
+                "id": "x6",
+                "front": "Enzymes and pH",
+                "back": "Each enzyme has a best pH. Too far from it, the enzyme changes shape and stops working."
+              },
+              {
+                "id": "x7",
+                "front": "Indicator",
+                "back": "Changes color with pH, like litmus or universal indicator paper."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Which pair would neutralize each other?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Vinegar and lemon juice"
+                },
+                {
+                  "id": "b",
+                  "text": "Hydrochloric acid and sodium hydroxide (a base)"
+                },
+                {
+                  "id": "c",
+                  "text": "Soap and ammonia"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Neutralization needs an acid and a base: the H⁺ from the acid and the OH⁻ from the base make water. Vinegar and lemon juice are both acids, and soap and ammonia are both bases."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Amylase in your saliva works best near pH 7. What happens to it when swallowed food reaches your stomach, at about pH 2?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "It works faster, because acid speeds up all enzymes"
+                },
+                {
+                  "id": "b",
+                  "text": "Nothing changes, because pH doesn't affect enzymes"
+                },
+                {
+                  "id": "c",
+                  "text": "It stops working well, because pH 2 is far from its best pH"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Each enzyme has a best pH. In strong stomach acid, amylase changes shape and stops working, while pepsin, which is built for pH 2, takes over. Thinking acid speeds up every enzyme is the common mistake."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

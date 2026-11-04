@@ -1,0 +1,309 @@
+{
+  "name": "bio-u2-lt4-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "relearning": [
+    {
+      "target": "U2.LT4",
+      "mode": "read",
+      "title": "Read: the four macromolecules",
+      "description": "A short reading with the train-car analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Four kinds of trains",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can compare the structure and function of the four macromolecules: carbohydrates, proteins, lipids, and nucleic acids.**\n\n**Think of a train.** A **macromolecule** (polymer) is a long train, and each car is a small building block called a **monomer**. Hook different kinds of cars together and you get different kinds of trains. Living things build four kinds.\n\n**Carbohydrates.** Monomer: **monosaccharides** (simple sugars), like glucose. Job: **quick energy**. Some, like cellulose in plant cell walls, also give structure. Elements: C, H and O.\n\n**Lipids.** Built from **glycerol and fatty acids**. Jobs: **long-term energy storage**, insulation, and making cell membranes. Fats, oils and waxes are lipids. Elements: C, H and O.\n\n**Proteins.** Monomer: **amino acids** (20 kinds). Jobs: building structures like muscle and hair, **enzymes** that speed up reactions, hormones, and antibodies that fight germs. Elements: C, H, O and N (some have S).\n\n**Nucleic acids.** Monomer: **nucleotides**. Job: **store and pass on genetic information**. DNA and RNA are nucleic acids. Elements: C, H, O, N and P.\n\n**Worked example:** Butter is mostly fat, so it is a **lipid**, and its job is to store energy. A steak is mostly muscle, so it is mostly **protein** (with some fat). Bread is mostly starch, a **carbohydrate**."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "A molecule is made of many glucose units linked together in a long chain. Which macromolecule is it?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Carbohydrate"
+                },
+                {
+                  "id": "b",
+                  "text": "Protein"
+                },
+                {
+                  "id": "c",
+                  "text": "Nucleic acid"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Glucose is a monosaccharide, the monomer of carbohydrates, so a long chain of glucose is a carbohydrate (a polysaccharide like starch). Proteins are built from amino acids. Mixing up the monomers is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "multiple_choice",
+              "prompt": "Hair and fingernails are mostly keratin, a long chain of amino acids. Which macromolecule is keratin?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Protein"
+                },
+                {
+                  "id": "b",
+                  "text": "Lipid"
+                },
+                {
+                  "id": "c",
+                  "text": "Carbohydrate"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Amino acids are the monomers of proteins, so keratin is a protein. Building structures like hair is one of the main jobs of proteins."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "A closer look, and the food tests",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Sugars by size.** A **monosaccharide** is one sugar (glucose, fructose). A **disaccharide** is two sugars joined (sucrose, lactose, maltose). A **polysaccharide** is a long chain of many sugars: **starch** stores energy in plants, **glycogen** stores energy in animals, and **cellulose** builds plant cell walls. Names that end in -ose are usually sugars.\n\n**Lipids up close.** In a **saturated** fat, every carbon-carbon bond in the fatty acids is single, so the chains are straight and pack tightly. It is solid at room temperature, like butter. In an **unsaturated** fat, double bonds put kinks in the chains, so they can't pack tightly. It is liquid at room temperature, like olive oil.\n\n**Proteins up close.** 20 kinds of amino acids link in different orders, and each chain folds into its own shape. The shape decides the job.\n\n**The food tests.**\n**Benedict's:** blue turns green, yellow, orange or brick red (after heating) if **simple sugars** are present.\n**Iodine:** amber turns blue-black if **starch** is present.\n**Biuret:** blue turns purple if **protein** is present.\n**Sudan IV:** stains **lipids** red.\n\n**Worked example 2:** A sample turns iodine blue-black, and Biuret stays blue. So it has starch but no protein. It could be a potato or a plain cracker.\n\n**Watch out for:** mixing up the monomers (nucleotides go with nucleic acids, amino acids with proteins), calling starch a simple sugar, mixing up Benedict's (simple sugars) and iodine (starch), and thinking every sugar turns Benedict's red (table sugar, a disaccharide, does not)."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "Olive oil is a liquid at room temperature. Why?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Its fatty acids have double bonds that put kinks in the chains, so they can't pack tightly"
+                },
+                {
+                  "id": "b",
+                  "text": "It has no fatty acids at all"
+                },
+                {
+                  "id": "c",
+                  "text": "It is a carbohydrate, not a lipid"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Olive oil is an unsaturated fat. Double bonds bend its fatty acid chains, so they stay loose and liquid. Saturated fats like butter have straight chains that pack into a solid. Thinking oils aren't lipids is the common mistake."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "A drop of iodine on a slice of potato turns blue-black. What does this show?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Starch is present"
+                },
+                {
+                  "id": "b",
+                  "text": "Protein is present"
+                },
+                {
+                  "id": "c",
+                  "text": "Simple sugar is present"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Iodine turns blue-black with starch, a polysaccharide. Protein is tested with Biuret, and simple sugar with Benedict's. Mixing up iodine and Benedict's is the common mistake."
+            }
+          ],
+          "shortAnswer": "Choose two macromolecules. For each one, name its monomer and one job it does in your body."
+        }
+      ]
+    },
+    {
+      "target": "U2.LT4",
+      "mode": "do",
+      "title": "Do: flip the macromolecules, then solve a food test",
+      "description": "Flashcards with a 3-question self-quiz, then a worked problem one step at a time.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: the four macromolecules",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Macromolecule (polymer)",
+                "back": "A large molecule built from many small units (monomers) linked together, like cars in a train."
+              },
+              {
+                "id": "k2",
+                "front": "Carbohydrates",
+                "back": "Monomer: monosaccharides, like glucose. Job: quick energy, and cellulose gives plants structure. Examples: sugar, starch, glycogen."
+              },
+              {
+                "id": "k3",
+                "front": "Lipids",
+                "back": "Built from glycerol and fatty acids. Jobs: long-term energy storage, insulation, cell membranes. Examples: fats, oils, waxes."
+              },
+              {
+                "id": "k4",
+                "front": "Proteins",
+                "back": "Monomer: amino acids (20 kinds). Jobs: structure like muscle and hair, enzymes, hormones, antibodies."
+              },
+              {
+                "id": "k5",
+                "front": "Nucleic acids",
+                "back": "Monomer: nucleotides. Job: store and pass on genetic information. Examples: DNA and RNA."
+              },
+              {
+                "id": "k6",
+                "front": "Which elements?",
+                "back": "Carbohydrates and lipids: C, H, O. Proteins add N (and some S). Nucleic acids: C, H, O, N, P."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "Which macromolecule is built from nucleotides?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Proteins"
+                },
+                {
+                  "id": "b",
+                  "text": "Nucleic acids"
+                },
+                {
+                  "id": "c",
+                  "text": "Lipids"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Nucleotides link together to make nucleic acids like DNA and RNA. Proteins are built from amino acids. The names match: nucleotides build nucleic acids."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "Which macromolecule does your body use first for quick energy?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Nucleic acids"
+                },
+                {
+                  "id": "b",
+                  "text": "Proteins"
+                },
+                {
+                  "id": "c",
+                  "text": "Carbohydrates"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Carbohydrates break down quickly into glucose, the fuel cells use first. Lipids store energy for the long term, and nucleic acids carry genetic information. Picking lipids or proteins for quick energy is the common mistake."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "Antibodies that fight germs and enzymes that speed up reactions are both which macromolecule?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Lipids"
+                },
+                {
+                  "id": "b",
+                  "text": "Proteins"
+                },
+                {
+                  "id": "c",
+                  "text": "Carbohydrates"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Proteins do many jobs: enzymes, antibodies, hormones and structures like muscle. Lipids and carbohydrates are mostly for energy and structure."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: identify a mystery food",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "A mystery food is tested with four solutions. Benedict's (heated) turns orange. Iodine stays amber. Biuret stays blue. Sudan IV leaves no red stain. Which macromolecules are in the food, and what could it be?",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "Benedict's turned from blue to orange, so simple sugars are present, and a fair amount of them."
+              },
+              {
+                "id": "s2",
+                "text": "Iodine stayed amber instead of turning blue-black, so there is no starch."
+              },
+              {
+                "id": "s3",
+                "text": "Biuret stayed blue instead of turning purple, so there is no protein. Sudan IV left no red stain, so there is no lipid."
+              },
+              {
+                "id": "s4",
+                "text": "Put it together: the food has simple sugars and nothing else we tested for. It is a carbohydrate food, like honey or apple juice."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: a food is heated with Benedict's, and the solution stays blue. What does this mean?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "A lot of simple sugar is present"
+                },
+                {
+                  "id": "b",
+                  "text": "No simple sugar is present"
+                },
+                {
+                  "id": "c",
+                  "text": "Starch is present"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Benedict's starts blue and changes color only when simple sugars are present. Staying blue is a negative test. Starch is tested with iodine, not Benedict's.",
+              "afterStepId": "s1"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "A second food turns iodine blue-black and Biuret purple. Benedict's stays blue, and Sudan IV leaves no red stain. What is in it?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Simple sugar and lipid"
+                },
+                {
+                  "id": "b",
+                  "text": "Only starch"
+                },
+                {
+                  "id": "c",
+                  "text": "Starch and protein"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Blue-black iodine means starch, and purple Biuret means protein. Benedict's and Sudan IV were negative, so there is no simple sugar or lipid. Forgetting to read every test is the common mistake.",
+              "afterStepId": "s4"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

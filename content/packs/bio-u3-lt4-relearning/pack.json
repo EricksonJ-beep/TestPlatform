@@ -1,0 +1,267 @@
+{
+  "name": "bio-u3-lt4-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "relearning": [
+    {
+      "target": "U3.LT4",
+      "mode": "read",
+      "title": "Read: how things cross the cell membrane",
+      "description": "A short reading with the slide-and-ladder analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Passive and active transport",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can classify and describe the forms of cellular transport.**\n\n**Think of a playground slide and a ladder.** Going down the slide takes no effort. Climbing up the ladder takes energy. Molecules are the same. Moving from **high concentration to low** (down the slide) needs no energy: that is **passive transport**. Moving from **low concentration to high** (up the ladder) needs energy: that is **active transport**, and the cell pays with **ATP**.\n\n**The membrane.** The cell membrane is a phospholipid bilayer with proteins in it. It is **selectively permeable**: it lets some substances through and keeps others out.\n\n**Passive transport (no energy, high to low).**\n**Simple diffusion:** small molecules like O₂ and CO₂ slip right through the bilayer.\n**Osmosis:** the diffusion of water across a selectively permeable membrane.\n**Facilitated diffusion:** molecules pass through a channel or carrier protein, but still from high to low with no energy.\n\n**Active transport (uses ATP).**\n**Protein pumps:** move molecules from low to high concentration.\n**Endocytosis:** the membrane wraps around a large particle and pinches off a vesicle to bring it **in**.\n**Exocytosis:** a vesicle joins the membrane and dumps its contents **out** of the cell.\n\n**Worked example:** In your lungs, there is a lot of oxygen in the air sacs and less in the blood next to them. Oxygen moves from the air sacs into the blood: high to low, straight through the membrane, no protein and no energy. That is **simple diffusion**, a kind of passive transport."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "Carbon dioxide leaves a muscle cell, where there is a lot of it, and moves into the blood, where there is less. No protein or energy is used. What type of transport is this?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Active transport"
+                },
+                {
+                  "id": "b",
+                  "text": "Endocytosis"
+                },
+                {
+                  "id": "c",
+                  "text": "Simple diffusion"
+                }
+              ],
+              "answer": "c",
+              "explanation": "High to low with no protein and no energy is simple diffusion. Active transport moves from low to high and needs ATP. Thinking any movement out of a cell takes energy is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "multiple_choice",
+              "prompt": "A white blood cell wraps its membrane around a bacterium and pulls it inside in a vesicle. What is this?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Endocytosis"
+                },
+                {
+                  "id": "b",
+                  "text": "Exocytosis"
+                },
+                {
+                  "id": "c",
+                  "text": "Osmosis"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Bringing a large particle in by wrapping it in a vesicle is endocytosis. Exocytosis sends things out. A trick: endo- sounds like in, exo- sounds like exit."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Osmosis and the three kinds of solutions",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Osmosis up close.** In osmosis, water moves across the membrane toward the side with **more solute** (and less water). When solute can't cross the membrane, the water moves instead. A shortcut: water follows salt.\n\n**Three kinds of solutions, always compared to the cell.**\n**Hypertonic:** more solute outside than inside. Water moves **out**, and the cell shrinks. (Hyper- means over.)\n**Hypotonic:** less solute outside than inside. Water moves **in**, and the cell swells and may burst. Plant cells don't burst, because the cell wall holds them, so they get firm instead. (Hypo- means under.)\n**Isotonic:** the same amount of solute inside and out. Water moves in and out equally, so there is no change in size. (Iso- means equal.)\n\n**Worked example 2:** A red blood cell has about 0.9% salt. It is placed in 5% salt water. The outside has more solute, so the solution is **hypertonic**. Water leaves the cell, and the cell shrivels.\n\n**Worked example 3:** Limp celery is set in a glass of plain water. Plain water has less solute than the celery's cells, so it is **hypotonic**. Water moves into the cells, the central vacuoles fill up, and the celery gets crisp again.\n\n**Watch out for:** saying the salt moves in osmosis (the water moves), mixing up hypertonic and hypotonic, thinking water stops moving in an isotonic solution (it moves both ways at the same rate), forgetting that facilitated diffusion uses a protein but no energy, and calling endocytosis and exocytosis passive (they take energy)."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "A cell with 1% salt inside is placed in a 6% salt solution. The salt can't cross the membrane. What happens?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Water moves into the cell, and it swells"
+                },
+                {
+                  "id": "b",
+                  "text": "No water moves at all"
+                },
+                {
+                  "id": "c",
+                  "text": "Water moves out of the cell, and it shrinks"
+                }
+              ],
+              "answer": "c",
+              "explanation": "The outside has more solute, so the solution is hypertonic, and water moves out toward the salt. Thinking water moves toward the side with more water is the common mistake: water moves toward more solute."
+            },
+            {
+              "id": "e2",
+              "kind": "fill_blank",
+              "prompt": "A cell swells after it is placed in a solution with less solute than the cell. That solution is ___. Type one word.",
+              "answer": ["hypotonic"],
+              "explanation": "Hypo- means under: the solution has less solute than the cell, so water moves in and the cell swells. Hypertonic is the opposite. Mixing up hypo- and hyper- is the common mistake."
+            }
+          ],
+          "shortAnswer": "Explain the difference between passive and active transport, and give one example of each."
+        }
+      ]
+    },
+    {
+      "target": "U3.LT4",
+      "mode": "do",
+      "title": "Do: classify the transport, then predict osmosis",
+      "description": "Two worked problems, one step at a time, with quick checks along the way.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Worked problem: three questions to classify any transport",
+          "minutes": 4,
+          "body": {
+            "type": "worked_steps",
+            "problem": "Use three questions to classify cell transport. Practice on this one: water moves from wet soil, where there is more water, into a root cell, where there is less water.",
+            "steps": [
+              {
+                "id": "t1",
+                "text": "Question 1: Is something large being wrapped in a vesicle? If yes, it is endocytosis (in) or exocytosis (out), and it uses energy. Here, no: single water molecules are moving."
+              },
+              {
+                "id": "t2",
+                "text": "Question 2: Which way does it move? High to low concentration is passive. Low to high is active and needs a pump and ATP. Here, water moves from more water (soil) to less water (root cell): high to low, so it is passive."
+              },
+              {
+                "id": "t3",
+                "text": "Question 3 (passive only): Is it water? Then it is osmosis. Does it pass through a channel or carrier protein? Then it is facilitated diffusion. Does it slip through the bilayer? Then it is simple diffusion. Here, it is water."
+              },
+              {
+                "id": "t4",
+                "text": "Answer: osmosis, a kind of passive transport. The cell uses no ATP."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: a root cell takes in nitrate ions from the soil, even though the soil has fewer nitrate ions than the cell. Is this passive or active?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Passive, because it moves from high to low"
+                },
+                {
+                  "id": "b",
+                  "text": "Active, because it moves from low to high"
+                },
+                {
+                  "id": "c",
+                  "text": "Passive, because the cell uses no energy"
+                }
+              ],
+              "answer": "b",
+              "explanation": "The ions move from the soil (low) into the cell (high), against the gradient. That takes a protein pump and ATP, so it is active transport. Reading the direction backwards is the common mistake.",
+              "afterStepId": "t2"
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "A nerve cell releases chemical messengers by moving vesicles to its membrane and emptying them outside the cell. What type of transport is this?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Exocytosis"
+                },
+                {
+                  "id": "b",
+                  "text": "Endocytosis"
+                },
+                {
+                  "id": "c",
+                  "text": "Facilitated diffusion"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Vesicles emptying their contents out of the cell is exocytosis, which uses energy. Endocytosis brings things in. Mixing up endo- (in) and exo- (exit) is the common mistake.",
+              "afterStepId": "t4"
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: predict osmosis",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "Cucumber cells contain about 1% solute. Slices of cucumber go into three cups. Cup A: 1% salt. Cup B: distilled water (0%). Cup C: 10% salt. Predict what happens to the cells in each cup.",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "Compare the outside to the inside. Cup A: 1% outside and 1% inside are the same, so the solution is isotonic."
+              },
+              {
+                "id": "s2",
+                "text": "Cup B: 0% outside and 1% inside. The outside has less solute, so the solution is hypotonic."
+              },
+              {
+                "id": "s3",
+                "text": "Cup C: 10% outside and 1% inside. The outside has more solute, so the solution is hypertonic."
+              },
+              {
+                "id": "s4",
+                "text": "Water moves toward more solute. Cup A: water moves in and out equally, so no change. Cup B: water moves in, so the cells swell and the slice gets firm (the cell wall keeps them from bursting). Cup C: water moves out, so the cells shrink and the slice goes limp. That is how pickles start."
+              },
+              {
+                "id": "s5",
+                "text": "Name the process: water crossing the membrane is osmosis, a kind of passive transport. No ATP is used."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: a cell with 4% solute sits in an 8% solution. What is the solution, compared with the cell?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Hypotonic"
+                },
+                {
+                  "id": "b",
+                  "text": "Hypertonic"
+                },
+                {
+                  "id": "c",
+                  "text": "Isotonic"
+                }
+              ],
+              "answer": "b",
+              "explanation": "8% outside is more solute than 4% inside, so the solution is hypertonic, and water will leave the cell. Comparing the cell to the solution instead of the solution to the cell is the common mistake.",
+              "afterStepId": "s3"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Roads are salted in winter, and in spring the grass along the edges is often dead. Why?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The salty soil is hypotonic, so the root cells swell and burst"
+                },
+                {
+                  "id": "b",
+                  "text": "The salty soil is hypertonic, so water leaves the root cells"
+                },
+                {
+                  "id": "c",
+                  "text": "The salt moves into the roots and stops all osmosis"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Salty soil has more solute than the root cells, so it is hypertonic. Water moves out of the roots by osmosis, and the grass dries out. Thinking the salt is what moves is the common mistake: the water moves.",
+              "afterStepId": "s4"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

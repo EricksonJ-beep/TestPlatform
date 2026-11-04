@@ -1,0 +1,314 @@
+{
+  "name": "bio-u3-lt2-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "relearning": [
+    {
+      "target": "U3.LT2",
+      "mode": "read",
+      "title": "Read: prokaryotic vs. eukaryotic cells",
+      "description": "A short reading with the studio-apartment analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "One open room vs. a house with rooms",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can compare and contrast prokaryotic and eukaryotic cells.**\n\n**Think of a studio apartment and a house.** A studio is one open room: the bed, the kitchen and everything else share the same space. A house has separate rooms with doors. A **prokaryotic** cell is the studio: its DNA sits out in the open, and there are no inner rooms. A **eukaryotic** cell is the house: its DNA has its own room (the **nucleus**), and jobs happen in separate rooms called **membrane-bound organelles**.\n\n**Prokaryotic cells.** No nucleus. The DNA (one circular loop) sits in a region of the cytoplasm called the **nucleoid**. No membrane-bound organelles. Small, about 1 to 10 micrometers. Examples: **bacteria** and archaea. Many have a cell wall, and some have a **flagellum** to swim.\n\n**Eukaryotic cells.** A nucleus surrounded by a nuclear membrane. Membrane-bound organelles like mitochondria, ER and the Golgi apparatus. Larger, about 10 to 100 micrometers. Examples: **plants, animals, fungi and protists**.\n\n**What ALL cells share:** a cell membrane, cytoplasm, ribosomes and DNA.\n\n**Word trick.** Pro- means before and karyon means nucleus, so prokaryote means before nucleus. Eu- means true, so eukaryote means true nucleus.\n\n**Worked example:** A yeast cell is only one cell, but it has a nucleus and mitochondria. So it is **eukaryotic** (yeast is a fungus). Being single-celled does not make something a prokaryote."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "A cell has a nucleus but no cell wall. What kind of cell is it?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Eukaryotic"
+                },
+                {
+                  "id": "b",
+                  "text": "Prokaryotic"
+                },
+                {
+                  "id": "c",
+                  "text": "You can't tell without a cell wall"
+                }
+              ],
+              "answer": "a",
+              "explanation": "A nucleus means eukaryotic. The cell wall doesn't decide it: bacteria, plants and fungi all have cell walls, and animal cells don't. Using the cell wall as the clue is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "multiple_choice",
+              "prompt": "Which of these do prokaryotic cells NOT have?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Ribosomes"
+                },
+                {
+                  "id": "b",
+                  "text": "Mitochondria"
+                },
+                {
+                  "id": "c",
+                  "text": "A cell membrane"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Mitochondria are membrane-bound organelles, which prokaryotes don't have. Every cell has ribosomes and a cell membrane. Thinking prokaryotes lack ribosomes is the common mistake: ribosomes have no membrane around them."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Comparing them side by side",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Alike.** Both are cells. Both have a cell membrane, cytoplasm, ribosomes and DNA. Both carry out every life process.\n\n**Different.**\n**Nucleus:** prokaryotes have none (DNA in the nucleoid). Eukaryotes have one.\n**Organelles:** prokaryotes have no membrane-bound organelles. Eukaryotes have many.\n**Size:** eukaryotic cells are usually about 10 times bigger.\n**DNA:** prokaryotes have one circular loop. Eukaryotes have several long, straight chromosomes inside the nucleus.\n**Who:** prokaryotes are bacteria and archaea. Eukaryotes are plants, animals, fungi and protists.\n\n**Why eukaryotes can be more complex.** Separate rooms let a eukaryotic cell do many jobs at once without them getting in each other's way, like a house with a kitchen, a bedroom and a garage.\n\n**Worked example 2: classify an unknown cell.** A cell is 2 micrometers long. It has a cell wall, a flagellum, ribosomes and a loop of DNA, but no nucleus. Ignore the cell wall and the flagellum, since some eukaryotes have them too. The key question is: is there a nucleus? No. So it is a **prokaryote**, most likely a bacterium.\n\n**Worked example 3:** Strep throat is caused by Streptococcus, a bacterium, so its cells are prokaryotic. The cells in your throat are eukaryotic.\n\n**Watch out for:** thinking prokaryotes have no DNA (they have DNA, just no nucleus), thinking prokaryotes have no ribosomes, thinking single-celled always means prokaryote (yeast and amoebas are single-celled eukaryotes), using the cell wall to decide, and calling viruses prokaryotes (viruses aren't cells at all)."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "Which features would you find in a Streptococcus bacterium?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "A nucleus and mitochondria"
+                },
+                {
+                  "id": "b",
+                  "text": "Ribosomes and DNA, but no nucleus"
+                },
+                {
+                  "id": "c",
+                  "text": "A nucleus and chloroplasts"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Bacteria are prokaryotes: they have ribosomes and DNA like every cell, but no nucleus or other membrane-bound organelles. Thinking bacteria have no DNA is the common mistake."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "A cell is about 50 micrometers across and has a nucleus. Which organism could it come from?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "E. coli bacteria"
+                },
+                {
+                  "id": "b",
+                  "text": "A virus"
+                },
+                {
+                  "id": "c",
+                  "text": "An oak tree"
+                }
+              ],
+              "answer": "c",
+              "explanation": "A large cell with a nucleus is eukaryotic, like a plant cell from an oak tree. E. coli is a small prokaryote with no nucleus, and a virus is not a cell at all."
+            }
+          ],
+          "shortAnswer": "Name two ways prokaryotic and eukaryotic cells are alike and two ways they are different."
+        }
+      ]
+    },
+    {
+      "target": "U3.LT2",
+      "mode": "do",
+      "title": "Do: flip the differences, then classify unknown cells",
+      "description": "Flashcards with a 3-question self-quiz, then a worked problem one step at a time.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: prokaryotes and eukaryotes",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Prokaryote",
+                "back": "A cell with no nucleus and no membrane-bound organelles. Pro- means before: before nucleus. Bacteria and archaea."
+              },
+              {
+                "id": "k2",
+                "front": "Eukaryote",
+                "back": "A cell with a nucleus and membrane-bound organelles. Eu- means true: true nucleus. Plants, animals, fungi, protists."
+              },
+              {
+                "id": "k3",
+                "front": "Nucleoid",
+                "back": "The region of a prokaryote's cytoplasm where its circular DNA sits. It has no membrane, so it is not a nucleus."
+              },
+              {
+                "id": "k4",
+                "front": "Membrane-bound organelles",
+                "back": "Cell parts wrapped in their own membrane, like the nucleus, mitochondria, ER and Golgi. Only eukaryotes have them."
+              },
+              {
+                "id": "k5",
+                "front": "Found in ALL cells",
+                "back": "A cell membrane, cytoplasm, ribosomes and DNA."
+              },
+              {
+                "id": "k6",
+                "front": "Size",
+                "back": "Prokaryotes: about 1 to 10 micrometers. Eukaryotes: about 10 to 100 micrometers, often about 10 times bigger."
+              },
+              {
+                "id": "k7",
+                "front": "Flagellum",
+                "back": "A long, whip-like tail some cells use to move. Many bacteria have one."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "Which structure tells you for sure that a cell is eukaryotic?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Ribosomes"
+                },
+                {
+                  "id": "b",
+                  "text": "A cell wall"
+                },
+                {
+                  "id": "c",
+                  "text": "A nucleus"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Only eukaryotes have a nucleus. All cells have ribosomes, and both bacteria and plant cells have cell walls, so those don't decide it."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "Which pair are BOTH prokaryotes?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "E. coli and Streptococcus (two bacteria)"
+                },
+                {
+                  "id": "b",
+                  "text": "Yeast and an amoeba"
+                },
+                {
+                  "id": "c",
+                  "text": "A mushroom and E. coli"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Bacteria are prokaryotes. Yeast and mushrooms are fungi, and amoebas are protists, so they are eukaryotes. Thinking every single-celled organism is a prokaryote is the common mistake."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "Ribosomes are found in",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "only eukaryotic cells"
+                },
+                {
+                  "id": "b",
+                  "text": "only prokaryotic cells"
+                },
+                {
+                  "id": "c",
+                  "text": "both prokaryotic and eukaryotic cells"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Every cell needs ribosomes to make proteins. Ribosomes have no membrane around them, so prokaryotes have them too. Thinking prokaryotes have no organelles of any kind is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: classify the unknown cells",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "Three unknown cells are viewed under a microscope. Cell X: 3 micrometers, a cell wall, ribosomes and DNA loose in the cytoplasm. Cell Y: 40 micrometers, a nucleus, mitochondria, a cell wall and chloroplasts. Cell Z: 20 micrometers, a single-celled organism with a nucleus and mitochondria and no cell wall. Classify each one.",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "Ask the key question first: is there a nucleus and other membrane-bound organelles? Ignore the cell wall, because both kinds of cells can have one."
+              },
+              {
+                "id": "s2",
+                "text": "Cell X: no nucleus, DNA loose in the cytoplasm (the nucleoid) and small. It is a prokaryote, most likely a bacterium."
+              },
+              {
+                "id": "s3",
+                "text": "Cell Y: a nucleus, mitochondria, chloroplasts and a cell wall. It is a eukaryote, a plant cell."
+              },
+              {
+                "id": "s4",
+                "text": "Cell Z: only one cell, but it has a nucleus and mitochondria. It is a eukaryote, likely a protist. Being single-celled doesn't make it a prokaryote."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: cell W has a cell wall, a flagellum and ribosomes, but no nucleus. What is it?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "A prokaryote"
+                },
+                {
+                  "id": "b",
+                  "text": "A eukaryote"
+                },
+                {
+                  "id": "c",
+                  "text": "Not a cell"
+                }
+              ],
+              "answer": "a",
+              "explanation": "No nucleus means prokaryote. The cell wall and flagellum don't decide it, but ribosomes show it is still a cell. Letting the cell wall decide is the common mistake.",
+              "afterStepId": "s2"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Why is a cell wall NOT a good clue for telling prokaryotes and eukaryotes apart?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "No cells have cell walls"
+                },
+                {
+                  "id": "b",
+                  "text": "Both bacteria and plant cells have cell walls"
+                },
+                {
+                  "id": "c",
+                  "text": "Only prokaryotes have cell walls"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Bacteria (prokaryotes) and plants and fungi (eukaryotes) all have cell walls, so a wall can show up in either kind. The nucleus is the clue that decides.",
+              "afterStepId": "s4"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

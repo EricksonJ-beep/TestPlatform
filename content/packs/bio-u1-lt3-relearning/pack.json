@@ -1,0 +1,290 @@
+{
+  "name": "bio-u1-lt3-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "relearning": [
+    {
+      "target": "U1.LT3",
+      "mode": "read",
+      "title": "Read: the parts of a microscope and how to use it",
+      "description": "A short reading with the phone-zoom analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "The parts and the magnification rule",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can properly use a microscope and identify the parts.**\n\n**Think of zooming in on a photo on your phone.** The more you zoom, the bigger things look, but less of the picture fits on the screen. A microscope works the same way: higher power makes the specimen look bigger, but you see a smaller area.\n\n**The parts, from top to bottom.**\n**Ocular lens (eyepiece):** the lens you look through, usually 10×.\n**Revolving nosepiece:** turns to switch between the objective lenses.\n**Objective lenses:** the lenses just above the slide, usually 4× (scanning), 10× (low power) and 40× (high power).\n**Stage and stage clips:** the flat platform that holds the slide, and the clips that keep it still.\n**Diaphragm:** under the stage. It controls how much light reaches the specimen.\n**Light source:** shines light up through the specimen.\n**Coarse adjustment knob:** the big knob. It moves the stage a lot. Use it on low power only.\n**Fine adjustment knob:** the small knob. It sharpens the focus a little. It is the only knob to use on high power.\n**Arm and base:** carry the microscope with one hand on the arm and the other hand under the base.\n\n**Total magnification = ocular lens × objective lens.**\n\n**Worked example:** The ocular lens is 10× and the 10× objective is in place. Total magnification = 10 × 10 = **100×**. It is not 20×: you multiply the lenses, you don't add them."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "A microscope has a 10× ocular lens, and the 4× objective is in place. What is the total magnification?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "14×"
+                },
+                {
+                  "id": "b",
+                  "text": "40×"
+                },
+                {
+                  "id": "c",
+                  "text": "400×"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Multiply the two lenses: 10 × 4 = 40×. Adding them (10 + 4 = 14×) is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "multiple_choice",
+              "prompt": "A student wants to switch from the 10× objective to the 40× objective. Which part does she turn?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The coarse adjustment knob"
+                },
+                {
+                  "id": "b",
+                  "text": "The diaphragm"
+                },
+                {
+                  "id": "c",
+                  "text": "The revolving nosepiece"
+                }
+              ],
+              "answer": "c",
+              "explanation": "The revolving nosepiece holds the objective lenses and turns to switch between them. The coarse knob moves the stage, and the diaphragm controls light. Mixing up the nosepiece and the focus knobs is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Focusing step by step",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**How to focus a slide. The order matters.**\n1. Carry the microscope with two hands, plug it in and turn on the light.\n2. Turn the nosepiece to the lowest objective (4×).\n3. Put the slide on the stage and clip it in.\n4. Look through the ocular lens and focus with the coarse knob.\n5. Sharpen the image with the fine knob.\n6. Move the specimen to the center of the view, then switch to 10× and then 40×.\n7. On high power, use only the fine knob. If the image is too dark, open the diaphragm.\n\n**What you'll notice.** The image is upside down and backward, so it moves the opposite way you move the slide. On higher power the specimen looks bigger, but you see less of the slide and less light gets through, so it looks darker.\n\n**Worked example 2:** A microscope has a 15× ocular lens and the 40× objective is in place. Total = 15 × 40 = **600×**.\n\n**Worked example 3: work backward.** The total magnification is 100× and the ocular lens is 10×. Objective = 100 ÷ 10 = **10×**.\n\n**Caring for the microscope.** Clean the lenses only with lens paper, because paper towels and shirts scratch them. Put the microscope away on the lowest objective with the cord wrapped up.\n\n**Watch out for:** adding the lenses instead of multiplying, using the coarse knob on high power (the objective can crash into the slide and crack it), starting on high power (the specimen is hard to find), and switching to high power before the specimen is centered (it can end up out of view)."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "fill_blank",
+              "prompt": "A microscope has a 10× ocular lens. The total magnification is 40×. What power is the objective lens? Type a number.",
+              "answer": ["4", "4x", "4×", "4 x", "4 ×", "four"],
+              "explanation": "Total = ocular × objective, so 40 = 10 × objective. 40 ÷ 10 = 4×. Subtracting (40 − 10 = 30) is the common mistake."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "What should you use to clean the ocular and objective lenses?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "A paper towel"
+                },
+                {
+                  "id": "b",
+                  "text": "Lens paper"
+                },
+                {
+                  "id": "c",
+                  "text": "The corner of your shirt"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Lens paper is soft and made for lenses. Paper towels and cloth can scratch the glass. Grabbing whatever is handy is the common mistake."
+            }
+          ],
+          "shortAnswer": "Explain why you should never use the coarse adjustment knob on high power, and what you should use instead."
+        }
+      ]
+    },
+    {
+      "target": "U1.LT3",
+      "mode": "do",
+      "title": "Do: flip the parts, then focus a slide step by step",
+      "description": "Flashcards with a 3-question self-quiz, then a worked problem one step at a time.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: microscope parts",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Ocular lens (eyepiece)",
+                "back": "The lens you look through at the top. It usually magnifies 10×."
+              },
+              {
+                "id": "k2",
+                "front": "Objective lenses",
+                "back": "The lenses just above the slide, on the revolving nosepiece: usually 4×, 10× and 40×."
+              },
+              {
+                "id": "k3",
+                "front": "Stage and stage clips",
+                "back": "The flat platform that holds the slide. The clips keep the slide from sliding around."
+              },
+              {
+                "id": "k4",
+                "front": "Diaphragm",
+                "back": "Opens and closes under the stage to control how much light reaches the specimen."
+              },
+              {
+                "id": "k5",
+                "front": "Coarse adjustment knob",
+                "back": "The big knob. It moves the stage a lot. Use it on low power only."
+              },
+              {
+                "id": "k6",
+                "front": "Fine adjustment knob",
+                "back": "The small knob. It sharpens the focus a little. It is the only knob to use on high power."
+              },
+              {
+                "id": "k7",
+                "front": "Arm and base",
+                "back": "Carry the microscope with one hand on the arm and the other hand under the base."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "The specimen is in focus but looks very dark. Which part should you adjust?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The diaphragm"
+                },
+                {
+                  "id": "b",
+                  "text": "The stage clips"
+                },
+                {
+                  "id": "c",
+                  "text": "The ocular lens"
+                }
+              ],
+              "answer": "a",
+              "explanation": "The diaphragm controls how much light reaches the specimen, so opening it brightens the view. Stage clips only hold the slide. Reaching for a focus part when the problem is light is the common mistake."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "Which two parts contain lenses that magnify the specimen?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The ocular lens and the objective lenses"
+                },
+                {
+                  "id": "b",
+                  "text": "The stage and the diaphragm"
+                },
+                {
+                  "id": "c",
+                  "text": "The coarse and fine adjustment knobs"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Only the ocular and objective lenses magnify, which is why you multiply them for total magnification. The knobs focus, and the stage and diaphragm hold the slide and control light."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "The 40× objective is in place. Which knob is safe to use?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Only the coarse adjustment knob"
+                },
+                {
+                  "id": "b",
+                  "text": "Only the fine adjustment knob"
+                },
+                {
+                  "id": "c",
+                  "text": "Either knob"
+                }
+              ],
+              "answer": "b",
+              "explanation": "On high power the objective sits very close to the slide. The coarse knob moves too far and can crack the slide, so use only the fine knob."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: focus a slide and find the magnification",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "A student needs to view an onion skin slide on high power and report the total magnification. The ocular lens is 10×, and the objectives are 4×, 10× and 40×.",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "Start on the lowest power. Turn the nosepiece to the 4× objective. Put the slide on the stage and clip it in."
+              },
+              {
+                "id": "s2",
+                "text": "Focus with the coarse knob, then sharpen with the fine knob. Total magnification now: 10 × 4 = 40×."
+              },
+              {
+                "id": "s3",
+                "text": "Move the onion cells to the center of the view, then turn to the 10× objective. Fix the focus with the fine knob. Total: 10 × 10 = 100×."
+              },
+              {
+                "id": "s4",
+                "text": "Turn to the 40× objective. Use only the fine knob. If it looks dark, open the diaphragm. Total: 10 × 40 = 400×."
+              },
+              {
+                "id": "s5",
+                "text": "Report it: the onion cells were seen at 400×. They look bigger than at 100×, but fewer cells fit in the view."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "fill_blank",
+              "prompt": "Your turn: a microscope has a 15× ocular lens, and the 4× objective is in place. What is the total magnification? Type a number.",
+              "answer": ["60", "60x", "60×", "60 x", "60 ×", "sixty"],
+              "explanation": "Multiply the two lenses: 15 × 4 = 60×. Adding them (15 + 4 = 19×) is the common mistake.",
+              "afterStepId": "s2"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Going from 100× to 400×, how many times bigger does the image look?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "4 times bigger"
+                },
+                {
+                  "id": "b",
+                  "text": "40 times bigger"
+                },
+                {
+                  "id": "c",
+                  "text": "300 times bigger"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Divide the two totals: 400 ÷ 100 = 4, so the image looks 4 times bigger. Subtracting (400 − 100 = 300) is the common mistake.",
+              "afterStepId": "s4"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
