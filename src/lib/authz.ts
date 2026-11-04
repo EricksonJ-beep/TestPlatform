@@ -424,3 +424,102 @@ export async function requirePracticeAttemptAccess(
   if (ownerId !== session.userId) throw forbidden();
   return { ...session, as: "teacher", attempt };
 }
+
+export type PracticeCheckAccess = Session & {
+  as: "teacher" | "student";
+  check: { id: string; studentId: string; assignmentId: string };
+};
+
+// Rule: a practice check (relearning revamp, R3) and its rounds belong to one student; only that student, or the teacher who owns the assignment, may touch them.
+export async function requirePracticeCheckAccess(checkId: string): Promise<PracticeCheckAccess> {
+  const session = await requireSession();
+  assertId(checkId);
+  const [row] = await db
+    .select({
+      id: schema.practiceChecks.id,
+      studentId: schema.practiceChecks.studentId,
+      assignmentId: schema.practiceChecks.assignmentId,
+      ownerId: schema.assignments.ownerId,
+    })
+    .from(schema.practiceChecks)
+    .innerJoin(schema.assignments, eq(schema.practiceChecks.assignmentId, schema.assignments.id))
+    .where(eq(schema.practiceChecks.id, checkId))
+    .limit(1);
+  if (!row) throw notFound();
+  const { ownerId, ...check } = row;
+  if (session.role === "student") {
+    if (check.studentId !== session.userId) throw notFound();
+    return { ...session, as: "student", check };
+  }
+  if (ownerId !== session.userId) throw forbidden();
+  return { ...session, as: "teacher", check };
+}
+
+export type RelearningRowAccess = Session & {
+  as: "teacher" | "student";
+  row: { id: string; studentId: string; assignmentId: string; bundleId: string };
+};
+
+// Rule: a relearning row (relearning revamp, R4: one student's Read · Watch · Do on one target of one assignment) belongs to that student; only they, or the teacher who owns the assignment, may touch it.
+export async function requireRelearningRowAccess(rowId: string): Promise<RelearningRowAccess> {
+  const session = await requireSession();
+  assertId(rowId);
+  const [found] = await db
+    .select({
+      id: schema.relearningPaths.id,
+      studentId: schema.relearningPaths.studentId,
+      assignmentId: schema.relearningPaths.assignmentId,
+      bundleId: schema.relearningPaths.bundleId,
+      ownerId: schema.assignments.ownerId,
+    })
+    .from(schema.relearningPaths)
+    .innerJoin(schema.assignments, eq(schema.relearningPaths.assignmentId, schema.assignments.id))
+    .where(eq(schema.relearningPaths.id, rowId))
+    .limit(1);
+  if (!found) throw notFound();
+  const { ownerId, ...row } = found;
+  if (session.role === "student") {
+    if (row.studentId !== session.userId) throw notFound();
+    return { ...session, as: "student", row };
+  }
+  if (ownerId !== session.userId) throw forbidden();
+  return { ...session, as: "teacher", row };
+}
+
+// Rule: a Read · Watch · Do section (R4) belongs to the teacher who owns its option; only they may act on it (e.g. resolve its "won't play" flags).
+export async function requireRelearningSectionOwner(
+  sectionId: string
+): Promise<Session & { section: { id: string; optionId: string } }> {
+  const session = await requireTeacher();
+  assertId(sectionId);
+  const [found] = await db
+    .select({
+      id: schema.relearningSections.id,
+      optionId: schema.relearningSections.optionId,
+      ownerId: schema.relearningOptions.ownerId,
+    })
+    .from(schema.relearningSections)
+    .innerJoin(
+      schema.relearningOptions,
+      eq(schema.relearningSections.optionId, schema.relearningOptions.id)
+    )
+    .where(eq(schema.relearningSections.id, sectionId))
+    .limit(1);
+  if (!found) throw notFound();
+  if (found.ownerId !== session.userId) throw forbidden();
+  return { ...session, section: { id: found.id, optionId: found.optionId } };
+}
+
+// Rule: a check round is reached through its check (`requirePracticeCheckAccess`).
+export async function requireCheckRoundAccess(
+  roundId: string
+): Promise<PracticeCheckAccess & { roundId: string }> {
+  await requireSession();
+  assertId(roundId);
+  const round = await db.query.practiceCheckRounds.findFirst({
+    columns: { checkId: true },
+    where: eq(schema.practiceCheckRounds.id, roundId),
+  });
+  if (!round) throw notFound();
+  return { ...(await requirePracticeCheckAccess(round.checkId)), roundId };
+}

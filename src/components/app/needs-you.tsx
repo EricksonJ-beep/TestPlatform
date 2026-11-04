@@ -16,6 +16,7 @@ import {
   PenLine,
   Play,
   RotateCcw,
+  VideoOff,
 } from "lucide-react";
 import {
   BLOCKER_LINE,
@@ -32,6 +33,7 @@ import type {
   NeedsYou,
   PausedAttempt,
   RetakeRequest,
+  VideoFlagRow,
 } from "@/lib/queries/dashboard";
 import type { PendingVerification } from "@/lib/queries/practice";
 import { LocalTime } from "@/components/local-time";
@@ -42,6 +44,7 @@ import { verifyCompletion } from "@/app/app/practice/actions";
 import {
   clearRetakeRequest,
   letContinue,
+  resolveVideoFlag,
   revokeAttemptUnlock,
   undoRetakeApproval,
   unlockNextAttempt,
@@ -73,6 +76,11 @@ const GROUPS: Record<
     icon: CheckCircle2,
     chip: (n) => `${n} ${n === 1 ? "activity" : "activities"} to check off`,
   },
+  videos: {
+    title: "Videos that won't play",
+    icon: VideoOff,
+    chip: (n) => `${n} ${n === 1 ? "video" : "videos"} won't play`,
+  },
   worksheets: {
     title: "Worksheet emails",
     icon: FileSpreadsheet,
@@ -85,6 +93,7 @@ const ORDER: NeedsYouGroup[] = [
   "corrections",
   "grading",
   "activities",
+  "videos",
   "worksheets",
 ];
 
@@ -245,6 +254,11 @@ export function NeedsYouInbox({ inbox }: { inbox: NeedsYou }) {
                   checked={activities.done.has(activityKey(r))}
                   onChecked={() => keepActivity(r)}
                 />
+              ))}
+            </Group>
+            <Group id="videos" count={counts.videos} rows={inbox.videos.length}>
+              {inbox.videos.map((r) => (
+                <VideoRow key={r.sectionId} r={r} />
               ))}
             </Group>
             <Group id="worksheets" count={counts.worksheets} rows={counts.worksheets}>
@@ -677,6 +691,61 @@ function ActivityRow({
             {pending ? "Checking off…" : "Check off"}
           </Button>
         )
+      }
+    />
+  );
+}
+
+/**
+ * Relearning revamp A6: a Watch video the player refused for students (often YouTube's Restricted
+ * Mode on school Chromebooks). They were offered Read or Do; the teacher checks the video on a
+ * student account, swaps it in the pack if needed, then marks it fixed.
+ */
+function VideoRow({ r }: { r: VideoFlagRow }) {
+  const { run, pending, error } = useAction();
+  return (
+    <Row
+      data={{ "data-needs-video": r.sectionId }}
+      who={`${r.targetCode} · ${r.optionTitle}`}
+      what={`${r.part === "core" ? "Core" : "Extension"}${r.sectionTitle ? `: ${r.sectionTitle}` : ""}`}
+      meta={
+        <>
+          Wouldn&apos;t play for {r.students} {r.students === 1 ? "student" : "students"}
+          {r.errorCodes.length ? ` (error ${r.errorCodes.join(", ")})` : ""} · last{" "}
+          <LocalTime date={r.lastSeenAt} />
+          {r.youtubeId ? (
+            <>
+              {" "}
+              ·{" "}
+              <a
+                href={`https://www.youtube.com/watch?v=${r.youtubeId}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-brand-deep hover:underline"
+              >
+                Open the video
+              </a>
+            </>
+          ) : null}
+        </>
+      }
+      note={
+        <p className="text-xs text-muted-foreground">
+          Students were offered Read or Do instead. Try it on a student account; swap it if
+          Restricted Mode blocks it.
+        </p>
+      }
+      error={error}
+      actions={
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={pending}
+          onClick={() => run(resolveVideoFlag(r.sectionId))}
+        >
+          <Check data-icon="inline-start" aria-hidden />
+          {pending ? "Saving…" : "Fixed it"}
+        </Button>
       }
     />
   );

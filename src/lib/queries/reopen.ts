@@ -8,6 +8,8 @@ import { and, asc, eq, isNotNull, ne, sql, type SQL } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { capRetakeWindow } from "@/lib/assignments";
 import { correctionsCapOn } from "@/lib/grading";
+import { getPathState } from "@/lib/queries/relearning-path";
+import { pathRule } from "@/lib/relearning-path";
 import { correctionsRule } from "@/lib/retakes";
 
 /**
@@ -97,15 +99,19 @@ export async function capWindowPassed(
     .limit(1);
   if (!first) return false;
   const capped = correctionsCapOn(a);
+  // On the relearning path (Nov 4 2026) the path says whether a retake is on offer at all.
+  const path = await getPathState(assignmentId, studentId);
   return capRetakeWindow({
     capped,
-    rule: correctionsRule({
-      type: a.type,
-      capped,
-      cvtcRules: !!a.cvtcRules,
-      firstPercent: first.percent,
-      threshold: a.retakeThreshold,
-    }),
+    rule: path
+      ? pathRule(path.state)
+      : correctionsRule({
+          type: a.type,
+          capped,
+          cvtcRules: !!a.cvtcRules,
+          firstPercent: first.percent,
+          threshold: a.retakeThreshold,
+        }),
     open: !a.closesAt || now < a.closesAt,
     retakeWindowDays: a.retakeWindowDays,
     firstSubmittedAt: first.submittedAt,

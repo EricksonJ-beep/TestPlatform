@@ -90,10 +90,10 @@ export default async function AssignmentResultsPage({
         <Button
           variant="outline"
           nativeButton={false}
-          render={<a href={`/api/results/${assignmentId}/export`} />}
+          render={<Link href={`/app/results/${assignmentId}/skyward`} />}
         >
           <Download data-icon="inline-start" aria-hidden />
-          Export CSV
+          Skyward export
         </Button>
       </div>
 

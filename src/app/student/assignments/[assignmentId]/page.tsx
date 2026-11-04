@@ -13,6 +13,7 @@ import {
 } from "@/lib/quiz-practice";
 import { getStudentPractice } from "@/lib/queries/practice";
 import { listStudentAttempts } from "@/lib/queries/attempts";
+import { buildStepPath } from "@/lib/step-path";
 import {
   correctionsActionLabel,
   correctionsProgress,
@@ -23,6 +24,7 @@ import { LocalTime } from "@/components/local-time";
 import { TargetChip } from "@/components/targets/target-chip";
 import { Button } from "@/components/ui/button";
 import { PracticeSetCard } from "../../practice-cards";
+import { PathPanel } from "../../path/path-panel";
 import { RetakePicker } from "../../retake-picker";
 import { RequestRetakeButton } from "./request-retake-button";
 import { StartForm } from "./start-form";
@@ -86,6 +88,51 @@ export default async function StudentAssignmentPage({
     (a.state === "in_progress" ||
       (a.status === "open" && (a.state === "not_started" || retaking))) &&
     !correctionsBlock;
+
+  // The step path (R5): on the relearning path it takes the place of the corrections, relearning
+  // and practice boxes, from attempt 1's results until the retake starts.
+  const pathView =
+    a.path && a.state !== "in_progress" && a.state !== "awaiting_grade" && a.state !== "upcoming"
+      ? buildStepPath({
+          path: a.path,
+          assignmentId: a.id,
+          type: a.type === "summative" ? "summative" : "formative",
+          correctionsAttemptId: a.corrections?.attemptId ?? null,
+          cycle: a.cycle,
+          attemptsUsed: a.attemptsUsed,
+          attemptsAllowed: a.attemptsAllowed,
+          mustAsk: a.state === "ask_to_retake" || a.state === "awaiting_unlock",
+          nextAttemptAt: a.nextAttemptAt,
+          kept: !!a.kept,
+        })
+      : null;
+  // The page's own retake control, inside the Next step box: start, ask, or waiting on the teacher.
+  const retakeControl =
+    a.state === "ask_to_retake" ? (
+      <RequestRetakeButton
+        assignmentId={a.id}
+        attemptNumber={a.attemptsUsed + 1}
+        label="Ask to retake"
+        primary={a.askCounts}
+      />
+    ) : a.state === "awaiting_unlock" ? (
+      a.retakeRequested ? (
+        <p className="text-sm text-muted-foreground" data-retake-asked>
+          You asked for attempt {a.attemptsUsed + 1}. Waiting on your teacher.
+        </p>
+      ) : (
+        <RequestRetakeButton assignmentId={a.id} attemptNumber={a.attemptsUsed + 1} primary />
+      )
+    ) : canStart ? (
+      <StartForm
+        bare
+        assignmentId={a.id}
+        needsCode={a.needsCode}
+        resume={false}
+        timeLimitMinutes={a.timeLimitMinutes}
+        label={a.type === "formative" ? "Take the retake" : "Start retake"}
+      />
+    ) : null;
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-5">
@@ -151,12 +198,22 @@ export default async function StudentAssignmentPage({
           <RetakePicker
             assignmentId={a.id}
             retake={a.retake}
-            checklist={a.cycle === "relearning" || retaking}
+            // On the path the step path below shows each target's steps (R5).
+            checklist={(a.cycle === "relearning" || retaking) && !a.path}
+            onPath={!!a.path}
           />
         </section>
       ) : null}
 
-      {a.state === "upcoming" ? (
+      {pathView && a.path ? (
+        <PathPanel
+          assignmentId={a.id}
+          view={pathView}
+          retakeControl={retakeControl}
+          relearningStarted={a.path.targets.some((t) => !!t.bundleId)}
+          showOptional={a.type === "formative" && a.path.raises && a.path.required.length > 0}
+        />
+      ) : a.state === "upcoming" ? (
         <p className="rounded-lg border border-border bg-card px-4 py-3 text-sm">
           This opens <LocalTime date={a.opensAt} />. Check back then.
         </p>

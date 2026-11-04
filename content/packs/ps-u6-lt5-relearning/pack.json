@@ -1,0 +1,239 @@
+{
+  "name": "ps-u6-lt5-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science B",
+  "relearning": [
+    {
+      "target": "U6.LT5",
+      "mode": "read",
+      "title": "Read: energy flow in a Rube Goldberg machine",
+      "description": "A short reading with the relay-race analogy, a traced chain and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Energy forms in a chain",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can design a Rube Goldberg machine to demonstrate an understanding of energy flow within a system.**\n\n**Think of a relay race.** Nobody runs until the starting gun goes off, and each runner hands the baton to the next. In a Rube Goldberg machine, the baton is **energy**. Each step hands energy to the next step, and the last step does the task.\n\n**What it is.** A **Rube Goldberg machine** is a **complex machine** built from **simple machines** (levers, inclined planes, pulleys, wedges) that does a simple task, like popping a balloon, in many steps.\n\n**Energy words.** **Energy** is the ability to cause change. **Kinetic** energy is energy of motion. **Potential** energy is stored energy: **gravitational** (raised up), **elastic** (stretched or squeezed), or **chemical** (in bonds, like food or a battery). **Sound** and **thermal** (heat) energy spread out.\n\n**Worked example:** A marble is let go at the top of a ramp. Held high, it has **gravitational potential** energy. As it rolls down, that changes to **kinetic** energy. When it clicks against a lever, some energy leaves as **sound**, and friction makes a little **thermal** energy."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "A set mousetrap is waiting to snap. What kind of energy is stored in its spring?",
+              "options": [
+                { "id": "a", "text": "Kinetic energy" },
+                { "id": "b", "text": "Elastic potential energy" },
+                { "id": "c", "text": "Sound energy" }
+              ],
+              "answer": "b",
+              "explanation": "The spring is squeezed and waiting, so it stores elastic potential energy. It isn't moving yet, so it isn't kinetic. Calling stored energy kinetic is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "multiple_choice",
+              "prompt": "A toy car starts at the top of a steep board and rolls down. What energy change happens?",
+              "options": [
+                { "id": "a", "text": "Kinetic to gravitational potential" },
+                { "id": "b", "text": "Elastic to sound" },
+                { "id": "c", "text": "Gravitational potential to kinetic" }
+              ],
+              "answer": "c",
+              "explanation": "The car starts high (gravitational potential) and speeds up as it rolls down (kinetic). Writing the change backward is the common mistake: going down trades height for speed."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Conservation and weak links",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Law of Conservation of Energy:** energy can never be created or destroyed; it only changes form. So every machine needs a **start**: a push, a pull, or a drop from someone. After that, it runs on its own.\n\n**Where the energy seems to go.** At each step, friction turns some energy into **thermal** energy (heat), and some leaves as **sound**. That energy isn't destroyed, but it spreads out and can't push the next step. So each step passes on a little less useful energy, and no machine runs forever.\n\n**Worked example 2 (tracing a chain):** (1) A student lifts a weight on a string and lets it go. The energy from her muscles (chemical, from food) is now stored as gravitational potential energy. (2) The weight swings down: gravitational potential → kinetic. (3) It knocks over a row of dominoes; each falling domino turns gravitational potential → kinetic. (4) The last domino tips a toy car down a ramp: gravitational potential → kinetic. (5) The car rings a bell: kinetic → sound. At every step, friction also makes a little heat.\n\n**Fixing a weak link.** If a step doesn't have enough energy to set off the next one, start it higher. More height means more gravitational potential energy to change into kinetic energy.\n\n**For the project,** label each simple machine with its name and IMA (De ÷ Dr), and write the energy change for every step.\n\n**Watch out for:** saying energy is used up or destroyed (it changes form), saying a lever with a big IMA makes extra energy (it trades force for distance), counting dominoes or a falling cup as a simple machine (they pass energy along but have no IMA), and forgetting that the chain needs a start."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "At the end of a Rube Goldberg machine, the marble has stopped and the track feels slightly warm. What happened to the marble's kinetic energy?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Friction changed it into thermal energy, plus a little sound"
+                },
+                { "id": "b", "text": "It was destroyed when the marble stopped" },
+                { "id": "c", "text": "It turned back into gravitational energy" }
+              ],
+              "answer": "a",
+              "explanation": "Energy is never destroyed; it changes form. The warm track shows friction turned kinetic energy into thermal energy. Saying the energy was destroyed is the common mistake."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "Which step changes kinetic energy into sound energy?",
+              "options": [
+                { "id": "a", "text": "A rolling marble clicks against a lever" },
+                { "id": "b", "text": "A cup of pennies falls off a ledge" },
+                { "id": "c", "text": "A squeezed spring shoots a marble" }
+              ],
+              "answer": "a",
+              "explanation": "The moving marble (kinetic) makes a click, and the click is sound energy. A falling cup is gravitational potential to kinetic, and the spring is elastic to kinetic. Mixing up the starting energy is the common mistake."
+            }
+          ],
+          "shortAnswer": "Energy seems to get lost at each step of a Rube Goldberg machine. Explain where it goes and why it is not really destroyed."
+        }
+      ]
+    },
+    {
+      "target": "U6.LT5",
+      "mode": "do",
+      "title": "Do: flip the energy forms, then trace a machine",
+      "description": "Flashcards with a 3-question self-quiz, then a Rube Goldberg chain traced one step at a time.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: energy forms",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Energy",
+                "back": "The ability to cause change. It is never created or destroyed; it only changes form."
+              },
+              {
+                "id": "k2",
+                "front": "Kinetic energy",
+                "back": "Energy of motion: a rolling marble, a falling domino."
+              },
+              {
+                "id": "k3",
+                "front": "Gravitational potential energy",
+                "back": "Stored energy from being raised up: a marble at the top of a ramp."
+              },
+              {
+                "id": "k4",
+                "front": "Elastic energy",
+                "back": "Stored energy from being stretched or squeezed: a rubber band, a spring, a set mousetrap."
+              },
+              {
+                "id": "k5",
+                "front": "Chemical energy",
+                "back": "Stored energy in chemical bonds: food, a battery."
+              },
+              {
+                "id": "k6",
+                "front": "Sound and thermal energy",
+                "back": "Energy that spreads out: a click or a bang (sound), and heat from friction (thermal)."
+              },
+              {
+                "id": "k7",
+                "front": "Rube Goldberg machine",
+                "back": "A complex machine made of simple machines that does a simple task in many steps."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "A ball sits at the top of a tall ramp, not moving yet. What energy does it have?",
+              "options": [
+                { "id": "a", "text": "Kinetic energy" },
+                { "id": "b", "text": "Sound energy" },
+                { "id": "c", "text": "Gravitational potential energy" }
+              ],
+              "answer": "c",
+              "explanation": "It is raised up and not moving, so its energy is stored as gravitational potential energy. Calling it kinetic is the common mistake: kinetic energy only shows up once it starts rolling."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "A balloon pops with a loud bang. Its stretched rubber held elastic energy. What does that energy become?",
+              "options": [
+                { "id": "a", "text": "Sound energy, plus a little heat" },
+                { "id": "b", "text": "Chemical energy" },
+                { "id": "c", "text": "Nothing; it is destroyed" }
+              ],
+              "answer": "a",
+              "explanation": "The bang is sound energy, and a little heat is made too. Energy is never destroyed; it only changes form. Saying it disappears is the common mistake."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "Why can't a Rube Goldberg machine start by itself?",
+              "options": [
+                { "id": "a", "text": "Simple machines only work while a person touches them" },
+                { "id": "b", "text": "Energy can't be created, so someone has to give it a start" },
+                { "id": "c", "text": "Gravity doesn't work until something is moving" }
+              ],
+              "answer": "b",
+              "explanation": "The Law of Conservation of Energy says energy is never created, so the first step needs energy from outside: a push, a pull, or a drop. After that start, the machine runs on its own. Thinking the machine can make its own energy is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked chain: a machine that rings a bell",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "Trace the energy through this machine. A student squeezes a spring launcher and lets go. The spring shoots a marble across the table into a row of dominoes. The last domino falls on one end of a ruler resting on a pencil (a 1st-class lever). The other end of the ruler flips up and hits a small bell hanging above it.",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "The start: the student's muscles squeeze the spring, using chemical energy from food. The squeezed spring stores elastic energy."
+              },
+              {
+                "id": "s2",
+                "text": "She lets go: elastic → kinetic. The spring shoots the marble across the table."
+              },
+              {
+                "id": "s3",
+                "text": "The marble hits the dominoes. Each domino tips and falls: gravitational potential → kinetic. The last one lands on the ruler."
+              },
+              {
+                "id": "s4",
+                "text": "The ruler (a 1st-class lever, with the pencil as the fulcrum) passes the kinetic energy along, and its far end hits the bell: kinetic → sound. At every step, friction also makes a little heat (thermal), so each step passes on a little less useful energy."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: a stretched rubber band snaps back and flings a cotton ball. What energy change happens?",
+              "options": [
+                { "id": "a", "text": "Kinetic to elastic" },
+                { "id": "b", "text": "Elastic to kinetic" },
+                { "id": "c", "text": "Sound to kinetic" }
+              ],
+              "answer": "b",
+              "explanation": "The stretched band stores elastic energy, and flinging the ball turns it into kinetic energy. Writing the change backward is the common mistake.",
+              "afterStepId": "s2"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Why does each step of the machine pass on a little less useful energy than it got?",
+              "options": [
+                { "id": "a", "text": "Energy is destroyed a little at each step" },
+                { "id": "b", "text": "Simple machines use up energy to work" },
+                {
+                  "id": "c",
+                  "text": "Friction turns some energy into heat, and some leaves as sound"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Energy is never destroyed (Law of Conservation of Energy). Some of it changes into heat and sound that spread out and can't push the next step. Saying it is destroyed or used up is the common mistake.",
+              "afterStepId": "s4"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

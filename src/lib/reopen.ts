@@ -11,7 +11,7 @@ export const SCHOOL_TIME_ZONE = "America/Chicago";
 const DAY_MS = 86_400_000;
 
 /** The calendar date `at` falls on in the school's time zone. */
-function schoolDate(at: Date): { y: number; m: number; d: number } {
+export function schoolDate(at: Date): { y: number; m: number; d: number } {
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone: SCHOOL_TIME_ZONE,
     year: "numeric",
@@ -23,7 +23,7 @@ function schoolDate(at: Date): { y: number; m: number; d: number } {
 }
 
 /** How far the school's wall clock is ahead of UTC at `at`, in ms (negative: Central is behind). */
-function schoolOffset(at: Date): number {
+export function schoolOffset(at: Date): number {
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone: SCHOOL_TIME_ZONE,
     hourCycle: "h23",

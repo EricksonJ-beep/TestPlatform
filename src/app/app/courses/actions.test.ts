@@ -38,6 +38,7 @@ import {
   deleteTarget,
   deleteUnit,
   moveUnit,
+  setCourseRelearningPath,
   setCurrentCourse,
   updateCourse,
   updatePool,
@@ -298,5 +299,38 @@ describe("deleting a course", () => {
       await db.$count(schema.learningTargets, eq(schema.learningTargets.courseId, courseId))
     ).toBe(0);
     expect(await db.$count(schema.units, eq(schema.units.courseId, courseId))).toBe(0);
+  });
+});
+
+describe("the relearning path's course switch (L1)", () => {
+  it("owner only; never in the past; today is now; a scheduled start can be cancelled", async () => {
+    const [course] = await db
+      .insert(schema.courses)
+      .values({ ownerId: ids.teacherA, name: "Physical Science (switch)" })
+      .returning();
+    asUser(ids.teacherB, "teacher");
+    expect(await setCourseRelearningPath(course.id, "2099-01-05")).toMatchObject({
+      ok: false,
+      status: 403,
+    });
+    asUser(ids.teacherA, "teacher");
+    expect(await setCourseRelearningPath(course.id, "2001-01-05")).toMatchObject({
+      ok: false,
+      status: 400,
+    });
+    const scheduled = await ok(setCourseRelearningPath(course.id, "2099-01-05"));
+    expect(scheduled.relearningPathFrom!.getTime()).toBeGreaterThan(Date.now());
+    expect(await ok(setCourseRelearningPath(course.id, null))).toEqual({
+      relearningPathFrom: null,
+    });
+    // Today switches on now; then it stays.
+    const t = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Chicago" }).format(new Date());
+    const before = Date.now();
+    const on = await ok(setCourseRelearningPath(course.id, t));
+    expect(on.relearningPathFrom!.getTime()).toBeGreaterThanOrEqual(before);
+    expect(await setCourseRelearningPath(course.id, null)).toMatchObject({
+      ok: false,
+      status: 409,
+    });
   });
 });

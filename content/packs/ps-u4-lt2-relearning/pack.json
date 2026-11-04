@@ -1,0 +1,222 @@
+{
+  "name": "ps-u4-lt2-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science B",
+  "relearning": [
+    {
+      "target": "U4.LT2",
+      "mode": "read",
+      "title": "Read: velocity and momentum",
+      "description": "A short reading with the giving-directions analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Velocity and momentum",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can identify and calculate velocity and momentum.**\n\n**Think of giving directions to a friend.** If you say \"drive 50 mi/h,\" your friend still doesn't know where to go. If you say \"drive 50 mi/h north on Highway 29,\" now they do. That is the difference between **speed** and **velocity**. Now think about catching a ball. A tennis ball tossed at you is easy to stop, but a bowling ball at the same velocity is much harder, because it has more mass. That \"hard to stop\" idea is **momentum**.\n\n**Velocity** is the speed of an object **and** the direction of its motion, like 25 m/s north. It has the same units as speed (m/s, mi/h, km/h).\n\n**Momentum** is the product of an object's mass and its velocity. Its symbol is **p**. **p = m × v**, **v = p / m** and **m = p / v**. Use mass in kg and velocity in m/s, so momentum is in **kg·m/s**. An object at rest has zero momentum.\n\n**Worked example:** An 80 kg football player runs at 3.0 m/s. What is his momentum? Formula: p = m × v. Set Up: p = 80 kg × 3.0 m/s. Answer: **240 kg·m/s**."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "A weather report says a storm is moving 30 km/h toward the east. That is a –",
+              "options": [
+                { "id": "a", "text": "speed only" },
+                { "id": "b", "text": "velocity" },
+                { "id": "c", "text": "momentum" }
+              ],
+              "answer": "b",
+              "explanation": "It gives a speed (30 km/h) and a direction (east), so it is a velocity. Calling it only a speed ignores the direction, which is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "fill_blank",
+              "prompt": "A 50 kg student runs at 4 m/s. What is her momentum, in kg·m/s? Type a number.",
+              "answer": [
+                "200",
+                "200 kg·m/s",
+                "200kg·m/s",
+                "200 kg m/s",
+                "200kg m/s",
+                "200 kgm/s",
+                "200kgm/s",
+                "200 kg*m/s",
+                "200kg*m/s",
+                "200 kg-m/s",
+                "200kg-m/s"
+              ],
+              "explanation": "p = m × v = 50 kg × 4 m/s = 200 kg·m/s. Adding (54) or dividing (12.5) instead of multiplying is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Speed vs. velocity, and working backward",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Speed or velocity?** Speed is just how fast and is always positive. Velocity includes direction, so it can be negative when we call one direction negative. A car going around a curve at a constant 35 mi/h has a constant speed, but its velocity changes because its direction changes. (Any change in velocity is acceleration, which you will calculate in LT3.) To decide if something is moving, compare it to a **reference point**: a passenger on a bus is not moving compared to her seat, but she is moving compared to a tree outside.\n\n**Worked example 2:** A student rides a bike 840 m north to school in 120 s. What is the velocity? Formula: v = d / t. Set Up: v = 840 m / 120 s. Answer: **7 m/s north** (don't forget the direction).\n\n**Worked example 3:** A 12 kg wagon has a momentum of 96 kg·m/s. How fast is it going? Formula: v = p / m. Set Up: v = 96 kg·m/s / 12 kg. Answer: **8 m/s**. To find mass instead, divide momentum by velocity.\n\n**More mass or more velocity means more momentum.** If the mass doubles, momentum doubles. If the velocity doubles, momentum doubles.\n\n**Watch out for:** leaving the direction off a velocity, treating speed and velocity as the same thing, multiplying when you should divide (finding m or v), forgetting kg·m/s on momentum, and using grams or km/h without converting to kg and m/s first."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "A 2,000 kg truck and a 1,000 kg car both drive 20 m/s east. Which statement is true?",
+              "options": [
+                { "id": "a", "text": "The truck has twice the momentum of the car" },
+                {
+                  "id": "b",
+                  "text": "They have the same momentum, because their velocity is the same"
+                },
+                { "id": "c", "text": "The car has more momentum, because it is lighter" }
+              ],
+              "answer": "a",
+              "explanation": "p = m × v. Truck: 2,000 kg × 20 m/s = 40,000 kg·m/s. Car: 1,000 kg × 20 m/s = 20,000 kg·m/s. Same velocity and twice the mass means twice the momentum. Thinking the same velocity means the same momentum is the common mistake."
+            },
+            {
+              "id": "e2",
+              "kind": "fill_blank",
+              "prompt": "A runner has a momentum of 450 kg·m/s and is running at 9 m/s. What is the runner's mass, in kg? Type a number.",
+              "answer": ["50", "50 kg", "50kg", "fifty"],
+              "explanation": "m = p / v = 450 kg·m/s ÷ 9 m/s = 50 kg. Multiplying (4,050) is the common mistake; multiply only when you are finding p."
+            }
+          ],
+          "shortAnswer": "Explain the difference between speed and velocity, and give one example of each."
+        }
+      ]
+    },
+    {
+      "target": "U4.LT2",
+      "mode": "do",
+      "title": "Do: flip the terms, then solve step by step",
+      "description": "Flashcards with a 3-question self-quiz, then a velocity-and-momentum problem one step at a time.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: velocity and momentum",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Velocity",
+                "back": "Speed plus direction, like 25 m/s north. It has the same units as speed."
+              },
+              {
+                "id": "k2",
+                "front": "Speed vs. velocity",
+                "back": "Speed is just how fast. Velocity also says which way, so it can be negative."
+              },
+              {
+                "id": "k3",
+                "front": "Reference point",
+                "back": "What you compare position to. On a moving bus, you aren't moving compared to your seat, but you are compared to a tree outside."
+              },
+              {
+                "id": "k4",
+                "front": "Momentum",
+                "back": "Mass × velocity, with the symbol p: p = m × v. More mass or more velocity means more momentum."
+              },
+              {
+                "id": "k5",
+                "front": "Momentum units",
+                "back": "kg·m/s: mass in kg times velocity in m/s."
+              },
+              {
+                "id": "k6",
+                "front": "Working backward",
+                "back": "Divide: v = p / m and m = p / v. Multiply only to find p."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "A runner goes around a curved track at a steady 6 m/s. Which is true?",
+              "options": [
+                { "id": "a", "text": "Her speed and her velocity both stay the same" },
+                { "id": "b", "text": "Her speed stays the same, but her velocity changes" },
+                { "id": "c", "text": "Her velocity stays the same, but her speed changes" }
+              ],
+              "answer": "b",
+              "explanation": "Her speed stays 6 m/s, but her direction keeps changing on the curve, and velocity includes direction. Thinking a constant speed means a constant velocity is the common mistake."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "A student writes a momentum answer as \"240 m/s.\" What unit should it have?",
+              "options": [
+                { "id": "a", "text": "kg·m/s" },
+                { "id": "b", "text": "m/s²" },
+                { "id": "c", "text": "kg" }
+              ],
+              "answer": "a",
+              "explanation": "Momentum = mass × velocity, so its unit is kg × m/s = kg·m/s. Writing only m/s, the unit for velocity, is the common mistake."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "A 1,000 kg car is parked. What is its momentum?",
+              "options": [
+                { "id": "a", "text": "0 kg·m/s" },
+                { "id": "b", "text": "1,000 kg·m/s" },
+                { "id": "c", "text": "It depends on where it is parked" }
+              ],
+              "answer": "a",
+              "explanation": "Parked means v = 0 m/s, so p = 1,000 kg × 0 m/s = 0 kg·m/s. Treating mass alone as momentum is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: velocity first, then momentum",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "A student on a scooter (55 kg together) rides 300 m north in 60 s at a constant velocity. What is the momentum?",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "You need p = m × v, but the velocity isn't given. Find it first from the distance and the time."
+              },
+              {
+                "id": "s2",
+                "text": "Velocity: v = d / t = 300 m / 60 s = 5 m/s north. Keep the direction."
+              },
+              { "id": "s3", "text": "Momentum. Formula: p = m × v. Set Up: p = 55 kg × 5 m/s." },
+              { "id": "s4", "text": "Answer with units: p = 275 kg·m/s north." }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: a cart rolls 48 m west in 8 s. What is its velocity?",
+              "options": [
+                { "id": "a", "text": "6 m/s west" },
+                { "id": "b", "text": "6 m/s" },
+                { "id": "c", "text": "384 m/s west" }
+              ],
+              "answer": "a",
+              "explanation": "v = d / t = 48 m ÷ 8 s = 6 m/s, and a velocity needs its direction: 6 m/s west. Leaving off the direction gives only a speed, which is the common mistake.",
+              "afterStepId": "s2"
+            },
+            {
+              "id": "w2",
+              "kind": "fill_blank",
+              "prompt": "Your turn: a 2,000 kg truck has a momentum of 30,000 kg·m/s. How fast is it moving, in m/s? Type a number.",
+              "answer": ["15", "15 m/s", "15m/s", "fifteen"],
+              "explanation": "v = p / m = 30,000 kg·m/s ÷ 2,000 kg = 15 m/s. Multiplying is the common mistake; divide when you are finding v or m.",
+              "afterStepId": "s4"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

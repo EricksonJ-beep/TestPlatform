@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { AddStudentDialog } from "./add-student-dialog";
 import { DeleteClassButton } from "./delete-class-button";
 import { ImportCsvDialog } from "./import-csv-dialog";
+import { LunchCodesDialog } from "./lunch-codes-dialog";
 import { JoinCodeCard } from "./join-code-card";
 import { PendingNames } from "./pending-names";
 import { Roster } from "./roster";
@@ -58,6 +59,7 @@ export default async function ClassPage({ params }: PageProps<"/app/classes/[cla
             Activity
           </Button>
           <ImportCsvDialog classId={cls.id} />
+          <LunchCodesDialog classId={cls.id} />
           <AddStudentDialog classId={cls.id} />
           <DeleteClassButton classId={cls.id} students={cls.roster.length} />
         </div>

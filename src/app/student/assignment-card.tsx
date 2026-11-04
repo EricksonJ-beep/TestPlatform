@@ -9,7 +9,9 @@ import {
   retakeGoal,
   TYPE_LABEL,
 } from "@/lib/student-home";
+import { buildStepPath } from "@/lib/step-path";
 import { LocalTime } from "@/components/local-time";
+import { StepPathLines } from "@/components/step-path";
 import { Button } from "@/components/ui/button";
 import { RequestRetakeButton } from "./assignments/[assignmentId]/request-retake-button";
 import { RetakePicker } from "./retake-picker";
@@ -104,6 +106,42 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
         return null;
     }
   })();
+  // The step path (R5): on the relearning path the card shows a mini path, the Next step's words
+  // and its one button, the same view the assessment page draws in full.
+  const pathView =
+    a.path && a.state !== "in_progress" && a.state !== "awaiting_grade" && a.state !== "upcoming"
+      ? buildStepPath({
+          path: a.path,
+          assignmentId: a.id,
+          type: a.type === "summative" ? "summative" : "formative",
+          correctionsAttemptId: c?.attemptId ?? null,
+          cycle: a.cycle,
+          attemptsUsed: a.attemptsUsed,
+          attemptsAllowed: a.attemptsAllowed,
+          mustAsk: a.state === "ask_to_retake" || a.state === "awaiting_unlock",
+          nextAttemptAt: a.nextAttemptAt,
+          kept: !!a.kept,
+        })
+      : null;
+  const pathNext = pathView?.next ?? null;
+  const pathAction: { label: string; primary: boolean; href: string } | null =
+    !pathNext || asks
+      ? null
+      : pathNext.action.kind === "corrections" || pathNext.action.kind === "relearn"
+        ? {
+            label: pathNext.action.label,
+            primary: pathNext.group === "todo",
+            href: pathNext.action.href,
+          }
+        : pathNext.action.kind === "check"
+          ? { label: "Practice check", primary: true, href: `/student/assignments/${a.id}` }
+          : pathNext.action.kind === "retake"
+            ? {
+                label: a.kept ? "View" : a.type === "formative" ? "Keep or retake" : "Start retake",
+                primary: pathNext.group === "todo",
+                href: `/student/assignments/${a.id}`,
+              }
+            : { label: "View", primary: false, href: `/student/assignments/${a.id}` };
   const allProficient = a.type === "summative" && a.retake && a.retake.plan.required.length === 0;
   const owedPractice = practiceOwed(a.quizPractice);
 
@@ -122,12 +160,16 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
           >
             {TYPE_LABEL[a.type]}
           </span>
-          <span
-            className={`rounded-md px-2 py-0.5 text-xs font-medium ${pill.className}`}
-            data-pill={correctionsStarted ? "corrections_in_progress" : a.state}
-          >
-            {pillLabel}
-          </span>
+          {pathView && pathView.lines.length ? (
+            <StepPathLines lines={pathView.lines} mini />
+          ) : (
+            <span
+              className={`rounded-md px-2 py-0.5 text-xs font-medium ${pill.className}`}
+              data-pill={correctionsStarted ? "corrections_in_progress" : a.state}
+            >
+              {pillLabel}
+            </span>
+          )}
         </div>
         <p className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm text-muted-foreground">
           <span>
@@ -227,7 +269,11 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
               Retake by <LocalTime date={a.retakeOpenUntil} />
             </span>
           ) : null}
-          {c && (a.state === "corrections_needed" || a.state === "corrections_to_full") ? (
+          {pathView ? (
+            pathNext ? (
+              <span data-path-hint>{pathNext.headline}</span>
+            ) : null
+          ) : c && (a.state === "corrections_needed" || a.state === "corrections_to_full") ? (
             // The rule's words, as on the to-do list (Jon, Oct 14 2026).
             <span className="inline-flex items-center gap-1" data-corrections-hint>
               {a.state === "corrections_needed" ? <Lock className="size-3.5" aria-hidden /> : null}
@@ -254,13 +300,26 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
             <RetakePicker
               assignmentId={a.id}
               retake={a.retake}
-              checklist={a.state === "relearning"}
+              checklist={a.state === "relearning" && !a.path}
               compact
+              onPath={!!a.path}
             />
           </div>
         ) : null}
       </div>
-      {action && asks ? (
+      {pathAction ? (
+        <Button
+          size="lg"
+          variant={pathAction.primary ? "default" : "outline"}
+          className="h-11 w-full sm:h-9 sm:w-auto"
+          aria-label={`${pathAction.label}: ${a.title}`}
+          nativeButton={false}
+          render={<Link href={pathAction.href} />}
+          data-path-action
+        >
+          {pathAction.label}
+        </Button>
+      ) : action && asks ? (
         <RequestRetakeButton
           assignmentId={a.id}
           attemptNumber={a.attemptsUsed + 1}

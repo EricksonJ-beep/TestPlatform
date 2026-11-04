@@ -1,0 +1,260 @@
+{
+  "name": "ps-u5-lt4-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science B",
+  "relearning": [
+    {
+      "target": "U5.LT4",
+      "mode": "read",
+      "title": "Read: Newton's 3rd law",
+      "description": "A short reading with the dance-partners analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Action and reaction",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can calculate and explain Newton's 3rd Law.**\n\n**Think of dance partners.** Forces always come in pairs, and both partners move at the same time. If one skater pushes another away, both skaters roll apart. You can't push on something without it pushing back on you.\n\n**Newton's 3rd law:** For every action there is an **equal and opposite reaction**. Whenever one object exerts a force on a second object, the second object exerts an equal and opposite force on the first object.\n\n**Find the reaction: switch the two objects and flip the direction.** You push the wall, so the wall pushes you. A rocket pushes gas down, so the gas pushes the rocket up. A swimmer pushes water back, so the water pushes the swimmer forward.\n\n**Worked example:** A student on roller skates pushes a wall with 60 N. Switch and flip: the wall pushes the student with **60 N** in the opposite direction. The forces are equal, even though only the student moves."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "A soccer player's foot pushes the ball forward. What is the reaction force?",
+              "options": [
+                { "id": "a", "text": "The ground pushes the ball forward" },
+                { "id": "b", "text": "Gravity pulls the ball down" },
+                { "id": "c", "text": "The ball pushes the foot backward" }
+              ],
+              "answer": "c",
+              "explanation": "Switch the two objects and flip the direction: foot on ball, forward, becomes ball on foot, backward. Picking a different force, like gravity on the ball, is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "fill_blank",
+              "prompt": "A student pushes on a parked car with 150 N, and the car doesn't move. How hard does the car push back on the student? Type a number (in N).",
+              "answer": ["150", "150 N", "150N", "150 newtons", "150.0"],
+              "explanation": "Action and reaction are always equal: the car pushes back with 150 N, in the opposite direction. Thinking the car pushes back less (or not at all) because it doesn't move is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Equal forces, different accelerations",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Equal forces, different results.** The two forces are always the same size, even in a collision: a heavy and a light football player hit each other with **equal** forces. What is different is the **acceleration**. Use **a = F ÷ m**: the object with less mass gets the bigger acceleration. That's why a skater rolls away from a wall, but the wall doesn't move.\n\n**Why pairs don't cancel.** Action and reaction act on **different objects**, so they never go on the same FBD. The weight (Fg) and normal force (FN) on a book both act on the book, so they are **not** a 3rd-law pair.\n\n**Worked example 2:** Two students, 50 kg and 60 kg, sit on scooter boards and push apart with 120 N each. Formula: a = F ÷ m. Set up: 120 N ÷ 50 kg and 120 N ÷ 60 kg. Answer: **2.4 m/s²** and **2.0 m/s²**. Same force, but the lighter student gets the greater acceleration.\n\n**Momentum in collisions and recoil.** When two objects push on each other, their total momentum (mass × velocity) is the same before and after. If they start at rest and push apart, their momenta are equal and opposite: **m1 × v1 = m2 × v2**.\n\n**Worked example 3:** Two skaters, 40 kg and 50 kg, stand still and push apart. The 40 kg skater moves at 2.5 m/s. Set up: 40 kg × 2.5 m/s = 100 kg·m/s, so v2 = 100 kg·m/s ÷ 50 kg. Answer: **2.0 m/s** the other way.\n\n**Watch out for:** saying the heavier or faster object pushes harder (the forces are always equal), calling weight and normal force a 3rd-law pair, thinking the pair cancels (different objects!), and using the wrong mass when you find each object's acceleration."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "A loaded truck and a small car bump into each other. Which statement is correct?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "They push on each other with equal forces, and the car gets the greater acceleration"
+                },
+                {
+                  "id": "b",
+                  "text": "The truck pushes harder, so the car gets the greater acceleration"
+                },
+                {
+                  "id": "c",
+                  "text": "They push with equal forces, so they get equal accelerations"
+                }
+              ],
+              "answer": "a",
+              "explanation": "The 3rd law makes the forces equal. With a = F ÷ m, the smaller mass (the car) gets the greater acceleration. Saying the heavier truck pushes harder is the common mistake."
+            },
+            {
+              "id": "e2",
+              "kind": "fill_blank",
+              "prompt": "A 45 kg student and a 75 kg student push off each other on scooter boards with 90 N. What is the 45 kg student's acceleration? Type a number (in m/s²).",
+              "answer": [
+                "2",
+                "2.0",
+                "2 m/s²",
+                "2 m/s^2",
+                "2 m/s2",
+                "2.0 m/s²",
+                "2.0 m/s^2",
+                "2 m/s/s",
+                "2m/s²",
+                "2m/s^2",
+                "2m/s2"
+              ],
+              "explanation": "Each student feels the same 90 N. Use that student's own mass: a = F ÷ m = 90 N ÷ 45 kg = 2 m/s². Using the other student's mass (90 ÷ 75 = 1.2) is the common mistake."
+            }
+          ],
+          "shortAnswer": "Explain why the weight of a book and the normal force from the table are NOT an action-reaction pair."
+        }
+      ]
+    },
+    {
+      "target": "U5.LT4",
+      "mode": "do",
+      "title": "Do: flip the pairs, then work a recoil problem",
+      "description": "Action-reaction flashcards with a 3-question self-quiz, then a recoil problem one step at a time.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: action-reaction pairs",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Newton's 3rd law",
+                "back": "For every action there is an equal and opposite reaction. To find it, switch the two objects and flip the direction."
+              },
+              {
+                "id": "k2",
+                "front": "You push on a wall",
+                "back": "The wall pushes on you, with the same size force, in the opposite direction."
+              },
+              {
+                "id": "k3",
+                "front": "A rocket pushes hot gas down",
+                "back": "The gas pushes the rocket up."
+              },
+              {
+                "id": "k4",
+                "front": "A swimmer's arms push water back",
+                "back": "The water pushes the swimmer forward."
+              },
+              {
+                "id": "k5",
+                "front": "Your feet push the Earth down when you jump",
+                "back": "The Earth pushes you up."
+              },
+              {
+                "id": "k6",
+                "front": "Why a pair doesn't cancel",
+                "back": "The two forces act on different objects, so they never go on the same FBD."
+              },
+              {
+                "id": "k7",
+                "front": "Same force, different masses",
+                "back": "The forces are equal, but a = F ÷ m: the smaller mass gets the bigger acceleration."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "A firehose pushes water out the front. What is the reaction force?",
+              "options": [
+                { "id": "a", "text": "The water pushes the hose backward" },
+                { "id": "b", "text": "The water pushes the hose forward" },
+                { "id": "c", "text": "Gravity pulls the water down" }
+              ],
+              "answer": "a",
+              "explanation": "Switch and flip: the hose pushes the water forward, so the water pushes the hose backward. That is why firefighters brace. Forgetting to flip the direction is the common mistake."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "Which pair of forces is NOT an action-reaction pair?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "A paddle pushing water back, and the water pushing the paddle forward"
+                },
+                {
+                  "id": "b",
+                  "text": "A foot pushing the ground back, and the ground pushing the foot forward"
+                },
+                {
+                  "id": "c",
+                  "text": "A book's weight, and the table's normal force on the book"
+                }
+              ],
+              "answer": "c",
+              "explanation": "A 3rd-law pair acts on two different objects. The book's weight and the normal force both act on the book, so they are balanced forces, not a pair. The other two switch the objects (paddle and water, foot and ground). Calling any equal and opposite forces a pair is the common mistake."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "A skater pushes off a wall and rolls away, but the wall doesn't move. Why?",
+              "options": [
+                { "id": "a", "text": "The skater pushes harder than the wall pushes back" },
+                { "id": "b", "text": "The wall doesn't push back" },
+                {
+                  "id": "c",
+                  "text": "The wall has much more mass, so the same force barely accelerates it"
+                }
+              ],
+              "answer": "c",
+              "explanation": "The forces are equal (3rd law). By a = F ÷ m, the wall, attached to the building, has a huge mass and almost no acceleration. Saying the forces are unequal is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: cannon recoil",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "A 300 kg cannon at rest fires a 5.0 kg ball forward at 90 m/s. How fast does the cannon recoil backward?",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "Before firing, nothing moves, so the total momentum is 0. After firing, the ball and the cannon must have equal and opposite momentum."
+              },
+              {
+                "id": "s2",
+                "text": "Ball's momentum: momentum = m × v = 5.0 kg × 90 m/s = 450 kg·m/s forward."
+              },
+              {
+                "id": "s3",
+                "text": "So the cannon's momentum is 450 kg·m/s backward. To find its speed, divide by its mass: v = momentum ÷ m."
+              },
+              {
+                "id": "s4",
+                "text": "Set up: v = 450 kg·m/s ÷ 300 kg. Answer: 1.5 m/s backward. Same push on both, but the heavy cannon moves much more slowly than the light ball."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "fill_blank",
+              "prompt": "Your turn: a 4.0 kg medicine ball is thrown at 6.0 m/s. What is its momentum? Type a number (in kg·m/s).",
+              "answer": [
+                "24",
+                "24.0",
+                "24 kg·m/s",
+                "24 kg m/s",
+                "24 kgm/s",
+                "24 kg*m/s",
+                "24 kg-m/s",
+                "24 kg.m/s"
+              ],
+              "explanation": "Momentum = m × v = 4.0 kg × 6.0 m/s = 24 kg·m/s. Dividing (0.67) or adding (10) are the common mistakes.",
+              "afterStepId": "s2"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Two skaters stand still and push apart. The 50 kg skater moves at 3.0 m/s. How fast does the 75 kg skater move the other way?",
+              "options": [
+                { "id": "a", "text": "3.0 m/s" },
+                { "id": "b", "text": "2.0 m/s" },
+                { "id": "c", "text": "4.5 m/s" }
+              ],
+              "answer": "b",
+              "explanation": "Their momenta are equal and opposite: 50 kg × 3.0 m/s = 150 kg·m/s, so v = 150 kg·m/s ÷ 75 kg = 2.0 m/s. Giving both the same speed (3.0) or swapping the masses (4.5) are the common mistakes.",
+              "afterStepId": "s4"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

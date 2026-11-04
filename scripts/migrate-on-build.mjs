@@ -28,4 +28,8 @@ spawnSync("npx", ["tsx", "scripts/cvtc-leftovers.ts"], { stdio: "inherit", shell
 // attempts already taken get their targets, so corrections and retakes appear. Production only.
 console.log("migrate-on-build: splitting pack summatives by target…");
 spawnSync("npx", ["tsx", "scripts/summative-targets.ts"], { stdio: "inherit", shell: true });
+
+// Score history (Nov 4 2026, R7): the scores from before it get their starting point. Production only.
+console.log("migrate-on-build: seeding score history…");
+spawnSync("npx", ["tsx", "scripts/score-history-seed.ts"], { stdio: "inherit", shell: true });
 process.exit(0);

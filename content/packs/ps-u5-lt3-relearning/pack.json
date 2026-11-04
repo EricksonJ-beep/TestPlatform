@@ -1,0 +1,243 @@
+{
+  "name": "ps-u5-lt3-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science B",
+  "relearning": [
+    {
+      "target": "U5.LT3",
+      "mode": "read",
+      "title": "Read: Newton's 1st and 2nd laws",
+      "description": "A short reading with the shopping-cart analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "The 1st and 2nd laws",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can calculate and explain Newton's 1st Law and Newton's 2nd Law.**\n\n**Think of pushing a shopping cart at Walmart.** An empty cart sitting in the aisle won't move until you push it, and once it's rolling it wants to keep rolling. Push harder and it speeds up faster. Fill it with groceries and push just as hard: it speeds up more slowly.\n\n**Newton's 1st law:** An object at rest stays at rest, and an object in motion stays in motion at a constant speed in a straight line, unless acted upon by an **unbalanced force**. **Inertia** is an object's resistance to a change in motion. **More mass = more inertia.**\n\n**Newton's 2nd law:** The acceleration of an object depends on the net force acting on it and its mass. **F = m × a** (F in N, m in kg, a in m/s²). Rearranged: **a = F ÷ m** and **m = F ÷ a**.\n\n**Worked example:** A net force of 30 N pushes a 12 kg cart. What is its acceleration? Formula: a = F ÷ m. Set up: a = 30 N ÷ 12 kg. Answer: **2.5 m/s²**."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "A car stops suddenly. Why does a box on the back seat slide forward?",
+              "options": [
+                { "id": "a", "text": "The brakes push the box forward" },
+                { "id": "b", "text": "Its inertia keeps it moving forward" },
+                { "id": "c", "text": "The box gets heavier when the car stops" }
+              ],
+              "answer": "b",
+              "explanation": "The box was moving with the car, and inertia keeps it moving forward when the car stops (1st law). Thinking some force pushes the box forward is the common mistake; nothing pushes it, it just keeps going."
+            },
+            {
+              "id": "c2",
+              "kind": "fill_blank",
+              "prompt": "A net force of 56 N pushes a 16 kg cart. What is its acceleration? Type a number (in m/s²).",
+              "answer": [
+                "3.5",
+                "3.50",
+                "3.5 m/s²",
+                "3.5 m/s^2",
+                "3.5 m/s2",
+                "3.5 m/s/s",
+                "3.5m/s²",
+                "3.5m/s^2",
+                "3.5m/s2"
+              ],
+              "explanation": "a = F ÷ m = 56 N ÷ 16 kg = 3.5 m/s². Multiplying (896) or putting the mass on top (0.29) are the common mistakes."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Inertia, direct and inverse, two-step problems",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Balanced vs. unbalanced.** Balanced forces (net force = 0 N) cause no change in motion: at rest, or a constant speed in a straight line. Unbalanced forces make an object speed up, slow down, or change direction. **Inertia examples:** seatbelts (your body keeps moving forward when the car stops), headrests (your head stays put when the car is hit from behind), and a hockey puck sliding a long way on smooth ice.\n\n**Direct and inverse.** Force and acceleration are **direct**: double the force, double the acceleration. Mass and acceleration are **inverse**: double the mass, cut the acceleration in half. A cart at 2.0 m/s² goes **1.0 m/s²** with double the mass, or **4.0 m/s²** with double the force.\n\n**Worked example 2:** A 0.15 kg baseball goes from rest to 30 m/s in 0.050 s. What force did the bat apply? Step 1: a = Δv ÷ t = 30 m/s ÷ 0.050 s = 600 m/s². Step 2: F = m × a = 0.15 kg × 600 m/s² = **90 N**.\n\n**Worked example 3:** A 20 kg box is pushed right with 120 N, and friction pushes left with 40 N. Step 1: net force = 120 N − 40 N = 80 N right. Step 2: a = F ÷ m = 80 N ÷ 20 kg = **4 m/s²** to the right.\n\n**Watch out for:** using m/s for acceleration (it is m/s²), dividing when you should multiply (F = m × a), using one force instead of the net force, thinking inertia is a force, and mixing up the laws (the 3rd law is about action-reaction pairs)."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "A cart accelerates at 4.0 m/s². Its mass is doubled, and the net force stays the same. What is the new acceleration?",
+              "options": [
+                { "id": "a", "text": "8.0 m/s²" },
+                { "id": "b", "text": "4.0 m/s²" },
+                { "id": "c", "text": "2.0 m/s²" }
+              ],
+              "answer": "c",
+              "explanation": "Mass and acceleration are inverse: double the mass, half the acceleration. 4.0 ÷ 2 = 2.0 m/s². Doubling it (8.0) treats mass as direct, which is the common mistake."
+            },
+            {
+              "id": "e2",
+              "kind": "fill_blank",
+              "prompt": "A 0.40 kg ball goes from rest to 18 m/s in 0.030 s. What net force acted on it? Find the acceleration first. Type a number (in N).",
+              "answer": ["240", "240 N", "240N", "240 newtons", "240.0"],
+              "explanation": "Step 1: a = Δv ÷ t = 18 m/s ÷ 0.030 s = 600 m/s². Step 2: F = m × a = 0.40 kg × 600 m/s² = 240 N. Skipping step 1 and multiplying 0.40 × 18 (7.2) is the common mistake."
+            }
+          ],
+          "shortAnswer": "Use inertia to explain why a fully loaded semi truck takes longer to stop than an empty pickup going the same speed."
+        }
+      ]
+    },
+    {
+      "target": "U5.LT3",
+      "mode": "do",
+      "title": "Do: push a cart step by step, then flip the laws",
+      "description": "A cart problem one step at a time, then flashcards with a 3-question self-quiz.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Worked problem: balanced, then unbalanced",
+          "minutes": 4,
+          "body": {
+            "type": "worked_steps",
+            "problem": "A 15 kg cart sits at rest. One student pushes it right with 40 N while another pushes it left with 40 N. Then the right push grows to 70 N. What does the cart do each time?",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "First pushes: 40 N right and 40 N left. Opposite directions subtract: 40 N − 40 N = 0 N. The forces are balanced."
+              },
+              {
+                "id": "s2",
+                "text": "Newton's 1st law: an object at rest stays at rest, and an object in motion stays in motion at a constant speed in a straight line, unless acted upon by an unbalanced force. These forces are balanced, so the cart stays at rest."
+              },
+              {
+                "id": "s3",
+                "text": "New pushes: 70 N right and 40 N left. Fnet = 70 N − 40 N = 30 N to the right. Now the forces are unbalanced."
+              },
+              {
+                "id": "s4",
+                "text": "Newton's 2nd law: a = F ÷ m = 30 N ÷ 15 kg = 2 m/s² to the right. The cart speeds up."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "A ball rolls across a perfectly smooth, level floor with no friction. What does the 1st law say it will do?",
+              "options": [
+                { "id": "a", "text": "Keep rolling at the same speed in a straight line" },
+                { "id": "b", "text": "Slow down and stop, because nothing pushes it" },
+                { "id": "c", "text": "Speed up" }
+              ],
+              "answer": "a",
+              "explanation": "An object in motion stays in motion unless an unbalanced force acts on it. With no friction, nothing slows the ball. Thinking a moving object needs a push to keep going is the common mistake.",
+              "afterStepId": "s2"
+            },
+            {
+              "id": "d2",
+              "kind": "fill_blank",
+              "prompt": "Your turn: a net force of 54 N pushes an 18 kg cart. What is its acceleration? Type a number (in m/s²).",
+              "answer": [
+                "3",
+                "3.0",
+                "3 m/s²",
+                "3 m/s^2",
+                "3 m/s2",
+                "3.0 m/s²",
+                "3.0 m/s^2",
+                "3 m/s/s",
+                "3m/s²",
+                "3m/s^2",
+                "3m/s2"
+              ],
+              "explanation": "a = F ÷ m = 54 N ÷ 18 kg = 3 m/s². Multiplying (972) or putting the mass on top (0.33) are the common mistakes.",
+              "afterStepId": "s4"
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Flashcards: inertia and F = m × a",
+          "minutes": 6,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "f1",
+                "front": "Inertia",
+                "back": "An object's resistance to a change in motion. More mass = more inertia. Inertia is not a force."
+              },
+              {
+                "id": "f2",
+                "front": "Seatbelt",
+                "back": "When the car stops, your body keeps moving forward (inertia). The belt is the unbalanced force that stops you."
+              },
+              {
+                "id": "f3",
+                "front": "Headrest",
+                "back": "When a car is hit from behind, your head tends to stay put while the seat jumps forward. The headrest pushes your head along with the car."
+              },
+              {
+                "id": "f4",
+                "front": "Balanced forces",
+                "back": "Net force = 0 N. No change in motion: at rest, or a constant speed in a straight line."
+              },
+              {
+                "id": "f5",
+                "front": "Double the force",
+                "back": "Double the acceleration. Force and acceleration are direct."
+              },
+              {
+                "id": "f6",
+                "front": "Double the mass",
+                "back": "Half the acceleration. Mass and acceleration are inverse."
+              },
+              {
+                "id": "f7",
+                "front": "Units for F = m × a",
+                "back": "F in newtons (N), m in kilograms (kg), a in m/s². 1 N = 1 kg·m/s²."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "Which is an example of Newton's 1st law?",
+              "options": [
+                { "id": "a", "text": "A rocket pushes gas down, and the gas pushes the rocket up" },
+                {
+                  "id": "b",
+                  "text": "A seatbelt stops you from flying forward when the car stops"
+                },
+                { "id": "c", "text": "A harder kick makes a soccer ball speed up more" }
+              ],
+              "answer": "b",
+              "explanation": "The seatbelt example is inertia: your body keeps moving until a force stops it (1st law). The rocket is an action-reaction pair (3rd law), and the harder kick is F = m × a (2nd law). Mixing up the laws is the common mistake."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "Two carts get the same net force. Cart A has twice the mass of Cart B. How do their accelerations compare?",
+              "options": [
+                { "id": "a", "text": "Cart A has twice the acceleration of Cart B" },
+                { "id": "b", "text": "They have the same acceleration" },
+                { "id": "c", "text": "Cart A has half the acceleration of Cart B" }
+              ],
+              "answer": "c",
+              "explanation": "With the same force, mass and acceleration are inverse: twice the mass means half the acceleration. Thinking the heavier cart accelerates more is the common mistake."
+            },
+            {
+              "id": "e3",
+              "kind": "multiple_choice",
+              "prompt": "A student finds a cart's acceleration and writes 2.5 m/s. What is wrong?",
+              "options": [
+                { "id": "a", "text": "Acceleration is in m/s², not m/s" },
+                { "id": "b", "text": "Acceleration is in newtons" },
+                { "id": "c", "text": "Nothing is wrong" }
+              ],
+              "answer": "a",
+              "explanation": "Acceleration is how much the velocity changes each second, so its unit is m/s². Writing m/s (a speed unit) is the common mistake, and newtons are for force."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

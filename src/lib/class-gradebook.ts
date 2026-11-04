@@ -10,6 +10,7 @@ import type { CardState } from "@/lib/card-state";
 import type { SetSummary } from "@/lib/corrections";
 import type { RequestBlocker } from "@/lib/needs-you";
 import { practiceOwed } from "@/lib/quiz-practice";
+import type { PathState } from "@/lib/relearning-path";
 import type { RetakePlan, RetakeTarget } from "@/lib/retakes";
 import { movedUp, startOfWeek } from "@/lib/tiers";
 
@@ -152,6 +153,8 @@ export type CellInput = {
   /** The teacher unlocked the next try and something else still stops it (`requestBlocker`). */
   unlockedBlocker: RequestBlocker | null;
   opensAt: Date | null;
+  /** The relearning path (R5), where the assignment is on it: the cell names each target's step. */
+  path?: PathState | null;
 };
 
 export type CellTag = {
@@ -181,7 +184,41 @@ export type CellTag = {
   blocker: RequestBlocker | null;
   /** Opens: when the test opens. */
   opensAt: Date | null;
+  /** The relearning path (R5): each target still on its way, and the step it's on. */
+  pathNeeds: { code: string; step: string }[];
+  /** On the path a quiz's corrections raise it to 90%, not 100%. */
+  toNinety: boolean;
 };
+
+/**
+ * The relearning path's targets still under way (R5), with the step each is on: corrections, then
+ * relearning, then the practice check, then the teacher's OK on corrections already turned in; and
+ * the fresh check before the next attempt (Q6).
+ */
+export function pathNeeds(p: PathState): { code: string; step: string }[] {
+  const out = p.targets
+    .filter((t) => t.role === "required" || t.onPath || (p.type === "summative" && t.optedIn))
+    .flatMap((t) => {
+      const step =
+        t.corrections === "current"
+          ? "corrections"
+          : t.onPath && t.relearn !== "done"
+            ? "relearn"
+            : t.onPath && t.practice !== "done"
+              ? "practice check"
+              : t.corrections === "waiting"
+                ? "your OK"
+                : null;
+      return step ? [{ code: t.code, step }] : [];
+    });
+  const check = p.attemptCheck;
+  if (out.length === 0 && check && !check.passed)
+    for (const id of check.targetIds) {
+      const t = p.targets.find((x) => x.id === id);
+      if (t) out.push({ code: t.code, step: `check before attempt ${check.attemptNumber}` });
+    }
+  return out;
+}
 
 /** The student's part of the tag, from their card (null while an attempt is open). */
 function studentKind(input: CellInput): { kind: CellKind; closed: boolean } | null {
@@ -277,6 +314,8 @@ export function cellTag(input: CellInput): CellTag {
     practice,
     blocker: kind === "unlocked" ? input.unlockedBlocker : null,
     opensAt: input.opensAt,
+    pathNeeds: input.path ? pathNeeds(input.path) : [],
+    toNinety: !!input.path && input.path.type === "formative" && input.path.raises,
   };
 }
 
@@ -317,7 +356,10 @@ function unlockedText(b: RequestBlocker | null, fmt: TagFormat): string {
     case "no_attempts_left":
       return "no tries left";
     case "no_retake":
+    case "path_no_retake":
       return "no retake at their score";
+    case "at_full":
+      return "already at 100%";
     case "corrections":
       return "corrections not done";
     case "practice":
@@ -326,6 +368,10 @@ function unlockedText(b: RequestBlocker | null, fmt: TagFormat): string {
       return "relearning not done";
     case "nothing_selected":
       return "no target picked";
+    case "relearning":
+      return `relearning ${b.codes.join(", ")} not done`;
+    case "approval":
+      return "corrections waiting for your OK";
   }
 }
 
@@ -362,9 +408,11 @@ export function tagLabel(tag: CellTag, fmt: TagFormat = CENTRAL): string {
     case "sent_back":
       return "Sent back";
     case "relearning":
-      return tag.needs.length
-        ? `Relearning (needs: ${tag.needs.map((n) => (n === "practice" && tag.practice.length ? `practice ${tag.practice.join(", ")}` : NEED_TEXT[n])).join(", ")})${closed}`
-        : `Relearning${closed}`;
+      return tag.pathNeeds.length
+        ? `Relearning (${tag.pathNeeds.map((n) => `${n.code}: ${n.step}`).join(", ")})${closed}`
+        : tag.needs.length
+          ? `Relearning (needs: ${tag.needs.map((n) => (n === "practice" && tag.practice.length ? `practice ${tag.practice.join(", ")}` : NEED_TEXT[n])).join(", ")})${closed}`
+          : `Relearning${closed}`;
     case "retake_needed":
       return tag.targets.length
         ? `Retake needed (${tag.targets.join(", ")})${closed}`
@@ -374,7 +422,7 @@ export function tagLabel(tag: CellTag, fmt: TagFormat = CENTRAL): string {
     case "can_retake":
       return "Can retake";
     case "corrections_to_full":
-      return "Corrections → 100%";
+      return tag.toNinety ? "Corrections → 90%" : "Corrections → 100%";
     case "unlocked":
       return `Unlocked · ${unlockedText(tag.blocker, fmt)}`;
     case "opens":

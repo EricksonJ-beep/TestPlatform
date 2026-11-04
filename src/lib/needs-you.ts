@@ -6,6 +6,7 @@
  * many things need the teacher. No database, no clock of its own.
  */
 import { canStartAttempt } from "@/lib/assignments";
+import type { PathState } from "@/lib/relearning-path";
 import type { RetakeBlocker } from "@/lib/retakes";
 
 export type ClassPlace = { courseName: string | null; className: string; period: string | null };
@@ -72,11 +73,17 @@ export const STALE_TEXT: Record<StaleReason, string> = {
 
 export type RequestBlocker =
   | { reason: "not_open" | "closed" | "no_attempts_left" | "no_retake" | "corrections" }
+  /** The relearning path (R5): a quiz at 80% or higher has no retake (corrections → 90%, the path → 100%), and one at 100% has nothing to retake. */
+  | { reason: "path_no_retake" | "at_full" }
   | { reason: "wait"; at: Date }
   | { reason: "window_closed"; at: Date }
   | { reason: Exclude<RetakeBlocker, "no_attempts"> }
   /** Quiz relearning (Jon, Oct 14 2026): the codes of the missed targets still to practise. */
-  | { reason: "practice"; codes: string[] };
+  | { reason: "practice"; codes: string[] }
+  /** The relearning path (Nov 4 2026): targets whose relearning or practice check is still open. */
+  | { reason: "relearning"; codes: string[] }
+  /** The relearning path: their corrections are waiting for the teacher's OK (Q7). */
+  | { reason: "approval" };
 
 /**
  * What would still stop a current request's try from starting once the teacher approves it: the
@@ -133,24 +140,56 @@ export const BLOCKER_LINE: Record<RequestBlocker["reason"], string> = {
   wait: "Can start after",
   window_closed: "The retake window closed",
   no_retake: "No retake at their score: corrections raise it to 100%.",
+  path_no_retake:
+    "No retake at their score: corrections raise it to 90%, and the relearning path to 100%.",
+  at_full: "They already have 100%, so there's nothing to retake.",
   corrections: "Their corrections on the last try aren't done yet.",
   practice: "They still need 80% on practice for",
   gates: "Their relearning checklist isn't done yet.",
   nothing_selected: "Every target is proficient; they have to pick a target to retake.",
+  relearning: "They still need to finish relearning and the practice check for",
+  approval: "Their corrections are waiting for your OK.",
 };
+
+/**
+ * What the relearning path still asks of the student before their next try (Nov 4 2026), in the
+ * inbox's terms: the first of the path's blockers (`pathFor`). Null when the path is done.
+ */
+export function pathRequestBlocker(state: PathState): RequestBlocker | null {
+  const b = state.blockers[0];
+  if (!b) return null;
+  const code = new Map(state.targets.map((t) => [t.id, t.code]));
+  const codes = (ids: string[]) => ids.map((id) => code.get(id) ?? id);
+  switch (b.kind) {
+    case "at_full":
+      return { reason: "at_full" };
+    case "no_retake":
+      return { reason: "path_no_retake" };
+    case "corrections":
+    case "corrections_returned":
+      return { reason: "corrections" };
+    case "approval":
+      return { reason: "approval" };
+    case "relearning":
+    case "check":
+    case "attempt_check":
+      return { reason: "relearning", codes: codes(b.targetIds) };
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Counting
 // ---------------------------------------------------------------------------
 
 export type NeedsYouGroup =
-  "asked" | "requests" | "corrections" | "grading" | "activities" | "worksheets";
+  "asked" | "requests" | "corrections" | "grading" | "activities" | "videos" | "worksheets";
 
 /**
  * Rule (Jon, Oct 13 2026): "N things need you" is the number of rows in the list, one per
  * thing: each student asking to finish, each retake request (leftovers too, until cleared), each
- * correction set, each test with answers to grade, each activity to check off, and one row for
- * all worksheet emails still to match. Paused tests nobody asked about are not counted.
+ * correction set, each test with answers to grade, each activity to check off, each relearning
+ * video that won't play for students (relearning revamp A6), and one row for all worksheet emails
+ * still to match. Paused tests nobody asked about are not counted.
  */
 export function needsYouCounts(inbox: {
   asked: unknown[];
@@ -158,6 +197,7 @@ export function needsYouCounts(inbox: {
   corrections: unknown[];
   grading: unknown[];
   activities: unknown[];
+  videos?: unknown[];
   worksheetEmails: number;
 }): Record<NeedsYouGroup, number> & { total: number } {
   const counts = {
@@ -166,6 +206,7 @@ export function needsYouCounts(inbox: {
     corrections: inbox.corrections.length,
     grading: inbox.grading.length,
     activities: inbox.activities.length,
+    videos: inbox.videos?.length ?? 0,
     worksheets: inbox.worksheetEmails > 0 ? 1 : 0,
   };
   return { ...counts, total: Object.values(counts).reduce((a, b) => a + b, 0) };

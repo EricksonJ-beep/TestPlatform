@@ -5,6 +5,7 @@
  * actions and queries persist and read; nothing here touches the database.
  */
 import type { CorrectionStatus } from "@/db/types";
+import { pathCorrectionTargets } from "@/lib/relearning-path";
 
 export type CorrectableItem = {
   questionId: string;
@@ -20,7 +21,8 @@ export type CorrectableItem = {
  * below the threshold on this attempt, plus any the student opted into — Ticket
  * 1.12 supplies those). Practice never needs corrections. A question still
  * waiting for a manual grade is not "missed" yet. In a course with CVTC rules
- * (Jon, Oct 13 2026: "corrections earn no credit, retakes only") nothing is.
+ * (Jon, Oct 13 2026: "corrections earn no credit, retakes only") nothing is. On
+ * the relearning path (Nov 4 2026) the path's scope applies instead.
  */
 export function questionsNeedingCorrection(input: {
   type: "practice" | "formative" | "summative";
@@ -32,9 +34,29 @@ export function questionsNeedingCorrection(input: {
   optedInTargetIds?: string[];
   /** The assessment's course has CVTC rules on. */
   cvtcRules?: boolean;
+  /**
+   * On an assignment on the relearning path (`usesPathRules`): this attempt's number. The path's
+   * scope applies (`pathCorrectionTargets`): only attempt 1 has corrections, on the targets below
+   * the line plus the ones opted into, or every missed question on a quiz with nothing below it.
+   */
+  pathAttemptNumber?: number | null;
 }): string[] {
   if (input.type === "practice" || input.cvtcRules) return [];
   const missed = input.items.filter((i) => i.earned !== null && i.earned < i.points);
+  if (input.pathAttemptNumber != null) {
+    const scope = pathCorrectionTargets({
+      type: input.type,
+      attemptNumber: input.pathAttemptNumber,
+      targetPercents: input.targetPercents,
+      threshold: input.threshold,
+      optedInTargetIds: input.optedInTargetIds ?? [],
+    });
+    return scope === "all"
+      ? missed.map((i) => i.questionId)
+      : missed
+          .filter((i) => i.learningTargetId && scope.has(i.learningTargetId))
+          .map((i) => i.questionId);
+  }
   if (input.type === "formative") return missed.map((i) => i.questionId);
   const retaking = new Set(input.optedInTargetIds ?? []);
   for (const [targetId, percent] of Object.entries(input.targetPercents)) {

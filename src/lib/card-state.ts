@@ -19,6 +19,7 @@ import {
   type QuizPracticeData,
   type QuizPracticeTarget,
 } from "@/lib/quiz-practice";
+import { pathCycle, pathRule, type PathState } from "@/lib/relearning-path";
 import { approvedUntil, effectiveClose, reopenedUntil } from "@/lib/reopen";
 import {
   correctionsRule,
@@ -98,6 +99,12 @@ export type CardInput = {
   plan: RetakePlan | null;
   /** Formatives: what quiz relearning reads (R3, `quizPracticeNeeds`); null before any attempt. */
   quizPractice: QuizPracticeData | null;
+  /**
+   * The relearning path (Nov 4 2026, `pathFor`) when the assignment is on it for this student;
+   * null or absent otherwise. With it the cycle and the corrections rule come from the path
+   * (`pathCycle`, `pathRule`) and the v2 quiz practice doesn't apply.
+   */
+  path?: PathState | null;
 };
 
 export type CardState = {
@@ -177,16 +184,21 @@ export function deriveCardState(input: CardInput, now: Date): CardState {
   const reopened = reopenedUntil(input.closesAt, input.openUntil, now);
   // Corrections cap (Jon, Oct 8 2026): formatives only, never in a CVTC course (Oct 13 2026).
   const capped = correctionsCapOn(input);
-  const rule = correctionsRule({
-    type: input.type,
-    capped,
-    cvtcRules: input.cvtcRules,
-    firstPercent: input.firstPercent,
-    threshold: input.retakeThreshold,
-  });
-  // Quiz relearning (Jon, Oct 14 2026, decision 5): practice on every missed target first.
+  // The relearning path (Nov 4 2026): it decides what corrections do and what comes next.
+  const path = input.path ?? null;
+  const rule = path
+    ? pathRule(path)
+    : correctionsRule({
+        type: input.type,
+        capped,
+        cvtcRules: input.cvtcRules,
+        firstPercent: input.firstPercent,
+        threshold: input.retakeThreshold,
+      });
+  // Quiz relearning (Jon, Oct 14 2026, decision 5): practice on every missed target first; on the
+  // path, its practice check takes that place.
   const quizPractice =
-    input.attemptsUsed > 0
+    input.attemptsUsed > 0 && !path
       ? quizPracticeNeeds({
           type: input.type,
           rule,
@@ -209,6 +221,8 @@ export function deriveCardState(input: CardInput, now: Date): CardState {
     now,
   });
   const approved = approvedUntil(input.openUntil, now);
+  const unlockOwed =
+    input.retakesNeedUnlock && needsUnlock(input.attemptsUsed, input.unlockedThrough);
   const cycleInput: Parameters<typeof cycleState>[0] = {
     type: input.type,
     // CVTC rules (Oct 13 2026): the rule keeps corrections off the gate.
@@ -218,7 +232,7 @@ export function deriveCardState(input: CardInput, now: Date): CardState {
     attemptsAllowed: input.attemptsAllowed,
     bestPercent: capped && input.finalPercent !== null ? input.finalPercent : input.bestPercent,
     plan: input.plan,
-    needsUnlock: input.retakesNeedUnlock && needsUnlock(input.attemptsUsed, input.unlockedThrough),
+    needsUnlock: unlockOwed,
     correctionsCap: capped,
     firstPercent: input.firstPercent,
     threshold: input.retakeThreshold,
@@ -226,10 +240,22 @@ export function deriveCardState(input: CardInput, now: Date): CardState {
     windowClosed: false,
     practiceOwed: practiceOwed(quizPractice).length > 0,
   };
+  // The cycle, with or without the teacher's OK taken into account; on the path, from the path.
+  const cycleOf = (withUnlock: boolean): CycleState => {
+    if (!path) return cycleState({ ...cycleInput, needsUnlock: withUnlock && unlockOwed });
+    const s = pathCycle(path, {
+      attemptsUsed: input.attemptsUsed,
+      attemptsAllowed: input.attemptsAllowed,
+      plan: input.plan,
+    });
+    return withUnlock && unlockOwed && (s === "retake_required" || s === "retake_available")
+      ? "awaiting_unlock"
+      : s;
+  };
   const finished = input.attemptsUsed > 0 && !input.inProgress;
-  const cycle = finished ? cycleState(cycleInput) : null;
+  const cycle = finished ? cycleOf(true) : null;
   // Where the cycle stands with the teacher's OK left aside: a retake ready to ask for.
-  const ready = finished ? cycleState({ ...cycleInput, needsUnlock: false }) : null;
+  const ready = finished ? cycleOf(false) : null;
   const retakeReady = ready === "retake_required" || ready === "retake_available";
   // Where the retake is asked for whatever the setting: a closed test (R4), or past the cap's window.
   const asks = status === "closed" || windowClosed;

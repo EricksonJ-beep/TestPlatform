@@ -284,13 +284,14 @@ export type PracticeFeedback = {
   hint: string | null;
 };
 
-type FeedbackQuestion = GradableQuestion & {
+export type FeedbackQuestion = GradableQuestion & {
   explanation: string | null;
   hint: string | null;
   optionFeedback: Map<string, string | null>;
 };
 
-async function loadFeedbackQuestions(ids: string[]): Promise<Map<string, FeedbackQuestion>> {
+/** Gradable questions with their explanation, hint and option feedback (practice and practice checks). */
+export async function loadFeedbackQuestions(ids: string[]): Promise<Map<string, FeedbackQuestion>> {
   const gradable = await loadGradableQuestions(ids);
   if (ids.length === 0) return new Map();
   const extra = await db

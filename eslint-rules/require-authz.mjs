@@ -18,6 +18,12 @@ const GUARDS = new Set([
   "requireAttemptAccess",
   "requireContentAccess",
   "requirePracticeAttemptAccess",
+  // Relearning revamp (R3): a practice check and its rounds.
+  "requirePracticeCheckAccess",
+  "requireCheckRoundAccess",
+  // Relearning revamp (R4): a student's Read · Watch · Do row, and a teacher's section.
+  "requireRelearningRowAccess",
+  "requireRelearningSectionOwner",
 ]);
 const ROUTE_METHODS = new Set(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]);
 const SKIP_KEYS = new Set(["parent", "loc", "range", "tokens", "comments"]);

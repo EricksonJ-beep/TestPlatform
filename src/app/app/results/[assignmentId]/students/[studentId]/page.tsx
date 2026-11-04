@@ -2,10 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Check, ChevronLeft, X } from "lucide-react";
+import { eq } from "drizzle-orm";
 import { cn } from "cn";
+import { db, schema } from "@/db";
 import { isAuthzError, requireOwner } from "@/lib/authz";
+import { loadScoreTrails, trailKey } from "@/lib/queries/score-trail";
+import { MODE_EMOJI, MODE_LABEL } from "@/lib/relearning";
+import { relearningForMonitor, type MonitorRelearningLine } from "@/lib/relearning-server";
 import { getRelearningMonitor } from "@/lib/queries/tiers";
 import { LocalTime } from "@/components/local-time";
+import { ScoreTrail } from "@/components/score-trail";
+import { CheckOffRelearningButton } from "./check-off-button";
 import { TargetChip } from "@/components/targets/target-chip";
 import { Button } from "@/components/ui/button";
 
@@ -33,8 +40,59 @@ export default async function RelearningMonitorPage({
     if (isAuthzError(err)) notFound();
     throw err;
   }
-  const m = await getRelearningMonitor(assignmentId, studentId);
-  if (!m) notFound();
+  const [m, trails, relearning] = await Promise.all([
+    getRelearningMonitor(assignmentId, studentId),
+    loadScoreTrails([{ assignmentId, studentId }]),
+    // Read · Watch · Do on the relearning path (R4); null for an assignment on the old rules.
+    relearningForMonitor(assignmentId, studentId),
+  ]);
+  if (!m) {
+    // A quiz has no tier board; on the relearning path it still has relearning to watch and check off.
+    if (!relearning?.length) notFound();
+    const [who] = await db
+      .select({
+        firstName: schema.users.firstName,
+        lastName: schema.users.lastName,
+      })
+      .from(schema.users)
+      .where(eq(schema.users.id, studentId))
+      .limit(1);
+    const [asg] = await db
+      .select({ title: schema.assessments.title, className: schema.classes.name })
+      .from(schema.assignments)
+      .innerJoin(schema.assessments, eq(schema.assignments.assessmentId, schema.assessments.id))
+      .innerJoin(schema.classes, eq(schema.assignments.classId, schema.classes.id))
+      .where(eq(schema.assignments.id, assignmentId))
+      .limit(1);
+    if (!who || !asg) notFound();
+    const quizTrail = trails.get(trailKey(assignmentId, studentId));
+    return (
+      <div className="mx-auto flex max-w-4xl flex-col gap-5" data-monitor={studentId}>
+        <div>
+          <Link
+            href={`/app/results/${assignmentId}`}
+            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <ChevronLeft className="size-4" aria-hidden /> Results
+          </Link>
+          <h1 className="mt-2 text-2xl">
+            {who.lastName}, {who.firstName}
+          </h1>
+          <p className="mt-1 flex flex-wrap gap-x-3 text-sm text-muted-foreground tabular">
+            <span>
+              {asg.title} · {asg.className}
+            </span>
+            {quizTrail && quizTrail.length >= 2 ? (
+              <ScoreTrail steps={quizTrail} prefix="Score history" />
+            ) : null}
+          </p>
+        </div>
+        <RelearningSection assignmentId={assignmentId} studentId={studentId} lines={relearning} />
+      </div>
+    );
+  }
+  // How the counting score got here (R7): shown once it has moved.
+  const trail = trails.get(trailKey(assignmentId, studentId));
   const tierTone =
     m.tier === 1
       ? "bg-success-soft text-success-foreground"
@@ -67,6 +125,7 @@ export default async function RelearningMonitorPage({
             {m.assignment.title} · {m.assignment.className}
           </span>
           {m.percent !== null ? <span>Overall {Math.round(m.percent)}%</span> : null}
+          {trail && trail.length >= 2 ? <ScoreTrail steps={trail} prefix="Score history" /> : null}
           <span>{m.minutesOnTask} min on task</span>
           {m.latestAttemptId ? (
             <Link
@@ -78,6 +137,10 @@ export default async function RelearningMonitorPage({
           ) : null}
         </p>
       </div>
+
+      {relearning?.length ? (
+        <RelearningSection assignmentId={assignmentId} studentId={studentId} lines={relearning} />
+      ) : null}
 
       <section className="rounded-lg border border-border bg-card" aria-label="Readiness">
         <h2 className="border-b border-border px-4 py-2 text-sm font-medium">Readiness</h2>
@@ -225,5 +288,71 @@ export default async function RelearningMonitorPage({
         )}
       </section>
     </div>
+  );
+}
+
+/** Read · Watch · Do on the relearning path (R4): each target's mode and progress, and A5's check-off. */
+function RelearningSection({
+  assignmentId,
+  studentId,
+  lines,
+}: {
+  assignmentId: string;
+  studentId: string;
+  lines: MonitorRelearningLine[];
+}) {
+  return (
+    <section
+      className="rounded-lg border border-border bg-card"
+      aria-label="Relearning path"
+      data-monitor-relearning
+    >
+      <h2 className="border-b border-border px-4 py-2 text-sm font-medium">
+        Relearning (Read · Watch · Do)
+      </h2>
+      <ul className="divide-y divide-border text-sm">
+        {lines.map((r) => (
+          <li
+            key={r.targetId}
+            className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2"
+            data-relearning-line={r.code}
+          >
+            <span className="font-medium">{r.code}</span>
+            <span className="text-muted-foreground">
+              {r.checkedOff
+                ? "Checked off"
+                : r.finishedAt
+                  ? `${r.mode ? `${MODE_EMOJI[r.mode]} ${MODE_LABEL[r.mode]} · ` : ""}done`
+                  : r.mode
+                    ? `${MODE_EMOJI[r.mode]} ${MODE_LABEL[r.mode]} · ${r.partsDone} of ${r.parts} parts`
+                    : r.relearn === "current"
+                      ? "Not started"
+                      : "Opens after corrections"}
+              {r.finishedAt ? (
+                <>
+                  {" "}
+                  · <LocalTime date={r.finishedAt} />
+                </>
+              ) : null}
+              {r.practice === "done"
+                ? " · practice check passed"
+                : r.practice === "current"
+                  ? " · practice check open"
+                  : ""}
+            </span>
+            {!r.finishedAt && r.relearn !== "locked" ? (
+              <span className="ml-auto">
+                <CheckOffRelearningButton
+                  assignmentId={assignmentId}
+                  studentId={studentId}
+                  targetId={r.targetId}
+                  code={r.code}
+                />
+              </span>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

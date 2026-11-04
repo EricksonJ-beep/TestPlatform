@@ -1,0 +1,188 @@
+{
+  "name": "ps-u6-lt3-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science B",
+  "relearning": [
+    {
+      "target": "U6.LT3",
+      "mode": "read",
+      "title": "Read: inclined planes",
+      "description": "A short reading with the sledding-hill analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Length, height and MA",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can identify and calculate the IMA, AMA, and efficiency of an inclined plane.**\n\n**Think of climbing a sledding hill.** Charging straight up the steep side is short but exhausting. Walking up the long, gentle path takes more steps, but each step is easy. A ramp works the same way: you trade a longer distance for a smaller force.\n\n**An inclined plane** is a flat surface that is higher on one end: wheelchair ramps, loading ramps, roads that zigzag up a hill. A **wedge** (an axe blade) and a **screw** (jar-lid threads) are modified inclined planes.\n\n**On a ramp:** **De** = the **length** of the ramp, **Dr** = the **height**, **Fr** = the **weight** of the object, and **Fe** = the push or pull **along** the ramp.\n\n**Formulas.** **IMA = De ÷ Dr = length ÷ height.** **AMA = Fr ÷ Fe.** IMA and AMA have no units, and a ramp's IMA is always more than 1.\n\n**Worked example:** A wheelchair ramp is 6.4 m long and rises 0.8 m. Formula: IMA = length ÷ height. Set up: IMA = 6.4 m ÷ 0.8 m. Answer: **8** (no units). On an ideal ramp, a 560 N rider and chair would need Fe = Fr ÷ IMA = 560 N ÷ 8 = **70 N**."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "fill_blank",
+              "prompt": "A ramp is 5.4 m long and 0.9 m high. What is its IMA? Type a number.",
+              "answer": ["6", "6.0", "ima = 6", "ima=6"],
+              "explanation": "IMA = length ÷ height = 5.4 m ÷ 0.9 m = 6 (no units). Dividing the height by the length (about 0.17) is the common mistake; a ramp's IMA is always more than 1."
+            },
+            {
+              "id": "c2",
+              "kind": "multiple_choice",
+              "prompt": "A 600 N box is pushed up a ramp with a 150 N push along the ramp. What is the AMA?",
+              "options": [
+                { "id": "a", "text": "0.25" },
+                { "id": "b", "text": "450" },
+                { "id": "c", "text": "4" }
+              ],
+              "answer": "c",
+              "explanation": "AMA = Fr ÷ Fe = 600 N ÷ 150 N = 4 (no units). Flipping it (0.25) or subtracting (450) are the common mistakes."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Work and efficiency on a ramp",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**The trade-off.** A ramp takes **less force** than lifting straight up, but you push over a **longer distance**, so it does **not** reduce the work. **Work input = Fe × De** and **Work output = Fr × Dr** (in joules). Ideal (no friction): Work in = Work out, so Fe × De = Fr × Dr.\n\n**Efficiency = Work output ÷ Work input × 100 = AMA ÷ IMA × 100.** A real ramp is always below 100%, because friction turns some energy into heat, so the AMA is always less than the IMA. A mass in kg becomes a weight with Fr = m × 9.8.\n\n**Worked example 2:** A student pushes a 500 N box up a ramp 3 m long and 0.6 m high with a 125 N push. Step 1: Work input = 125 N × 3 m = 375 J. Step 2: Work output = 500 N × 0.6 m = 300 J. Step 3: Efficiency = 300 J ÷ 375 J × 100 = **80%**. Other way: IMA = 3 ÷ 0.6 = 5, AMA = 500 ÷ 125 = 4, and 4 ÷ 5 × 100 = **80%**.\n\n**Worked example 3:** A 30 kg box goes up a ramp 2.4 m long and 0.6 m high that is 70% efficient. Step 1: Fr = 30 kg × 9.8 m/s² = 294 N. Step 2: IMA = 2.4 ÷ 0.6 = 4, so the ideal Fe = 294 N ÷ 4 = 73.5 N. Step 3: The real ramp needs more: Fe = 73.5 N ÷ 0.7 = **105 N**.\n\n**Watch out for:** dividing height ÷ length, using forces for IMA or distances for AMA, using the ramp's length for work output (output uses the height), flipping efficiency so it is over 100%, forgetting × 100, and using kg as if it were N."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "fill_blank",
+              "prompt": "A 340 N box is pushed up a ramp 4 m long and 1 m high with a 100 N push. What is the efficiency? Type a number (in %).",
+              "answer": ["85", "85%", "85 %", "85 percent", "85.0", "85.0%"],
+              "explanation": "Work input = 100 N × 4 m = 400 J. Work output = 340 N × 1 m = 340 J. Efficiency = 340 J ÷ 400 J × 100 = 85%. Using the ramp's length for the output (340 N × 4 m) is the common mistake; it gives an impossible 340%."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "Two ramps both rise 1 m. Ramp A is 3 m long, and Ramp B is 6 m long. Which needs less effort force, and why?",
+              "options": [
+                { "id": "a", "text": "Ramp A, because you push a shorter distance" },
+                { "id": "b", "text": "Ramp B, because its IMA is 6 instead of 3" },
+                {
+                  "id": "c",
+                  "text": "Both need the same force, because they reach the same height"
+                }
+              ],
+              "answer": "b",
+              "explanation": "IMA = length ÷ height: Ramp A is 3 and Ramp B is 6. A greater IMA means less effort force, but over a longer distance. Thinking a shorter push means less force is the common mistake."
+            }
+          ],
+          "shortAnswer": "Explain why a ramp lets you use less force but does not save you any work. Use the words effort force, distance, and work."
+        }
+      ]
+    },
+    {
+      "target": "U6.LT3",
+      "mode": "do",
+      "title": "Do: ramp problems step by step",
+      "description": "A ramp's IMA and ideal push one step at a time, then its efficiency two ways.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Worked problem: a loading ramp",
+          "minutes": 4,
+          "body": {
+            "type": "worked_steps",
+            "problem": "A loading ramp is 4.5 m long and rises 0.9 m into a truck. A 630 N cart is pushed up it. Find the IMA and the push needed if the ramp is ideal (no friction).",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "Label the ramp. De = length = 4.5 m. Dr = height = 0.9 m. Fr = the cart's weight = 630 N."
+              },
+              {
+                "id": "s2",
+                "text": "Formula: IMA = De ÷ Dr. Set up: IMA = 4.5 m ÷ 0.9 m. Answer: 5 (no units)."
+              },
+              {
+                "id": "s3",
+                "text": "On an ideal ramp, AMA = IMA, so Fr ÷ Fe = 5. That means Fe = Fr ÷ IMA."
+              },
+              {
+                "id": "s4",
+                "text": "Set up: Fe = 630 N ÷ 5. Answer: 126 N. That is much less than lifting 630 N straight up, but you push 4.5 m instead of 0.9 m."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "fill_blank",
+              "prompt": "Your turn: a ramp is 7.2 m long and 1.2 m high. What is its IMA? Type a number.",
+              "answer": ["6", "6.0", "ima = 6", "ima=6"],
+              "explanation": "IMA = length ÷ height = 7.2 m ÷ 1.2 m = 6 (no units). Dividing the height by the length (about 0.17) is the common mistake.",
+              "afterStepId": "s2"
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "An ideal ramp has an IMA of 4. What push moves an 800 N crate up it?",
+              "options": [
+                { "id": "a", "text": "200 N" },
+                { "id": "b", "text": "3,200 N" },
+                { "id": "c", "text": "796 N" }
+              ],
+              "answer": "a",
+              "explanation": "Fe = Fr ÷ IMA = 800 N ÷ 4 = 200 N. Multiplying (3,200 N) would mean the ramp makes the job harder, and subtracting (796 N) isn't how IMA works. Those are the common mistakes.",
+              "afterStepId": "s4"
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: efficiency two ways",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "A student pushes a 450 N cart up a ramp 4 m long and 0.8 m high with a 120 N push along the ramp. Find the efficiency using work, then check it with AMA ÷ IMA.",
+            "steps": [
+              {
+                "id": "t1",
+                "text": "Work input uses the effort: Work input = Fe × De = 120 N × 4 m = 480 J."
+              },
+              {
+                "id": "t2",
+                "text": "Work output uses the load and the height: Work output = Fr × Dr = 450 N × 0.8 m = 360 J."
+              },
+              {
+                "id": "t3",
+                "text": "Formula: Efficiency = Work output ÷ Work input × 100. Set up: 360 J ÷ 480 J × 100. Answer: 75%."
+              },
+              {
+                "id": "t4",
+                "text": "Check it the other way. IMA = 4 m ÷ 0.8 m = 5. AMA = 450 N ÷ 120 N = 3.75. Efficiency = 3.75 ÷ 5 × 100 = 75%. Same answer."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "A 300 N box is pushed up a ramp 2.5 m long onto a stage 0.6 m high. What is the work output?",
+              "options": [
+                { "id": "a", "text": "750 J" },
+                { "id": "b", "text": "180 J" },
+                { "id": "c", "text": "500 J" }
+              ],
+              "answer": "b",
+              "explanation": "Work output = Fr × Dr = 300 N × 0.6 m = 180 J: the weight times the height. Using the ramp's length (300 N × 2.5 m = 750 J) is the common mistake.",
+              "afterStepId": "t2"
+            },
+            {
+              "id": "w2",
+              "kind": "fill_blank",
+              "prompt": "Your turn: a ramp has an IMA of 6 and an AMA of 4.8. What is its efficiency? Type a number (in %).",
+              "answer": ["80", "80%", "80 %", "80 percent", "80.0", "80.0%"],
+              "explanation": "Efficiency = AMA ÷ IMA × 100 = 4.8 ÷ 6 × 100 = 80%. Flipping it (125%) is the common mistake; a real ramp is always below 100%.",
+              "afterStepId": "t4"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

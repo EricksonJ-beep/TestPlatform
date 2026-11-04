@@ -11,8 +11,10 @@ import { currentPause } from "@/lib/pause";
 import type { PracticeResult, QuizPracticeTarget } from "@/lib/quiz-practice";
 import { getCorrectionsSummary, type CorrectionsSetSummary } from "@/lib/queries/corrections";
 import { loadPracticeResults, loadPracticeTargets } from "@/lib/queries/quiz-practice";
+import { loadPathStates, pathKey } from "@/lib/queries/relearning-path";
 import { openUntilInPlay } from "@/lib/queries/reopen";
 import { getRetakeStatus, type RetakeStatus } from "@/lib/queries/retakes";
+import type { PathState } from "@/lib/relearning-path";
 import { effectiveClose } from "@/lib/reopen";
 import type { CorrectionsRule, CycleState } from "@/lib/retakes";
 
@@ -222,6 +224,13 @@ export type StudentAssignment = {
    * attempt and while one is open.
    */
   cycle: CycleState | null;
+  /**
+   * The relearning path (Nov 4 2026, `pathFor`) when the assignment is on it for this student:
+   * each target's steps, raises and counting percent, for the step path (R5). Null otherwise.
+   */
+  path?: PathState | null;
+  /** "Keep my 80%" (decision 28, R5): chosen since the latest attempt; the retake stays open. */
+  kept?: boolean;
 };
 
 type OpenPauseJson = {
@@ -302,6 +311,10 @@ export async function listStudentAssignments(
         number | null
       >`(select f.percent from ${schema.assignmentFinalScores} f where f.assignment_id = ${schema.assignments.id} and f.student_id = ${studentId})`,
       finalBasis: sql<FinalBasis | null>`(select f.basis from ${schema.assignmentFinalScores} f where f.assignment_id = ${schema.assignments.id} and f.student_id = ${studentId})`,
+      // "Keep my 80%" (R5), counted only while later than the latest attempt.
+      keptAt: sql<
+        Date | string | null
+      >`(select f.kept_at from ${schema.assignmentFinalScores} f where f.assignment_id = ${schema.assignments.id} and f.student_id = ${studentId})`,
       lastSubmittedAt: sql<Date | null>`(select max(a.submitted_at) from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status <> 'in_progress')`,
       // Quiz relearning (R3) reads the latest finished attempt's per-target percents.
       latestSubmittedAt: sql<
@@ -352,9 +365,15 @@ export async function listStudentAssignments(
       rows.flatMap((r) => (r.type === "formative" ? Object.keys(r.latestTargetPercents ?? {}) : []))
     ),
   ];
-  const [practiceTargets, practice] = await Promise.all([
+  // The relearning path (Nov 4 2026): every started quiz and test, in one batched read that keeps
+  // only the switched-on courses (one small query before launch).
+  const pathPairs = rows
+    .filter((r) => r.type !== "practice" && r.latestAttemptId)
+    .map((r) => ({ assignmentId: r.id, studentId }));
+  const [practiceTargets, practice, paths] = await Promise.all([
     loadPracticeTargets(quizTargetIds),
     quizTargetIds.length ? loadPracticeResults([studentId]) : new Map<string, PracticeResult[]>(),
+    loadPathStates(pathPairs),
     Promise.all(
       rows.map(async (r) => {
         if (r.type === "practice" || !r.latestAttemptId) return;
@@ -384,6 +403,7 @@ export async function listStudentAssignments(
         firstPercent: firstPercentRaw,
         finalPercent,
         finalBasis,
+        keptAt,
         retakeWindowDays,
         unlockedThrough,
         requestedNext,
@@ -398,6 +418,7 @@ export async function listStudentAssignments(
         );
         const corrections = summaries.get(r.id) ?? null;
         const retake = retakes.get(r.id) ?? null;
+        const path = paths.get(pathKey(r.id, studentId))?.state ?? null;
         const cvtcRules = !!cvtcRaw;
         const firstPercent = firstPercentRaw === null ? null : Number(firstPercentRaw);
         const finalPct = finalPercent === null ? null : Number(finalPercent);
@@ -438,11 +459,16 @@ export async function listStudentAssignments(
                     practice: practice.get(studentId) ?? [],
                   }
                 : null,
+            path,
           },
           now
         );
         return {
           ...r,
+          path,
+          kept:
+            !!keptAt &&
+            (!lastSubmittedAt || new Date(keptAt).getTime() > new Date(lastSubmittedAt).getTime()),
           needsCode: !!accessCode,
           status: card.status,
           state: card.state,

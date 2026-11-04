@@ -211,6 +211,34 @@
       "when": 1793381269027,
       "tag": "0029_section_retake_pool",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1793759436468,
+      "tag": "0030_relearning_revamp",
+      "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1793763138524,
+      "tag": "0031_score_history",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1793767349258,
+      "tag": "0032_kept_score",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1793807847251,
+      "tag": "0033_lunch_code",
+      "breakpoints": true
     }
   ]
 }

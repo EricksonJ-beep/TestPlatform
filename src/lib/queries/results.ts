@@ -9,6 +9,8 @@ import { answerToText, correctAnswerText, type Answer, type GradableOption } fro
 import type { StimulusInfo } from "@/lib/stimulus-groups";
 import type { FinalBasis } from "@/db/schema";
 import { growthFor, type Growth } from "@/lib/retakes";
+import { loadScoreTrails, trailKey } from "@/lib/queries/score-trail";
+import type { ScoreStep } from "@/lib/score-trail";
 
 export type GradebookAttempt = {
   id: string;
@@ -58,6 +60,8 @@ export type GradebookRow = {
   /** After a retake: attempt 1's percent → the counting percent, and per retaken target (`growthFor`). */
   growth:
     (Omit<Growth, "targets"> & { targets: { code: string; first: number; now: number }[] }) | null;
+  /** The score trail (R7): every change to the counting score, dated; null with fewer than two steps. */
+  trail: ScoreStep[] | null;
 };
 
 export async function getGradebook(assignmentId: string): Promise<GradebookRow[]> {
@@ -113,6 +117,9 @@ export async function getGradebook(assignmentId: string): Promise<GradebookRow[]
     .from(schema.assignmentFinalScores)
     .where(eq(schema.assignmentFinalScores.assignmentId, assignmentId));
   const finalBy = new Map(finals.map((f) => [f.studentId, f]));
+  const trails = await loadScoreTrails(
+    finals.map((f) => ({ assignmentId, studentId: f.studentId }))
+  );
   const scopeIds = [
     ...new Set([
       ...attempts.flatMap((a) => a.scope ?? []),
@@ -203,9 +210,13 @@ export async function getGradebook(assignmentId: string): Promise<GradebookRow[]
           ...t,
         })),
       },
+      trail: twoOrMore(trails.get(trailKey(assignmentId, s.studentId))),
     };
   });
 }
+
+/** A trail worth showing: at least two steps. */
+const twoOrMore = (steps: ScoreStep[] | undefined) => (steps && steps.length >= 2 ? steps : null);
 
 /** A jsonb target → percent map as the driver hands it back (the object, or its JSON text). */
 function toPercents(raw: unknown): Record<string, number> {

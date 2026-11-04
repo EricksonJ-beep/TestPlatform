@@ -1,0 +1,234 @@
+{
+  "name": "ps-u4-lt4-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science B",
+  "relearning": [
+    {
+      "target": "U4.LT4",
+      "mode": "read",
+      "title": "Read: motion graphs",
+      "description": "A short reading with the odometer-and-speedometer analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Distance-time graphs",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can construct and interpret graphs illustrating distance, velocity and acceleration.**\n\n**Think of a trip odometer and a speedometer.** A trip odometer tells you **how far** you have gone; a speedometer tells you **how fast** you are going right now. If you sit on the couch, the trip odometer stays stuck on the same number, but the speedometer reads 0. If you cruise down Highway 29 at 55 mph, the trip odometer keeps climbing, but the speedometer stays stuck on 55. That is the difference between a **distance-time graph** (like the odometer) and a **velocity-time graph** (like the speedometer). Always read the y-axis label first.\n\n**Axes.** Time is the **independent variable**, so it goes on the **x-axis**. Distance or velocity is the **dependent variable** and goes on the **y-axis**.\n\n**Slope** = rise ÷ run. The slope of a distance-time graph is the **speed** (s = d/t), so **steeper = faster**.\n\n**Distance-time shapes:** horizontal line = **stopped**; straight line going up = **constant speed away from the start**; straight line going down = **constant speed back toward the start**; curve getting steeper = **speeding up**.\n\n**Worked example:** A distance-time graph rises in a straight line from 10 m at 2 s to 34 m at 8 s. Find the speed. Formula: s = d/t. Set Up: s = (34 m − 10 m) / (8 s − 2 s) = 24 m / 6 s. Answer: **4 m/s**."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "On a distance-time graph, what does a flat (horizontal) line mean?",
+              "options": [
+                { "id": "a", "text": "The object is stopped" },
+                { "id": "b", "text": "The object is moving at a constant speed" },
+                { "id": "c", "text": "The object is speeding up" }
+              ],
+              "answer": "a",
+              "explanation": "Flat means the distance isn't changing, so the object is stopped. Reading it like a velocity-time graph, where flat means constant velocity, is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "fill_blank",
+              "prompt": "A distance-time graph rises in a straight line from 5 m at 1 s to 35 m at 6 s. What is the speed, in m/s? Type a number.",
+              "answer": ["6", "6 m/s", "6m/s", "6.0", "six"],
+              "explanation": "Use the change: s = (35 m − 5 m) / (6 s − 1 s) = 30 m / 5 s = 6 m/s. Dividing the end values (35 ÷ 6) is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Velocity-time graphs and multi-part trips",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Velocity-time shapes:** horizontal line above zero = **constant velocity** (zero acceleration); rising line = **accelerating**; falling line toward zero = **decelerating**; line on zero = **stopped**; below zero = **moving backward**; crossing zero = stops and changes direction. The slope of a velocity-time graph is the **acceleration**: a = (v_{f} − v_{i}) / t.\n\n**Worked example 2:** A velocity-time graph rises in a straight line from 3 m/s at 0 s to 15 m/s at 4 s. The velocity is going up, so the object is accelerating. Formula: a = (v_{f} − v_{i}) / t. Set Up: a = (15 m/s − 3 m/s) / 4 s = 12 m/s / 4 s. Answer: **3 m/s²**.\n\n**Worked example 3:** A walker's distance-time graph rises from 0 m at 0 s to 60 m at 30 s, stays flat at 60 m until 50 s, then falls to 0 m at 70 s. 0–30 s: the line goes up, so the walker moves away at 60 m / 30 s = 2 m/s. 30–50 s: flat, so the walker is stopped. 50–70 s: the line goes down, so the walker heads back toward the start at 60 m / 20 s = 3 m/s. The walker is **fastest from 50 s to 70 s**, while returning to the start.\n\n**Watch out for:** reading a flat line the same way on both graphs (flat on distance-time = stopped, flat on velocity-time = constant velocity), calling a line going down on a distance-time graph \"slowing down\" (it means heading back toward the start), using the end values instead of the change for a segment, and swapping the independent and dependent variables."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "A velocity-time graph shows a flat line at 6 m/s from 0 s to 10 s. What is the object doing?",
+              "options": [
+                { "id": "a", "text": "It is stopped" },
+                { "id": "b", "text": "It is moving at a constant velocity of 6 m/s" },
+                { "id": "c", "text": "It is speeding up" }
+              ],
+              "answer": "b",
+              "explanation": "On a velocity-time graph, flat at 6 m/s means the velocity stays 6 m/s: constant velocity and zero acceleration. Calling it stopped is the common mistake; stopped is a line on 0 m/s."
+            },
+            {
+              "id": "e2",
+              "kind": "fill_blank",
+              "prompt": "A velocity-time graph rises in a straight line from 2 m/s at 0 s to 10 m/s at 4 s. What is the acceleration, in m/s²? Type a number.",
+              "answer": [
+                "2",
+                "2 m/s²",
+                "2m/s²",
+                "2 m/s2",
+                "2m/s2",
+                "2 m/s^2",
+                "2m/s^2",
+                "2 m/s/s",
+                "2m/s/s",
+                "2.0",
+                "two"
+              ],
+              "explanation": "The slope of a velocity-time graph is the acceleration: a = (10 m/s − 2 m/s) / 4 s = 8 m/s / 4 s = 2 m/s². Dividing 10 by 4 (getting 2.5) without subtracting the starting 2 m/s is the common mistake."
+            }
+          ],
+          "shortAnswer": "Describe what a flat line means on a distance-time graph and on a velocity-time graph. Explain why they are different."
+        }
+      ]
+    },
+    {
+      "target": "U4.LT4",
+      "mode": "do",
+      "title": "Do: flip the graph shapes, then read a trip step by step",
+      "description": "Flashcards with a 3-question self-quiz, then a trip read from a data table one step at a time.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: what the shape means",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Slope",
+                "back": "Rise ÷ run. On a distance-time graph the slope is the speed. On a velocity-time graph it is the acceleration."
+              },
+              {
+                "id": "k2",
+                "front": "Distance-time: flat line",
+                "back": "Stopped. The distance isn't changing."
+              },
+              {
+                "id": "k3",
+                "front": "Distance-time: straight line going up",
+                "back": "Constant speed away from the start. Steeper = faster. A curve getting steeper = speeding up."
+              },
+              {
+                "id": "k4",
+                "front": "Distance-time: straight line going down",
+                "back": "Constant speed back toward the start. It does NOT mean slowing down."
+              },
+              {
+                "id": "k5",
+                "front": "Velocity-time: flat line above zero",
+                "back": "Constant velocity, so zero acceleration. It does NOT mean stopped."
+              },
+              {
+                "id": "k6",
+                "front": "Velocity-time: rising or falling line",
+                "back": "Rising = accelerating (speeding up). Falling toward zero = decelerating (slowing down)."
+              },
+              {
+                "id": "k7",
+                "front": "Velocity-time: on zero or below zero",
+                "back": "On zero = stopped. Below zero = moving backward."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "On a velocity-time graph, a flat line below zero means the object is –",
+              "options": [
+                { "id": "a", "text": "stopped" },
+                { "id": "b", "text": "moving backward at a constant speed" },
+                { "id": "c", "text": "slowing down" }
+              ],
+              "answer": "b",
+              "explanation": "Below zero, the velocity is negative, so the object moves backward. Flat means that velocity isn't changing, so the speed is constant. Calling it stopped is the common mistake: stopped is a line right on zero."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "A distance-time graph shows a straight line going down. The object is –",
+              "options": [
+                { "id": "a", "text": "slowing down" },
+                { "id": "b", "text": "moving back toward the start at a constant speed" },
+                { "id": "c", "text": "speeding up" }
+              ],
+              "answer": "b",
+              "explanation": "Going down means the distance from the start is shrinking, so the object is heading back. A straight line means a constant speed. Calling it slowing down is the common mistake."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "What does the slope of a velocity-time graph tell you?",
+              "options": [
+                { "id": "a", "text": "Speed" },
+                { "id": "b", "text": "Acceleration" },
+                { "id": "c", "text": "Distance" }
+              ],
+              "answer": "b",
+              "explanation": "Slope = change in velocity ÷ change in time, which is acceleration. Speed is the slope of a distance-time graph; mixing up the two graphs is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: reading a trip from a table",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "A student walks from home to the park and back. Distance from home:\nt (s): 0, 10, 20, 30, 40, 50\nd (m): 0, 20, 40, 40, 40, 0\nDescribe each part of the trip and find the speed in each part.",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "Read the label first. This is distance from home, so it is a distance-time graph: time on the x-axis, distance on the y-axis. Split the trip where the pattern changes: 0–20 s, 20–40 s and 40–50 s."
+              },
+              {
+                "id": "s2",
+                "text": "0 s to 20 s: the distance goes up 20 m every 10 s, so the line is straight and rising. The student walks away from home at a constant speed: s = (40 m − 0 m) / (20 s − 0 s) = 40 m / 20 s = 2 m/s."
+              },
+              {
+                "id": "s3",
+                "text": "20 s to 40 s: the distance stays at 40 m. On a distance-time graph that is a flat line, so the student is stopped at the park."
+              },
+              {
+                "id": "s4",
+                "text": "40 s to 50 s: the distance drops from 40 m to 0 m, a straight line going down. The student is walking back home, not slowing down: s = (40 m − 0 m) / (50 s − 40 s) = 40 m / 10 s = 4 m/s."
+              },
+              {
+                "id": "s5",
+                "text": "Compare the slopes: 4 m/s on the way home is faster than 2 m/s on the way out, so the line going down is steeper. The student is fastest on the way home."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "fill_blank",
+              "prompt": "Your turn: a scooter's table reads t (s): 0, 3, 6, 9 | d (m): 0, 12, 24, 36. What is its speed, in m/s? Type a number.",
+              "answer": ["4", "4 m/s", "4m/s", "4.0", "four"],
+              "explanation": "Every 3 s it goes 12 m, so the speed is constant: s = 36 m / 9 s = 4 m/s. Dividing time by distance (getting 0.25) is the common mistake.",
+              "afterStepId": "s2"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: a walker's table reads t (s): 0, 10, 20, 30 | d (m): 60, 40, 20, 0. What is the walker doing?",
+              "options": [
+                { "id": "a", "text": "Slowing down, at 2 m/s" },
+                { "id": "b", "text": "Walking back toward the start at a constant 2 m/s" },
+                { "id": "c", "text": "Walking away from the start at a constant 2 m/s" }
+              ],
+              "answer": "b",
+              "explanation": "The distance drops 20 m every 10 s, so the walker is heading back toward the start at a constant speed: 60 m / 30 s = 2 m/s. A falling line on a distance-time graph does not mean slowing down; that is the common mistake.",
+              "afterStepId": "s5"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

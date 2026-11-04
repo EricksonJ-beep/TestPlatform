@@ -1,0 +1,254 @@
+{
+  "name": "ps-u3-lt2-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science A",
+  "relearning": [
+    {
+      "target": "U3.LT2",
+      "mode": "read",
+      "title": "Read: ionic or covalent?",
+      "description": "A short reading with the lunch-money analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "The three rules",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can look at a compound and tell whether it's ionic or covalent.**\n\n**Think of lunch money vs. a shared pizza.** If a friend hands you a dollar, the dollar moves from them to you: one gives, the other takes. That is an **ionic** bond. If you and a friend split a pizza, nobody gives it away; you both eat from it. That is a **covalent** bond. Metals are the \"givers\" and nonmetals are the \"takers.\" When two takers meet, neither will give, so they share.\n\n**Rule 1.** Metal + nonmetal makes an **ionic** compound: the metal **transfers** electrons to the nonmetal. Metals sit **left of the staircase** on the periodic table. Transition metals like iron and copper are metals too.\n\n**Rule 2.** Two nonmetals make a **covalent** compound: the electrons are **shared**, and one unit is a **molecule**. Hydrogen is a nonmetal, even though it sits on the left.\n\n**Rule 3.** A compound with a **polyatomic ion** is **ionic**. That includes **ammonium, NH₄⁺**, even though ammonium compounds have no metal. Ammonium plays the part of the metal.\n\n**Worked example:** CaBr₂. Calcium is left of the staircase, so it is a metal. Bromine is right of the staircase, so it is a nonmetal. Metal + nonmetal, so CaBr₂ is **ionic**: calcium transfers electrons to bromine."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "Which compound is ionic?",
+              "options": [
+                { "id": "a", "text": "CH₄" },
+                { "id": "b", "text": "KCl" },
+                { "id": "c", "text": "SO₂" }
+              ],
+              "answer": "b",
+              "explanation": "Potassium is a metal (left of the staircase) and chlorine is a nonmetal, so KCl is ionic. CH₄ and SO₂ are only nonmetals, so they are covalent. Calling CH₄ ionic because hydrogen sits on the left is the common mistake: hydrogen is a nonmetal."
+            },
+            {
+              "id": "c2",
+              "kind": "fill_blank",
+              "prompt": "Ammonium chloride, NH₄Cl, has no metal, but it has the polyatomic ion NH₄⁺. Is it ionic or covalent? Type one word.",
+              "answer": [
+                "ionic",
+                "ionic compound",
+                "an ionic compound",
+                "it is ionic",
+                "it's ionic",
+                "ionic bond"
+              ],
+              "explanation": "A compound with a polyatomic ion is ionic, even with no metal. Ammonium plays the part of the metal. Calling it covalent because every atom is a nonmetal is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Hard cases and lab evidence",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Why atoms bond.** Atoms bond **to be stable**. The **octet rule** says most atoms are stable with **8** outer electrons (hydrogen and helium are the exceptions). Noble gases already have a full outer shell, so they don't bond. A **single bond** shares 2 electrons, a **double bond** shares 4 and a **triple bond** shares 6.\n\n**Worked example 2:** (NH₄)₃PO₄ (ammonium is NH₄⁺, phosphate is PO₄³⁻). Every atom is a nonmetal, so the nonmetal rule says covalent... but wait. It has polyatomic ions, and a compound with a polyatomic ion is ionic. Answer: **ionic**.\n\n**Properties are your evidence.** Ionic compounds have **high melting points** (generally above 300 °C), form **crystals** and **conduct electricity when dissolved in water**, because they break into free-moving ions. Covalent compounds have **low melting points**, can be solid, liquid or gas, and **do not conduct** when dissolved, because they stay as whole molecules. Color, mass and where a bottle was stored are **irrelevant evidence**.\n\n**Worked example 3:** An unknown melts at 80 °C and its solution does not light the bulb. 80 °C is far below 300 °C, which points to covalent. No conductivity means no free ions, which also points to covalent. Answer: **covalent**.\n\n**Watch out for:** calling an ammonium compound covalent just because it has no metal, calling hydrogen a metal, calling two metals (like Ca and Mg) ionic, forgetting that transition metals are metals, and using color, mass or \"it dissolves\" as evidence. Use melting point and conductivity instead."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "An unknown white solid melts at 750 °C, and its solution lights the bulb. Which conclusion is best?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Ionic: the high melting point and the conductivity both point to ionic"
+                },
+                { "id": "b", "text": "Covalent: it is a white solid" },
+                { "id": "c", "text": "Covalent: it dissolves in water" }
+              ],
+              "answer": "a",
+              "explanation": "Melting above 300 °C and conducting when dissolved both point to ionic. Color and dissolving are irrelevant evidence, and using them is the common mistake."
+            },
+            {
+              "id": "e2",
+              "kind": "fill_blank",
+              "prompt": "Water, H₂O, is made of hydrogen and oxygen. Is it ionic or covalent? Type one word.",
+              "answer": [
+                "covalent",
+                "covalent compound",
+                "a covalent compound",
+                "it is covalent",
+                "it's covalent",
+                "covalent bond"
+              ],
+              "explanation": "Hydrogen is a nonmetal even though it sits on the left of the periodic table, so H₂O is two nonmetals: covalent. Calling hydrogen a metal is the common mistake."
+            }
+          ],
+          "shortAnswer": "Explain why NaCl is ionic but Cl₂ is covalent. Say what the electrons do in each."
+        }
+      ]
+    },
+    {
+      "target": "U3.LT2",
+      "mode": "do",
+      "title": "Do: flip the rules, then sort the compounds",
+      "description": "Flashcards with a 3-question self-quiz, then a guess-and-flip deck of compounds and lab clues.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: ionic or covalent?",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Ionic bond",
+                "back": "A metal transfers electrons to a nonmetal. One gives and one takes, like handing a friend a dollar."
+              },
+              {
+                "id": "k2",
+                "front": "Covalent bond",
+                "back": "Two nonmetals share electrons, like splitting a pizza. One unit is a molecule."
+              },
+              {
+                "id": "k3",
+                "front": "Metals",
+                "back": "Left of the staircase on the periodic table. Transition metals like iron and copper count too."
+              },
+              {
+                "id": "k4",
+                "front": "Hydrogen",
+                "back": "A nonmetal, even though it sits on the left. H₂O is two nonmetals, so it is covalent."
+              },
+              {
+                "id": "k5",
+                "front": "Polyatomic ion rule",
+                "back": "A compound with a polyatomic ion, like ammonium (NH₄⁺), is ionic, even with no metal."
+              },
+              {
+                "id": "k6",
+                "front": "Octet rule",
+                "back": "Atoms bond to be stable. Most are stable with 8 outer electrons. Noble gases are already full, so they don't bond."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "Which compound is ionic?",
+              "options": [
+                { "id": "a", "text": "CO₂" },
+                { "id": "b", "text": "NaF" },
+                { "id": "c", "text": "PCl₃" }
+              ],
+              "answer": "b",
+              "explanation": "Sodium is a metal (left of the staircase) and fluorine is a nonmetal, so NaF is ionic. CO₂ and PCl₃ have only nonmetals, so they are covalent. Skipping the metal check is the common mistake."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "Two chlorine atoms bond to make Cl₂. What happens to their electrons?",
+              "options": [
+                { "id": "a", "text": "One chlorine transfers electrons to the other" },
+                { "id": "b", "text": "The two atoms share electrons" },
+                { "id": "c", "text": "Each atom keeps its electrons, and no bond forms" }
+              ],
+              "answer": "b",
+              "explanation": "Chlorine is a nonmetal, and two nonmetals share electrons: a covalent bond. Transfer happens from a metal to a nonmetal, so picking transfer is the common mistake."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "NH₄NO₃ has no metal (ammonium is NH₄⁺ and nitrate is NO₃⁻). How should it be classified?",
+              "options": [
+                { "id": "a", "text": "Covalent, because every atom is a nonmetal" },
+                { "id": "b", "text": "Ionic, because it is made of polyatomic ions" },
+                { "id": "c", "text": "Covalent, because it has three elements" }
+              ],
+              "answer": "b",
+              "explanation": "A compound with a polyatomic ion is ionic, and NH₄NO₃ is made of two of them. Using only the nonmetal rule is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Guess, then flip: sort the compounds",
+          "minutes": 6,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "x1",
+                "front": "Potassium + iodine",
+                "back": "Ionic. Potassium is a metal and iodine is a nonmetal, so KI is ionic."
+              },
+              {
+                "id": "x2",
+                "front": "Sulfur + oxygen",
+                "back": "Covalent. Both are nonmetals, so SO₂ and SO₃ are covalent: the atoms share electrons."
+              },
+              {
+                "id": "x3",
+                "front": "Copper + chlorine",
+                "back": "Ionic. Copper is a transition metal, and transition metals are still metals. CuCl₂ is ionic."
+              },
+              {
+                "id": "x4",
+                "front": "Hydrogen + oxygen",
+                "back": "Covalent. Hydrogen is a nonmetal, even though it sits on the left. H₂O is covalent."
+              },
+              {
+                "id": "x5",
+                "front": "Ammonium sulfate (NH₄⁺ and SO₄²⁻)",
+                "back": "Ionic. It is made of polyatomic ions, so (NH₄)₂SO₄ is ionic even with no metal."
+              },
+              {
+                "id": "x6",
+                "front": "Unknown A: melts at 801 °C, and its solution lights the bulb",
+                "back": "Ionic. A melting point above 300 °C and conducting when dissolved both point to ionic."
+              },
+              {
+                "id": "x7",
+                "front": "Unknown B: melts at 45 °C, and its solution does not light the bulb",
+                "back": "Covalent. A low melting point and no free ions both point to covalent."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Which list has ONLY covalent compounds?",
+              "options": [
+                { "id": "a", "text": "CO₂, N₂O, CCl₄" },
+                { "id": "b", "text": "CO₂, CaO, NH₃" },
+                { "id": "c", "text": "NaCl, KBr, CuO" }
+              ],
+              "answer": "a",
+              "explanation": "CO₂, N₂O and CCl₄ are only nonmetals with no polyatomic ion, so all three are covalent. CaO has calcium, a metal, and every compound in the last list starts with a metal. Missing one hidden metal in a list is the common mistake."
+            },
+            {
+              "id": "w2",
+              "kind": "fill_blank",
+              "prompt": "Ionic compounds conduct electricity when dissolved because they break into free-moving ___. Type one word.",
+              "answer": [
+                "ions",
+                "ion",
+                "charged ions",
+                "free ions",
+                "free-moving ions",
+                "free moving ions",
+                "charged particles"
+              ],
+              "explanation": "Dissolved ionic compounds break into free-moving ions that carry the current. Covalent compounds stay as whole molecules, so they don't conduct. Saying \"electrons\" is the common mistake."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

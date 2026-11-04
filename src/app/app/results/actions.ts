@@ -9,6 +9,11 @@ import { staleRequest } from "@/lib/needs-you";
 import { capWindowPassed } from "@/lib/queries/reopen";
 import { endOfNextSchoolDay } from "@/lib/reopen";
 import {
+  checkOffRelearning as checkOff,
+  RelearningError,
+  resolveVideoFlags,
+} from "@/lib/relearning-server";
+import {
   currentResumeCode,
   issueResumeCode,
   resumeAttempt,
@@ -20,6 +25,7 @@ import {
   isUuid,
   requireAttemptAccess,
   requireOwner,
+  requireRelearningSectionOwner,
   requireTeacher,
   withAuthz,
 } from "@/lib/authz";
@@ -219,6 +225,45 @@ export const unlockNextAttempt = withAuthz(async (assignmentId: string, studentI
   revalidatePath(`/student/assignments/${assignmentId}`);
   revalidatePath("/student");
   return { attemptNumber: next };
+});
+
+/**
+ * Relearning revamp A5 (R4): check a student's relearning off, where nothing is built for the
+ * target yet or the student did it another way with the teacher. A quiz's whole stitched activity;
+ * a test target's own. The practice check then opens as usual.
+ */
+export const checkOffRelearning = withAuthz(
+  async (assignmentId: string, studentId: string, learningTargetId: string) => {
+    const session = await requireOwner({ type: "assignment", id: assignmentId });
+    if (!isUuid(studentId) || !isUuid(learningTargetId)) throw new ActionError("Not found.", 404);
+    await enrolledStudent(assignmentId, studentId);
+    let result;
+    try {
+      result = await checkOff({
+        assignmentId,
+        studentId,
+        targetId: learningTargetId,
+        teacherId: session.userId,
+      });
+    } catch (err) {
+      if (err instanceof RelearningError) throw new ActionError(err.message, err.status);
+      throw err;
+    }
+    revalidatePath("/app");
+    revalidatePath(`/app/results/${assignmentId}`);
+    revalidatePath(`/app/results/${assignmentId}/students/${studentId}`);
+    revalidatePath(`/student/assignments/${assignmentId}`);
+    revalidatePath("/student");
+    return result;
+  }
+);
+
+/** Relearning revamp A6 (R4): the teacher fixed or swapped a video that wouldn't play; its flags close. */
+export const resolveVideoFlag = withAuthz(async (sectionId: string) => {
+  const session = await requireRelearningSectionOwner(sectionId);
+  const resolved = await resolveVideoFlags(sectionId, session.userId);
+  revalidatePath("/app");
+  return { resolved };
 });
 
 /** Take back an unlock the student hasn't used yet, or decline a pending request. */

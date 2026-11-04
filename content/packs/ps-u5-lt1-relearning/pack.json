@@ -1,0 +1,223 @@
+{
+  "name": "ps-u5-lt1-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science B",
+  "relearning": [
+    {
+      "target": "U5.LT1",
+      "mode": "read",
+      "title": "Read: identifying forces",
+      "description": "A short reading with the backpack analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "The six named forces",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can identify forces acting on an object.**\n\n**Think of a backpack on your shoulder.** You feel it pulling down, and you feel the strap holding it up. Every object is like that backpack: something is always pushing or pulling on it, even when it sits still. Your job is to name each push or pull and tell which way it points.\n\n**A force is a push or a pull.** Forces are measured in **newtons (N)**.\n\n**The six named forces.** **Gravity (Fg)** pulls down toward Earth, even when nothing touches the object. **Normal force (FN)** is the support from a surface, perpendicular to it (up from a floor or table). **Applied force (Fapp)** is a push or pull from a person or object. **Friction (Ff)** acts between two surfaces and points **opposite** the motion. **Air resistance (Fair)** is friction from air, so it also points opposite the motion. **Tension (T)** is the pull of a rope, string, or cable.\n\n**Worked example:** A lamp hangs still from a chain. What pulls it down? Earth, so gravity (Fg) points down. What holds it up? The chain, so tension (T) points up. It is not sitting on a surface, so there is no normal force or friction. Forces: **Fg down and T up**."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "A textbook sits still on a level table. Which forces act on it?",
+              "options": [
+                { "id": "a", "text": "Gravity down and normal force up" },
+                { "id": "b", "text": "Gravity down only" },
+                { "id": "c", "text": "Gravity down, normal force up, and friction" }
+              ],
+              "answer": "a",
+              "explanation": "Gravity pulls the book down and the table pushes it up (normal force). Nothing is pushing it sideways, so there is no friction. Leaving out the normal force is the common mistake: the table really does push up."
+            },
+            {
+              "id": "c2",
+              "kind": "multiple_choice",
+              "prompt": "A box is pushed to the left across the floor. Which way does friction on the box point?",
+              "options": [
+                { "id": "a", "text": "Left" },
+                { "id": "b", "text": "Up" },
+                { "id": "c", "text": "Right" }
+              ],
+              "answer": "c",
+              "explanation": "Friction points opposite the motion. The box moves left, so friction points right. Pointing friction the same way the object moves is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Friction types, mass and weight",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Types of friction.** **Static** friction: the surfaces are not moving (a heavy desk that won't budge). **Sliding** friction: one surface slides across another (a box pushed across the floor). **Rolling** friction: a wheel or ball rolls (bike tires on the road).\n\n**Mass vs. weight.** **Mass** is the amount of matter, in **kg**. **Weight** is the force of gravity on an object, in **N**. Mass stays the same in outer space, but weight changes, because g changes. **W = m × g**, with g = 9.8 m/s² on Earth (Moon 1.6, Mars 3.7 m/s²). To find mass, divide: **m = W ÷ g**.\n\n**Worked example 2:** What is the weight of a 72 kg student on Earth? Formula: W = m × g. Set up: W = 72 kg × 9.8 m/s². Answer: **705.6 N**.\n\n**Worked example 3:** A dresser weighs 539 N on Earth. What is its mass? Formula: m = W ÷ g. Set up: m = 539 N ÷ 9.8 m/s². Answer: **55 kg**. On the Moon its mass is still 55 kg, but it weighs only 55 kg × 1.6 m/s² = **88 N**.\n\n**After a push ends.** A kicked ball flying through the air has only gravity and air resistance on it. The kick stopped the moment the ball left the foot.\n\n**Watch out for:** dividing when you should multiply (on Earth, the weight in N is a bigger number than the mass in kg), swapping kg and N, using 9.8 on the Moon or Mars, adding a force of the kick after the push has stopped, and pointing friction the same way the object moves."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "fill_blank",
+              "prompt": "What is the weight of a 15 kg dog on Earth? Use g = 9.8 m/s². Type a number (in N).",
+              "answer": ["147", "147 N", "147N", "147 newtons", "147.0", "147.0 N"],
+              "explanation": "W = m × g = 15 kg × 9.8 m/s² = 147 N. Dividing (15 ÷ 9.8 ≈ 1.5) is the common mistake; on Earth the weight in newtons is always a bigger number than the mass in kg."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "An astronaut has a mass of 70 kg on Earth. What is her mass on the Moon?",
+              "options": [
+                { "id": "a", "text": "70 kg" },
+                { "id": "b", "text": "112 kg" },
+                { "id": "c", "text": "Less than 70 kg, because the Moon's gravity is weaker" }
+              ],
+              "answer": "a",
+              "explanation": "Mass is the amount of matter, and the trip doesn't change it: still 70 kg. Her weight is what changes (70 kg × 1.6 m/s² = 112 N on the Moon). Mixing up mass and weight is the common mistake."
+            }
+          ],
+          "shortAnswer": "A wagon is pulled to the right across a sidewalk with a rope. List every force acting on the wagon and the direction each one points."
+        }
+      ]
+    },
+    {
+      "target": "U5.LT1",
+      "mode": "do",
+      "title": "Do: flip the forces, then find weight step by step",
+      "description": "Flashcards with a 3-question self-quiz, then a weight problem one step at a time.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: the named forces",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Gravity (Fg)",
+                "back": "Earth's pull on an object. Points down, even when nothing touches the object."
+              },
+              {
+                "id": "k2",
+                "front": "Normal force (FN)",
+                "back": "Support from a surface. Perpendicular to the surface: up from a floor or table."
+              },
+              {
+                "id": "k3",
+                "front": "Applied force (Fapp)",
+                "back": "A push or pull from a person or object, like pulling a wagon. It acts only while they touch."
+              },
+              {
+                "id": "k4",
+                "front": "Friction (Ff)",
+                "back": "Acts between two surfaces. Points opposite the motion."
+              },
+              {
+                "id": "k5",
+                "front": "Air resistance (Fair)",
+                "back": "Friction from air. Points opposite the motion: up on a falling object."
+              },
+              {
+                "id": "k6",
+                "front": "Tension (T)",
+                "back": "The pull of a rope, string, or cable. Up on something hanging from it."
+              },
+              {
+                "id": "k7",
+                "front": "Mass vs. weight",
+                "back": "Mass is the amount of matter (kg) and doesn't change on the Moon. Weight is the pull of gravity (N): W = m × g, with g = 9.8 m/s² on Earth."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "A sign hangs still from one rope. Which forces act on it?",
+              "options": [
+                { "id": "a", "text": "Fg down and T up" },
+                { "id": "b", "text": "Fg down and FN up" },
+                { "id": "c", "text": "Fg down only" }
+              ],
+              "answer": "a",
+              "explanation": "Gravity pulls the sign down and the rope pulls it up with tension. The sign isn't resting on a surface, so there is no normal force. Calling the rope's pull a normal force is the common mistake."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "A skydiver falls toward the ground. Which way does air resistance push on her?",
+              "options": [
+                { "id": "a", "text": "Down" },
+                { "id": "b", "text": "Up" },
+                { "id": "c", "text": "There is no air resistance on a falling object" }
+              ],
+              "answer": "b",
+              "explanation": "Air resistance points opposite the motion. She moves down, so air resistance pushes up. Pointing it the same way she moves is the common mistake."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "A hockey puck slides across the ice after the stick lets go. Which force is NOT acting on the puck?",
+              "options": [
+                { "id": "a", "text": "Gravity" },
+                { "id": "b", "text": "Friction" },
+                { "id": "c", "text": "An applied force from the stick" }
+              ],
+              "answer": "c",
+              "explanation": "Once the stick stops touching the puck, there is no applied force. Gravity, the normal force from the ice, and friction still act. Keeping a force from the hit after contact ends is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: weight on the Moon",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "A crate weighs 490 N on Earth (g = 9.8 m/s²). What does it weigh on the Moon (g = 1.6 m/s²)?",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "Weight depends on g, but mass does not. So find the mass first, then use the Moon's g."
+              },
+              {
+                "id": "s2",
+                "text": "Find the mass. Formula: m = W ÷ g. Set up: m = 490 N ÷ 9.8 m/s². Answer: 50 kg."
+              },
+              {
+                "id": "s3",
+                "text": "The crate's mass is still 50 kg on the Moon. Only g changes."
+              },
+              {
+                "id": "s4",
+                "text": "Find the Moon weight. Formula: W = m × g. Set up: W = 50 kg × 1.6 m/s². Answer: 80 N."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "fill_blank",
+              "prompt": "Your turn: a desk weighs 343 N on Earth. What is its mass? Type a number (in kg).",
+              "answer": ["35", "35 kg", "35kg", "35.0", "35.0 kg", "35 kilograms"],
+              "explanation": "m = W ÷ g = 343 N ÷ 9.8 m/s² = 35 kg. Multiplying by 9.8 (3,361.4) is the common mistake; the mass in kg is the smaller number.",
+              "afterStepId": "s2"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "What would the same 50 kg crate weigh on Mars, where g = 3.7 m/s²?",
+              "options": [
+                { "id": "a", "text": "50 N" },
+                { "id": "b", "text": "490 N" },
+                { "id": "c", "text": "185 N" }
+              ],
+              "answer": "c",
+              "explanation": "W = m × g = 50 kg × 3.7 m/s² = 185 N. 50 N treats the mass as the weight, and 490 N uses Earth's g on Mars. Those are the common mistakes.",
+              "afterStepId": "s4"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

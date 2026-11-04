@@ -7,4 +7,6 @@ export const BASIS_LABEL: Record<FinalBasis, string> = {
   corrections_to_full: "corrections",
   retake: "retake",
   per_target: "best per target",
+  relearning_path: "relearning path",
+  corrections_to_90: "corrections (to 90%)",
 };

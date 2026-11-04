@@ -47,6 +47,7 @@ import { LetContinueButton } from "@/app/app/results/[assignmentId]/let-continue
 import { GradebookPanel, type PanelTarget } from "./gradebook-panel";
 import { setHideScores, useHideScores } from "./hide-scores";
 import { TagPill, TONE_CLASS } from "./gradebook-tag";
+import { ScoreTrail } from "@/components/score-trail";
 
 const KEY: { tone: CellTone; label: string }[] = [
   { tone: "coral", label: "Your move" },
@@ -784,7 +785,14 @@ function CellButton({
           ) : null}
         </span>
       </span>
-      {!hideScores && cell.growth ? (
+      {!hideScores && cell.trail ? (
+        // The score trail (R7): every step before the score shown, each dated in the tooltip.
+        <ScoreTrail
+          steps={cell.trail}
+          prefix="from"
+          className="text-[10px] text-muted-foreground"
+        />
+      ) : !hideScores && cell.growth ? (
         <span
           className="text-[10px] text-muted-foreground tabular"
           title={`First try ${Math.round(cell.growth.first)}%, now ${Math.round(cell.growth.now)}%`}

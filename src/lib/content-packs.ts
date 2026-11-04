@@ -20,12 +20,15 @@
  */
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import { and, eq, isNull, or, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { parseCsvRecords } from "@/lib/csv";
 import { parseQuestionRecords } from "@/lib/import/question-csv";
 import { commitImport } from "@/lib/import/question-import";
 import { insertTargetSections } from "@/lib/target-sections";
+import { relearningIssues, type PackRelearning } from "@/lib/relearning-pack";
+
+export type { PackRelearning } from "@/lib/relearning-pack";
 
 export type PackDefinition = {
   name: string;
@@ -113,6 +116,8 @@ export type PackDefinition = {
     /** Default true; a published activity shows in the student Practice tab. */
     published?: boolean;
   };
+  /** Read · Watch · Do options (relearning revamp R4): one per target and mode. */
+  relearning?: PackRelearning[];
 };
 
 export type PackOutcome =
@@ -253,6 +258,8 @@ export async function applyPack(
   }
   if (def.activity)
     summary.activity = await applyActivity(def.activity, teacher.id, course.id, errors);
+  if (def.relearning?.length)
+    summary.relearning = await applyRelearning(def.relearning, teacher.id, course.id, errors);
   const retakePools = await syncRetakePools(def, teacher.id);
   if (retakePools.length) summary.retakePools = retakePools;
   summary.errors = errors;
@@ -661,6 +668,95 @@ async function applyActivity(
     targets: targetIds.length,
     published: canPublish,
   };
+}
+
+/**
+ * The Read · Watch · Do half of a pack: each option found by (teacher, target, mode) and updated,
+ * or created; its sections updated in place by part and order, extras removed.
+ */
+async function applyRelearning(
+  list: PackRelearning[],
+  teacherId: string,
+  courseId: string,
+  errors: string[]
+): Promise<{ options: number; sections: number }> {
+  let options = 0;
+  let sections = 0;
+  for (const r of list) {
+    const issues = relearningIssues(r);
+    if (issues.length) {
+      errors.push(...issues);
+      continue;
+    }
+    const [targetId] = await resolveTargets([r.target], courseId, errors);
+    if (!targetId) continue;
+    const values = {
+      title: r.title.trim(),
+      description: r.description?.trim() || null,
+      isPublished: r.published ?? true,
+    };
+    const existing = await db.query.relearningOptions.findFirst({
+      columns: { id: true },
+      where: and(
+        eq(schema.relearningOptions.ownerId, teacherId),
+        eq(schema.relearningOptions.learningTargetId, targetId),
+        eq(schema.relearningOptions.mode, r.mode)
+      ),
+    });
+    const optionId = existing
+      ? (
+          await db
+            .update(schema.relearningOptions)
+            .set(values)
+            .where(eq(schema.relearningOptions.id, existing.id))
+            .returning({ id: schema.relearningOptions.id })
+        )[0].id
+      : (
+          await db
+            .insert(schema.relearningOptions)
+            .values({ ...values, ownerId: teacherId, learningTargetId: targetId, mode: r.mode })
+            .returning({ id: schema.relearningOptions.id })
+        )[0].id;
+    options++;
+    const current = await db.query.relearningSections.findMany({
+      columns: { id: true, part: true, sortOrder: true },
+      where: eq(schema.relearningSections.optionId, optionId),
+    });
+    const keep = new Set<string>();
+    for (const part of ["core", "extension"] as const) {
+      const wanted = r.sections.filter((x) => x.part === part);
+      for (const [i, sec] of wanted.entries()) {
+        const row = {
+          title: sec.title?.trim() || null,
+          body: sec.body,
+          checks: sec.checks ?? [],
+          shortAnswerPrompt: sec.shortAnswer?.trim() || null,
+          estMinutes: sec.minutes ?? 3,
+        };
+        const same = current.find((c) => c.part === part && c.sortOrder === i);
+        if (same) {
+          await db
+            .update(schema.relearningSections)
+            .set(row)
+            .where(eq(schema.relearningSections.id, same.id));
+          keep.add(same.id);
+        } else {
+          const [made] = await db
+            .insert(schema.relearningSections)
+            .values({ ...row, optionId, part, sortOrder: i })
+            .returning({ id: schema.relearningSections.id });
+          keep.add(made.id);
+        }
+        sections++;
+      }
+    }
+    const extra = current.filter((c) => !keep.has(c.id)).map((c) => c.id);
+    if (extra.length)
+      await db
+        .delete(schema.relearningSections)
+        .where(inArray(schema.relearningSections.id, extra));
+  }
+  return { options, sections };
 }
 
 /** Apply every pack that has not been applied yet; never throws for one bad pack. */

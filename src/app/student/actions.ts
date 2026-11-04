@@ -6,7 +6,7 @@ import { z } from "zod";
 import { db, schema } from "@/db";
 import { logActivity } from "@/lib/activity-log";
 import { canStartAttempt, startReasonText } from "@/lib/assignments";
-import { createAttempt, finalizeAttempt } from "@/lib/attempts";
+import { createAttempt, finalizeAttempt, recomputeFinalScore } from "@/lib/attempts";
 import { AWAITING_GRADE_TEXT } from "@/lib/card-state";
 import {
   pauseAttempt,
@@ -16,15 +16,17 @@ import {
   touchAttempt,
 } from "@/lib/attempt-pause";
 import { correctionsClear } from "@/lib/corrections";
-import { setOptIn } from "@/lib/gates";
+import { setOptIn, setOptIns } from "@/lib/gates";
 import { correctionsCapOn } from "@/lib/grading";
 import { practiceOwed, practiceOwedText, quizPracticeNeeds } from "@/lib/quiz-practice";
 import { getCorrectionsSummary, latestFinishedAttemptId } from "@/lib/queries/corrections";
 import { getQuizPracticeData } from "@/lib/queries/quiz-practice";
+import { getPathState } from "@/lib/queries/relearning-path";
 import { capWindowPassed, openUntilFor } from "@/lib/queries/reopen";
+import { pathBlockerText } from "@/lib/relearning-path";
 import { effectiveClose } from "@/lib/reopen";
 import { getRetakeStatus } from "@/lib/queries/retakes";
-import { BLOCKER_TEXT, correctionsRule, TO_FULL_TEXT } from "@/lib/retakes";
+import { BLOCKER_TEXT, correctionsRule, TO_FULL_TEXT, type RetakeChoice } from "@/lib/retakes";
 import {
   ActionError,
   type AttemptAccess,
@@ -63,7 +65,8 @@ function revalidate(assignmentId: string) {
  * and the server agree. Rules: no retake where corrections are the way to 100% (`to_full`, Jon
  * Oct 13 2026, decision 2); the last attempt's corrections clear (approved, or nothing to correct),
  * with or without "Retakes need my OK" (Jon, Oct 14 2026, decision 4); on a quiz, every missed
- * learning target practised to 80% (decision 5, `quizPracticeNeeds`). Throws what the student sees.
+ * learning target practised to 80% (decision 5, `quizPracticeNeeds`). On the relearning path
+ * (Nov 4 2026) the path's blockers replace all of that (`pathFor`). Throws what the student sees.
  */
 async function assertRetakePrerequisites(
   assignmentId: string,
@@ -75,6 +78,14 @@ async function assertRetakePrerequisites(
     retakeThreshold: number;
   }
 ): Promise<void> {
+  // The relearning path (Nov 4 2026): on it, the path says what comes first (corrections,
+  // relearning, the practice check, the teacher's OK, a fresh check before attempt 3).
+  const path = await getPathState(assignmentId, studentId);
+  if (path) {
+    const why = pathBlockerText(path.state, path.assignment.passMark);
+    if (why) throw new ActionError(why, 403);
+    return;
+  }
   // The cap never applies in a CVTC course (Jon, Oct 13 2026).
   const capped = correctionsCapOn(assignment);
   const [first] = await db
@@ -410,20 +421,108 @@ export const setRetakeOptIn = withAuthz(
     const target = status.targets.find((t) => t.id === learningTargetId);
     if (!target) throw new ActionError("That target isn't on this test.", 400);
     if (target.required) throw new ActionError("That target is already required.", 409);
-    const open = await db.query.attempts.findFirst({
-      columns: { id: true },
-      where: and(
-        eq(schema.attempts.assignmentId, assignmentId),
-        eq(schema.attempts.studentId, access.userId),
-        eq(schema.attempts.status, "in_progress")
-      ),
-    });
-    if (open) throw new ActionError("Finish the attempt you're on first.", 409);
+    await assertNoOpenAttempt(assignmentId, access.userId);
     await setOptIn(assignmentId, access.userId, learningTargetId, !!optedIn);
     revalidate(assignmentId);
     return { optedIn: !!optedIn };
   }
 );
+
+/**
+ * The test retake picker (relearning revamp S3, decision 19; ticket R6). **Full test** puts every
+ * target at or above the line in the retake, so corrections cover every missed question first;
+ * **Custom** starts again from the required targets, and the student ticks any others
+ * (`setRetakeOptIn`). Either way an added target needs only its corrections (decision 29).
+ */
+export const chooseRetakeScope = withAuthz(async (assignmentId: string, choice: RetakeChoice) => {
+  const access = await requireAssignmentAccess(assignmentId);
+  if (access.as !== "student") throw new ActionError("Students only.", 403);
+  if (choice !== "full" && choice !== "custom")
+    throw new ActionError("Choose Full test or Custom.", 400);
+  const status = await getRetakeStatus(assignmentId, access.userId);
+  if (!status) throw new ActionError("There's no retake to choose on this assignment.", 409);
+  if (!status.optionalRetakes)
+    throw new ActionError("Optional retakes are turned off for this test.", 403);
+  if (status.plan.optional.length === 0)
+    throw new ActionError("Every target on this test is already in your retake.", 409);
+  await assertNoOpenAttempt(assignmentId, access.userId);
+  await setOptIns(assignmentId, access.userId, status.plan.optional, choice === "full");
+  revalidate(assignmentId);
+  return { choice };
+});
+
+/**
+ * "Keep my 80%" (relearning revamp decision 28, R5): at the end of a quiz's path the student keeps
+ * the raised score for now. Done for now; the retake stays open until its window closes.
+ */
+export const keepMyScore = withAuthz(async (assignmentId: string) => {
+  const access = await requireAssignmentAccess(assignmentId);
+  if (access.as !== "student") throw new ActionError("Students only.", 403);
+  const path = await getPathState(assignmentId, access.userId);
+  if (
+    !path ||
+    path.state.type !== "formative" ||
+    !path.state.raises ||
+    path.state.required.length === 0
+  )
+    throw new ActionError("There's no score to keep here.", 409);
+  if (!path.state.complete || path.state.blockers.length)
+    throw new ActionError("Finish your path first.", 409);
+  await assertNoOpenAttempt(assignmentId, access.userId);
+  const kept = await db
+    .update(schema.assignmentFinalScores)
+    .set({ keptAt: new Date() })
+    .where(
+      and(
+        eq(schema.assignmentFinalScores.assignmentId, assignmentId),
+        eq(schema.assignmentFinalScores.studentId, access.userId)
+      )
+    )
+    .returning({ id: schema.assignmentFinalScores.id });
+  if (!kept.length) throw new ActionError("There's no score to keep here.", 409);
+  revalidate(assignmentId);
+  return { kept: true };
+});
+
+/**
+ * A quiz's 80%+ target on the relearning path (Q2, decision 31): correct its missed questions to
+ * raise it to 90%. Opting out works only while nothing is turned in for it and it isn't in the
+ * relearning (adding it there is `setRelearningTargetAdded`).
+ */
+export const setQuizCorrectionsOptIn = withAuthz(
+  async (assignmentId: string, learningTargetId: string, optedIn: boolean) => {
+    const access = await requireAssignmentAccess(assignmentId);
+    if (access.as !== "student") throw new ActionError("Students only.", 403);
+    const path = await getPathState(assignmentId, access.userId);
+    if (!path || path.state.type !== "formative")
+      throw new ActionError("Only a quiz on the relearning path has this.", 409);
+    const t = path.state.targets.find((x) => x.id === learningTargetId);
+    if (!t || t.role !== "optional") throw new ActionError("That target can't be added.", 400);
+    if (
+      !optedIn &&
+      (t.onPath || t.correctionsState === "submitted" || t.correctionsState === "approved")
+    )
+      throw new ActionError("You've already worked on that one, so it stays.", 409);
+    await assertNoOpenAttempt(assignmentId, access.userId);
+    await setOptIns(assignmentId, access.userId, [learningTargetId], !!optedIn);
+    await recomputeFinalScore(assignmentId, access.userId);
+    revalidate(assignmentId);
+    return { optedIn: !!optedIn };
+  }
+);
+
+/** The retake's targets can't change while an attempt is open. */
+async function assertNoOpenAttempt(assignmentId: string, studentId: string): Promise<void> {
+  const open = await db.query.attempts.findFirst({
+    columns: { id: true },
+    where: and(
+      eq(schema.attempts.assignmentId, assignmentId),
+      eq(schema.attempts.studentId, studentId),
+      eq(schema.attempts.status, "in_progress")
+    ),
+  });
+  if (open) throw new ActionError("Finish the attempt you're on first.", 409);
+}
 
 // Rule: only the attempt's own student may write to it, only while in progress and not paused, only before the deadline (+ grace).
 async function writableAttempt(access: AttemptAccess) {

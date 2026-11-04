@@ -14,6 +14,7 @@ import {
 } from "@/lib/authz";
 import { CURRENT_COURSE_COOKIE, ownsCourse, rememberCourse } from "@/lib/current-course";
 import { recomputeCourseRules } from "@/lib/cvtc";
+import { pathSwitchAt, pathSwitchState } from "@/lib/relearning-switch";
 
 const uuid = z.string().uuid();
 const name = (label: string, maxLen = 80) =>
@@ -109,6 +110,42 @@ export const setCourseCvtcRules = withAuthz(async (courseId: string, on: boolean
   revalidatePath("/app/results", "layout");
   revalidatePath("/student", "layout");
   return { cvtcRules, recomputed };
+});
+
+/**
+ * The relearning path's course switch (relearning revamp L1: "New relearning path from [date]").
+ * Owner only. A quiz or test whose attempt 1 finishes from then on follows the new path; ones
+ * taken before keep the old rules (decision 26), so the date can't be in the past, and once it is
+ * in effect it can't move or come off (scores and steps already follow it). Null turns off a
+ * switch that hasn't started yet.
+ */
+export const setCourseRelearningPath = withAuthz(async (courseId: string, date: string | null) => {
+  await requireOwner({ type: "course", id: courseId });
+  const course = await db.query.courses.findFirst({
+    columns: { relearningPathFrom: true },
+    where: eq(schema.courses.id, courseId),
+  });
+  if (!course) throw new ActionError("Not found.", 404);
+  const now = new Date();
+  if (pathSwitchState(course.relearningPathFrom, now) === "on")
+    throw new ActionError(
+      "The new path is already in effect for this course, so it stays as it is.",
+      409
+    );
+  let relearningPathFrom: Date | null = null;
+  if (date !== null) {
+    const picked = pathSwitchAt(String(date), now);
+    if ("error" in picked) throw new ActionError(picked.error, 400, { date: [picked.error] });
+    relearningPathFrom = picked.at;
+  }
+  await db
+    .update(schema.courses)
+    .set({ relearningPathFrom })
+    .where(eq(schema.courses.id, courseId));
+  revalidateCourse(courseId);
+  revalidatePath("/app/results", "layout");
+  revalidatePath("/student", "layout");
+  return { relearningPathFrom };
 });
 
 /** Remember the current course in a cookie. Only the owner's own courses are accepted. */

@@ -22,6 +22,7 @@ import { TONE } from "./corrections-progress";
 import { DeleteAttemptButton } from "./delete-attempt-button";
 import { LetContinueButton } from "./let-continue-button";
 import { UnlockButton } from "./unlock-button";
+import { ScoreTrail } from "@/components/score-trail";
 
 const fmt = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(1));
 
@@ -238,7 +239,14 @@ function StudentRows({
           {s.final ? (
             <>
               {fmt(s.final.totalEarned)} / {fmt(s.final.totalPossible)} ·{" "}
-              {Math.round(s.final.percent)}%{s.growth ? <GrowthLines growth={s.growth} /> : null}
+              {Math.round(s.final.percent)}%
+              {s.trail ? (
+                <ScoreTrail
+                  steps={s.trail}
+                  className="block text-xs font-normal text-muted-foreground"
+                />
+              ) : null}
+              {s.growth ? <GrowthLines growth={s.growth} trail={!!s.trail} /> : null}
               {summative && s.final.tier ? (
                 <span className="block text-xs font-normal text-muted-foreground">
                   Tier {s.final.tier} · {s.final.targetsBelowThreshold} below threshold
@@ -434,10 +442,17 @@ function CorrectionsCell({ row: r }: { row: CorrectionsProgressRow }) {
 }
 
 /** After a retake: first try → now, overall and per retaken target (Jon, Oct 30 2026). */
-function GrowthLines({ growth }: { growth: NonNullable<GradebookRow["growth"]> }) {
+function GrowthLines({
+  growth,
+  trail,
+}: {
+  growth: NonNullable<GradebookRow["growth"]>;
+  /** The score trail already shows first → now (R7), so only the targets are added. */
+  trail: boolean;
+}) {
   return (
     <span className="block text-xs font-normal text-muted-foreground" data-growth>
-      First {Math.round(growth.first)}% → {Math.round(growth.now)}%
+      {trail ? null : `First ${Math.round(growth.first)}% → ${Math.round(growth.now)}%`}
       {growth.targets.map((t) => (
         <span key={t.code} className="block" data-growth-target={t.code}>
           {t.code}: {Math.round(t.first)}% →{" "}

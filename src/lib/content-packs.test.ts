@@ -157,8 +157,9 @@ describe("content packs", () => {
   });
   it("applies each pack once: bank, questions with repo-hosted pictures, published assessment, assignment", async () => {
     const first = await applyAllPacks();
-    // Physical Science Units 1–6 practice packs (Oct 13 2026): 50 questions, a set, and notes each;
-    // U6.LT5 (Rube Goldberg) is the smaller 25-question bank with a planning guide.
+    // Physical Science Units 1–6 practice packs (Oct 13 2026): a set and notes each; grown to 100
+    // questions per target for the relearning path's practice check (Nov 4 2026, ticket C1),
+    // U6.LT5 (Rube Goldberg) included.
     for (const name of [1, 2, 3, 4, 5, 6]
       .flatMap((u) => [1, 2, 3, 4].map((n) => `ps-u${u}-lt${n}-practice`))
       .concat("ps-u6-lt5-practice")) {
@@ -166,7 +167,7 @@ describe("content packs", () => {
       expect(out.status).toBe("applied");
       if (out.status === "applied")
         expect(out.summary).toMatchObject({
-          questions: name === "ps-u6-lt5-practice" ? 25 : 50,
+          questions: 100,
           practiceSet: { published: true },
           activity: { published: true },
           errors: [],
@@ -1114,6 +1115,94 @@ describe("content packs", () => {
     }))!;
     expect(un.isPublished).toBe(false);
   });
+  it("a relearning pack makes Read · Watch · Do options and updates their sections in place (R4)", async () => {
+    const base = {
+      name: "test-relearning-pack",
+      teacherEmail: "EricksonJ@cadott.k12.wi.us",
+      course: "Anatomy and Physiology",
+    };
+    const read = {
+      target: "U1",
+      mode: "read" as const,
+      title: "Read: tissues",
+      sections: [
+        {
+          part: "core" as const,
+          minutes: 4,
+          body: { type: "text" as const, text: "Four kinds of tissue." },
+          checks: [
+            {
+              id: "c1",
+              kind: "multiple_choice" as const,
+              prompt: "How many kinds?",
+              options: [
+                { id: "a", text: "Two" },
+                { id: "b", text: "Four" },
+              ],
+              answer: "b",
+            },
+          ],
+        },
+        {
+          part: "extension" as const,
+          body: { type: "text" as const, text: "More on epithelium." },
+          shortAnswer: "Name one place you find epithelium.",
+        },
+      ],
+    };
+    const out = await applyPack({
+      ...base,
+      relearning: [
+        read,
+        {
+          target: "U1",
+          mode: "watch",
+          title: "Watch: tissues",
+          sections: [{ part: "core", body: { type: "video", youtubeId: "abcdefghijk" } }],
+        },
+        {
+          target: "U1",
+          mode: "do",
+          title: "Broken",
+          sections: [{ part: "core", body: { type: "video", youtubeId: "nope" } }],
+        },
+      ],
+    });
+    expect(out.status).toBe("applied");
+    if (out.status === "applied")
+      expect(out.summary).toMatchObject({
+        relearning: { options: 2, sections: 3 },
+        errors: ["relearning U1 do section 1: youtubeId must be an 11-character YouTube id"],
+      });
+    const option = (await db.query.relearningOptions.findFirst({
+      where: eq(schema.relearningOptions.title, "Read: tissues"),
+    }))!;
+    expect(option).toMatchObject({ mode: "read", isPublished: true });
+    const before = await db.query.relearningSections.findMany({
+      where: eq(schema.relearningSections.optionId, option.id),
+    });
+    const core = before.find((x) => x.part === "core")!;
+    expect(core).toMatchObject({ estMinutes: 4, checks: [{ id: "c1", answer: "b" }] });
+
+    // Revision 2: the core is edited in place (same id, so progress keys hold); the extension goes.
+    const r2 = await applyPack({
+      ...base,
+      revision: 2,
+      relearning: [
+        {
+          ...read,
+          sections: [{ ...read.sections[0], body: { type: "text", text: "Four tissue types." } }],
+        },
+      ],
+    });
+    expect(r2.status).toBe("applied");
+    const after = await db.query.relearningSections.findMany({
+      where: eq(schema.relearningSections.optionId, option.id),
+    });
+    expect(after.map((x) => [x.id, x.part])).toEqual([[core.id, "core"]]);
+    expect(after[0].body).toEqual({ type: "text", text: "Four tissue types." });
+  });
+
   it("a practice pack makes a bank with hints, a set that deals from it, and a guided-notes reading", async () => {
     const root = mkdtempSync(join(tmpdir(), "bloom-packs-"));
     const name = "test-ps-u1-lt3-practice";

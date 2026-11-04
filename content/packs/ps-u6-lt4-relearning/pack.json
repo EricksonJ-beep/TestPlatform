@@ -1,0 +1,218 @@
+{
+  "name": "ps-u6-lt4-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science B",
+  "relearning": [
+    {
+      "target": "U6.LT4",
+      "mode": "read",
+      "title": "Read: pulleys",
+      "description": "A short reading with the couch-carrying analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Pulleys and the rope rule",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can identify and calculate the IMA, AMA, and efficiency of a pulley.**\n\n**Think of carrying a couch with friends.** If 4 friends each hold a strap under it, each one holds up only a quarter of the weight. In a pulley system, every rope segment that holds up the load takes a share, so your pull is smaller. The catch: you pull more rope.\n\n**Pulleys.** A **pulley** is a wheel with a groove that holds a rope. A **fixed pulley** is attached to a support, like a flagpole. It **changes the direction** of your force, but its IMA is 1. A **movable pulley** is attached to the load and moves with it. A **block and tackle** combines fixed and movable pulleys to multiply your force.\n\n**The rope rule (IMA).** Count every rope segment, including the one in your hand. **Pulling down – count and subtract 1. Pulling up – count them all.**\n\n**Worked example:** A block and tackle has 6 rope segments, and you pull down on the free end. Rope rule: pulling down, 6 − 1 = **IMA 5**. To lift a 1,200 N engine with an ideal pulley system: Fe = Fr ÷ IMA = 1,200 N ÷ 5 = **240 N**."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "A block and tackle has 4 rope segments in total, and you pull UP on the free end. What is the IMA?",
+              "options": [
+                { "id": "a", "text": "3" },
+                { "id": "b", "text": "4" },
+                { "id": "c", "text": "5" }
+              ],
+              "answer": "b",
+              "explanation": "Pulling up – count them all, so the IMA is 4. Subtracting 1 (3) is only for pulling down; doing it here is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "fill_blank",
+              "prompt": "An ideal pulley system has an IMA of 4. What effort force lifts a 900 N load? Type a number (in N).",
+              "answer": ["225", "225 N", "225N", "225 newtons", "225.0"],
+              "explanation": "Ideal means AMA = IMA, so Fe = Fr ÷ IMA = 900 N ÷ 4 = 225 N. Multiplying (3,600 N) is the common mistake; a pulley system makes your pull smaller, not bigger."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Rope pulled and efficiency",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Formulas.** IMA = De ÷ Dr (for a pulley, use the rope rule). AMA = Fr ÷ Fe. Work output = Fr × Dr. Work input = Fe × De. Efficiency = Work output ÷ Work input × 100, or AMA ÷ IMA × 100. Less force means more rope: **De = IMA × Dr**. Friction makes a real AMA less than the IMA. A load in kg: find its weight first, Fr = m × 9.8.\n\n**Worked example 2:** The 6-segment block and tackle above (IMA 5) lifts the engine 0.5 m. Rope pulled: De = IMA × Dr = 5 × 0.5 m = **2.5 m**.\n\n**Worked example 3:** You pull with 125 N through 6 m of rope to lift a 400 N load 1.5 m. Step 1: Work output = 400 N × 1.5 m = 600 J. Step 2: Work input = 125 N × 6 m = 750 J. Step 3: Efficiency = 600 J ÷ 750 J × 100 = **80%**. Check: IMA = 6 m ÷ 1.5 m = 4, AMA = 400 N ÷ 125 N = 3.2, and 3.2 ÷ 4 × 100 = **80%**.\n\n**Watch out for:** counting the rope you pull down on as a support, giving a fixed pulley an IMA of 2 or 0, using distances for AMA or forces for IMA, flipping a ratio (Fe ÷ Fr or input ÷ output), forgetting × 100, using kg as N, and any efficiency of 100% or more for a real machine."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "fill_blank",
+              "prompt": "A pulley system lifts a 540 N load 1.5 m while you pull with 150 N through 6 m of rope. What is the efficiency? Type a number (in %).",
+              "answer": ["90", "90%", "90 %", "90 percent", "90.0", "90.0%"],
+              "explanation": "Work output = 540 N × 1.5 m = 810 J. Work input = 150 N × 6 m = 900 J. Efficiency = 810 J ÷ 900 J × 100 = 90%. Flipping it (about 111%) is the common mistake; a real pulley is always below 100%."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "A block and tackle with an IMA of 4 lifts a hay bale 3 m. How much rope must you pull?",
+              "options": [
+                { "id": "a", "text": "0.75 m" },
+                { "id": "b", "text": "7 m" },
+                { "id": "c", "text": "12 m" }
+              ],
+              "answer": "c",
+              "explanation": "Less force means more rope: De = IMA × Dr = 4 × 3 m = 12 m. Dividing (0.75 m) would mean pulling less rope than the bale rises, which is the common mistake."
+            }
+          ],
+          "shortAnswer": "Explain the rope rule in your own words. Then find the IMA of a block and tackle with 9 rope segments when you pull down on the free end, and again when you pull up on it."
+        }
+      ]
+    },
+    {
+      "target": "U6.LT4",
+      "mode": "do",
+      "title": "Do: rope-rule cards, then a pulley step by step",
+      "description": "Flashcards that practice the rope rule with a 3-question self-quiz, then a pulley problem one step at a time.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: the rope rule",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Fixed pulley",
+                "back": "Attached to a support, like a flagpole. Changes the direction of your force. IMA = 1."
+              },
+              {
+                "id": "k2",
+                "front": "Movable pulley",
+                "back": "Attached to the load and moves with it. Its rope segments share the load."
+              },
+              {
+                "id": "k3",
+                "front": "Block and tackle",
+                "back": "Fixed and movable pulleys together. Multiplies your input force."
+              },
+              {
+                "id": "k4",
+                "front": "The rope rule",
+                "back": "Count every rope segment, including the one in your hand. Pulling down – count and subtract 1. Pulling up – count them all."
+              },
+              {
+                "id": "k5",
+                "front": "5 segments, pulling down",
+                "back": "Count and subtract 1: IMA = 5 − 1 = 4."
+              },
+              {
+                "id": "k6",
+                "front": "5 segments, pulling up",
+                "back": "Count them all: IMA = 5."
+              },
+              {
+                "id": "k7",
+                "front": "Less force means...",
+                "back": "More rope: De = IMA × Dr. With an IMA of 4, you pull 4 m of rope to lift the load 1 m."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "A block and tackle has 7 rope segments in total, and you pull DOWN on the free end. What is the IMA?",
+              "options": [
+                { "id": "a", "text": "7" },
+                { "id": "b", "text": "8" },
+                { "id": "c", "text": "6" }
+              ],
+              "answer": "c",
+              "explanation": "Pulling down – count and subtract 1: 7 − 1 = 6. Using all 7 is the common mistake; the rope you pull down on doesn't hold up the load."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "What does a single fixed pulley do for you?",
+              "options": [
+                { "id": "a", "text": "Changes the direction of your force" },
+                { "id": "b", "text": "Doubles your force" },
+                { "id": "c", "text": "Cuts the work in half" }
+              ],
+              "answer": "a",
+              "explanation": "A fixed pulley has an IMA of 1 (2 segments, pulling down: 2 − 1 = 1), so it doesn't make your pull smaller. It lets you pull down to lift a load up. Thinking it doubles your force is the common mistake."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "A pulley system has 3 rope segments in total, and you pull UP on the free end. What is the IMA?",
+              "options": [
+                { "id": "a", "text": "2" },
+                { "id": "b", "text": "3" },
+                { "id": "c", "text": "4" }
+              ],
+              "answer": "b",
+              "explanation": "Pulling up – count them all: IMA = 3. Subtracting 1 (2) is only for pulling down; doing it here is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: lifting an engine",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "A mechanic lifts a 960 N engine 0.6 m with a block and tackle. It has 5 rope segments in total, and she pulls down on the free end. Her real pull is 300 N. Find the IMA, the rope she pulls, and the efficiency.",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "Rope rule: she pulls down, so count and subtract 1. IMA = 5 − 1 = 4."
+              },
+              {
+                "id": "s2",
+                "text": "Less force means more rope. Formula: De = IMA × Dr. Set up: De = 4 × 0.6 m. Answer: 2.4 m."
+              },
+              {
+                "id": "s3",
+                "text": "Work output = Fr × Dr = 960 N × 0.6 m = 576 J. Work input = Fe × De = 300 N × 2.4 m = 720 J."
+              },
+              {
+                "id": "s4",
+                "text": "Formula: Efficiency = Work output ÷ Work input × 100. Set up: 576 J ÷ 720 J × 100. Answer: 80%. Check: AMA = 960 N ÷ 300 N = 3.2, and AMA ÷ IMA × 100 = 3.2 ÷ 4 × 100 = 80%."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "fill_blank",
+              "prompt": "Your turn: a block and tackle with 4 rope segments is pulled UP and lifts a load 1.5 m. How much rope is pulled? Type a number (in m).",
+              "answer": ["6", "6.0", "6 m", "6m", "6.0 m", "6 meters"],
+              "explanation": "Pulling up – count them all, so IMA = 4. De = IMA × Dr = 4 × 1.5 m = 6 m. Subtracting 1 for an upward pull (3 × 1.5 m = 4.5 m) is the common mistake.",
+              "afterStepId": "s2"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "A pulley system has an IMA of 4 and an AMA of 3.4. What is its efficiency?",
+              "options": [
+                { "id": "a", "text": "85%" },
+                { "id": "b", "text": "118%" },
+                { "id": "c", "text": "13.6%" }
+              ],
+              "answer": "a",
+              "explanation": "Efficiency = AMA ÷ IMA × 100 = 3.4 ÷ 4 × 100 = 85%. Flipping it (about 118%) is the common mistake; a real pulley is always below 100%.",
+              "afterStepId": "s4"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
