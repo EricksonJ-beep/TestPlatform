@@ -1,7 +1,7 @@
 # Relearning revamp: a shorter, clearer path to the retake (Jon, Nov 2–4 2026)
 
-**Status: approved by Jon, Nov 4 2026. R0 (spec updates) and R1 (schema) are done; R2 is
-next. Nothing else below is built yet.**
+**Status: approved by Jon, Nov 4 2026. R0 (spec updates), R1 (schema) and R2 (the rule) are
+done; R3 is next. Nothing else below is built yet.**
 
 Jon's ask: "Right now the students are struggling with the corrections, activity, and then
 practice. I think it is too much for them to 'earn' a retake. The correction piece is working
@@ -294,7 +294,7 @@ existing tests pass.
 - *There is no Neon branch: preview builds use the live database, so the first real apply
   happens when this branch is pushed.*
 
-### R2 · The rule (pure functions + tests)
+### R2 · The rule (pure functions + tests) ✅ (Nov 4 2026)
 - New `src/lib/relearning-path.ts`: `pathFor({ type, threshold, attempt1PerTarget, corrections,
   relearning, practice, attempts, closed })` → each target's steps, the current step, locked
   reasons and the counting score, per Q1–Q8 and S1–S6.
@@ -318,6 +318,35 @@ existing tests pass.
 - Test with LT2 and LT4 below: per-target lines, retake locked until both pass. Custom with LT1
   added needs LT1's corrections only; Full test needs corrections on every missed question.
 - Course switch: a pre-launch assignment keeps the old gates; CVTC (Anatomy) unchanged.
+
+*Built Nov 4:*
+- *The rule is `src/lib/relearning-path.ts` (`pathFor`, `pathCycle`, `pathRule`, `pathGates`,
+  `splitCheck`, `pathCorrectionTargets`, `pathBlockerText`).*
+- *`src/lib/queries/relearning-path.ts` reads it for many students at once. Before a course is
+  switched on, that's one small query and nothing else.*
+- *Wired into corrections scope, the final score, a test's retake gates, the card state,
+  `startAttempt` / `requestRetake`, the retake window, the class gradebook and Needs you. Each one
+  switches only when the course's switch is on.*
+- *Tests: `src/lib/relearning-path.test.ts` (30) and `src/app/student/relearning-path.test.ts`
+  (12, end to end with the real actions). All 614 tests pass.*
+
+*Calls made while building (fine-print, all consistent with the rules above):*
+- *A quiz with no learning targets keeps the v2 rules (there's nothing to relearn by target).*
+- *A quiz with nothing below the line has every missed question open for corrections (no opt-in).
+  On a mixed quiz, an 80%+ target joins corrections scope when the student opts in.*
+- *With the corrections cap switched off, the path raises nothing, and corrections in scope come
+  before the retake.*
+- *The fresh check before attempt 3 (Q6) also applies to a test that allows a third attempt.*
+- *Two Needs you blockers were added: relearning still open, and corrections waiting for the
+  teacher's OK.*
+
+*Left for later tickets (invisible until L1):*
+- *R3 and R4 must call `recomputeFinalScore` after a check passes or a relearning finishes.*
+- *R4 needs an action to opt into an 80%+ quiz target (`setRetakeOptIn` is tests-only today) and
+  to add it to the bundle.*
+- *R5 replaces the v2 words and to-do rows for path assignments: a quiz's relearning row (none
+  shows yet), "corrections raise it to 90%" (the v2 text says 100%), and Needs you's "no retake"
+  line.*
 
 ### R3 · Practice check
 - Dealer (P1): Practice banks, auto-graded only, at most one true/false, 3E/1M/1H across the

@@ -14,6 +14,7 @@ import { correctionsClear } from "@/lib/corrections";
 import { correctionsCapOn } from "@/lib/grading";
 import {
   needsYouCounts,
+  pathRequestBlocker,
   requestBlocker,
   staleRequest,
   type ClassPlace,
@@ -27,8 +28,10 @@ import { effectiveClose, endOfNextSchoolDay } from "@/lib/reopen";
 import { loadCorrectionScopes, scopeSummary } from "@/lib/queries/corrections";
 import { listPendingVerifications, type PendingVerification } from "@/lib/queries/practice";
 import { loadPracticeResults, loadPracticeTargets } from "@/lib/queries/quiz-practice";
+import { loadPathStates, pathKey } from "@/lib/queries/relearning-path";
 import { attemptOpenUntil } from "@/lib/queries/reopen";
 import { countUnmatchedEmails } from "@/lib/queries/worksheets";
+import { pathRule } from "@/lib/relearning-path";
 import { correctionsRule, planRetake, retakeTargets } from "@/lib/retakes";
 
 /** The course of the class (where the row happens), as opposed to the assessment's course. */
@@ -223,17 +226,26 @@ export async function listRetakeRequests(
     .where(and(eq(schema.assignments.ownerId, teacherId), isNull(u.grantedAt)))
     .orderBy(asc(u.requestedAt));
 
+  // The relearning path (Nov 4 2026): the requests' paths in one read (switched-on courses only).
+  const paths = await loadPathStates(
+    rows
+      .filter((r) => r.type !== "practice")
+      .map((r) => ({ assignmentId: r.assignmentId, studentId: r.studentId }))
+  );
   const out = rows.map((r) => {
     const closed = !!r.closesAt && r.closesAt.getTime() <= now.getTime();
     // The cap's retake window applies only where the cap does (never in a CVTC course).
     const capped = correctionsCapOn(r);
-    const rule = correctionsRule({
-      type: r.type,
-      capped,
-      cvtcRules: !!r.cvtcRules,
-      firstPercent: r.firstPercent === null ? null : Number(r.firstPercent),
-      threshold: r.retakeThreshold,
-    });
+    const path = paths.get(pathKey(r.assignmentId, r.studentId))?.state ?? null;
+    const rule = path
+      ? pathRule(path)
+      : correctionsRule({
+          type: r.type,
+          capped,
+          cvtcRules: !!r.cvtcRules,
+          firstPercent: r.firstPercent === null ? null : Number(r.firstPercent),
+          threshold: r.retakeThreshold,
+        });
     // Past the cap's window on an open test (Oct 14 2026: "Let them ask while it's still open
     // too"); a request carries no approval, so none is taken into account.
     const windowEnded = capRetakeWindow({
@@ -265,14 +277,17 @@ export async function listRetakeRequests(
               reopenUntil: reopensUntil,
               now,
             });
+      // On the relearning path its own blockers say what's left (corrections, relearning, the
+      // practice check, the teacher's OK, a fresh check before attempt 3).
+      if (!blocker && path) blocker = pathRequestBlocker(path);
     }
-    return { r, stale, blocker, rule, reopensUntil, windowEnded };
+    return { r, stale, blocker, rule, reopensUntil, windowEnded, path };
   });
 
   // A current quiz request with nothing else in the way: its corrections, then its practice
   // (Jon, Oct 14 2026: owed with "Retakes need my OK" on too), read in three batched reads.
   const quizzes = out.filter(
-    (x) => !x.stale && !x.blocker && x.r.type === "formative" && x.r.latestAttemptId
+    (x) => !x.stale && !x.blocker && !x.path && x.r.type === "formative" && x.r.latestAttemptId
   );
   if (quizzes.length) {
     const latestIds = quizzes.map((x) => x.r.latestAttemptId!);
@@ -316,8 +331,11 @@ export async function listRetakeRequests(
     }
   }
 
-  // A current summative request with nothing else in the way: its relearning gates, read as stored.
-  const summatives = out.filter((x) => !x.stale && !x.blocker && x.r.type === "summative");
+  // A current summative request with nothing else in the way: its relearning gates, read as stored
+  // (on the path, the gates are the path's, so its blocker above already said it).
+  const summatives = out.filter(
+    (x) => !x.stale && !x.blocker && !x.path && x.r.type === "summative"
+  );
   if (summatives.length) {
     const key = (assignmentId: string, studentId: string) => `${assignmentId}:${studentId}`;
     const pairsOf = (cols: { assignmentId: AnyPgColumn; studentId: AnyPgColumn }) =>

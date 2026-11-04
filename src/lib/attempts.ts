@@ -18,13 +18,16 @@ import {
   type Answer,
   type AttemptScore,
   type AttemptSummary,
+  type FinalScore,
   type ResponseRecord,
 } from "@/lib/grading";
 import { recomputeGates } from "@/lib/gates";
 import { loadBuilderSections } from "@/lib/queries/assessments";
 import { loadGradableQuestions } from "@/lib/queries/attempts";
 import { getCorrectionsSummary } from "@/lib/queries/corrections";
+import { getPathState } from "@/lib/queries/relearning-path";
 import { openUntilFor } from "@/lib/queries/reopen";
+import { usesPathRules } from "@/lib/relearning-path";
 import { effectiveClose } from "@/lib/reopen";
 
 function shuffle<T>(arr: T[]): T[] {
@@ -227,7 +230,8 @@ export async function finalizeAttempt(attemptId: string, now = new Date()): Prom
 
 /**
  * Highest counts (PLAN.md §2): per target for summatives, best attempt otherwise; the corrections
- * cap on formatives, never in a course with CVTC rules (Jon, Oct 13 2026).
+ * cap on formatives, never in a course with CVTC rules (Jon, Oct 13 2026). A quiz on the
+ * relearning path (Nov 4 2026) counts per target, with the path's raises (`pathFor`, Q1–Q2).
  */
 export async function recomputeFinalScore(assignmentId: string, studentId: string): Promise<void> {
   const [asg] = await db
@@ -237,6 +241,7 @@ export async function recomputeFinalScore(assignmentId: string, studentId: strin
       tier2Max: schema.assignments.tier2Max,
       correctionsCap: schema.assignments.correctionsCap,
       cvtcRules: schema.courses.cvtcRules,
+      relearningPathFrom: schema.courses.relearningPathFrom,
     })
     .from(schema.assignments)
     .innerJoin(schema.assessments, eq(schema.assignments.assessmentId, schema.assessments.id))
@@ -250,6 +255,7 @@ export async function recomputeFinalScore(assignmentId: string, studentId: strin
       number: schema.attempts.number,
       score: schema.attempts.score,
       maxScore: schema.attempts.maxScore,
+      submittedAt: schema.attempts.submittedAt,
     })
     .from(schema.attempts)
     .where(
@@ -279,45 +285,70 @@ export async function recomputeFinalScore(assignmentId: string, studentId: strin
       );
     return;
   }
-  const targetRows = await db
-    .select()
-    .from(schema.attemptTargetScores)
-    .where(
-      inArray(
-        schema.attemptTargetScores.attemptId,
-        attempts.map((a) => a.id)
-      )
-    );
-  // Corrections cap (Jon, Oct 8 2026): attempt 1's finished corrections lift its score, except in a
-  // course with CVTC rules, where corrections earn no credit (Jon, Oct 13 2026).
-  const capped = correctionsCapOn(asg);
   const firstNumber = Math.min(...attempts.map((a) => a.number));
-  let firstApproved = false;
-  if (capped) {
-    const first = attempts.find((a) => a.number === firstNumber)!;
-    const summary = await getCorrectionsSummary(first.id);
-    firstApproved = summary?.state === "approved";
+  const firstAttempt = attempts.find((a) => a.number === firstNumber)!;
+  // The relearning path (Nov 4 2026): a quiz on it counts per target with the path's raises; the
+  // loader leaves out an untagged quiz, which keeps the v2 count below.
+  const onPath =
+    asg.type === "formative" &&
+    usesPathRules({
+      type: asg.type,
+      cvtcRules: asg.cvtcRules,
+      relearningPathFrom: asg.relearningPathFrom,
+      firstSubmittedAt: firstAttempt.submittedAt,
+    });
+  const pathFinal = onPath ? (await getPathState(assignmentId, studentId))?.state.final : null;
+  let final: FinalScore;
+  if (pathFinal) {
+    final = {
+      totalEarned: pathFinal.totalEarned,
+      totalPossible: pathFinal.totalPossible,
+      percent: pathFinal.percent,
+      perTarget: pathFinal.perTarget,
+      bestAttemptId: pathFinal.bestAttemptId,
+      targetsBelowThreshold: [],
+      tier: null,
+      basis: pathFinal.basis,
+    };
+  } else {
+    const targetRows = await db
+      .select()
+      .from(schema.attemptTargetScores)
+      .where(
+        inArray(
+          schema.attemptTargetScores.attemptId,
+          attempts.map((a) => a.id)
+        )
+      );
+    // Corrections cap (Jon, Oct 8 2026): attempt 1's finished corrections lift its score, except in
+    // a course with CVTC rules, where corrections earn no credit (Jon, Oct 13 2026).
+    const capped = correctionsCapOn(asg);
+    let firstApproved = false;
+    if (capped) {
+      const summary = await getCorrectionsSummary(firstAttempt.id);
+      firstApproved = summary?.state === "approved";
+    }
+    const summaries: AttemptSummary[] = attempts.map((a) => ({
+      attemptId: a.id,
+      number: a.number,
+      totalEarned: a.score ?? 0,
+      totalPossible: a.maxScore ?? 0,
+      correctionsApproved: capped && a.number === firstNumber ? firstApproved : false,
+      perTarget: targetRows
+        .filter((t) => t.attemptId === a.id)
+        .map((t) => ({
+          learningTargetId: t.learningTargetId,
+          pointsEarned: t.pointsEarned,
+          pointsPossible: t.pointsPossible,
+          percent: t.percent,
+        })),
+    }));
+    final = computeFinalScore(asg.type, summaries, {
+      threshold: asg.retakeThreshold,
+      tier2Max: asg.tier2Max,
+      correctionsCap: capped,
+    });
   }
-  const summaries: AttemptSummary[] = attempts.map((a) => ({
-    attemptId: a.id,
-    number: a.number,
-    totalEarned: a.score ?? 0,
-    totalPossible: a.maxScore ?? 0,
-    correctionsApproved: capped && a.number === firstNumber ? firstApproved : false,
-    perTarget: targetRows
-      .filter((t) => t.attemptId === a.id)
-      .map((t) => ({
-        learningTargetId: t.learningTargetId,
-        pointsEarned: t.pointsEarned,
-        pointsPossible: t.pointsPossible,
-        percent: t.percent,
-      })),
-  }));
-  const final = computeFinalScore(asg.type, summaries, {
-    threshold: asg.retakeThreshold,
-    tier2Max: asg.tier2Max,
-    correctionsCap: capped,
-  });
   const existing = await db.query.assignmentFinalScores.findFirst({
     columns: { tier: true, previousTier: true, tierChangedAt: true },
     where: and(

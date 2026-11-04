@@ -18,6 +18,7 @@ import {
 } from "@/lib/corrections";
 import { answerToText, correctAnswerText, gradeResponse, type Answer } from "@/lib/grading";
 import { loadGradableQuestions } from "@/lib/queries/attempts";
+import { usesPathRules } from "@/lib/relearning-path";
 import type { StimulusInfo } from "@/lib/stimulus-groups";
 
 type Scope = {
@@ -43,6 +44,40 @@ type Scope = {
   targetPercents: Record<string, number>;
 };
 
+/**
+ * Whether a finished attempt's assignment is on the relearning path for this student
+ * (`usesPathRules`: the course's switch, attempt 1's turn-in time, never CVTC) and the attempt is
+ * tagged by learning target (an untagged quiz keeps the v2 rules, as `loadPathStates` has it).
+ */
+async function onPathRules(input: {
+  assignmentId: string;
+  studentId: string;
+  type: "practice" | "formative" | "summative";
+  cvtcRules: boolean | null;
+  relearningPathFrom: Date | null;
+  targetPercents: Record<string, number>;
+}): Promise<boolean> {
+  if (!input.relearningPathFrom || Object.keys(input.targetPercents).length === 0) return false;
+  const [first] = await db
+    .select({ submittedAt: schema.attempts.submittedAt })
+    .from(schema.attempts)
+    .where(
+      and(
+        eq(schema.attempts.assignmentId, input.assignmentId),
+        eq(schema.attempts.studentId, input.studentId),
+        sql`${schema.attempts.status} <> 'in_progress'`
+      )
+    )
+    .orderBy(asc(schema.attempts.number))
+    .limit(1);
+  return usesPathRules({
+    type: input.type,
+    cvtcRules: input.cvtcRules,
+    relearningPathFrom: input.relearningPathFrom,
+    firstSubmittedAt: first?.submittedAt ?? null,
+  });
+}
+
 /** Rule: scope is computed from stored scores only (never re-graded here), so it matches what the student saw. */
 async function loadScope(attemptId: string): Promise<Scope | null> {
   const attempt = await db.query.attempts.findFirst({ where: eq(schema.attempts.id, attemptId) });
@@ -56,6 +91,7 @@ async function loadScope(attemptId: string): Promise<Scope | null> {
       retakeThreshold: schema.assignments.retakeThreshold,
       className: schema.classes.name,
       cvtcRules: schema.courses.cvtcRules,
+      relearningPathFrom: schema.courses.relearningPathFrom,
     })
     .from(schema.assignments)
     .innerJoin(schema.assessments, eq(schema.assignments.assessmentId, schema.assessments.id))
@@ -87,6 +123,18 @@ async function loadScope(attemptId: string): Promise<Scope | null> {
         eq(schema.retakeGates.optedIn, true)
       )
     );
+  const pathAttemptNumber =
+    attempt.status !== "in_progress" &&
+    (await onPathRules({
+      assignmentId: attempt.assignmentId,
+      studentId: attempt.studentId,
+      type: asg.type,
+      cvtcRules: asg.cvtcRules,
+      relearningPathFrom: asg.relearningPathFrom,
+      targetPercents,
+    }))
+      ? attempt.number
+      : null;
   const needed =
     attempt.status === "in_progress"
       ? []
@@ -98,6 +146,7 @@ async function loadScope(attemptId: string): Promise<Scope | null> {
           optedInTargetIds: optedIn.map((o) => o.learningTargetId),
           // CVTC rules (Jon, Oct 13 2026): corrections are never owed in such a course.
           cvtcRules: !!asg.cvtcRules,
+          pathAttemptNumber,
         });
   return {
     attempt: {
@@ -214,6 +263,8 @@ export function scopeSummary(
     threshold: number;
     optedInTargetIds: string[];
     cvtcRules: boolean;
+    /** On the relearning path, this attempt's number (as `loadScope` passes it); null otherwise. */
+    pathAttemptNumber?: number | null;
   }
 ): SetSummary {
   const needed = questionsNeedingCorrection({
@@ -226,6 +277,11 @@ export function scopeSummary(
     threshold: input.threshold,
     optedInTargetIds: input.optedInTargetIds,
     cvtcRules: input.cvtcRules,
+    // An untagged attempt keeps the v2 rules, as `loadScope` has it.
+    pathAttemptNumber:
+      input.pathAttemptNumber != null && Object.keys(row.targetPercents).length > 0
+        ? input.pathAttemptNumber
+        : null,
   });
   return summarizeSet(needed, row.corrections);
 }

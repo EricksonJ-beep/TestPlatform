@@ -326,6 +326,10 @@ function unlockedText(b: RequestBlocker | null, fmt: TagFormat): string {
       return "relearning not done";
     case "nothing_selected":
       return "no target picked";
+    case "relearning":
+      return `relearning ${b.codes.join(", ")} not done`;
+    case "approval":
+      return "corrections waiting for your OK";
   }
 }
 

@@ -6,6 +6,7 @@
  * many things need the teacher. No database, no clock of its own.
  */
 import { canStartAttempt } from "@/lib/assignments";
+import type { PathState } from "@/lib/relearning-path";
 import type { RetakeBlocker } from "@/lib/retakes";
 
 export type ClassPlace = { courseName: string | null; className: string; period: string | null };
@@ -76,7 +77,11 @@ export type RequestBlocker =
   | { reason: "window_closed"; at: Date }
   | { reason: Exclude<RetakeBlocker, "no_attempts"> }
   /** Quiz relearning (Jon, Oct 14 2026): the codes of the missed targets still to practise. */
-  | { reason: "practice"; codes: string[] };
+  | { reason: "practice"; codes: string[] }
+  /** The relearning path (Nov 4 2026): targets whose relearning or practice check is still open. */
+  | { reason: "relearning"; codes: string[] }
+  /** The relearning path: their corrections are waiting for the teacher's OK (Q7). */
+  | { reason: "approval" };
 
 /**
  * What would still stop a current request's try from starting once the teacher approves it: the
@@ -137,7 +142,34 @@ export const BLOCKER_LINE: Record<RequestBlocker["reason"], string> = {
   practice: "They still need 80% on practice for",
   gates: "Their relearning checklist isn't done yet.",
   nothing_selected: "Every target is proficient; they have to pick a target to retake.",
+  relearning: "They still need to finish relearning and the practice check for",
+  approval: "Their corrections are waiting for your OK.",
 };
+
+/**
+ * What the relearning path still asks of the student before their next try (Nov 4 2026), in the
+ * inbox's terms: the first of the path's blockers (`pathFor`). Null when the path is done.
+ */
+export function pathRequestBlocker(state: PathState): RequestBlocker | null {
+  const b = state.blockers[0];
+  if (!b) return null;
+  const code = new Map(state.targets.map((t) => [t.id, t.code]));
+  const codes = (ids: string[]) => ids.map((id) => code.get(id) ?? id);
+  switch (b.kind) {
+    case "at_full":
+    case "no_retake":
+      return { reason: "no_retake" };
+    case "corrections":
+    case "corrections_returned":
+      return { reason: "corrections" };
+    case "approval":
+      return { reason: "approval" };
+    case "relearning":
+    case "check":
+    case "attempt_check":
+      return { reason: "relearning", codes: codes(b.targetIds) };
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Counting

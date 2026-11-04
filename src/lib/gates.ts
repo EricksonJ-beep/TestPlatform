@@ -10,10 +10,13 @@
  * CVTC rules, Jon Oct 13 2026); activity_ok / practice_ok =
  * the student completed a published item tagged to the target (the pinned one
  * when the teacher pinned one), or nothing is published for it yet, so the
- * gate cannot block on content that doesn't exist.
+ * gate cannot block on content that doesn't exist. On the relearning path
+ * (Nov 4 2026) the flags are the path's instead (`pathGates`).
  */
 import { and, desc, eq, inArray, isNotNull, ne } from "drizzle-orm";
 import { db, schema } from "@/db";
+import { getPathState } from "@/lib/queries/relearning-path";
+import { pathGates } from "@/lib/relearning-path";
 import { gateOpen } from "@/lib/retakes";
 import { creditsTarget } from "@/lib/worksheet-rules";
 
@@ -34,6 +37,7 @@ export async function recomputeGates(assignmentId: string, studentId: string): P
       threshold: schema.assignments.retakeThreshold,
       courseId: schema.assessments.courseId,
       cvtcRules: schema.courses.cvtcRules,
+      relearningPathFrom: schema.courses.relearningPathFrom,
     })
     .from(schema.assignments)
     .innerJoin(schema.assessments, eq(schema.assignments.assessmentId, schema.assessments.id))
@@ -62,17 +66,26 @@ export async function recomputeGates(assignmentId: string, studentId: string): P
     );
   const prior = new Map(existing.map((g) => [g.learningTargetId, g]));
 
+  // The relearning path (Nov 4 2026, S2–S3): on it, the flags are the path's (corrections
+  // approved, relearning finished, practice check passed; corrections only on an added target).
+  const path = asg.relearningPathFrom ? await getPathState(assignmentId, studentId) : null;
+  const pathFlags = path ? pathGates(path.state) : null;
   // CVTC rules (Jon, Oct 13 2026): corrections are never owed, so that gate is always open.
-  const correctionsOk = asg.cvtcRules
+  const correctionsOk =
+    asg.cvtcRules || pathFlags
+      ? new Map<string, boolean>()
+      : await correctionsByTarget(assignmentId, studentId, targetIds);
+  const activityOk = pathFlags
     ? new Map<string, boolean>()
-    : await correctionsByTarget(assignmentId, studentId, targetIds);
-  const activityOk = await activitiesByTarget(assignmentId, studentId, targetIds);
-  const practiceOk = await practiceByTarget(assignmentId, studentId, targetIds);
+    : await activitiesByTarget(assignmentId, studentId, targetIds);
+  const practiceOk = pathFlags
+    ? new Map<string, boolean>()
+    : await practiceByTarget(assignmentId, studentId, targetIds);
 
   const now = new Date();
   const rows: GateRow[] = targetIds.map((id) => {
     const p = prior.get(id);
-    const flags = {
+    const flags = pathFlags?.get(id) ?? {
       correctionsOk: correctionsOk.get(id) ?? true,
       activityOk: activityOk.get(id) ?? true,
       practiceOk: practiceOk.get(id) ?? true,

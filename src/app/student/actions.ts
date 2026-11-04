@@ -21,7 +21,9 @@ import { correctionsCapOn } from "@/lib/grading";
 import { practiceOwed, practiceOwedText, quizPracticeNeeds } from "@/lib/quiz-practice";
 import { getCorrectionsSummary, latestFinishedAttemptId } from "@/lib/queries/corrections";
 import { getQuizPracticeData } from "@/lib/queries/quiz-practice";
+import { getPathState } from "@/lib/queries/relearning-path";
 import { capWindowPassed, openUntilFor } from "@/lib/queries/reopen";
+import { pathBlockerText } from "@/lib/relearning-path";
 import { effectiveClose } from "@/lib/reopen";
 import { getRetakeStatus } from "@/lib/queries/retakes";
 import { BLOCKER_TEXT, correctionsRule, TO_FULL_TEXT } from "@/lib/retakes";
@@ -63,7 +65,8 @@ function revalidate(assignmentId: string) {
  * and the server agree. Rules: no retake where corrections are the way to 100% (`to_full`, Jon
  * Oct 13 2026, decision 2); the last attempt's corrections clear (approved, or nothing to correct),
  * with or without "Retakes need my OK" (Jon, Oct 14 2026, decision 4); on a quiz, every missed
- * learning target practised to 80% (decision 5, `quizPracticeNeeds`). Throws what the student sees.
+ * learning target practised to 80% (decision 5, `quizPracticeNeeds`). On the relearning path
+ * (Nov 4 2026) the path's blockers replace all of that (`pathFor`). Throws what the student sees.
  */
 async function assertRetakePrerequisites(
   assignmentId: string,
@@ -75,6 +78,14 @@ async function assertRetakePrerequisites(
     retakeThreshold: number;
   }
 ): Promise<void> {
+  // The relearning path (Nov 4 2026): on it, the path says what comes first (corrections,
+  // relearning, the practice check, the teacher's OK, a fresh check before attempt 3).
+  const path = await getPathState(assignmentId, studentId);
+  if (path) {
+    const why = pathBlockerText(path.state, path.assignment.passMark);
+    if (why) throw new ActionError(why, 403);
+    return;
+  }
   // The cap never applies in a CVTC course (Jon, Oct 13 2026).
   const capped = correctionsCapOn(assignment);
   const [first] = await db

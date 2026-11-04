@@ -23,12 +23,18 @@ import { deriveCardState, type StudentCardState } from "@/lib/card-state";
 import { cellTag, columnFooter, type CellTag, type ColumnFooter } from "@/lib/class-gradebook";
 import { correctionsClear, type SetSummary } from "@/lib/corrections";
 import { correctionsCapOn } from "@/lib/grading";
-import { requestBlocker, staleRequest, type RequestBlocker } from "@/lib/needs-you";
+import {
+  pathRequestBlocker,
+  requestBlocker,
+  staleRequest,
+  type RequestBlocker,
+} from "@/lib/needs-you";
 import { currentPause, outOfTime } from "@/lib/pause";
 import { practiceOwed, type QuizPracticeTarget } from "@/lib/quiz-practice";
 import { effectiveClose, endOfNextSchoolDay } from "@/lib/reopen";
 import { loadCorrectionScopes, scopeSummary } from "@/lib/queries/corrections";
 import { loadPracticeResults, practiceTargetColumns } from "@/lib/queries/quiz-practice";
+import { loadPathStates, pathKey } from "@/lib/queries/relearning-path";
 import {
   growthFor,
   planRetake,
@@ -427,13 +433,19 @@ export async function getClassGradebook(
   // (`loadCorrectionScopes`, one query).
   const asgBy = new Map(assignments.map((a) => [a.id, a]));
   const latestIds: string[] = [];
+  const pathPairs: { assignmentId: string; studentId: string }[] = [];
   for (const list of attemptsBy.values()) {
     const a = asgBy.get(list[0].assignmentId);
     if (!a || a.type === "practice" || a.cvtcRules) continue;
     const latest = list.filter((x) => x.status !== "in_progress").at(-1);
     if (latest && !(latest.percent !== null && latest.percent >= 100)) latestIds.push(latest.id);
+    if (latest) pathPairs.push({ assignmentId: a.id, studentId: latest.studentId });
   }
-  const detailBy = await loadCorrectionScopes(latestIds);
+  // The relearning path (Nov 4 2026): read alongside, keeping only switched-on courses.
+  const [detailBy, paths] = await Promise.all([
+    loadCorrectionScopes(latestIds),
+    loadPathStates(pathPairs),
+  ]);
   const week = startOfWeek(now);
 
   const cellFor = (
@@ -466,6 +478,7 @@ export async function getClassGradebook(
       null;
     const closedTest = !!a.closesAt && a.closesAt.getTime() <= now.getTime();
     const cvtcRules = !!a.cvtcRules;
+    const path = paths.get(pathKey(a.id, studentId))?.state ?? null;
 
     // Corrections on the latest finished attempt, scoped as `getCorrectionsSummary` scopes them.
     let corrections: ClassGradebookCell["corrections"] = null;
@@ -476,6 +489,7 @@ export async function getClassGradebook(
         threshold: a.retakeThreshold,
         optedInTargetIds: pairGates.filter((g) => g.optedIn).map((g) => g.learningTargetId),
         cvtcRules,
+        pathAttemptNumber: path ? latest.number : null,
       });
       if (set.state !== "none")
         corrections = { ...set, attemptId: latest.id, attemptNumber: latest.number };
@@ -536,6 +550,7 @@ export async function getClassGradebook(
               practice: practice.get(studentId) ?? [],
             }
           : null,
+        path,
       },
       now
     );
@@ -582,14 +597,24 @@ export async function getClassGradebook(
         now,
       });
       const plan = retake?.plan;
+      // On the relearning path (Nov 4 2026) its own blockers say what's left, most precisely.
+      if (!unlockedBlocker && path) unlockedBlocker = pathRequestBlocker(path);
       if (!unlockedBlocker && plan?.blocker && plan.blocker !== "no_attempts")
         unlockedBlocker = { reason: plan.blocker };
-      // Corrections and a quiz's practice come first, with or without the OK (Oct 14 2026).
-      const owed = practiceOwed(card.quizPractice);
-      if (!unlockedBlocker && card.rule === "gate" && corrections && !correctionsClear(corrections))
-        unlockedBlocker = { reason: "corrections" };
-      else if (!unlockedBlocker && owed.length)
-        unlockedBlocker = { reason: "practice", codes: owed.map((t) => t.code) };
+      // Corrections and a quiz's practice come first, with or without the OK (Oct 14 2026); on
+      // the path, its blockers above already cover both.
+      if (!path) {
+        const owed = practiceOwed(card.quizPractice);
+        if (
+          !unlockedBlocker &&
+          card.rule === "gate" &&
+          corrections &&
+          !correctionsClear(corrections)
+        )
+          unlockedBlocker = { reason: "corrections" };
+        else if (!unlockedBlocker && owed.length)
+          unlockedBlocker = { reason: "practice", codes: owed.map((t) => t.code) };
+      }
     }
     // The next try under "Retakes need my OK", as the results table offers it (Oct 1 2026), and
     // on a closed test the student's request or reopen, with the setting or without (Oct 14 2026,
