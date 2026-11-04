@@ -1,0 +1,286 @@
+{
+  "name": "bio-u8-lt1-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "relearning": [
+    {
+      "target": "U8.LT1",
+      "mode": "read",
+      "title": "Read: taxonomy and scientific names",
+      "description": "A short reading with the mailing-address analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Sorting life into levels",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can define taxonomy and understand how it is used in biology.**\n\n**Think of a mailing address.** A letter goes to a country, then a state, a county, a town, a street and finally one house. Each step narrows it down until only one place fits. Biologists sort living things the same way.\n\n**Taxonomy** is the branch of biology that names and classifies living things into groups. **Carl Linnaeus** set up the system we still use today.\n\n**The seven levels, broadest to smallest:** **Kingdom, Phylum, Class, Order, Family, Genus, Species.** A memory trick: **K**ing **P**hilip **C**ame **O**ver **F**or **G**ood **S**oup. Kingdom is like the country (huge and varied). Species is like the one house: one kind of organism.\n\n**Binomial nomenclature** means \"two-name naming\". Every species gets a two-word scientific name: the **genus** first, then the **species**. The genus starts with a capital letter, the species is all lowercase, and the whole name is in italics (or underlined when handwritten).\n\n**Worked example:** Humans are *Homo sapiens*. The genus is *Homo* (capital H) and the species is *sapiens* (lowercase s). \"Homo Sapiens\" and \"homo sapiens\" are both written wrong."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "Which list puts the levels in order from broadest to smallest?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Species, Genus, Family, Order, Class, Phylum, Kingdom"
+                },
+                {
+                  "id": "b",
+                  "text": "Kingdom, Class, Phylum, Order, Genus, Family, Species"
+                },
+                {
+                  "id": "c",
+                  "text": "Kingdom, Phylum, Class, Order, Family, Genus, Species"
+                }
+              ],
+              "answer": "c",
+              "explanation": "King Philip Came Over For Good Soup: Kingdom, Phylum, Class, Order, Family, Genus, Species. Listing them smallest to broadest, or swapping Class with Phylum, is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "multiple_choice",
+              "prompt": "Which scientific name is written correctly?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "*Canis lupus*"
+                },
+                {
+                  "id": "b",
+                  "text": "*Canis Lupus*"
+                },
+                {
+                  "id": "c",
+                  "text": "*canis lupus*"
+                }
+              ],
+              "answer": "a",
+              "explanation": "The genus is capitalized and the species is lowercase: *Canis lupus* (the gray wolf). Capitalizing both words is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Closer relatives, kingdoms and keys",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**The more levels two organisms share, the more closely related they are.** Organisms in the same kingdom may be very different (a sponge and a wolf are both Animalia). Organisms in the same genus are very much alike.\n\n**Worked example 2:** The black bear is *Ursus americanus* and the brown bear is *Ursus arctos*. They share the genus *Ursus*, so they also share the family, order, class, phylum and kingdom. They are close relatives. A raccoon is in the same order as bears (Carnivora) but a different family, so it is a more distant relative.\n\n**Why not just use common names?** One animal can have many common names: cougar, puma and mountain lion are all *Puma concolor*. Common names can also mislead: a jellyfish and a starfish are not fish. A scientific name is the same in every language, so scientists everywhere know exactly which organism is meant.\n\n**The six kingdoms:** Animalia, Plantae, Fungi, Protista, Eubacteria and Archaebacteria. They are sorted by cell type (prokaryote or eukaryote), number of cells (one or many) and how they get food (make it or take it in). Many biologists also group the kingdoms into three larger **domains**: Bacteria, Archaea and Eukarya.\n\n**A dichotomous key** identifies an organism with a series of two-choice steps (\"dichotomous\" means \"split in two\"). At each step you pick the choice that fits and follow it to the next step until you reach a name.\n\n**Watch out for:** listing the levels backward, capitalizing the species name, thinking species is the broadest level (it is the smallest), and assuming organisms in the same kingdom are close relatives."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "Which pair of organisms is most closely related?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Two organisms in the same kingdom"
+                },
+                {
+                  "id": "b",
+                  "text": "Two organisms in the same order"
+                },
+                {
+                  "id": "c",
+                  "text": "Two organisms in the same genus"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Genus is the smallest level of the three, so organisms in the same genus share the most levels. Picking kingdom is the common mistake: it is the broadest group."
+            },
+            {
+              "id": "e2",
+              "kind": "fill_blank",
+              "prompt": "The house cat is *Felis catus*. Type its genus name.",
+              "answer": ["Felis"],
+              "explanation": "In binomial nomenclature, the genus comes first and is capitalized: *Felis*. The second word, *catus*, is the species name."
+            }
+          ],
+          "shortAnswer": "Explain why scientists use scientific names instead of common names."
+        }
+      ]
+    },
+    {
+      "target": "U8.LT1",
+      "mode": "do",
+      "title": "Do: flip the taxonomy cards, then use a dichotomous key",
+      "description": "Flashcards with a 3-question self-quiz, then a dichotomous key worked one step at a time.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: the language of taxonomy",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Taxonomy",
+                "back": "The branch of biology that names and classifies living things into groups."
+              },
+              {
+                "id": "k2",
+                "front": "Carl Linnaeus",
+                "back": "The scientist who set up the classification and naming system we still use."
+              },
+              {
+                "id": "k3",
+                "front": "The seven levels",
+                "back": "Kingdom, Phylum, Class, Order, Family, Genus, Species (King Philip Came Over For Good Soup)."
+              },
+              {
+                "id": "k4",
+                "front": "Binomial nomenclature",
+                "back": "Two-name naming: genus + species, like *Homo sapiens*. Genus capitalized, species lowercase, in italics."
+              },
+              {
+                "id": "k5",
+                "front": "Species",
+                "back": "The smallest level: one kind of organism whose members can breed and have fertile offspring."
+              },
+              {
+                "id": "k6",
+                "front": "The six kingdoms",
+                "back": "Animalia, Plantae, Fungi, Protista, Eubacteria and Archaebacteria."
+              },
+              {
+                "id": "k7",
+                "front": "Dichotomous key",
+                "back": "A tool that identifies an organism through a series of steps with two choices each."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "Which level is the broadest (holds the most kinds of organisms)?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Species"
+                },
+                {
+                  "id": "b",
+                  "text": "Kingdom"
+                },
+                {
+                  "id": "c",
+                  "text": "Genus"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Kingdom is the broadest of the seven levels and species is the smallest. Mixing up the two ends of the list is the common mistake."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "What is binomial nomenclature?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Giving each species a two-word name: genus and species"
+                },
+                {
+                  "id": "b",
+                  "text": "Sorting organisms into two kingdoms"
+                },
+                {
+                  "id": "c",
+                  "text": "A key with two choices at each step"
+                }
+              ],
+              "answer": "a",
+              "explanation": "\"Binomial\" means two names. A key with two choices at each step is a dichotomous key, which is the common mix-up."
+            },
+            {
+              "id": "d3",
+              "kind": "fill_blank",
+              "prompt": "Type the branch of biology that names and classifies living things.",
+              "answer": ["taxonomy"],
+              "explanation": "Taxonomy is the science of classifying living things. Taxidermy (stuffing animals) sounds similar but is not science."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: use a dichotomous key",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "Identify a mystery Wisconsin animal: it is covered in fur, has long ears and a short, fluffy tail. The key: 1a. Has feathers → go to 2. 1b. No feathers → go to 3. 2a. Webbed feet → mallard duck (*Anas platyrhynchos*). 2b. No webbed feet → American robin (*Turdus migratorius*). 3a. Has fur → go to 4. 3b. No fur, smooth moist skin → wood frog (*Lithobates sylvaticus*). 4a. Bushy tail, climbs trees → gray squirrel (*Sciurus carolinensis*). 4b. Long ears, short fluffy tail → eastern cottontail (*Sylvilagus floridanus*).",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "Start at step 1. The animal has fur, not feathers, so pick 1b and go to step 3."
+              },
+              {
+                "id": "s2",
+                "text": "At step 3, the animal has fur, so pick 3a and go to step 4."
+              },
+              {
+                "id": "s3",
+                "text": "At step 4, it has long ears and a short, fluffy tail, so pick 4b. The animal is the eastern cottontail."
+              },
+              {
+                "id": "s4",
+                "text": "Write its scientific name correctly: *Sylvilagus floridanus*. The genus (*Sylvilagus*) is capitalized and the species (*floridanus*) is lowercase."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn, with the same key: a second animal has feathers and webbed feet. What is it?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "American robin"
+                },
+                {
+                  "id": "b",
+                  "text": "Mallard duck"
+                },
+                {
+                  "id": "c",
+                  "text": "Wood frog"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Feathers → 1a → step 2. Webbed feet → 2a → mallard duck. The robin is 2b (no webbed feet), so picking it means the second choice was misread.",
+              "afterStepId": "s3"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "The gray squirrel is *Sciurus carolinensis*. Which other animal would be its closest relative?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "*Sylvilagus floridanus* (eastern cottontail)"
+                },
+                {
+                  "id": "b",
+                  "text": "*Lithobates sylvaticus* (wood frog)"
+                },
+                {
+                  "id": "c",
+                  "text": "*Sciurus niger* (fox squirrel)"
+                }
+              ],
+              "answer": "c",
+              "explanation": "The fox squirrel shares the genus *Sciurus*, so it shares the most levels. Both names starting with S does not make the cottontail a close relative: compare the whole genus name.",
+              "afterStepId": "s4"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,300 @@
+{
+  "name": "bio-u8-lt5-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "relearning": [
+    {
+      "target": "U8.LT5",
+      "mode": "read",
+      "title": "Read: the plant kingdom",
+      "description": "A short reading with the plumbing analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "What makes a plant, and the four groups",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can give a general description of the organisms in the Kingdom Plantae.**\n\n**What all plants share:** they are **multicellular eukaryotes**, they are **autotrophs** that make their own food by **photosynthesis** using chlorophyll in chloroplasts, and their cell walls are made of **cellulose**. Most live on land.\n\n**Think of the plumbing in a building.** Pipes carry water up to every floor. Without pipes, you could only build a one-story shack where water soaks in from the ground. Plants with \"pipes\" are **vascular plants**. Their pipes are **vascular tissue**: **xylem** carries water up from the roots, and **phloem** carries sugar from the leaves to the rest of the plant.\n\n**The four main groups:**\n- **Nonvascular plants (mosses):** no vascular tissue, so they stay small and live in damp places. They reproduce with spores.\n- **Seedless vascular plants (ferns):** have vascular tissue but no seeds. They reproduce with spores (the brown dots under a fern leaf).\n- **Gymnosperms (conifers, like pines):** vascular plants with seeds that form in **cones**. \"Gymnosperm\" means \"naked seed\": the seed is not inside a fruit.\n- **Angiosperms (flowering plants):** vascular plants with **flowers**, and seeds inside a **fruit**. This is the largest group.\n\n**Worked example:** Wisconsin's state tree, the sugar maple. It has vascular tissue (it grows tall), it makes seeds, and it has flowers and fruit (the winged \"helicopters\" carry its seeds). It is an **angiosperm**."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "Why do mosses stay small and grow in damp places?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "They have no vascular tissue to carry water up"
+                },
+                {
+                  "id": "b",
+                  "text": "They can't do photosynthesis"
+                },
+                {
+                  "id": "c",
+                  "text": "Their seeds are too small"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Mosses are nonvascular, so water just soaks from cell to cell and can't reach very high. They do photosynthesize, and they make spores, not seeds."
+            },
+            {
+              "id": "c2",
+              "kind": "multiple_choice",
+              "prompt": "A white pine makes its seeds in cones and has no flowers. Which group is it in?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Angiosperms"
+                },
+                {
+                  "id": "b",
+                  "text": "Seedless vascular plants"
+                },
+                {
+                  "id": "c",
+                  "text": "Gymnosperms"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Seeds in cones with no flowers or fruit means gymnosperm. Angiosperms have flowers and seeds inside a fruit."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Living on land, and spores versus seeds",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Plant parts.** **Roots** hold the plant in place and absorb water and minerals. **Stems** hold the plant up and contain the xylem and phloem. **Leaves** are where most photosynthesis happens.\n\n**Adaptations for life on land:**\n- A **waxy cuticle** on leaves keeps water from evaporating.\n- **Stomata** are tiny openings in leaves that let carbon dioxide in and oxygen and water vapor out.\n- **Vascular tissue** moves water and food, so plants can grow tall.\n- **Seeds** carry a baby plant and its food inside a protective coat, so it can wait for good conditions.\n- **Pollen** carries sperm through the air or on animals, so seed plants don't need water to reproduce.\n\n**Spores vs. seeds.** A spore is a single cell with no stored food. A seed holds a tiny plant (embryo) plus food, inside a coat. Mosses and ferns use spores. Gymnosperms and angiosperms use seeds.\n\n**Worked example 2:** A fern grows in a shady Wisconsin woods. It is about knee-high (it has vascular tissue), it has no flowers or cones, and the dots under its leaves release spores. It is a **seedless vascular plant**.\n\n**Worked example 3:** Corn and beans are both angiosperms. Corn is a **monocot**: one seed leaf and parallel veins. Beans are **dicots**: two seed leaves and veins that branch like a net.\n\n**Watch out for:** thinking every plant makes seeds (mosses and ferns don't), mixing up xylem (water, up from the roots) and phloem (sugar, from the leaves), calling a pine cone a fruit, and calling algae plants."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "A plant has vascular tissue, makes no seeds and reproduces with spores. Which group is it in?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Nonvascular plants (mosses)"
+                },
+                {
+                  "id": "b",
+                  "text": "Seedless vascular plants (ferns)"
+                },
+                {
+                  "id": "c",
+                  "text": "Gymnosperms"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Vascular tissue but no seeds means a seedless vascular plant, like a fern. Mosses use spores too, but they have no vascular tissue."
+            },
+            {
+              "id": "e2",
+              "kind": "fill_blank",
+              "prompt": "Type the vascular tissue that carries water up from the roots.",
+              "answer": ["xylem"],
+              "explanation": "Xylem carries water up from the roots. Phloem carries sugar from the leaves, which is the common mix-up."
+            }
+          ],
+          "shortAnswer": "Explain why having vascular tissue lets a plant grow taller than a moss."
+        }
+      ]
+    },
+    {
+      "target": "U8.LT5",
+      "mode": "do",
+      "title": "Do: flip the plant cards, then sort plants with three questions",
+      "description": "Flashcards with a 3-question self-quiz, then a plant classified one question at a time.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: plant traits and groups",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Kingdom Plantae",
+                "back": "Multicellular eukaryotes that make their own food by photosynthesis. Cell walls of cellulose."
+              },
+              {
+                "id": "k2",
+                "front": "Xylem",
+                "back": "Vascular tissue that carries water up from the roots."
+              },
+              {
+                "id": "k3",
+                "front": "Phloem",
+                "back": "Vascular tissue that carries sugar from the leaves to the rest of the plant."
+              },
+              {
+                "id": "k4",
+                "front": "Nonvascular plants",
+                "back": "Plants with no vascular tissue, like mosses. Small, live in damp places, use spores."
+              },
+              {
+                "id": "k5",
+                "front": "Seedless vascular plants",
+                "back": "Plants with vascular tissue but no seeds, like ferns. They use spores."
+              },
+              {
+                "id": "k6",
+                "front": "Gymnosperms",
+                "back": "Seed plants whose seeds form in cones, not fruit, like pines and spruces."
+              },
+              {
+                "id": "k7",
+                "front": "Angiosperms",
+                "back": "Flowering plants whose seeds grow inside a fruit, like maples, apples and grasses."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "Which tissue carries sugar from the leaves to the rest of the plant?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Phloem"
+                },
+                {
+                  "id": "b",
+                  "text": "Xylem"
+                },
+                {
+                  "id": "c",
+                  "text": "Cuticle"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Phloem carries sugar (food). Xylem carries water up from the roots, which is the common mix-up."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "Which plant reproduces with spores instead of seeds?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "A pine tree"
+                },
+                {
+                  "id": "b",
+                  "text": "A fern"
+                },
+                {
+                  "id": "c",
+                  "text": "An apple tree"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Ferns (and mosses) use spores. Pines and apple trees are seed plants."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "What is true of every plant?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "It makes flowers"
+                },
+                {
+                  "id": "b",
+                  "text": "It has vascular tissue"
+                },
+                {
+                  "id": "c",
+                  "text": "It makes its own food by photosynthesis"
+                }
+              ],
+              "answer": "c",
+              "explanation": "All plants are autotrophs that photosynthesize. Only angiosperms make flowers, and mosses have no vascular tissue."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: classify a plant with three questions",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "Classify a white pine using three yes-or-no questions. Q1: Does it have vascular tissue? (No → nonvascular plant.) Q2: Does it make seeds? (No → seedless vascular plant.) Q3: Does it have flowers and fruit? (No → gymnosperm. Yes → angiosperm.)",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "Q1: Does a white pine have vascular tissue? Yes. It grows more than 30 meters tall, which takes xylem to carry water up. Go on to Q2."
+              },
+              {
+                "id": "s2",
+                "text": "Q2: Does it make seeds? Yes. Its seeds form inside its cones. Go on to Q3."
+              },
+              {
+                "id": "s3",
+                "text": "Q3: Does it have flowers and fruit? No. The seeds sit on the scales of the cone, not inside a fruit."
+              },
+              {
+                "id": "s4",
+                "text": "Answer: the white pine is a gymnosperm (\"naked seed\")."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: which plant would stop at Q1 because it has no vascular tissue?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "A moss"
+                },
+                {
+                  "id": "b",
+                  "text": "A fern"
+                },
+                {
+                  "id": "c",
+                  "text": "A sugar maple"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Mosses are nonvascular, so they answer \"no\" at Q1. Ferns and maples both have vascular tissue.",
+              "afterStepId": "s1"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "An apple tree has vascular tissue, makes seeds, and grows flowers that become apples. Which group is it in?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Gymnosperm"
+                },
+                {
+                  "id": "b",
+                  "text": "Seedless vascular plant"
+                },
+                {
+                  "id": "c",
+                  "text": "Angiosperm"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Yes, yes and yes: flowers and seeds inside a fruit (the apple) make it an angiosperm. Calling it a gymnosperm misses the flowers and fruit.",
+              "afterStepId": "s4"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

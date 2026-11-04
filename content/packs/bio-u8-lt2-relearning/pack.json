@@ -1,0 +1,300 @@
+{
+  "name": "bio-u8-lt2-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "relearning": [
+    {
+      "target": "U8.LT2",
+      "mode": "read",
+      "title": "Read: bacteria, helpful and harmful",
+      "description": "A short reading with the studio-apartment analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "What bacteria are",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can understand the different types of bacteria and the beneficial and harmful roles bacteria play in the environment and in human health.**\n\n**Think of a studio apartment.** Everything is in one open room with no inside walls. A eukaryotic cell is more like a house with separate rooms (a nucleus and other organelles). Bacteria are the studio apartment: they are **prokaryotes**, so they have **no nucleus** and **no membrane-bound organelles**.\n\n**What bacteria do have:** a **cell wall** on the outside, a **cell membrane** just inside it, **cytoplasm**, **ribosomes** to make proteins, and one circular chromosome of DNA in the **nucleoid** region. Some have **flagella** (whip-like tails) to move and **pili** (short hairs) to stick to surfaces.\n\n**Two kingdoms:**\n- **Eubacteria** (\"true bacteria\") are the most common. They live almost everywhere: soil, water, your skin and your gut. Bacteria are **ubiquitous** (found everywhere).\n- **Archaebacteria** (\"ancient bacteria\") live in extreme places like hot springs, very salty lakes and vents on the ocean floor. They may be some of the oldest life on Earth.\n\n**Three basic shapes:** **cocci** (spheres), **bacilli** (rods) and **spirilla** (spirals).\n\n**Reproduction:** bacteria copy their DNA and split in two, which is called **binary fission**.\n\n**Worked example:** A single cell is found in a boiling hot spring in Yellowstone. It has no nucleus. No nucleus means a prokaryote, and the extreme home points to **Archaebacteria**."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "A bacterium shaped like a rod is called a –",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "bacillus"
+                },
+                {
+                  "id": "b",
+                  "text": "coccus"
+                },
+                {
+                  "id": "c",
+                  "text": "spirillum"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Bacilli are rods, cocci are spheres and spirilla are spirals. Mixing up coccus and bacillus is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "multiple_choice",
+              "prompt": "Which structure do bacteria NOT have?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Ribosomes"
+                },
+                {
+                  "id": "b",
+                  "text": "A cell wall"
+                },
+                {
+                  "id": "c",
+                  "text": "A nucleus"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Bacteria are prokaryotes, so their DNA floats in the nucleoid region with no nucleus around it. They do have ribosomes and a cell wall."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Helpful and harmful roles",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Most bacteria are helpful or harmless.** Only a small number cause disease.\n\n**Helpful in the environment:**\n- **Decomposers** break down dead plants and animals and return nutrients to the soil.\n- **Nitrogen-fixing bacteria** in soil and in the roots of plants like beans and clover turn nitrogen gas into a form plants can use.\n- **Cyanobacteria** have chlorophyll and make their own food by photosynthesis, giving off oxygen.\n- Some bacteria are used to clean up oil spills.\n\n**Helpful to people:**\n- **Normal flora** are the bacteria that always live in your gut and on your skin. Gut bacteria like *E. coli* help digest food and make vitamin K.\n- Bacteria turn milk into **yogurt and cheese**, and cabbage into sauerkraut.\n- Engineered bacteria make medicines such as insulin.\n\n**Harmful:** bacteria that cause disease are called **pathogens**. Examples: strep throat (*Streptococcus*), food poisoning (*Salmonella*), tuberculosis, and Lyme disease, which ticks spread here in Wisconsin.\n\n**Worked example 2:** A cell found in yogurt is rod-shaped and has no nucleus. It is a **bacillus** in Kingdom **Eubacteria**, and it is **helpful**: it ferments the sugar in milk to make yogurt.\n\n**Antibiotics** kill bacteria, but they do nothing to viruses, so they do not cure a cold or the flu. Using them when they aren't needed, or not finishing them, helps **antibiotic-resistant** bacteria survive and spread.\n\n**Watch out for:** thinking all bacteria are germs, mixing up Eubacteria (common, everywhere) and Archaebacteria (ancient, extreme), thinking bacteria have a nucleus, and thinking antibiotics work on viruses."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "Which is a helpful role bacteria play in the environment?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Causing strep throat"
+                },
+                {
+                  "id": "b",
+                  "text": "Turning nitrogen gas into a form plants can use"
+                },
+                {
+                  "id": "c",
+                  "text": "Spreading Lyme disease"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Nitrogen-fixing bacteria feed plants and the whole food chain. Strep throat and Lyme disease are caused by pathogens, which are the small harmful group."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "Why won't an antibiotic cure a cold?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "A cold is caused by a virus, and antibiotics only kill bacteria"
+                },
+                {
+                  "id": "b",
+                  "text": "Cold bacteria are too small for antibiotics to reach"
+                },
+                {
+                  "id": "c",
+                  "text": "Antibiotics only work on Archaebacteria"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Colds and the flu are caused by viruses, and antibiotics only work on bacteria. Taking them anyway helps antibiotic-resistant bacteria spread."
+            }
+          ],
+          "shortAnswer": "Describe one way bacteria help human health and one way bacteria harm it."
+        }
+      ]
+    },
+    {
+      "target": "U8.LT2",
+      "mode": "do",
+      "title": "Do: flip the bacteria cards, then classify a mystery cell",
+      "description": "Flashcards with a 3-question self-quiz, then a mystery bacterium classified one step at a time.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: types of bacteria",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Prokaryote",
+                "back": "A cell with no nucleus and no membrane-bound organelles. All bacteria are prokaryotes."
+              },
+              {
+                "id": "k2",
+                "front": "Eubacteria",
+                "back": "\"True bacteria\": the most common kind, found almost everywhere (soil, water, skin, gut)."
+              },
+              {
+                "id": "k3",
+                "front": "Archaebacteria",
+                "back": "\"Ancient bacteria\" that live in extreme places like hot springs, salt lakes and ocean-floor vents."
+              },
+              {
+                "id": "k4",
+                "front": "Coccus (plural cocci)",
+                "back": "A sphere-shaped bacterium."
+              },
+              {
+                "id": "k5",
+                "front": "Bacillus (plural bacilli)",
+                "back": "A rod-shaped bacterium."
+              },
+              {
+                "id": "k6",
+                "front": "Spirillum (plural spirilla)",
+                "back": "A spiral-shaped bacterium."
+              },
+              {
+                "id": "k7",
+                "front": "Binary fission",
+                "back": "How bacteria reproduce: copy the DNA, then split into two identical cells."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "Which kingdom of bacteria lives in extreme places like hot springs?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Eubacteria"
+                },
+                {
+                  "id": "b",
+                  "text": "Archaebacteria"
+                },
+                {
+                  "id": "c",
+                  "text": "Protista"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Archaebacteria (\"ancient bacteria\") live in extreme places. Eubacteria are the common bacteria found almost everywhere."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "A sphere-shaped bacterium is called a –",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "bacillus"
+                },
+                {
+                  "id": "b",
+                  "text": "spirillum"
+                },
+                {
+                  "id": "c",
+                  "text": "coccus"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Coccus means sphere. A bacillus is a rod and a spirillum is a spiral."
+            },
+            {
+              "id": "d3",
+              "kind": "fill_blank",
+              "prompt": "Bacteria reproduce by splitting into two identical cells. Type the name of this process.",
+              "answer": ["binary fission", "fission"],
+              "explanation": "It is binary fission (\"splitting in two\"). Mitosis is the common wrong answer: bacteria have no nucleus, so they do not do mitosis."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: classify a mystery bacterium",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "A single cell is taken from a cup of yogurt. Under the microscope it is rod-shaped and has no nucleus. Classify it and decide whether it is helpful or harmful.",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "Is there a nucleus? No, so the cell is a prokaryote: a bacterium."
+              },
+              {
+                "id": "s2",
+                "text": "Where does it live? Yogurt is an ordinary place, not an extreme one like a hot spring, so it belongs to Kingdom Eubacteria."
+              },
+              {
+                "id": "s3",
+                "text": "What shape is it? A rod, so it is a bacillus. (Its name, *Lactobacillus*, even has \"bacillus\" in it.)"
+              },
+              {
+                "id": "s4",
+                "text": "Helpful or harmful? It ferments the sugar in milk to make yogurt, so it is helpful."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: a cell with no nucleus is found in water that is 90 °C, near a hot spring. Which kingdom is it in?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Archaebacteria"
+                },
+                {
+                  "id": "b",
+                  "text": "Eubacteria"
+                },
+                {
+                  "id": "c",
+                  "text": "Fungi"
+                }
+              ],
+              "answer": "a",
+              "explanation": "No nucleus makes it a prokaryote, and an extreme home like a hot spring points to Archaebacteria. Fungi have a nucleus.",
+              "afterStepId": "s2"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "*Streptococcus* causes strep throat. Using its name, what shape is it, and is it helpful or harmful?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Rod-shaped (bacillus) and harmful"
+                },
+                {
+                  "id": "b",
+                  "text": "Sphere-shaped (coccus) and helpful"
+                },
+                {
+                  "id": "c",
+                  "text": "Sphere-shaped (coccus) and harmful"
+                }
+              ],
+              "answer": "c",
+              "explanation": "The name ends in -coccus, so it is a sphere. It causes a disease, so it is a harmful pathogen.",
+              "afterStepId": "s4"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

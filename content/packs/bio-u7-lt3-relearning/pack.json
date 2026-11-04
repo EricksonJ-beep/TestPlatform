@@ -1,0 +1,225 @@
+{
+  "name": "bio-u7-lt3-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "relearning": [
+    {
+      "target": "U7.LT3",
+      "mode": "read",
+      "title": "Read: how a cell builds a protein",
+      "description": "A short reading with the cookbook analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Transcription and translation",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can illustrate how proteins are synthesized.**\n\n**Think of a master cookbook that can't leave the library.** The cookbook is your DNA, and the library is the nucleus. To cook one dish, you photocopy one recipe and carry the copy to the kitchen. The copy is **messenger RNA (mRNA)**, the kitchen is a **ribosome**, and the finished dish is a **protein**.\n\n**Step 1: Transcription (in the nucleus).** One gene of DNA is copied into mRNA. The mRNA bases pair with the DNA bases, except RNA has **uracil (U) instead of thymine (T)**. So DNA A → mRNA **U**, DNA T → mRNA **A**, DNA C → mRNA **G**, DNA G → mRNA **C**.\n\n**Step 2: The mRNA leaves the nucleus** and goes to a ribosome in the cytoplasm.\n\n**Step 3: Translation (at the ribosome).** The ribosome reads the mRNA three bases at a time. Each group of three is a **codon**, and each codon stands for one **amino acid**. The amino acids are linked into a chain, and the chain folds into a protein.\n\n**Worked example:** The DNA reads TAC GGA TTC ACT. Transcribe each base: the mRNA is **AUG CCU AAG UGA**. The codons you need: AUG = Met (the start codon), CCU = Pro, AAG = Lys, UGA = stop. The protein chain is **Met – Pro – Lys**, and then the ribosome stops."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "Where does transcription happen in a eukaryotic cell?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "At a ribosome in the cytoplasm"
+                },
+                {
+                  "id": "b",
+                  "text": "In the nucleus"
+                },
+                {
+                  "id": "c",
+                  "text": "In the cell membrane"
+                }
+              ],
+              "answer": "b",
+              "explanation": "DNA stays in the nucleus, so the mRNA copy is made there. Translation is the step that happens at the ribosome, which is the common mix-up."
+            },
+            {
+              "id": "c2",
+              "kind": "fill_blank",
+              "prompt": "Transcribe the DNA triplet GCT into mRNA. Type the three mRNA bases.",
+              "answer": ["CGA", "C G A", "C-G-A"],
+              "explanation": "G→C, C→G, T→A, so GCT becomes CGA. Writing CGU is the common mistake: U only pairs with an A on the DNA, and here the third DNA base is T, which pairs with A."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Codons, tRNA, start and stop",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Three kinds of RNA.** **mRNA** carries the message. **tRNA (transfer RNA)** brings the right amino acid to the ribosome. **rRNA (ribosomal RNA)** makes up the ribosome itself.\n\n**How tRNA matches.** Each tRNA has three bases called an **anticodon** that pairs with one codon on the mRNA. If the codon is AUG, the anticodon is UAC, and that tRNA carries Met. In the kitchen analogy, tRNAs are the helpers who each bring one ingredient.\n\n**Start and stop.** Translation begins at the **start codon, AUG** (Met). It ends at a **stop codon** (UAA, UAG or UGA), which has no amino acid. The ribosome lets the chain go, and the chain folds into its shape.\n\n**Worked example 2:** mRNA AUG UUU GGC UAG. Codons: AUG = Met, UUU = Phe, GGC = Gly, UAG = stop. The chain is **Met – Phe – Gly**: 3 amino acids, because the stop codon does not add one.\n\n**Worked example 3, starting from DNA:** DNA TAC CTT GCA ATT. Transcribe: mRNA AUG GAA CGU UAA. Codons: AUG = Met, GAA = Glu, CGU = Arg, UAA = stop. The chain is **Met – Glu – Arg**.\n\n**Watch out for:** putting T in mRNA (use U), reading the DNA instead of the mRNA on a codon chart, splitting the mRNA into groups of two or four instead of three, counting the stop codon as an amino acid, and mixing up transcription (DNA → mRNA) and translation (mRNA → protein)."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "Translate the mRNA AUG CAC UGG UAA. Codons: AUG = Met, CAC = His, UGG = Trp, UAA = stop.",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Met – His – Trp"
+                },
+                {
+                  "id": "b",
+                  "text": "Met – His – Trp – stop – Met"
+                },
+                {
+                  "id": "c",
+                  "text": "His – Trp"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Start at AUG (Met), add His and Trp, then UAA stops the chain. The stop codon does not add an amino acid, and AUG counts as the first one."
+            },
+            {
+              "id": "e2",
+              "kind": "fill_blank",
+              "prompt": "An mRNA codon is AUG. Type the anticodon on the tRNA that pairs with it.",
+              "answer": ["UAC", "U A C", "U-A-C"],
+              "explanation": "A→U, U→A, G→C gives UAC. Writing TAC is the common mistake: tRNA is RNA, so it uses U, not T."
+            }
+          ],
+          "shortAnswer": "Explain why the cell makes an mRNA copy of a gene instead of sending the DNA itself to the ribosome."
+        }
+      ]
+    },
+    {
+      "target": "U7.LT3",
+      "mode": "do",
+      "title": "Do: transcribe, then translate, step by step",
+      "description": "Two worked problems that reveal one step at a time: DNA to mRNA, then mRNA to protein.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Worked problem: transcribe DNA into mRNA",
+          "minutes": 4,
+          "body": {
+            "type": "worked_steps",
+            "problem": "Transcribe the DNA strand TAC CTT GCA ATT into mRNA. Pairing rules for transcription: DNA A → mRNA U, DNA T → mRNA A, DNA C → mRNA G, DNA G → mRNA C.",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "Work one triplet at a time. TAC: T→A, A→U, C→G, so the first codon is AUG."
+              },
+              {
+                "id": "s2",
+                "text": "CTT: C→G, T→A, T→A, so the second codon is GAA."
+              },
+              {
+                "id": "s3",
+                "text": "GCA: G→C, C→G, A→U, so the third codon is CGU. ATT: A→U, T→A, T→A, so the fourth codon is UAA."
+              },
+              {
+                "id": "s4",
+                "text": "Put it together: the mRNA is AUG GAA CGU UAA. Check that there is no T anywhere. mRNA uses U instead."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "fill_blank",
+              "prompt": "Your turn: transcribe the DNA triplet CAG into mRNA.",
+              "answer": ["GUC", "G U C", "G-U-C"],
+              "explanation": "C→G, A→U, G→C gives GUC. Writing GTC is the common mistake: an A on the DNA pairs with U in mRNA.",
+              "afterStepId": "s2"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "During transcription, which mRNA base pairs with an adenine (A) on the DNA?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Thymine (T)"
+                },
+                {
+                  "id": "b",
+                  "text": "Uracil (U)"
+                },
+                {
+                  "id": "c",
+                  "text": "Guanine (G)"
+                }
+              ],
+              "answer": "b",
+              "explanation": "RNA has no thymine. Uracil takes its place, so DNA A pairs with mRNA U.",
+              "afterStepId": "s4"
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: from DNA all the way to protein",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "Find the amino acid chain for the DNA strand TAC AAA CCG GTA ACT. Codons you need: AUG = Met (start), UUU = Phe, GGC = Gly, CAU = His, UGA = stop.",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "Transcribe each triplet. TAC → AUG, AAA → UUU, CCG → GGC, GTA → CAU, ACT → UGA. The mRNA is AUG UUU GGC CAU UGA."
+              },
+              {
+                "id": "s2",
+                "text": "The ribosome reads codons in groups of three, starting at the start codon AUG."
+              },
+              {
+                "id": "s3",
+                "text": "Translate each codon: AUG = Met, UUU = Phe, GGC = Gly, CAU = His."
+              },
+              {
+                "id": "s4",
+                "text": "UGA is a stop codon. It adds no amino acid, and the ribosome lets the chain go."
+              },
+              {
+                "id": "s5",
+                "text": "The chain is Met – Phe – Gly – His: 4 amino acids, which fold into a protein."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "fill_blank",
+              "prompt": "Your turn: transcribe the DNA triplet TTT into mRNA.",
+              "answer": ["AAA", "A A A", "A-A-A"],
+              "explanation": "Each T on the DNA pairs with A in mRNA, so TTT becomes AAA. Writing UUU is the common mistake: U pairs with a DNA A, not a T.",
+              "afterStepId": "s1"
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "Translate the mRNA AUG AAA UGG UGA. Codons: AUG = Met, AAA = Lys, UGG = Trp, UGA = stop.",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Met – Lys – Trp – Met"
+                },
+                {
+                  "id": "b",
+                  "text": "Lys – Trp – stop"
+                },
+                {
+                  "id": "c",
+                  "text": "Met – Lys – Trp"
+                }
+              ],
+              "answer": "c",
+              "explanation": "AUG starts the chain with Met, then Lys and Trp. UGA stops it without adding anything. Leaving off the starting Met is a common mistake.",
+              "afterStepId": "s5"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
