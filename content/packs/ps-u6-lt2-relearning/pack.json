@@ -1,0 +1,218 @@
+{
+  "name": "ps-u6-lt2-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science B",
+  "relearning": [
+    {
+      "target": "U6.LT2",
+      "mode": "read",
+      "title": "Read: levers",
+      "description": "A short reading with the seesaw analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Parts, classes and MA",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can identify and calculate the IMA, AMA, and efficiency of the three different classes of levers.**\n\n**Think of a seesaw.** A little kid can lift a bigger kid by sitting farther from the middle. A lever trades distance for force: push through a longer distance and you need less force. It never changes the amount of work.\n\n**Parts.** The **fulcrum** is the fixed point the lever pivots around. The **effort force (Fe)** is your push. The **resistance force (Fr)** is the weight of the load. The **effort arm (De)** runs from the fulcrum to the effort, and the **resistance arm (Dr)** runs from the fulcrum to the load.\n\n**Classes: what is in the middle? F-R-E.** **1st class:** the fulcrum (seesaw, crowbar, scissors). **2nd class:** the resistance, or load (wheelbarrow, nutcracker, bottle opener). **3rd class:** the effort (tweezers, broom, fishing pole, your forearm).\n\n**Formulas.** **IMA = De ÷ Dr** (distances). **AMA = Fr ÷ Fe** (forces). IMA and AMA have no units.\n\n**Worked example:** A wheelbarrow's handles are 1.6 m from the wheel's axle, and the dirt is 0.4 m from the axle. The load is in the middle, so it is **2nd class**. Formula: IMA = De ÷ Dr. Set up: IMA = 1.6 m ÷ 0.4 m. Answer: **4** (no units)."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "In a 3rd-class lever, like tweezers, which part is in the middle?",
+              "options": [
+                { "id": "a", "text": "The fulcrum" },
+                { "id": "b", "text": "The effort" },
+                { "id": "c", "text": "The load" }
+              ],
+              "answer": "b",
+              "explanation": "F-R-E: the fulcrum is in the middle for 1st class, the resistance (load) for 2nd, and the effort for 3rd. With tweezers, your fingers push between the hinge and the tips. Mixing up 2nd and 3rd class is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "fill_blank",
+              "prompt": "A pry bar has an effort arm of 1.5 m and a resistance arm of 0.3 m. What is its IMA? Type a number.",
+              "answer": ["5", "5.0", "ima = 5", "ima=5"],
+              "explanation": "IMA = De ÷ Dr = 1.5 m ÷ 0.3 m = 5 (no units). Flipping it (0.3 ÷ 1.5 = 0.2) is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Efficiency and ideal levers",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**IMA by class.** A 2nd-class lever always has the longer effort arm, so its IMA is always more than 1. A 3rd-class lever's IMA is less than 1: it doesn't multiply force, but the load moves farther and faster than your hand. A 1st-class lever can be more than, equal to, or less than 1.\n\n**Ideal lever (100% efficient):** **Fe × De = Fr × Dr**. **Efficiency = AMA ÷ IMA × 100**, or **Work output ÷ Work input × 100**, with Work output = Fr × Dr and Work input = Fe × De (here De and Dr are how far each end moves). A load in kg: find its weight first, Fr = m × 9.8.\n\n**Worked example 2:** A board resting on a log (the fulcrum) moves a 360 N rock that sits 0.5 m from the fulcrum, and the student pushes 2 m from the fulcrum. Ideal Fe = Fr × Dr ÷ De = 360 N × 0.5 m ÷ 2 m = **90 N**. The real push is 100 N, so AMA = 360 N ÷ 100 N = 3.6, IMA = 2 m ÷ 0.5 m = 4, and efficiency = 3.6 ÷ 4 × 100 = **90%**.\n\n**Worked example 3:** A student pushes down on a crowbar with 150 N while her hand moves 0.6 m, and a 500 N rock rises 0.15 m. Step 1: Work input = 150 N × 0.6 m = 90 J. Step 2: Work output = 500 N × 0.15 m = 75 J. Step 3: Efficiency = 75 J ÷ 90 J × 100 = **83.3%**.\n\n**Watch out for:** flipped ratios (Dr ÷ De or Fe ÷ Fr), forces in IMA or distances in AMA, forgetting × 100, an efficiency over 100% (a real lever always has AMA less than IMA), using kg as N, and calling your forearm 1st class (the bicep pulls between the elbow and the hand, so it is 3rd class)."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "fill_blank",
+              "prompt": "A lever has an IMA of 8 and an AMA of 6. What is its efficiency? Type a number (in %).",
+              "answer": ["75", "75%", "75 %", "75 percent", "75.0", "75.0%"],
+              "explanation": "Efficiency = AMA ÷ IMA × 100 = 6 ÷ 8 × 100 = 75%. Flipping it (8 ÷ 6 × 100 ≈ 133%) is the common mistake; a real lever is always below 100%."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "A student pushes down on a lever with 120 N while her hand moves 0.5 m, and a 400 N load rises 0.12 m. What is the efficiency?",
+              "options": [
+                { "id": "a", "text": "125%" },
+                { "id": "b", "text": "48%" },
+                { "id": "c", "text": "80%" }
+              ],
+              "answer": "c",
+              "explanation": "Work input = 120 N × 0.5 m = 60 J. Work output = 400 N × 0.12 m = 48 J. Efficiency = 48 J ÷ 60 J × 100 = 80%. Flipping it (125%) or stopping at the work output (48) are the common mistakes."
+            }
+          ],
+          "shortAnswer": "Explain why a broom or a fishing pole is useful even though its IMA is less than 1."
+        }
+      ]
+    },
+    {
+      "target": "U6.LT2",
+      "mode": "do",
+      "title": "Do: flip the lever classes, then work a lever step by step",
+      "description": "Flashcards with a 3-question self-quiz, then a lever problem one step at a time.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: the three classes",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Fulcrum",
+                "back": "The fixed point a lever pivots around. Measure both arms from it."
+              },
+              {
+                "id": "k2",
+                "front": "1st-class lever",
+                "back": "Fulcrum in the middle. Seesaw, crowbar, scissors, pliers. IMA can be more than, equal to, or less than 1."
+              },
+              {
+                "id": "k3",
+                "front": "2nd-class lever",
+                "back": "Load (resistance) in the middle. Wheelbarrow, nutcracker, bottle opener. IMA is always more than 1."
+              },
+              {
+                "id": "k4",
+                "front": "3rd-class lever",
+                "back": "Effort in the middle. Tweezers, broom, fishing pole, your forearm. IMA is less than 1."
+              },
+              {
+                "id": "k5",
+                "front": "F-R-E",
+                "back": "What is in the middle: Fulcrum = 1st class, Resistance = 2nd class, Effort = 3rd class."
+              },
+              {
+                "id": "k6",
+                "front": "IMA",
+                "back": "IMA = De ÷ Dr. Uses the arm distances. No units."
+              },
+              {
+                "id": "k7",
+                "front": "AMA",
+                "back": "AMA = Fr ÷ Fe. Uses the forces. No units. A real lever's AMA is less than its IMA."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "A nutcracker has the hinge at one end, your hand squeezes at the other end, and the nut sits in between. What class of lever is it?",
+              "options": [
+                { "id": "a", "text": "1st class" },
+                { "id": "b", "text": "2nd class" },
+                { "id": "c", "text": "3rd class" }
+              ],
+              "answer": "b",
+              "explanation": "The load (the nut) is in the middle, so it is 2nd class (F-R-E: R = 2nd). Calling it 1st class because it has a hinge is the common mistake; check what is in the middle."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "When you sweep, your top hand holds the broom still as the fulcrum, your lower hand pushes, and the bristles sweep. What class of lever is the broom?",
+              "options": [
+                { "id": "a", "text": "3rd class" },
+                { "id": "b", "text": "1st class" },
+                { "id": "c", "text": "2nd class" }
+              ],
+              "answer": "a",
+              "explanation": "Your lower hand (the effort) is between the top hand (the fulcrum) and the bristles (the load), so it is 3rd class. Picking 1st class because the broom is long is the common mistake."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "To find a lever's AMA, which numbers do you use?",
+              "options": [
+                { "id": "a", "text": "The two arm distances: De ÷ Dr" },
+                { "id": "b", "text": "The two forces: Fr ÷ Fe" },
+                { "id": "c", "text": "The forces and the distances multiplied together" }
+              ],
+              "answer": "b",
+              "explanation": "AMA uses the forces (Fr ÷ Fe). IMA uses the distances (De ÷ Dr). Swapping them is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: a pry bar's efficiency",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "A pry bar lifts a 50 kg rock. The student pushes 1.2 m from the fulcrum, and the rock is 0.3 m from the fulcrum. Her real push is 140 N. Find the IMA, the AMA, and the efficiency. Use g = 9.8 m/s².",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "AMA needs forces in newtons, so find the rock's weight first: Fr = m × 9.8 = 50 kg × 9.8 m/s² = 490 N."
+              },
+              {
+                "id": "s2",
+                "text": "IMA uses the distances. Formula: IMA = De ÷ Dr. Set up: IMA = 1.2 m ÷ 0.3 m. Answer: 4 (no units)."
+              },
+              {
+                "id": "s3",
+                "text": "AMA uses the forces. Formula: AMA = Fr ÷ Fe. Set up: AMA = 490 N ÷ 140 N. Answer: 3.5 (no units)."
+              },
+              {
+                "id": "s4",
+                "text": "Formula: Efficiency = AMA ÷ IMA × 100. Set up: 3.5 ÷ 4 × 100. Answer: 87.5%. It is below 100%, as it must be for a real lever."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "fill_blank",
+              "prompt": "Your turn: in the lever lab, the spring scale (the effort) pulls 45 cm from the fulcrum, and the load hangs 15 cm from the fulcrum. What is the IMA? Type a number.",
+              "answer": ["3", "3.0", "ima = 3", "ima=3"],
+              "explanation": "IMA = De ÷ Dr = 45 cm ÷ 15 cm = 3 (no units; the cm cancel). Flipping it (15 ÷ 45 ≈ 0.33) is the common mistake.",
+              "afterStepId": "s2"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "A lever has an IMA of 5 and an AMA of 4.5. What is its efficiency?",
+              "options": [
+                { "id": "a", "text": "111%" },
+                { "id": "b", "text": "90%" },
+                { "id": "c", "text": "22.5%" }
+              ],
+              "answer": "b",
+              "explanation": "Efficiency = AMA ÷ IMA × 100 = 4.5 ÷ 5 × 100 = 90%. Flipping the ratio (about 111%) is the common mistake; a real lever can't be over 100%.",
+              "afterStepId": "s4"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

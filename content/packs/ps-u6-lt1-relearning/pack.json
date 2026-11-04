@@ -1,0 +1,179 @@
+{
+  "name": "ps-u6-lt1-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science B",
+  "relearning": [
+    {
+      "target": "U6.LT1",
+      "mode": "read",
+      "title": "Read: calculating work",
+      "description": "A short reading with the paycheck analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Work = force × distance",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can calculate work.**\n\n**Think of a paycheck.** In science, you only get paid for work when the job actually gets done. Push on a stuck car until you're tired, and if it never moves, your paycheck is 0 J. Work is a force that moves an object through a distance.\n\n**Work = force × distance.** **W = F × d.** Force is in **newtons (N)**, distance is in **meters (m)**, and work is in **joules (J)**. 1 J = 1 N·m. To find the force, divide: **F = W ÷ d**. To find the distance, divide: **d = W ÷ F**.\n\n**Two conditions for work.** (1) The object must **move**. (2) The force must be **in the direction of the motion**. Pushing on a wall that doesn't move does no work. Carrying a box across the room at the same height: your upward holding force does no work, because the box moves sideways.\n\n**Worked example:** A group pushes a cart across the gym with a force of 55 N for 8 m. Formula: W = F × d. Set up: W = 55 N × 8 m. Answer: **440 J**."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "fill_blank",
+              "prompt": "A student pushes a box 5 m across the floor with a force of 30 N. How much work does she do? Type a number (in J).",
+              "answer": ["150", "150 J", "150J", "150 joules", "150.0"],
+              "explanation": "W = F × d = 30 N × 5 m = 150 J. Adding (35) or dividing (6) are the common mistakes; work is always force times distance."
+            },
+            {
+              "id": "c2",
+              "kind": "multiple_choice",
+              "prompt": "A student holds a 50 N backpack still for 3 minutes. How much work does she do on the backpack?",
+              "options": [
+                { "id": "a", "text": "0 J" },
+                { "id": "b", "text": "150 J" },
+                { "id": "c", "text": "50 J" }
+              ],
+              "answer": "a",
+              "explanation": "The backpack doesn't move, so d = 0 m and W = 50 N × 0 m = 0 J. Feeling tired doesn't count, and time is not a distance (50 × 3 = 150 is the common mistake)."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Lifting and machines",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Lifting.** To lift something, your force has to equal its **weight**. If the problem gives the mass in kg, change it to newtons first: **weight = m × 9.8** (g = 9.8 m/s²). Then multiply the weight by the height.\n\n**Worked example 2:** A student lifts a 24 kg box onto a shelf 1.2 m high. Step 1: weight = 24 kg × 9.8 m/s² = 235.2 N. Step 2: W = F × d = 235.2 N × 1.2 m = **282.24 J** (about 282.2 J).\n\n**Machines.** A **machine** makes work easier by changing the direction of a force, increasing the force, or increasing the distance (or speed) of a force. A machine does **not** reduce the amount of work. In an **ideal** machine, **Work in = Work out**, so **Fe × De = Fr × Dr**. In a real machine, friction turns some work into heat, so work out is less than work in.\n\n**Worked example 3:** An ideal lever lifts a 720 N rock 0.25 m when a student pushes her end down 1.5 m. Formula: Fe = (Fr × Dr) ÷ De. Set up: Fe = (720 N × 0.25 m) ÷ 1.5 m = 180 J ÷ 1.5 m. Answer: **120 N**. Less force, longer distance, same work.\n\n**Watch out for:** using kg as if it were a force (multiply by 9.8 first), adding or dividing instead of multiplying, giving work the unit N instead of J, counting work when nothing moves or when the force is sideways to the motion, using an object's weight when someone pushes it sideways, and forgetting to change cm to m (100 cm = 1 m)."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "fill_blank",
+              "prompt": "A 5 kg box is lifted straight up 3 m. How much work is done? Use g = 9.8 m/s². Type a number (in J).",
+              "answer": ["147", "147 J", "147J", "147 joules", "147.0"],
+              "explanation": "First change kg to N: weight = 5 kg × 9.8 m/s² = 49 N. Then W = F × d = 49 N × 3 m = 147 J. Using 5 kg as the force (15 J) is the common mistake."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "A 200 N box is slid 6 m across a level floor with a 50 N push. How much work does the push do?",
+              "options": [
+                { "id": "a", "text": "1,200 J" },
+                { "id": "b", "text": "0 J" },
+                { "id": "c", "text": "300 J" }
+              ],
+              "answer": "c",
+              "explanation": "Use the force that points the way the box moves: the 50 N push. W = 50 N × 6 m = 300 J. Using the box's 200 N weight (1,200 J) is the common mistake, because the weight points down while the box moves sideways."
+            }
+          ],
+          "shortAnswer": "Explain why your upward holding force does no work on a box when you carry it across the room at the same height, even though your arms get tired. Use both conditions for work."
+        }
+      ]
+    },
+    {
+      "target": "U6.LT1",
+      "mode": "do",
+      "title": "Do: work problems step by step",
+      "description": "A work problem one step at a time, then a lifting problem that starts with a mass.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Worked problem: pushing a toolbox",
+          "minutes": 4,
+          "body": {
+            "type": "worked_steps",
+            "problem": "A student pushes a toolbox across the shop floor with a force of 65 N for 14 m. Later she does 520 J of work pushing it again with the same 65 N. How much work did the first push do, and how far did the second push move it?",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "Check the two conditions: the toolbox moves, and the push points the way it moves. So work is done."
+              },
+              {
+                "id": "s2",
+                "text": "First push. Formula: W = F × d. Set up: W = 65 N × 14 m. Answer: 910 J."
+              },
+              {
+                "id": "s3",
+                "text": "Second push: you know W and F, so rearrange the formula: d = W ÷ F."
+              },
+              { "id": "s4", "text": "Set up: d = 520 J ÷ 65 N. Answer: 8 m." }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "fill_blank",
+              "prompt": "Your turn: a student pushes a cart 15 m with a force of 42 N. How much work does she do? Type a number (in J).",
+              "answer": ["630", "630 J", "630J", "630 joules", "630.0"],
+              "explanation": "W = F × d = 42 N × 15 m = 630 J. Adding (57) or dividing (2.8) are the common mistakes.",
+              "afterStepId": "s2"
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "A student does 300 J of work pushing a box with a force of 60 N. How far does the box move?",
+              "options": [
+                { "id": "a", "text": "18,000 m" },
+                { "id": "b", "text": "5 m" },
+                { "id": "c", "text": "240 m" }
+              ],
+              "answer": "b",
+              "explanation": "d = W ÷ F = 300 J ÷ 60 N = 5 m. Multiplying (18,000) or subtracting (240) are the common mistakes.",
+              "afterStepId": "s4"
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: lift, then carry",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "A student lifts a 9 kg toolbox straight up 1.6 m onto a workbench, then carries it 5 m across the room at the same height. How much work does her upward force do in all? Use g = 9.8 m/s².",
+            "steps": [
+              {
+                "id": "t1",
+                "text": "Work needs a force in newtons, so change the mass to a weight first: weight = m × 9.8."
+              },
+              { "id": "t2", "text": "Set up: weight = 9 kg × 9.8 m/s² = 88.2 N." },
+              {
+                "id": "t3",
+                "text": "The lift. Formula: W = F × d. Set up: W = 88.2 N × 1.6 m. Answer: 141.12 J."
+              },
+              {
+                "id": "t4",
+                "text": "The carry: her upward force points up, but the toolbox moves sideways. The force is not in the direction of the motion, so W = 0 J. Total: 141.12 J + 0 J = 141.12 J (about 141.1 J)."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "fill_blank",
+              "prompt": "Your turn: what is the weight of a 25 kg crate? Use g = 9.8 m/s². Type a number (in N).",
+              "answer": ["245", "245 N", "245N", "245 newtons", "245.0"],
+              "explanation": "weight = m × 9.8 = 25 kg × 9.8 m/s² = 245 N. Dividing (about 2.6) is the common mistake; the weight in N is the bigger number.",
+              "afterStepId": "t2"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "A student lifts a 20 kg box straight up 1.5 m, then carries it 8 m across the room at the same height. How much work does the upward force do in all? Use g = 9.8 m/s².",
+              "options": [
+                { "id": "a", "text": "294 J" },
+                { "id": "b", "text": "1,862 J" },
+                { "id": "c", "text": "30 J" }
+              ],
+              "answer": "a",
+              "explanation": "Lift: 20 kg × 9.8 m/s² = 196 N, and 196 N × 1.5 m = 294 J. Carry: 0 J, because the upward force is sideways to the motion. Adding the 8 m (196 N × 9.5 m = 1,862 J) or using kg as the force (30 J) are the common mistakes.",
+              "afterStepId": "t4"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
