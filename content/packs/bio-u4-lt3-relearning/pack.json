@@ -1,0 +1,318 @@
+{
+  "name": "bio-u4-lt3-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "relearning": [
+    {
+      "target": "U4.LT3",
+      "mode": "read",
+      "title": "Read: how photosynthesis works",
+      "description": "A short reading with the solar-powered bakery analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Light in, sugar out",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can describe the process of photosynthesis.**\n\n**Think of a solar-powered bakery.** Solar panels on the roof charge up batteries. In the kitchen, the bakers use the charged batteries to run the ovens and turn simple ingredients into bread. In a plant, sunlight charges up energy molecules, and that energy is used to build sugar out of CO₂ and water.\n\n**Photosynthesis** is how plants, algae and some bacteria use light energy to make glucose. It happens in the **chloroplast**, where the green pigment **chlorophyll** absorbs the light.\n\n**The equation:**\n6CO₂ + 6H₂O + light energy → C₆H₁₂O₆ + 6O₂\n\n**Reactants:** carbon dioxide (from the air, through tiny pores in the leaf called stomata) and water (from the roots). **Products:** glucose (food) and oxygen (released into the air).\n\n**Worked example:** A houseplant sits in a sunny window. CO₂ from the air and water from the soil go in. Sunlight powers the reaction. The plant keeps the glucose and releases O₂, the oxygen you breathe.\n\n**It's the reverse of respiration.** The products of cellular respiration (CO₂ and H₂O) are the reactants of photosynthesis."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "Which are the PRODUCTS of photosynthesis?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Carbon dioxide and water"
+                },
+                {
+                  "id": "b",
+                  "text": "Glucose and oxygen"
+                },
+                {
+                  "id": "c",
+                  "text": "ATP and carbon dioxide"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Photosynthesis makes glucose and O₂. CO₂ and water are what go in. Mixing it up with respiration, which runs the other way, is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "multiple_choice",
+              "prompt": "In which organelle does photosynthesis take place?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Mitochondria"
+                },
+                {
+                  "id": "b",
+                  "text": "Chloroplast"
+                },
+                {
+                  "id": "c",
+                  "text": "Nucleus"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Photosynthesis happens in the chloroplast, where chlorophyll absorbs light. The mitochondria are for cellular respiration, the common mix-up."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Two stages inside the chloroplast",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Stage 1: the Light Dependent Reactions** (the solar panels). They happen in the **thylakoids**, the stacked discs inside the chloroplast. Chlorophyll absorbs light. **Water is split**, and its oxygen is released as **O₂**. The light energy charges up two energy carriers: **ATP and NADPH**.\n\n**Stage 2: the Calvin Cycle** (the kitchen), also called the Light Independent Reactions. It happens in the **stroma**, the fluid around the thylakoids. It uses the ATP and NADPH to take **CO₂** from the air and build **glucose**.\n\n**Worked example 2:** Where does the O₂ a plant releases come from? From **splitting water** in the Light Dependent Reactions, not from CO₂.\n\n**Worked example 3:** A tiny seed grows into a huge oak tree. Where did the mass of the wood come from? Mostly from **CO₂ in the air**. The Calvin Cycle uses its carbon atoms to build glucose, and the tree builds wood from glucose. It does not come from the soil.\n\n**Why leaves look green:** chlorophyll absorbs red and blue light best and **reflects green** light, so green is what bounces back to your eyes.\n\n**Watch out for:** saying the O₂ comes from CO₂ (it comes from water), mixing up the thylakoids (Light Dependent Reactions) and the stroma (Calvin Cycle), thinking a plant's mass comes from the soil, and thinking chlorophyll absorbs green light (it reflects it)."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "Where does the oxygen gas that plants release come from?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Splitting water molecules"
+                },
+                {
+                  "id": "b",
+                  "text": "Breaking down CO₂"
+                },
+                {
+                  "id": "c",
+                  "text": "Minerals in the soil"
+                }
+              ],
+              "answer": "a",
+              "explanation": "In the Light Dependent Reactions, water is split and its oxygen is released as O₂. Thinking it comes from CO₂ is the common mistake; CO₂'s carbon goes into glucose."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "Which stage uses ATP and NADPH to build glucose from CO₂?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Light Dependent Reactions"
+                },
+                {
+                  "id": "b",
+                  "text": "Calvin Cycle"
+                },
+                {
+                  "id": "c",
+                  "text": "Glycolysis"
+                }
+              ],
+              "answer": "b",
+              "explanation": "The Calvin Cycle, in the stroma, builds glucose. The Light Dependent Reactions make the ATP and NADPH it uses. Glycolysis is part of respiration, not photosynthesis."
+            }
+          ],
+          "shortAnswer": "Explain how the Light Dependent Reactions and the Calvin Cycle depend on each other."
+        }
+      ]
+    },
+    {
+      "target": "U4.LT3",
+      "mode": "do",
+      "title": "Do: flip the parts, then track the atoms",
+      "description": "Flashcards with a 3-question self-quiz, then water and CO₂ followed through photosynthesis one step at a time.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: photosynthesis",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Photosynthesis",
+                "back": "How plants, algae and some bacteria use light energy to make glucose from CO₂ and water."
+              },
+              {
+                "id": "k2",
+                "front": "The equation",
+                "back": "6CO₂ + 6H₂O + light energy → C₆H₁₂O₆ + 6O₂"
+              },
+              {
+                "id": "k3",
+                "front": "Chloroplast",
+                "back": "The organelle where photosynthesis happens."
+              },
+              {
+                "id": "k4",
+                "front": "Chlorophyll",
+                "back": "The green pigment that absorbs light. It absorbs red and blue best and reflects green."
+              },
+              {
+                "id": "k5",
+                "front": "Light Dependent Reactions",
+                "back": "Stage 1, in the thylakoids: light splits water, releases O₂, and charges up ATP and NADPH."
+              },
+              {
+                "id": "k6",
+                "front": "Calvin Cycle",
+                "back": "Stage 2, in the stroma: uses ATP and NADPH to build glucose from CO₂. Also called the Light Independent Reactions."
+              },
+              {
+                "id": "k7",
+                "front": "Stomata",
+                "back": "Tiny pores in a leaf that let CO₂ in and O₂ out."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "Which pigment absorbs light for photosynthesis?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Chlorophyll"
+                },
+                {
+                  "id": "b",
+                  "text": "Hemoglobin"
+                },
+                {
+                  "id": "c",
+                  "text": "ATP"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Chlorophyll, in the chloroplast, absorbs the light. Hemoglobin carries oxygen in your blood, and ATP is an energy carrier, not a pigment."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "Which color of light does chlorophyll reflect instead of absorbing?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Red"
+                },
+                {
+                  "id": "b",
+                  "text": "Blue"
+                },
+                {
+                  "id": "c",
+                  "text": "Green"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Chlorophyll reflects green, which is why leaves look green. It absorbs red and blue best. Thinking a green leaf absorbs green is the common mistake."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "Where does the Calvin Cycle happen?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "In the thylakoids"
+                },
+                {
+                  "id": "b",
+                  "text": "In the stroma"
+                },
+                {
+                  "id": "c",
+                  "text": "In the mitochondria"
+                }
+              ],
+              "answer": "b",
+              "explanation": "The Calvin Cycle happens in the stroma, the fluid around the thylakoids. The thylakoids are where the Light Dependent Reactions happen, the common mix-up."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked steps: track the atoms",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "Follow water and CO₂ through photosynthesis, one step at a time.",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "**Inputs arrive.** The roots take in water (H₂O). CO₂ enters the leaf through the stomata. Both reach the chloroplasts."
+              },
+              {
+                "id": "s2",
+                "text": "**Light Dependent Reactions, in the thylakoids:** chlorophyll absorbs light. Water is split, and its oxygen leaves the leaf as O₂ through the stomata."
+              },
+              {
+                "id": "s3",
+                "text": "**Still in the thylakoids:** the light energy is stored in ATP and NADPH, the charged batteries."
+              },
+              {
+                "id": "s4",
+                "text": "**Calvin Cycle, in the stroma:** ATP and NADPH power the building of sugar. Carbon atoms from CO₂ are put together into glucose, C₆H₁₂O₆."
+              },
+              {
+                "id": "s5",
+                "text": "**Result:** 6CO₂ + 6H₂O + light energy → C₆H₁₂O₆ + 6O₂. The plant uses the glucose for energy (in cellular respiration) and to build its body."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: a scientist gives a plant water made with specially marked oxygen atoms. Where will the marked oxygen show up?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "In the O₂ gas the plant releases"
+                },
+                {
+                  "id": "b",
+                  "text": "In the glucose"
+                },
+                {
+                  "id": "c",
+                  "text": "In the CO₂"
+                }
+              ],
+              "answer": "a",
+              "explanation": "The O₂ comes from split water, so the marked oxygen ends up in the O₂ gas. Thinking the O₂ comes from CO₂ is the common mistake.",
+              "afterStepId": "s2"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "A plant is moved into a dark closet. What happens?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The Light Dependent Reactions stop first, and the Calvin Cycle soon stops too"
+                },
+                {
+                  "id": "b",
+                  "text": "Only the Calvin Cycle stops"
+                },
+                {
+                  "id": "c",
+                  "text": "Nothing changes, because the Calvin Cycle doesn't need light"
+                }
+              ],
+              "answer": "a",
+              "explanation": "The Light Dependent Reactions need light, so they stop right away. The Calvin Cycle doesn't use light directly, but it soon runs out of ATP and NADPH and stops too. Thinking it keeps going on its own is the common mistake.",
+              "afterStepId": "s4"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

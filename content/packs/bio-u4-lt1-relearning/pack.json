@@ -1,0 +1,299 @@
+{
+  "name": "bio-u4-lt1-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "relearning": [
+    {
+      "target": "U4.LT1",
+      "mode": "read",
+      "title": "Read: what cellular respiration does",
+      "description": "A short reading with the cashing-a-check analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Reactants, products and ATP",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can explain what cellular respiration is including reactants and products.**\n\n**Think of cashing a big check.** A 100-dollar check holds a lot of money, but you can't put it in a vending machine. You take it to the bank and get it broken into coins you can actually spend. Glucose is the big check: it holds a lot of energy, but a cell can't spend it directly. **Cellular respiration** is the bank. It breaks glucose down and stores the energy in small, spendable molecules called **ATP**, the cell's energy currency.\n\n**The equation:**\nC₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + energy (ATP)\n\n**Reactants** (what goes in): glucose and oxygen. **Products** (what comes out): carbon dioxide, water and ATP.\n\n**Where:** mostly in the **mitochondria**, the powerhouse of the cell. **Who:** almost every living cell, in plants and animals both.\n\n**Worked example:** You eat lunch and breathe in. Lunch gives you glucose (carbohydrates are the body's main fuel), and breathing gives you oxygen. Your cells combine them and store the energy as ATP. The CO₂ you breathe out and the water vapor in your breath are the products."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "Which two molecules are the reactants of cellular respiration?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Carbon dioxide and water"
+                },
+                {
+                  "id": "b",
+                  "text": "Glucose and oxygen"
+                },
+                {
+                  "id": "c",
+                  "text": "ATP and glucose"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Reactants go in: glucose (C₆H₁₂O₆) and oxygen (O₂). Carbon dioxide and water are the products. Swapping them is the common mistake, because photosynthesis has them the other way around."
+            },
+            {
+              "id": "c2",
+              "kind": "fill_blank",
+              "prompt": "One glucose molecule is broken down by cellular respiration. How many CO₂ molecules are made? Type a number.",
+              "answer": ["6", "six"],
+              "explanation": "The balanced equation is C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O. The 6 carbon atoms in glucose leave as 6 CO₂. Answering 1 means forgetting the coefficient."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "The three stages",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**An assembly line in three stages.** Glucose isn't broken down all at once. It goes through three stages, each in its own place.\n\n**1. Glycolysis** (in the **cytoplasm**). Glucose is split in half into two molecules called pyruvate. This makes **2 ATP** and does not need oxygen.\n\n**2. Krebs cycle** (in the **mitochondria**). Pyruvate is broken down the rest of the way. Its carbon atoms leave as **CO₂**, the gas you breathe out. Electrons are loaded onto carrier molecules for the last stage.\n\n**3. Electron transport chain** (on the inner membrane of the mitochondria). The electrons power the making of **most of the ATP**. **Oxygen** waits at the end of the chain. It picks up the electrons and hydrogen and becomes **water**. That is why you have to keep breathing.\n\n**Total:** about **36 ATP** from one glucose.\n\n**Worked example 2:** In the Yeast Lab, yeast eat sugar and the foam fills with bubbles. The gas in the bubbles is CO₂, a product of breaking down glucose.\n\n**Worked example 3:** Where does the oxygen you breathe in end up? At the end of the electron transport chain, it becomes part of the water (H₂O) your cells make.\n\n**Plants do it too.** Plants make glucose by photosynthesis, then break it down by cellular respiration in their own mitochondria, day and night.\n\n**Watch out for:** swapping the reactants and products, saying respiration is the same as breathing (breathing brings in O₂; respiration is the chemical process inside cells), thinking only animals do respiration, and putting glycolysis in the mitochondria (it happens in the cytoplasm)."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "In which stage of cellular respiration is most of the ATP made?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Glycolysis"
+                },
+                {
+                  "id": "b",
+                  "text": "Krebs cycle"
+                },
+                {
+                  "id": "c",
+                  "text": "Electron transport chain"
+                }
+              ],
+              "answer": "c",
+              "explanation": "The electron transport chain makes most of the about 36 ATP. Glycolysis makes only 2. Picking glycolysis because it comes first is the common mistake."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "Do plant cells carry out cellular respiration?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "No, plants only do photosynthesis"
+                },
+                {
+                  "id": "b",
+                  "text": "Yes, plants break down glucose in their mitochondria"
+                },
+                {
+                  "id": "c",
+                  "text": "Only when they are in the dark"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Plants make glucose by photosynthesis, but they still need ATP, so they break glucose down in their mitochondria day and night. \"Plants only do photosynthesis\" is the common mistake."
+            }
+          ],
+          "shortAnswer": "Explain how breathing and cellular respiration are connected. Name one reactant and one product in your answer."
+        }
+      ]
+    },
+    {
+      "target": "U4.LT1",
+      "mode": "do",
+      "title": "Do: flip the key terms, then follow one glucose",
+      "description": "Flashcards with a 3-question self-quiz, then one glucose molecule followed through the three stages, one step at a time.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: cellular respiration",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Cellular respiration",
+                "back": "The process cells use to break down glucose and store its energy in ATP."
+              },
+              {
+                "id": "k2",
+                "front": "The equation",
+                "back": "C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + energy (ATP)"
+              },
+              {
+                "id": "k3",
+                "front": "Reactants",
+                "back": "What goes in: glucose (C₆H₁₂O₆) and oxygen (O₂)."
+              },
+              {
+                "id": "k4",
+                "front": "Products",
+                "back": "What comes out: carbon dioxide (CO₂), water (H₂O) and ATP."
+              },
+              {
+                "id": "k5",
+                "front": "ATP",
+                "back": "The cell's energy currency. Like coins from a big check, it is energy the cell can spend right away."
+              },
+              {
+                "id": "k6",
+                "front": "Mitochondria",
+                "back": "The powerhouse of the cell, where most of cellular respiration happens."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "Which molecule is the cell's energy currency?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Glucose"
+                },
+                {
+                  "id": "b",
+                  "text": "ATP"
+                },
+                {
+                  "id": "c",
+                  "text": "Oxygen"
+                }
+              ],
+              "answer": "b",
+              "explanation": "ATP is the energy the cell spends. Glucose stores energy, but it has to be broken down into ATP first, which is the common mix-up."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "Which of these is a PRODUCT of cellular respiration?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Glucose"
+                },
+                {
+                  "id": "b",
+                  "text": "Oxygen"
+                },
+                {
+                  "id": "c",
+                  "text": "Carbon dioxide"
+                }
+              ],
+              "answer": "c",
+              "explanation": "CO₂ comes out, along with water and ATP. Glucose and oxygen are the reactants that go in."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "Where does most of cellular respiration happen?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Mitochondria"
+                },
+                {
+                  "id": "b",
+                  "text": "Chloroplast"
+                },
+                {
+                  "id": "c",
+                  "text": "Nucleus"
+                }
+              ],
+              "answer": "a",
+              "explanation": "The mitochondria are the powerhouse of the cell. Chloroplasts are where photosynthesis happens, a common mix-up."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked steps: follow one glucose",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "Follow one glucose molecule through cellular respiration, in order.",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "**Glycolysis, in the cytoplasm:** glucose (6 carbons) is split in half into two pyruvate molecules. Gain: 2 ATP. No oxygen is needed yet."
+              },
+              {
+                "id": "s2",
+                "text": "The two pyruvate molecules move into the **mitochondria**."
+              },
+              {
+                "id": "s3",
+                "text": "**Krebs cycle, in the mitochondria:** pyruvate is broken down the rest of the way. Its carbon atoms leave as CO₂, which you breathe out. Electrons are loaded onto carrier molecules."
+              },
+              {
+                "id": "s4",
+                "text": "**Electron transport chain, on the inner membrane of the mitochondria:** the electrons power the making of most of the ATP. Oxygen is the last stop: it picks up the electrons and hydrogen and forms H₂O."
+              },
+              {
+                "id": "s5",
+                "text": "**Total:** one glucose gives about 36 ATP, plus 6 CO₂ and 6 H₂O."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: where does glycolysis happen?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "In the cytoplasm"
+                },
+                {
+                  "id": "b",
+                  "text": "In the mitochondria"
+                },
+                {
+                  "id": "c",
+                  "text": "In the chloroplast"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Glycolysis happens in the cytoplasm, before anything enters the mitochondria. Saying the mitochondria is the common mistake.",
+              "afterStepId": "s1"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "What would happen to the electron transport chain if no oxygen were present?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "It would speed up"
+                },
+                {
+                  "id": "b",
+                  "text": "It would stop, because nothing is at the end to pick up the electrons"
+                },
+                {
+                  "id": "c",
+                  "text": "It would make glucose instead"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Oxygen is the last stop for the electrons. Without it the chain backs up and stops, and the cell gets only the 2 ATP from glycolysis. That is why you have to keep breathing.",
+              "afterStepId": "s4"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,243 @@
+{
+  "name": "bio-u5-lt3-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "relearning": [
+    {
+      "target": "U5.LT3",
+      "mode": "read",
+      "title": "Read: building and reading a karyotype",
+      "description": "A short reading with the sock-sorting analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Sort, pair and count",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can design a karyotype to demonstrate inheritance patterns.**\n\n**Think of matching socks from the laundry.** You dump out the pile, find each sock's partner by size and pattern, and line the pairs up from biggest to smallest. Now you can quickly see if a sock is missing or if there is an extra. A **karyotype** is the same thing for chromosomes: a picture of a cell's chromosomes sorted into pairs.\n\n**How to build a karyotype:**\n1. Pair each chromosome with its homolog. Match them by **size**, **centromere position** and **banding pattern** (the stripes).\n2. Arrange the pairs from **largest (1) to smallest (22)**. These 22 pairs are the **autosomes**.\n3. Put the **sex chromosomes** (pair 23) last: **XX = female**, **XY = male**.\n4. Count. A typical human karyotype has **46 chromosomes in 23 pairs**.\n\n**Worked example:** A karyotype shows 22 matched pairs of autosomes, plus one X and one Y. Total = 44 + 2 = 46. This is a typical male."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "Chromosome pairs 1–22 are called...",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Sex chromosomes"
+                },
+                {
+                  "id": "b",
+                  "text": "Autosomes"
+                },
+                {
+                  "id": "c",
+                  "text": "Gametes"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Pairs 1–22 are autosomes. Only pair 23 (XX or XY) is the sex chromosomes, which is the common mix-up."
+            },
+            {
+              "id": "c2",
+              "kind": "multiple_choice",
+              "prompt": "A karyotype has 46 chromosomes, and pair 23 is XX. What does it show?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "A typical female"
+                },
+                {
+                  "id": "b",
+                  "text": "A typical male"
+                },
+                {
+                  "id": "c",
+                  "text": "A female with an extra chromosome"
+                }
+              ],
+              "answer": "a",
+              "explanation": "46 is the typical number, and XX means female. A male would have XY, and an extra chromosome would make 47."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Spotting changes and following inheritance",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Nondisjunction:** chromosomes fail to separate during meiosis, so a gamete gets an extra copy or is missing one. On a karyotype it shows up as a set of three or a single.\n\n**Trisomy** = three copies of one chromosome (47 total). **Monosomy** = only one copy (45 total).\n\n**Examples:**\n**Down syndrome:** trisomy 21 (three copies of chromosome 21), 47 chromosomes.\n**Klinefelter syndrome:** XXY, 47 chromosomes, male.\n**Turner syndrome:** a single X (written XO), 45 chromosomes, female.\n\n**Worked example 2:** A karyotype shows three copies of chromosome 21, and pair 23 is XX. Total = 47. This is a female with Down syndrome (trisomy 21).\n\n**How sex is inherited:** a mother can only give an X. A father gives either an X or a Y. The Punnett square for XX × XY:\n\n$$\\begin{array}{c|cc} & \\mathrm{X} & \\mathrm{X} \\\\ \\hline \\mathrm{X} & \\mathrm{XX} & \\mathrm{XX} \\\\ \\mathrm{Y} & \\mathrm{XY} & \\mathrm{XY} \\end{array}$$\n\n2 boxes are XX and 2 are XY, so every child has a **50% chance** of being a boy. The father's sperm decides.\n\n**Worked example 3:** An egg with 24 chromosomes (two copies of 21) is fertilized by a normal sperm (23). The zygote has 24 + 23 = 47, with three copies of chromosome 21.\n\n**Watch out for:** counting pairs instead of chromosomes (23 pairs = 46 chromosomes), calling the sex chromosomes autosomes, thinking a trisomy means 3 extra chromosomes (it is one extra, making three copies), and forgetting to check pair 23 for the sex."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "fill_blank",
+              "prompt": "A karyotype shows trisomy 18. How many chromosomes does it have in total? Type a number.",
+              "answer": ["47", "forty-seven", "forty seven"],
+              "explanation": "Trisomy is one extra chromosome: 46 + 1 = 47. Adding 3 (to get 49) is the common mistake; three copies means just one extra."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "Which parent's gamete decides whether a baby is a boy or a girl?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The mother's egg"
+                },
+                {
+                  "id": "b",
+                  "text": "The father's sperm"
+                },
+                {
+                  "id": "c",
+                  "text": "Both equally"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Every egg carries an X. A sperm carries either an X (girl) or a Y (boy), so the father's sperm decides."
+            }
+          ],
+          "shortAnswer": "A karyotype has 47 chromosomes, and pair 23 is XXY. Describe this person and explain how nondisjunction could have caused it."
+        }
+      ]
+    },
+    {
+      "target": "U5.LT3",
+      "mode": "do",
+      "title": "Do: read a karyotype, then trace nondisjunction",
+      "description": "Two worked problems shown one step at a time: reading a karyotype, then predicting karyotypes after nondisjunction.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Worked problem: read a karyotype",
+          "minutes": 4,
+          "body": {
+            "type": "worked_steps",
+            "problem": "A student builds a karyotype from a photo of chromosomes. Pairs 1–20 and pair 22 each have 2 chromosomes. Chromosome 21 has 3. Pair 23 is an X and a Y. Describe the karyotype.",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "**Sort:** pair the chromosomes by size, centromere position and banding pattern. Line the pairs up from 1 (largest) to 22 (smallest), with the sex chromosomes last."
+              },
+              {
+                "id": "s2",
+                "text": "**Count:** 21 autosome pairs with 2 each = 42. Chromosome 21 has 3. The sex chromosomes add 2. Total = 42 + 3 + 2 = 47."
+              },
+              {
+                "id": "s3",
+                "text": "**Sex:** pair 23 is XY, so this is a male."
+              },
+              {
+                "id": "s4",
+                "text": "**Abnormality:** three copies of chromosome 21 is trisomy 21."
+              },
+              {
+                "id": "s5",
+                "text": "**Conclusion:** 47 chromosomes, XY, trisomy 21: a male with Down syndrome."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "fill_blank",
+              "prompt": "Your turn: a karyotype has 2 copies of every autosome (pairs 1–22) and only one X, with no second sex chromosome. How many chromosomes are there in total? Type a number.",
+              "answer": ["45", "forty-five", "forty five"],
+              "explanation": "22 pairs × 2 = 44 autosomes, plus 1 X = 45. Answering 46 means counting a second sex chromosome that isn't there.",
+              "afterStepId": "s2"
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "What does that karyotype (45 chromosomes, a single X) show?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Turner syndrome, female"
+                },
+                {
+                  "id": "b",
+                  "text": "Klinefelter syndrome, male"
+                },
+                {
+                  "id": "c",
+                  "text": "Down syndrome"
+                }
+              ],
+              "answer": "a",
+              "explanation": "A single X with 45 chromosomes is Turner syndrome, and the person is female. Klinefelter is XXY (47, male), and Down syndrome is trisomy 21.",
+              "afterStepId": "s5"
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: nondisjunction to karyotype",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "During meiosis in a mother, the two X chromosomes fail to separate (nondisjunction). One egg gets both X's and another egg gets no X. Each egg is fertilized by a normal sperm carrying an X or a Y. Predict the karyotypes.",
+            "steps": [
+              {
+                "id": "t1",
+                "text": "**Normal gametes:** an egg has 22 autosomes + X = 23. A sperm has 22 autosomes + X or Y = 23."
+              },
+              {
+                "id": "t2",
+                "text": "**The unusual eggs:** the XX egg has 22 + 2 = 24 chromosomes. The egg with no X has 22."
+              },
+              {
+                "id": "t3",
+                "text": "**XX egg:** + X sperm → XXX, 47 chromosomes (a female with an extra X). + Y sperm → XXY, 47 chromosomes: Klinefelter syndrome, male."
+              },
+              {
+                "id": "t4",
+                "text": "**No-X egg:** + X sperm → a single X, 45 chromosomes: Turner syndrome, female. + Y sperm → Y only, which can't survive, because every person needs at least one X."
+              },
+              {
+                "id": "t5",
+                "text": "**On the karyotypes:** each child's change shows at pair 23, and the count tells you trisomy (47) or monosomy (45)."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "fill_blank",
+              "prompt": "Your turn: an egg is missing chromosome 21 because of nondisjunction. How many chromosomes does it have? Type a number.",
+              "answer": ["22", "twenty-two", "twenty two"],
+              "explanation": "A normal egg has 23. Missing one leaves 23 − 1 = 22. Starting from 46 is the common mistake, since an egg is haploid.",
+              "afterStepId": "t2"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "An XX egg (from nondisjunction) is fertilized by a Y sperm. What karyotype results?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "47, XXY: Klinefelter syndrome, male"
+                },
+                {
+                  "id": "b",
+                  "text": "45, X: Turner syndrome, female"
+                },
+                {
+                  "id": "c",
+                  "text": "46, XY: typical male"
+                }
+              ],
+              "answer": "a",
+              "explanation": "24 + 23 = 47, and the sex chromosomes are XXY: Klinefelter syndrome. A Y means male even with two X's, which is the common trap.",
+              "afterStepId": "t4"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
