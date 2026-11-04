@@ -585,6 +585,20 @@ matches.
 **Done when** every PS target's Practice bank has about 100 live auto-graded questions and its
 bank health shows no thin band.
 
+*Built Nov 4–5 (live on the next deploy; waiting on Jon's spot-check):*
+- *1,275 new questions. Every one of the 25 banks now holds exactly 100: 45 easy, 30 medium, 25
+  hard.*
+- *All auto-graded: 672 multiple choice, 386 numeric, 74 multiple select, 51 fill-in, 29
+  matching and 27 ordering among the new ones. At most 2 new true/false per target (36 in all).*
+- *Every new question has a hint and an explanation. Jon's conventions hold: g = 9.8, IMA/AMA
+  named in every stem, efficiency as a percent, his pulley rule, his 1904 Thomson date.*
+- *Checks: `scripts/check-pack.ts` is clean on all 25 packs (no errors, no duplicate stems). An
+  independent re-solve of a random 64 of the new questions found every key right.*
+- *Delivered as pack revisions (Unit 1 → 4, Unit 2 → 3, Units 3–6 → 2). Each applies once and
+  updates its bank in place.*
+- *The bank health view on Question banks isn't built yet. The pack checker reports the same
+  band counts for now.*
+
 ### C2 · Physical Science Read · Watch · Do (25 targets)
 - **Read:** the existing reteach readings, split into core and extension, with inline checks.
 - **Watch:** suggested videos (Restricted Mode-friendly) cut into core and extension segments
@@ -594,6 +608,16 @@ bank health shows no thin band.
 
 **Done when** every PS target has all three modes, and Jon has approved the video list after
 the student-account test.
+
+*Read and Do built Nov 4–5 for all 25 targets (Watch waits on Jon):*
+- *One pack per target, `ps-uX-ltY-relearning`. Read is a core and an extension text with 4
+  quick checks and one short answer. Do is flashcards with a self-quiz, or worked problems one
+  step at a time, varied by target. Each is "About 10 min".*
+- *Sources: Jon's reteach readings and practice banks.*
+- *Checks: `scripts/check-pack.ts` is clean on all 25. About 50 quick checks re-solved by hand
+  were all right.*
+- *Watch: Jon picks the videos and tests them on a student account (decision 37). They're added
+  to these packs as `watch` options.*
 
 ### C3 · Biology Practice banks (33 targets × about 100)
 - Biology has Retake banks but no Practice banks, so this is about 3,300 new questions from

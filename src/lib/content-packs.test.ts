@@ -157,8 +157,9 @@ describe("content packs", () => {
   });
   it("applies each pack once: bank, questions with repo-hosted pictures, published assessment, assignment", async () => {
     const first = await applyAllPacks();
-    // Physical Science Units 1–6 practice packs (Oct 13 2026): 50 questions, a set, and notes each;
-    // U6.LT5 (Rube Goldberg) is the smaller 25-question bank with a planning guide.
+    // Physical Science Units 1–6 practice packs (Oct 13 2026): a set and notes each; grown to 100
+    // questions per target for the relearning path's practice check (Nov 4 2026, ticket C1),
+    // U6.LT5 (Rube Goldberg) included.
     for (const name of [1, 2, 3, 4, 5, 6]
       .flatMap((u) => [1, 2, 3, 4].map((n) => `ps-u${u}-lt${n}-practice`))
       .concat("ps-u6-lt5-practice")) {
@@ -166,7 +167,7 @@ describe("content packs", () => {
       expect(out.status).toBe("applied");
       if (out.status === "applied")
         expect(out.summary).toMatchObject({
-          questions: name === "ps-u6-lt5-practice" ? 25 : 50,
+          questions: 100,
           practiceSet: { published: true },
           activity: { published: true },
           errors: [],
