@@ -413,11 +413,15 @@ describe("video flags and cascades", () => {
   });
 });
 
-describe("0030 and 0031 are re-runnable", () => {
+describe("0030, 0031 and 0032 are re-runnable", () => {
   it("runs again on a database that already has it, keeping the data", async () => {
     const { client, db, schema } = t;
     const before = await db.select().from(schema.relearningPaths);
-    for (const file of ["0030_relearning_revamp.sql", "0031_score_history.sql"]) {
+    for (const file of [
+      "0030_relearning_revamp.sql",
+      "0031_score_history.sql",
+      "0032_kept_score.sql",
+    ]) {
       const sql = readFileSync(`drizzle/${file}`, "utf8");
       for (const statement of sql.split("--> statement-breakpoint")) {
         if (statement.trim()) await client.exec(statement);

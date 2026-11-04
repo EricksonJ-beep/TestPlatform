@@ -13,7 +13,7 @@ import {
 } from "@/lib/quiz-practice";
 import { getStudentPractice } from "@/lib/queries/practice";
 import { listStudentAttempts } from "@/lib/queries/attempts";
-import { nextCheck } from "@/lib/relearning-path";
+import { buildStepPath } from "@/lib/step-path";
 import {
   correctionsActionLabel,
   correctionsProgress,
@@ -23,8 +23,8 @@ import {
 import { LocalTime } from "@/components/local-time";
 import { TargetChip } from "@/components/targets/target-chip";
 import { Button } from "@/components/ui/button";
-import { StartCheckButton } from "../../checks/start-check-button";
 import { PracticeSetCard } from "../../practice-cards";
+import { PathPanel } from "../../path/path-panel";
 import { RetakePicker } from "../../retake-picker";
 import { RequestRetakeButton } from "./request-retake-button";
 import { StartForm } from "./start-form";
@@ -58,13 +58,6 @@ export default async function StudentAssignmentPage({
     c.state !== "approved" &&
     c.state !== "none";
   const retaking = a.state === "retake_required" || a.state === "retake_available";
-  // The relearning path (Nov 4 2026): the practice check ready to take, if any (R3).
-  const check = a.path ? nextCheck(a.path) : null;
-  const codesOf = (targetIds: string[]) =>
-    targetIds.map((id) => a.path?.targets.find((t) => t.id === id)?.code ?? id);
-  // Read · Watch · Do (R4): the targets whose relearning is open now (R5's step path takes this place).
-  const relearnNow = a.path ? a.path.targets.filter((t) => t.relearn === "current") : [];
-  const relearnStarted = relearnNow.some((t) => t.bundleId);
   // On a closed test the cycle goes on toward asking to retake (Jon, Oct 14 2026, R4).
   const closed = a.status === "closed";
   // Quiz relearning (Jon, Oct 14 2026): the missed targets still to practise before a retake.
@@ -95,6 +88,51 @@ export default async function StudentAssignmentPage({
     (a.state === "in_progress" ||
       (a.status === "open" && (a.state === "not_started" || retaking))) &&
     !correctionsBlock;
+
+  // The step path (R5): on the relearning path it takes the place of the corrections, relearning
+  // and practice boxes, from attempt 1's results until the retake starts.
+  const pathView =
+    a.path && a.state !== "in_progress" && a.state !== "awaiting_grade" && a.state !== "upcoming"
+      ? buildStepPath({
+          path: a.path,
+          assignmentId: a.id,
+          type: a.type === "summative" ? "summative" : "formative",
+          correctionsAttemptId: a.corrections?.attemptId ?? null,
+          cycle: a.cycle,
+          attemptsUsed: a.attemptsUsed,
+          attemptsAllowed: a.attemptsAllowed,
+          mustAsk: a.state === "ask_to_retake" || a.state === "awaiting_unlock",
+          nextAttemptAt: a.nextAttemptAt,
+          kept: !!a.kept,
+        })
+      : null;
+  // The page's own retake control, inside the Next step box: start, ask, or waiting on the teacher.
+  const retakeControl =
+    a.state === "ask_to_retake" ? (
+      <RequestRetakeButton
+        assignmentId={a.id}
+        attemptNumber={a.attemptsUsed + 1}
+        label="Ask to retake"
+        primary={a.askCounts}
+      />
+    ) : a.state === "awaiting_unlock" ? (
+      a.retakeRequested ? (
+        <p className="text-sm text-muted-foreground" data-retake-asked>
+          You asked for attempt {a.attemptsUsed + 1}. Waiting on your teacher.
+        </p>
+      ) : (
+        <RequestRetakeButton assignmentId={a.id} attemptNumber={a.attemptsUsed + 1} primary />
+      )
+    ) : canStart ? (
+      <StartForm
+        bare
+        assignmentId={a.id}
+        needsCode={a.needsCode}
+        resume={false}
+        timeLimitMinutes={a.timeLimitMinutes}
+        label={a.type === "formative" ? "Take the retake" : "Start retake"}
+      />
+    ) : null;
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-5">
@@ -160,37 +198,22 @@ export default async function StudentAssignmentPage({
           <RetakePicker
             assignmentId={a.id}
             retake={a.retake}
-            checklist={a.cycle === "relearning" || retaking}
+            // On the path the step path below shows each target's steps (R5).
+            checklist={(a.cycle === "relearning" || retaking) && !a.path}
             onPath={!!a.path}
           />
         </section>
       ) : null}
 
-      {relearnNow.length && a.state !== "in_progress" ? (
-        <div
-          className="flex flex-col gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm sm:flex-row sm:items-center"
-          data-relearning-gate
-        >
-          <span className="mr-auto">
-            {relearnStarted
-              ? `Keep going on your relearning for ${targetList(relearnNow.map((t) => t.code))}.`
-              : `Relearn ${targetList(relearnNow.map((t) => t.code))}: pick Read 📖, Watch 🎬 or Do 🧩. About 10–15 minutes.`}
-          </span>
-          <Button
-            size="lg"
-            nativeButton={false}
-            render={
-              <Link
-                href={`/student/relearning/${a.id}${a.type === "summative" ? `?target=${relearnNow[0].id}` : ""}`}
-              />
-            }
-          >
-            {relearnStarted ? "Keep relearning" : "Start relearning"}
-          </Button>
-        </div>
-      ) : null}
-
-      {a.state === "upcoming" ? (
+      {pathView && a.path ? (
+        <PathPanel
+          assignmentId={a.id}
+          view={pathView}
+          retakeControl={retakeControl}
+          relearningStarted={a.path.targets.some((t) => !!t.bundleId)}
+          showOptional={a.type === "formative" && a.path.raises && a.path.required.length > 0}
+        />
+      ) : a.state === "upcoming" ? (
         <p className="rounded-lg border border-border bg-card px-4 py-3 text-sm">
           This opens <LocalTime date={a.opensAt} />. Check back then.
         </p>
@@ -243,23 +266,6 @@ export default async function StudentAssignmentPage({
                 ? "Revise corrections"
                 : correctionsActionLabel(c)}
           </Button>
-        </div>
-      ) : a.path && check ? (
-        // The relearning path's practice check (R3); R5's step path takes this place.
-        <div
-          className="flex flex-col gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm sm:flex-row sm:items-center"
-          data-practice-check-gate
-        >
-          <span className="mr-auto">
-            {check.kind === "path"
-              ? `Practice check on ${targetList(codesOf(check.targetIds))}: get ${a.path.passMark} of 5 right. Your first answer counts, and you can try a new set of 5 as many times as you need.`
-              : `Before attempt ${check.attemptNumber}, pass a new practice check on ${targetList(codesOf(check.targetIds))}: ${a.path.passMark} of 5 right.`}
-          </span>
-          <StartCheckButton
-            assignmentId={a.id}
-            kind={check.kind}
-            bundleId={check.kind === "path" ? check.bundleId : null}
-          />
         </div>
       ) : a.cycle === "relearning" && !a.retake && owedPractice.length ? (
         <div

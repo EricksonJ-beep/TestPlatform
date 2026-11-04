@@ -961,6 +961,11 @@ export const assignmentFinalScores = pgTable(
     targetsBelowThreshold: integer("targets_below_threshold").default(0).notNull(),
     basis: text("basis").$type<FinalBasis>(),
     computedAt: timestamp("computed_at", { withTimezone: true }).defaultNow().notNull(),
+    /**
+     * "Keep my 80%" (relearning revamp decision 28, R5): the student chose to keep the raised quiz
+     * score for now. Counts only while later than their latest attempt; the retake stays open.
+     */
+    keptAt: timestamp("kept_at", { withTimezone: true }),
     ...timestamps,
   },
   (t) => [

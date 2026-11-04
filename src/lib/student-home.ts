@@ -14,6 +14,7 @@ import {
   practiceSizeText,
   targetList,
 } from "@/lib/quiz-practice";
+import { buildStepPath, type PathLine } from "@/lib/step-path";
 
 // ---------------------------------------------------------------------------
 // The to-do list
@@ -55,7 +56,13 @@ export type ToDoAssignment = Pick<
   | "progress"
   | "corrections"
   | "quizPractice"
-> & { retake: Pick<RetakeStatus, "targets" | "plan"> | null };
+> & {
+  retake: Pick<RetakeStatus, "targets" | "plan"> | null;
+  /** The relearning path (R5): the to-do row comes from its Next step. */
+  path?: StudentAssignment["path"];
+  /** "Keep my 80%" (decision 28): the optional retake no longer shows. */
+  kept?: boolean;
+};
 
 /** To do counts; "Want a higher score?" and "Waiting on your teacher" don't. */
 export type ToDoGroup = "todo" | "higher" | "waiting";
@@ -139,6 +146,8 @@ export type ToDoRow = {
   minutes: number | null;
   needsCode: boolean;
   action: ToDoAction | null;
+  /** The relearning path's steps (R5), drawn small on the row. */
+  path?: PathLine[] | null;
 };
 
 /**
@@ -291,6 +300,86 @@ function rowsFor(a: ToDoAssignment, buildable: ReadonlySet<string>): ToDoRow[] {
   });
   const c = a.corrections;
   const correctionsHref = c ? `/student/corrections/${c.attemptId}` : assignmentHref(a);
+
+  // The relearning path (R5): one row, its Next step's words and button over a mini path, the same
+  // view the card and the assessment page draw. A request already sent keeps its own row below.
+  if (
+    a.path &&
+    a.state !== "in_progress" &&
+    a.state !== "awaiting_grade" &&
+    a.state !== "upcoming" &&
+    a.state !== "not_started" &&
+    !(a.state === "awaiting_unlock" && a.retakeRequested)
+  ) {
+    const view = buildStepPath({
+      path: a.path,
+      assignmentId: a.id,
+      type: a.type === "summative" ? "summative" : "formative",
+      correctionsAttemptId: c?.attemptId ?? null,
+      cycle: a.cycle,
+      attemptsUsed: a.attemptsUsed,
+      attemptsAllowed: a.attemptsAllowed,
+      mustAsk: a.state === "ask_to_retake" || a.state === "awaiting_unlock",
+      nextAttemptAt: a.nextAttemptAt,
+      kept: !!a.kept,
+    });
+    const n = view.next;
+    // Done, or "Keep my 80%": nothing on the list (the retake stays on the card).
+    if (!n || (a.kept && n.group === "higher")) return [];
+    const returned = a.state === "corrections_returned";
+    const kind: ToDoKind =
+      n.action.kind === "corrections"
+        ? returned
+          ? "sent_back"
+          : "corrections"
+        : n.action.kind === "relearn"
+          ? "relearning"
+          : n.action.kind === "check"
+            ? "practice"
+            : n.action.kind === "retake"
+              ? "retake"
+              : n.action.kind === "ask"
+                ? "ask"
+                : "corrections_submitted";
+    const action: ToDoAction | null =
+      n.action.kind === "corrections" || n.action.kind === "relearn"
+        ? link(n.action.label, n.action.href, n.group === "todo")
+        : n.action.kind === "check"
+          ? link("Practice check", assignmentHref(a), true)
+          : n.action.kind === "retake"
+            ? link(
+                a.type === "formative" && a.path.raises ? "Keep or retake" : "Start retake",
+                assignmentHref(a),
+                n.group === "todo"
+              )
+            : n.action.kind === "ask"
+              ? ask("Ask to retake", n.group === "todo")
+              : link("View", assignmentHref(a), false);
+    // Hide scores: the end-of-path line names the score; this one doesn't.
+    const plain = /\d+%/.test(n.headline)
+      ? n.action.kind === "retake" || n.action.kind === "ask"
+        ? "You finished your path. Keep your score, or retake to go higher."
+        : n.headline.replace(/ They raise it to 90%\./, "")
+      : null;
+    return [
+      row({
+        group: n.group,
+        kind,
+        why: n.headline,
+        whyWithoutScores: withoutScores(n.headline, plain),
+        note: returned ? (c?.reviewerNote ?? null) : null,
+        minutes: n.minutes,
+        when:
+          kind === "retake" && a.nextAttemptAt
+            ? { label: "You can start after", at: a.nextAttemptAt }
+            : kind === "retake" && a.retakeBy && !a.retakeWindowClosed
+              ? { label: "Retake by", at: a.retakeBy }
+              : closeWhen(a),
+        action: n.action.kind === "retake" && a.nextAttemptAt ? null : action,
+        path: view.lines,
+      }),
+    ];
+  }
 
   switch (a.state) {
     case "in_progress":

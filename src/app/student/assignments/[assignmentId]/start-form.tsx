@@ -16,6 +16,7 @@ export function StartForm({
   timeLimitMinutes,
   label = "Start",
   intro,
+  bare = false,
 }: {
   assignmentId: string;
   needsCode: boolean;
@@ -27,12 +28,18 @@ export function StartForm({
   label?: string;
   /** Replaces the default sentence above the button. */
   intro?: React.ReactNode;
+  /** Inside the step path's Next step box (R5): no card of its own and no sentence above. */
+  bare?: boolean;
 }) {
   const router = useRouter();
   const { run, pending, error, fieldErrors } = useAction();
   return (
     <form
-      className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4"
+      className={
+        bare
+          ? "flex flex-col gap-3"
+          : "flex flex-col gap-3 rounded-lg border border-border bg-card p-4"
+      }
       onSubmit={(e) => {
         e.preventDefault();
         const code = (new FormData(e.currentTarget).get("accessCode") as string | null) || null;
@@ -48,7 +55,7 @@ export function StartForm({
         </p>
       ) : resume ? (
         <p className="text-sm">You have an attempt in progress. Your answers are saved.</p>
-      ) : intro ? (
+      ) : bare ? null : intro ? (
         <div className="text-sm">{intro}</div>
       ) : (
         <p className="text-sm">
@@ -76,7 +83,12 @@ export function StartForm({
         <p className="text-sm text-error-foreground">{error}</p>
       ) : null}
       <div>
-        <Button type="submit" size="lg" disabled={pending}>
+        <Button
+          type="submit"
+          size="lg"
+          disabled={pending}
+          className={bare ? "h-12 w-full sm:w-auto" : undefined}
+        >
           <Play data-icon="inline-start" aria-hidden />
           {resume ? "Continue" : label}
         </Button>

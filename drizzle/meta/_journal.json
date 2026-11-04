@@ -225,6 +225,13 @@
       "when": 1793763138524,
       "tag": "0031_score_history",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1793767349258,
+      "tag": "0032_kept_score",
+      "breakpoints": true
     }
   ]
 }

@@ -34,8 +34,16 @@ import { getGradebook } from "@/lib/queries/results";
 import { loadScoreTrails, trailKey } from "@/lib/queries/score-trail";
 import { listStudentResults } from "@/lib/queries/student-results";
 import { seedScoreHistory } from "@/lib/score-history";
+import { buildStudentToDo } from "@/lib/student-home";
 import { retakeChoice } from "@/lib/retakes";
-import { chooseRetakeScope, requestRetake, setRetakeOptIn, startAttempt } from "./actions";
+import {
+  chooseRetakeScope,
+  keepMyScore,
+  requestRetake,
+  setQuizCorrectionsOptIn,
+  setRetakeOptIn,
+  startAttempt,
+} from "./actions";
 import { saveCorrection, submitCorrections } from "./corrections/actions";
 
 type Q = { id: string; right: string; wrong: string };
@@ -376,13 +384,49 @@ describe("a quiz at 40% on the path (Q1, Q5)", () => {
     const c = await agree(ids.ava, "quiz");
     expect(c.cycle).toBe("retake_available");
     expect(c.state).toBe("retake_available");
+    expect(c.kept).toBe(false);
+    // The to-do row comes from the step path (R5): optional, its mini path, keep or retake.
+    const row = buildStudentToDo({ assignments: [c] }).higher.find(
+      (r) => r.assignmentId === ids.asg.quiz
+    )!;
+    expect(row).toMatchObject({
+      group: "higher",
+      kind: "retake",
+      why: "You earned 80%. Keep it, or retake the quiz to go higher. Your highest score counts.",
+      action: { kind: "link", label: "Keep or retake" },
+    });
+    expect(row.path?.[0].steps.map((x) => x.state)).toEqual([
+      "done",
+      "done",
+      "done",
+      "done",
+      "current",
+    ]);
+  });
+
+  it("Keep my 80%: done for now, and the retake stays open (decision 28)", async () => {
+    as(ids.ava, "student");
+    expect(await ok(keepMyScore(ids.asg.quiz))).toEqual({ kept: true });
+    const c = await card(ids.ava, "quiz");
+    expect(c).toMatchObject({ kept: true, state: "retake_available" });
+    // Done for now: off the to-do list; the card still offers the retake.
+    const todo = buildStudentToDo({ assignments: [c] });
+    expect(
+      [...todo.todo, ...todo.higher, ...todo.waiting].some((r) => r.assignmentId === ids.asg.quiz)
+    ).toBe(false);
+    // A student partway through the path can't keep anything yet.
+    as(ids.ben, "student");
+    expect(await keepMyScore(ids.asg.quiz)).toMatchObject({ ok: false, status: 409 });
   });
 
   it("lets a retake take it higher, with no new corrections (40 → 80 → 100)", async () => {
     const second = await take(ids.ava, "quiz", { lt1: 5 });
     expect(await final(ids.ava, "quiz")).toMatchObject({ percent: 100, basis: "retake" });
     expect((await getCorrectionsSummary(second))!.state).toBe("none");
-    expect((await agree(ids.ava, "quiz")).cycle).toBe("done");
+    const c = await agree(ids.ava, "quiz");
+    expect(c.cycle).toBe("done");
+    // The keep was before this attempt, so it no longer counts.
+    expect(c.kept).toBe(false);
   });
 });
 
@@ -398,10 +442,13 @@ describe("a mixed quiz: LT1 at 40%, LT2 at 80% (decision 31)", () => {
   });
 
   it("raises LT2 to 90 with its own corrections once opted in", async () => {
-    await db.insert(schema.retakeGates).values({
-      studentId: ids.ben,
-      assignmentId: ids.asg.mixed,
-      learningTargetId: ids.lt.lt2,
+    as(ids.ben, "student");
+    // LT1 is required, not optional: it can't be "added".
+    expect(await setQuizCorrectionsOptIn(ids.asg.mixed, ids.lt.lt1, true)).toMatchObject({
+      ok: false,
+      status: 400,
+    });
+    expect(await ok(setQuizCorrectionsOptIn(ids.asg.mixed, ids.lt.lt2, true))).toEqual({
       optedIn: true,
     });
     expect((await getCorrectionsSummary(first))!.needed).toBe(4);
@@ -410,6 +457,12 @@ describe("a mixed quiz: LT1 at 40%, LT2 at 80% (decision 31)", () => {
     expect(await final(ids.ben, "mixed")).toMatchObject({
       percent: 65,
       basis: "corrections_to_90",
+    });
+    // Its corrections are in, so the opt-in stays.
+    as(ids.ben, "student");
+    expect(await setQuizCorrectionsOptIn(ids.asg.mixed, ids.lt.lt2, false)).toMatchObject({
+      ok: false,
+      status: 409,
     });
   });
 

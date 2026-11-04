@@ -637,6 +637,6 @@ describe("pathRequestBlocker (Needs you: what still stops an approved retake)", 
   it("says there's no retake on a quiz with nothing below the line", () => {
     expect(
       pathRequestBlocker(pathFor(quiz({ attempts: [attempt("a1", 1, { lt1: [9, 10] })] })))
-    ).toEqual({ reason: "no_retake" });
+    ).toEqual({ reason: "path_no_retake" });
   });
 });

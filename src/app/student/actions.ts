@@ -6,7 +6,7 @@ import { z } from "zod";
 import { db, schema } from "@/db";
 import { logActivity } from "@/lib/activity-log";
 import { canStartAttempt, startReasonText } from "@/lib/assignments";
-import { createAttempt, finalizeAttempt } from "@/lib/attempts";
+import { createAttempt, finalizeAttempt, recomputeFinalScore } from "@/lib/attempts";
 import { AWAITING_GRADE_TEXT } from "@/lib/card-state";
 import {
   pauseAttempt,
@@ -450,6 +450,66 @@ export const chooseRetakeScope = withAuthz(async (assignmentId: string, choice: 
   revalidate(assignmentId);
   return { choice };
 });
+
+/**
+ * "Keep my 80%" (relearning revamp decision 28, R5): at the end of a quiz's path the student keeps
+ * the raised score for now. Done for now; the retake stays open until its window closes.
+ */
+export const keepMyScore = withAuthz(async (assignmentId: string) => {
+  const access = await requireAssignmentAccess(assignmentId);
+  if (access.as !== "student") throw new ActionError("Students only.", 403);
+  const path = await getPathState(assignmentId, access.userId);
+  if (
+    !path ||
+    path.state.type !== "formative" ||
+    !path.state.raises ||
+    path.state.required.length === 0
+  )
+    throw new ActionError("There's no score to keep here.", 409);
+  if (!path.state.complete || path.state.blockers.length)
+    throw new ActionError("Finish your path first.", 409);
+  await assertNoOpenAttempt(assignmentId, access.userId);
+  const kept = await db
+    .update(schema.assignmentFinalScores)
+    .set({ keptAt: new Date() })
+    .where(
+      and(
+        eq(schema.assignmentFinalScores.assignmentId, assignmentId),
+        eq(schema.assignmentFinalScores.studentId, access.userId)
+      )
+    )
+    .returning({ id: schema.assignmentFinalScores.id });
+  if (!kept.length) throw new ActionError("There's no score to keep here.", 409);
+  revalidate(assignmentId);
+  return { kept: true };
+});
+
+/**
+ * A quiz's 80%+ target on the relearning path (Q2, decision 31): correct its missed questions to
+ * raise it to 90%. Opting out works only while nothing is turned in for it and it isn't in the
+ * relearning (adding it there is `setRelearningTargetAdded`).
+ */
+export const setQuizCorrectionsOptIn = withAuthz(
+  async (assignmentId: string, learningTargetId: string, optedIn: boolean) => {
+    const access = await requireAssignmentAccess(assignmentId);
+    if (access.as !== "student") throw new ActionError("Students only.", 403);
+    const path = await getPathState(assignmentId, access.userId);
+    if (!path || path.state.type !== "formative")
+      throw new ActionError("Only a quiz on the relearning path has this.", 409);
+    const t = path.state.targets.find((x) => x.id === learningTargetId);
+    if (!t || t.role !== "optional") throw new ActionError("That target can't be added.", 400);
+    if (
+      !optedIn &&
+      (t.onPath || t.correctionsState === "submitted" || t.correctionsState === "approved")
+    )
+      throw new ActionError("You've already worked on that one, so it stays.", 409);
+    await assertNoOpenAttempt(assignmentId, access.userId);
+    await setOptIns(assignmentId, access.userId, [learningTargetId], !!optedIn);
+    await recomputeFinalScore(assignmentId, access.userId);
+    revalidate(assignmentId);
+    return { optedIn: !!optedIn };
+  }
+);
 
 /** The retake's targets can't change while an attempt is open. */
 async function assertNoOpenAttempt(assignmentId: string, studentId: string): Promise<void> {

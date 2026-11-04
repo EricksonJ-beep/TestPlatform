@@ -73,6 +73,8 @@ export const STALE_TEXT: Record<StaleReason, string> = {
 
 export type RequestBlocker =
   | { reason: "not_open" | "closed" | "no_attempts_left" | "no_retake" | "corrections" }
+  /** The relearning path (R5): a quiz at 80% or higher has no retake (corrections → 90%, the path → 100%), and one at 100% has nothing to retake. */
+  | { reason: "path_no_retake" | "at_full" }
   | { reason: "wait"; at: Date }
   | { reason: "window_closed"; at: Date }
   | { reason: Exclude<RetakeBlocker, "no_attempts"> }
@@ -138,6 +140,9 @@ export const BLOCKER_LINE: Record<RequestBlocker["reason"], string> = {
   wait: "Can start after",
   window_closed: "The retake window closed",
   no_retake: "No retake at their score: corrections raise it to 100%.",
+  path_no_retake:
+    "No retake at their score: corrections raise it to 90%, and the relearning path to 100%.",
+  at_full: "They already have 100%, so there's nothing to retake.",
   corrections: "Their corrections on the last try aren't done yet.",
   practice: "They still need 80% on practice for",
   gates: "Their relearning checklist isn't done yet.",
@@ -157,8 +162,9 @@ export function pathRequestBlocker(state: PathState): RequestBlocker | null {
   const codes = (ids: string[]) => ids.map((id) => code.get(id) ?? id);
   switch (b.kind) {
     case "at_full":
+      return { reason: "at_full" };
     case "no_retake":
-      return { reason: "no_retake" };
+      return { reason: "path_no_retake" };
     case "corrections":
     case "corrections_returned":
       return { reason: "corrections" };

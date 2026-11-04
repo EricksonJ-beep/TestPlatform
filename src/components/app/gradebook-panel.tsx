@@ -231,7 +231,11 @@ function CellPanel({
             student={student}
             unlock={cell.unlock}
             reopenedUntil={cell.reopenedUntil}
-            noRetake={cell.rule === "to_full"}
+            noRetake={
+              cell.rule === "to_full"
+                ? BLOCKER_LINE[cell.onPath ? "path_no_retake" : "no_retake"]
+                : null
+            }
           />
         ) : null}
         <div className="flex flex-wrap gap-2">
@@ -364,7 +368,8 @@ function UnlockControls({
   unlock: UnlockState;
   /** The closed test is open for this student until then. */
   reopenedUntil: Date | null;
-  noRetake: boolean;
+  /** The line under the cap when no try will start (the path's words on the path). */
+  noRetake: string | null;
 }) {
   // Unlock, Decline and Take back all revalidate /app, which re-renders the Dashboard in place.
   const { run, pending, error } = useAction({ refresh: false });
@@ -478,7 +483,7 @@ function UnlockControls({
       {noRetake ? (
         <span className="inline-flex items-center gap-1 text-xs text-warning-foreground">
           <Clock className="size-3.5" aria-hidden />
-          {BLOCKER_LINE.no_retake}
+          {noRetake}
         </span>
       ) : null}
       {error ? <span className="text-xs text-error-foreground">{error}</span> : null}

@@ -99,6 +99,8 @@ export type ClassGradebookCell = {
   /** The learning cycle, worked out even after the test closed; null before any attempt or while one is open. */
   cycle: CycleState | null;
   rule: CorrectionsRule;
+  /** On the relearning path (Nov 4 2026): its words differ (corrections → 90%, the path → 100%). */
+  onPath: boolean;
   /** The teacher's status tag (`cellTag`; words from `tagLabel`). */
   tag: CellTag;
   /** The counting score from `assignment_final_scores` (tier on summatives) and how it came about. */
@@ -344,6 +346,7 @@ export async function getClassGradebook(
         perTarget: schema.assignmentFinalScores.perTarget,
         basis: schema.assignmentFinalScores.basis,
         computedAt: schema.assignmentFinalScores.computedAt,
+        keptAt: schema.assignmentFinalScores.keptAt,
       })
       .from(schema.assignmentFinalScores)
       .where(
@@ -695,6 +698,7 @@ export async function getClassGradebook(
       retake,
       unlockedBlocker,
       opensAt: a.opensAt,
+      path,
     });
 
     // The same assignment as the student's home reads it for their to-do (`listStudentAssignments`).
@@ -730,6 +734,10 @@ export async function getClassGradebook(
       corrections,
       retake,
       quizPractice: card.quizPractice,
+      // The step path (R5): the student's to-do row comes from it, so the teacher reads the same.
+      path,
+      kept:
+        !!final?.keptAt && (!lastSubmittedAt || final.keptAt.getTime() > lastSubmittedAt.getTime()),
     };
 
     const cell: ClassGradebookCell = {
@@ -738,6 +746,7 @@ export async function getClassGradebook(
       card: card.state,
       cycle: card.cycle,
       rule: card.rule,
+      onPath: !!path,
       tag,
       score: final
         ? { percent: final.percent, tier: final.tier as 1 | 2 | 3 | null, basis: final.basis }

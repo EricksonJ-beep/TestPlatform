@@ -83,6 +83,7 @@ const cell = (
     card: "done",
     cycle: "done",
     rule: "gate",
+    onPath: false,
     tag: tag(input ?? {}),
     score: null,
     attemptsUsed: 1,

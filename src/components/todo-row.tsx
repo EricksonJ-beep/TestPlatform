@@ -2,6 +2,7 @@ import { Check, Clock, Lock, X } from "lucide-react";
 import { cn } from "cn";
 import { showsScore, TYPE_LABEL, type ToDoRow } from "@/lib/student-home";
 import { LocalTime } from "@/components/local-time";
+import { StepPathLines } from "@/components/step-path";
 
 /**
  * One to-do row's words (Jon, Oct 14 2026, docs/student-home-plan.md): the title, why it's on the
@@ -33,6 +34,7 @@ export function ToDoRowBody({
         ) : null}
         {r.className ? <span className="text-xs text-muted-foreground">{r.className}</span> : null}
       </div>
+      {r.path?.length ? <StepPathLines lines={r.path} mini /> : null}
       {why ? <p className="text-sm">{why}</p> : null}
       {r.note ? (
         <p className="rounded-md bg-warning-soft px-2 py-1 text-sm text-warning-foreground">

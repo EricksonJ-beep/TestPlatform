@@ -2,8 +2,9 @@
 
 **Status: approved by Jon, Nov 4 2026. R0 (spec updates), R1 (schema), R2 (the rule), R3
 (the practice check), R6 (the test retake picker) and R7 (score history) are done. R4 (Read ·
-Watch · Do) and R8 (Skyward export) are built and wait on Jon (videos to pick; a test import).
-Nothing else below is built yet.**
+Watch · Do), R5 (the step path) and R8 (Skyward export) are built and wait on Jon: videos to
+pick, a walk-through on a Chromebook and a phone, and a test import. The content tickets and L1
+are next.**
 
 Jon's ask: "Right now the students are struggling with the corrections, activity, and then
 practice. I think it is too much for them to 'earn' a retake. The correction piece is working
@@ -449,6 +450,47 @@ must offer Read or Do and land in Needs you.
 **Done when** Jon walks a test student through a 40% quiz, a 40/90 mixed quiz and a two-target
 test on a Chromebook and a phone without help text, and the student's path matches the teacher
 gradebook cell at every step.
+
+*Built Nov 4 (waiting on Jon's walk-through):*
+- *One pure view, `buildStepPath` (`src/lib/step-path.ts`), turns the path rule's state and the
+  card's cycle into the lines of steps, the Next step and the quiz's end choice. The assessment
+  page, the card and the home to-do all read it, and the teacher's student panel builds the same
+  to-do, so they can't disagree.*
+- *The assessment page: on the path, the step path takes the place of the corrections,
+  relearning and practice boxes.*
+  - *Circles (`src/components/step-path.tsx`): done is a green check; waiting is an amber clock
+    with "Turned in, waiting for your teacher's OK"; current is teal and larger, with a pulsing
+    ring; locked is gray with a lock and its reason ("Opens after your corrections").*
+  - *Under them, one Next step box: a headline, "About N minutes" and one button.*
+  - *A quiz shows one path (Corrections · Relearn · Practice check · 80% earned · Retake), or a
+    line per target when two or more have work. A test shows a line per required target (and per
+    added target: Corrections only), with "Retake unlocks when every line is ✓".*
+  - *While corrections wait for approval, the Next step says "Start your relearning while you
+    wait for your teacher's OK" (Q7).*
+- *The quiz end choice (decision 28) is two big buttons: **Keep my 80%** and **Take the retake**.
+  Keeping it is stored (`assignment_final_scores.kept_at`, migration `0032_kept_score`, additive
+  and re-runnable) and counts until the next attempt. The quiz then drops off the home to-do, and
+  the card still offers the retake.*
+- *A quiz's 80%+ targets get two tick boxes: "Fix my mistakes on LT2 (85%) to raise it to 90%"
+  (new action `setQuizCorrectionsOptIn`) and "Add LT2 to your relearning to reach 100%" (R4's
+  action, once the relearning has started; before that, on the picker).*
+- *The card shows a mini path in place of its status pill, the Next step's words and its button.
+  The home to-do rows are built from the Next step, with the mini path, and drop off when done or
+  kept.*
+- *A phone gets a vertical path with the Next step box first.*
+- *Teacher wording on the path:*
+  - *The gradebook cell names each target's step: "Relearning (U3.LT1: relearn, U3.LT4:
+    practice check)".*
+  - *"Corrections → 90%" replaces 100%.*
+  - *Needs you says "corrections raise it to 90%, and the relearning path to 100%", or "They
+    already have 100%".*
+- *Left for later:*
+  - *Dates on done steps. The path state doesn't carry them yet.*
+  - *The tier board's readiness lines still use the old words. The relearning monitor shows the
+    new Read · Watch · Do section above them.*
+- *Tests: `src/lib/step-path.test.ts` (the 40% quiz, the 40/90 mixed quiz, the two-target test,
+  waiting, keep, ask). `src/app/student/relearning-path.test.ts` covers Keep my 80%, the quiz
+  opt-in, and the to-do row built from the path.*
 
 ### R6 · Retake picker for tests ✅ (built Nov 4 2026)
 Full test or Custom (S3), using `planRetake`'s required/optional split. A target added beyond

@@ -229,6 +229,8 @@ export type StudentAssignment = {
    * each target's steps, raises and counting percent, for the step path (R5). Null otherwise.
    */
   path?: PathState | null;
+  /** "Keep my 80%" (decision 28, R5): chosen since the latest attempt; the retake stays open. */
+  kept?: boolean;
 };
 
 type OpenPauseJson = {
@@ -309,6 +311,10 @@ export async function listStudentAssignments(
         number | null
       >`(select f.percent from ${schema.assignmentFinalScores} f where f.assignment_id = ${schema.assignments.id} and f.student_id = ${studentId})`,
       finalBasis: sql<FinalBasis | null>`(select f.basis from ${schema.assignmentFinalScores} f where f.assignment_id = ${schema.assignments.id} and f.student_id = ${studentId})`,
+      // "Keep my 80%" (R5), counted only while later than the latest attempt.
+      keptAt: sql<
+        Date | string | null
+      >`(select f.kept_at from ${schema.assignmentFinalScores} f where f.assignment_id = ${schema.assignments.id} and f.student_id = ${studentId})`,
       lastSubmittedAt: sql<Date | null>`(select max(a.submitted_at) from ${schema.attempts} a where a.assignment_id = ${schema.assignments.id} and a.student_id = ${studentId} and a.status <> 'in_progress')`,
       // Quiz relearning (R3) reads the latest finished attempt's per-target percents.
       latestSubmittedAt: sql<
@@ -397,6 +403,7 @@ export async function listStudentAssignments(
         firstPercent: firstPercentRaw,
         finalPercent,
         finalBasis,
+        keptAt,
         retakeWindowDays,
         unlockedThrough,
         requestedNext,
@@ -459,6 +466,9 @@ export async function listStudentAssignments(
         return {
           ...r,
           path,
+          kept:
+            !!keptAt &&
+            (!lastSubmittedAt || new Date(keptAt).getTime() > new Date(lastSubmittedAt).getTime()),
           needsCode: !!accessCode,
           status: card.status,
           state: card.state,
