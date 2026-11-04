@@ -6,6 +6,7 @@ import { correctionsProgress } from "@/lib/student-home";
 import { EmptyState } from "@/components/empty-state";
 import { LocalTime } from "@/components/local-time";
 import { TargetChip } from "@/components/targets/target-chip";
+import { ScoreTrail } from "@/components/score-trail";
 
 const CORRECTIONS_LABEL = {
   needed: "Corrections needed",
@@ -64,7 +65,11 @@ export function ResultsTab({ results }: { results: StudentResult[] }) {
                 : "Submitted"}
             </span>
           </div>
-          {r.released && r.growth !== null ? (
+          {r.released && r.trail ? (
+            <p className="mt-1 text-xs text-muted-foreground" data-growth>
+              How your score got here: <ScoreTrail steps={r.trail} />
+            </p>
+          ) : r.released && r.growth !== null ? (
             <p className="mt-1 text-xs text-muted-foreground tabular" data-growth>
               Attempt 1 → best: {r.growth >= 0 ? "+" : ""}
               {Math.round(r.growth)} points

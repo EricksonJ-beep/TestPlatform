@@ -218,6 +218,13 @@
       "when": 1793759436468,
       "tag": "0030_relearning_revamp",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1793763138524,
+      "tag": "0031_score_history",
+      "breakpoints": true
     }
   ]
 }

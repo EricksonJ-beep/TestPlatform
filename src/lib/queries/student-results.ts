@@ -7,6 +7,8 @@
 import { and, asc, eq, inArray, ne } from "drizzle-orm";
 import { db, schema } from "@/db";
 import type { StudentAssignment } from "@/lib/queries/assignments";
+import { loadScoreTrails, trailKey } from "@/lib/queries/score-trail";
+import type { ScoreStep } from "@/lib/score-trail";
 import type { CorrectionsRule } from "@/lib/retakes";
 import { correctionsWhy } from "@/lib/student-home";
 
@@ -20,6 +22,8 @@ export type StudentResult = {
   bestAttemptId: string | null;
   /** Percent points from attempt 1 to the score that counts; null with fewer than two attempts. */
   growth: number | null;
+  /** The score trail (R7): every change to the counting score, dated; null with fewer than two steps. */
+  trail: ScoreStep[] | null;
   targets: { id: string; code: string; title: string; percent: number }[];
   attempts: {
     id: string;
@@ -57,6 +61,7 @@ export async function listStudentResults(
       and(inArray(schema.attempts.assignmentId, ids), eq(schema.attempts.studentId, studentId))
     )
     .orderBy(asc(schema.attempts.number));
+  const trails = await loadScoreTrails(ids.map((assignmentId) => ({ assignmentId, studentId })));
   const finals = await db
     .select()
     .from(schema.assignmentFinalScores)
@@ -159,6 +164,10 @@ export async function listStudentResults(
         first && finished.length > 1 && bestPercent !== null && first.percent !== null
           ? bestPercent - first.percent
           : null,
+      trail: (() => {
+        const steps = trails.get(trailKey(a.id, studentId));
+        return steps && steps.length >= 2 ? steps : null;
+      })(),
       targets: targetRows,
       attempts: mine.map((x) => ({
         id: x.id,

@@ -283,6 +283,15 @@ export async function recomputeFinalScore(assignmentId: string, studentId: strin
           eq(schema.retakeGates.studentId, studentId)
         )
       );
+    // The score trail starts again with the next attempt 1 (R7).
+    await db
+      .delete(schema.scoreHistory)
+      .where(
+        and(
+          eq(schema.scoreHistory.assignmentId, assignmentId),
+          eq(schema.scoreHistory.studentId, studentId)
+        )
+      );
     return;
   }
   const firstNumber = Math.min(...attempts.map((a) => a.number));
@@ -350,7 +359,7 @@ export async function recomputeFinalScore(assignmentId: string, studentId: strin
     });
   }
   const existing = await db.query.assignmentFinalScores.findFirst({
-    columns: { tier: true, previousTier: true, tierChangedAt: true },
+    columns: { tier: true, previousTier: true, tierChangedAt: true, percent: true },
     where: and(
       eq(schema.assignmentFinalScores.assignmentId, assignmentId),
       eq(schema.assignmentFinalScores.studentId, studentId)
@@ -378,6 +387,11 @@ export async function recomputeFinalScore(assignmentId: string, studentId: strin
       target: [schema.assignmentFinalScores.assignmentId, schema.assignmentFinalScores.studentId],
       set: values,
     });
+  // The score trail (R7, G1): every change to the counting percent, with how it came about.
+  if (!existing || Math.abs(existing.percent - final.percent) >= 0.005)
+    await db
+      .insert(schema.scoreHistory)
+      .values({ assignmentId, studentId, percent: final.percent, basis: final.basis, at: now });
   await recomputeGates(assignmentId, studentId);
 }
 

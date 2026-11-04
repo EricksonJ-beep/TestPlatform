@@ -6,13 +6,14 @@
  * (`deriveCardState`, the rule the student home uses, so a cell and the card always agree) and
  * the teacher's status tag on top (`cellTag`).
  *
- * Batched: eleven queries in two waves whatever the class size. Nothing is written: stored gate
- * rows are read as they are (`getRetakeStatus` can write them during a read, so it is never called
- * here), and paused tests are worked out in code (`currentPause`). Quiz relearning (Jon, Oct 14
- * 2026, R3) reads every class student's finished practice in one query and the targets' practice
- * content with their names. Each student's own to-do for the class (`buildStudentToDo`, the
- * student home's builder) is made from the same rows. Callers pass requireOwner({ type: "class" })
- * first.
+ * Batched: a dozen queries in two waves whatever the class size (the relearning path adds a few
+ * where a course is switched on). Nothing is written: stored gate rows are read as they are
+ * (`getRetakeStatus` can write them during a read, so it is never called here), and paused tests
+ * are worked out in code (`currentPause`). Each counting score's trail (R7) is built from the
+ * finals, the attempts and one score history read. Quiz relearning (Jon, Oct 14 2026, R3) reads
+ * every class student's finished practice in one query and the targets' practice content with their
+ * names. Each student's own to-do for the class (`buildStudentToDo`, the student home's builder) is
+ * made from the same rows. Callers pass requireOwner({ type: "class" }) first.
  */
 import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
@@ -35,6 +36,8 @@ import { effectiveClose, endOfNextSchoolDay } from "@/lib/reopen";
 import { loadCorrectionScopes, scopeSummary } from "@/lib/queries/corrections";
 import { loadPracticeResults, practiceTargetColumns } from "@/lib/queries/quiz-practice";
 import { loadPathStates, pathKey } from "@/lib/queries/relearning-path";
+import { buildTrails, scoreHistoryColumns, trailKey } from "@/lib/queries/score-trail";
+import type { ScoreStep } from "@/lib/score-trail";
 import {
   growthFor,
   planRetake,
@@ -141,6 +144,8 @@ export type ClassGradebookCell = {
     now: number;
     targets: { code: string; first: number; now: number }[];
   } | null;
+  /** The score trail (R7): every change to the counting score, dated; null with fewer than two steps. */
+  trail: ScoreStep[] | null;
 };
 
 export type UnlockState = {
@@ -239,6 +244,7 @@ export async function getClassGradebook(
     targets,
     pending,
     practice,
+    history,
   ] = await Promise.all([
     db
       .select({
@@ -282,6 +288,7 @@ export async function getClassGradebook(
         correctionsCap: schema.assignments.correctionsCap,
         retakeWindowDays: schema.assignments.retakeWindowDays,
         cvtcRules: assessmentCourse.cvtcRules,
+        relearningPathFrom: assessmentCourse.relearningPathFrom,
       })
       .from(schema.assignments)
       .innerJoin(schema.assessments, eq(schema.assignments.assessmentId, schema.assessments.id))
@@ -336,6 +343,7 @@ export async function getClassGradebook(
         tierChangedAt: schema.assignmentFinalScores.tierChangedAt,
         perTarget: schema.assignmentFinalScores.perTarget,
         basis: schema.assignmentFinalScores.basis,
+        computedAt: schema.assignmentFinalScores.computedAt,
       })
       .from(schema.assignmentFinalScores)
       .where(
@@ -417,6 +425,17 @@ export async function getClassGradebook(
       ),
     // Every class student's finished practice, per target (quiz relearning, R3).
     loadPracticeResults(classStudents),
+    // The score history behind the counting scores (R7): with the finals and attempts above, each
+    // cell's trail.
+    db
+      .select(scoreHistoryColumns)
+      .from(schema.scoreHistory)
+      .where(
+        and(
+          inArray(schema.scoreHistory.assignmentId, classAssignments),
+          inArray(schema.scoreHistory.studentId, classStudents)
+        )
+      ),
   ]);
   const cls = classRows[0];
   if (!cls) return null;
@@ -439,13 +458,15 @@ export async function getClassGradebook(
     if (!a || a.type === "practice" || a.cvtcRules) continue;
     const latest = list.filter((x) => x.status !== "in_progress").at(-1);
     if (latest && !(latest.percent !== null && latest.percent >= 100)) latestIds.push(latest.id);
-    if (latest) pathPairs.push({ assignmentId: a.id, studentId: latest.studentId });
+    // The relearning path (Nov 4 2026) only where the course is switched on (none before launch).
+    if (latest && a.relearningPathFrom)
+      pathPairs.push({ assignmentId: a.id, studentId: latest.studentId });
   }
-  // The relearning path (Nov 4 2026): read alongside, keeping only switched-on courses.
   const [detailBy, paths] = await Promise.all([
     loadCorrectionScopes(latestIds),
     loadPathStates(pathPairs),
   ]);
+  const trails = buildTrails({ history, finals, attempts });
   const week = startOfWeek(now);
 
   const cellFor = (
@@ -760,6 +781,10 @@ export async function getClassGradebook(
         }),
         codeBy
       ),
+      trail: (() => {
+        const steps = trails.get(trailKey(a.id, studentId));
+        return steps && steps.length >= 2 ? steps : null;
+      })(),
       corrections,
       retake,
       quizPractice: card.quizPractice,

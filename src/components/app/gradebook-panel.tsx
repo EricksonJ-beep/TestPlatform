@@ -51,6 +51,7 @@ import {
 } from "@/app/app/results/actions";
 import { LetContinueButton } from "@/app/app/results/[assignmentId]/let-continue-button";
 import { TagPill } from "./gradebook-tag";
+import { ScoreTrailList } from "@/components/score-trail";
 
 export type PanelTarget =
   | { kind: "cell"; studentId: string; assignmentId: string }
@@ -177,13 +178,17 @@ function CellPanel({
             ))}
           </ul>
         ) : null}
-        {!hideScores && cell.growth ? (
+        {!hideScores && (cell.trail || cell.growth) ? (
           <div className="text-sm" data-growth>
-            <p>
-              First try {Math.round(cell.growth.first)}% → now{" "}
-              <span className="font-semibold">{Math.round(cell.growth.now)}%</span>
-            </p>
-            {cell.growth.targets.length ? (
+            {cell.trail ? (
+              <ScoreTrailList steps={cell.trail} />
+            ) : cell.growth ? (
+              <p>
+                First try {Math.round(cell.growth.first)}% → now{" "}
+                <span className="font-semibold">{Math.round(cell.growth.now)}%</span>
+              </p>
+            ) : null}
+            {cell.growth?.targets.length ? (
               <ul className="text-xs text-muted-foreground" aria-label="Retaken targets">
                 {cell.growth.targets.map((t) => (
                   <li key={t.code} className="tabular" data-growth-target={t.code}>

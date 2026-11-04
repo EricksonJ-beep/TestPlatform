@@ -4,8 +4,10 @@ import { notFound } from "next/navigation";
 import { Check, ChevronLeft, X } from "lucide-react";
 import { cn } from "cn";
 import { isAuthzError, requireOwner } from "@/lib/authz";
+import { loadScoreTrails, trailKey } from "@/lib/queries/score-trail";
 import { getRelearningMonitor } from "@/lib/queries/tiers";
 import { LocalTime } from "@/components/local-time";
+import { ScoreTrail } from "@/components/score-trail";
 import { TargetChip } from "@/components/targets/target-chip";
 import { Button } from "@/components/ui/button";
 
@@ -33,8 +35,13 @@ export default async function RelearningMonitorPage({
     if (isAuthzError(err)) notFound();
     throw err;
   }
-  const m = await getRelearningMonitor(assignmentId, studentId);
+  const [m, trails] = await Promise.all([
+    getRelearningMonitor(assignmentId, studentId),
+    loadScoreTrails([{ assignmentId, studentId }]),
+  ]);
   if (!m) notFound();
+  // How the counting score got here (R7): shown once it has moved.
+  const trail = trails.get(trailKey(assignmentId, studentId));
   const tierTone =
     m.tier === 1
       ? "bg-success-soft text-success-foreground"
@@ -67,6 +74,7 @@ export default async function RelearningMonitorPage({
             {m.assignment.title} · {m.assignment.className}
           </span>
           {m.percent !== null ? <span>Overall {Math.round(m.percent)}%</span> : null}
+          {trail && trail.length >= 2 ? <ScoreTrail steps={trail} prefix="Score history" /> : null}
           <span>{m.minutesOnTask} min on task</span>
           {m.latestAttemptId ? (
             <Link

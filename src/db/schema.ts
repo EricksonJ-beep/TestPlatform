@@ -969,6 +969,29 @@ export const assignmentFinalScores = pgTable(
   ]
 );
 
+/**
+ * Every change to a student's counting score on an assignment, in order (relearning revamp G1,
+ * ticket R7): the score trail "40 → 80 (path) → 95 (retake)", each step dated. Written by
+ * `recomputeFinalScore` whenever the percent changes; never by a client.
+ */
+export const scoreHistory = pgTable(
+  "score_history",
+  {
+    id: id(),
+    assignmentId: uuid("assignment_id")
+      .notNull()
+      .references(() => assignments.id, { onDelete: "cascade" }),
+    studentId: uuid("student_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    percent: doublePrecision("percent").notNull(),
+    basis: text("basis").$type<FinalBasis>(),
+    at: timestamp("at", { withTimezone: true }).defaultNow().notNull(),
+    ...timestamps,
+  },
+  (t) => [index("score_history_pair_idx").on(t.assignmentId, t.studentId, t.at)]
+);
+
 // ---------------------------------------------------------------------------
 // Learning cycle
 // ---------------------------------------------------------------------------

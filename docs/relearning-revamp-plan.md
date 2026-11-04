@@ -1,8 +1,8 @@
 # Relearning revamp: a shorter, clearer path to the retake (Jon, Nov 2–4 2026)
 
-**Status: approved by Jon, Nov 4 2026. R0 (spec updates), R1 (schema), R2 (the rule) and R3
-(the practice check) are done, and R8 (Skyward export) is built. Nothing else below is built
-yet.**
+**Status: approved by Jon, Nov 4 2026. R0 (spec updates), R1 (schema), R2 (the rule), R3
+(the practice check) and R7 (score history) are done, and R8 (Skyward export) is built. Nothing
+else below is built yet.**
 
 Jon's ask: "Right now the students are struggling with the corrections, activity, and then
 practice. I think it is too much for them to 'earn' a retake. The correction piece is working
@@ -408,11 +408,33 @@ the required ones asks for its corrections first.
 optional LT1 after its corrections), and the retake serves the right sections from each target's
 pool.
 
-### R7 · Gradebook history
+### R7 · Gradebook history ✅ (built Nov 4 2026)
 The score trail (G1) in the class gradebook cell, results table, student results page and My
 results. Live refresh is unchanged.
 
 **Done when** a 40 → 80 → 95 student shows that trail in all four places, each step dated.
+
+*Built Nov 4:*
+- *New table `score_history` (migration `0031_score_history`, additive and re-runnable). The
+  final score code (`recomputeFinalScore`) adds a row each time the counting percent changes,
+  with how it came about.*
+- *Scores from before R7 get a starting point once: attempt 1 (when it differs) and the score now.
+  This runs on the first production deploy (`scripts/score-history-seed.ts`). Preview builds skip
+  it, as they share the live database.*
+- *The rule is `scoreTrail` (`src/lib/score-trail.ts`). Steps are in time order, and a repeat is
+  kept once. The first step is "attempt 1". A rise is named "relearning path", "corrections" or
+  "retake". A drop is a "regrade", since only a teacher's change lowers a score.*
+- *Shown once a score has moved:*
+  - *Class gradebook cell: "from 40 → 80 → 95", every step dated on hover and in the side
+    panel.*
+  - *Results table: under the student's growth line.*
+  - *Relearning monitor (one student's results page): "Score history 40 → 80 → 95".*
+  - *My results: "How your score got here: …".*
+- *The class gradebook still reads in 12 queries. The path read is skipped where no course is
+  switched on, and the trail comes from rows the gradebook already reads plus one history read.*
+- *Tests: `src/lib/score-trail.test.ts`, the R7 block in `src/app/student/relearning-path.test.ts`
+  (all four places, and the seed runs once), and the 0031 re-run check in
+  `src/db/relearning-schema.test.ts`.*
 
 ### R8 · Skyward export ✅ (built Nov 4 2026; waiting on Jon's test import)
 - New export (K1, K2): per-target files for quizzes and one file for tests, each with the header

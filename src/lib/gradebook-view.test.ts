@@ -100,6 +100,7 @@ const cell = (
     tabSwitches: 0,
     movedUpThisWeek: false,
     growth: null,
+    trail: null,
     ...rest,
   };
 };

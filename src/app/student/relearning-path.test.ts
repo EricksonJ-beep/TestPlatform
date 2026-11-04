@@ -30,6 +30,10 @@ import { listStudentAssignments } from "@/lib/queries/assignments";
 import { getClassGradebook } from "@/lib/queries/class-gradebook";
 import { getCorrectionScope, getCorrectionsSummary } from "@/lib/queries/corrections";
 import { getPathState } from "@/lib/queries/relearning-path";
+import { getGradebook } from "@/lib/queries/results";
+import { loadScoreTrails, trailKey } from "@/lib/queries/score-trail";
+import { listStudentResults } from "@/lib/queries/student-results";
+import { seedScoreHistory } from "@/lib/score-history";
 import { requestRetake, startAttempt } from "./actions";
 import { saveCorrection, submitCorrections } from "./corrections/actions";
 
@@ -493,5 +497,52 @@ describe("courses not on the path keep the v2 rules", () => {
     expect(c.corrections).toBeNull();
     expect(c.path).toBeNull();
     expect(await final(ids.eve, "apQuiz")).toMatchObject({ percent: 40, basis: "best_attempt" });
+  });
+});
+
+describe("the score trail (R7)", () => {
+  it("records each change to the counting score: 40 → 80 (path) → 100 (retake)", async () => {
+    const trails = await loadScoreTrails([{ assignmentId: ids.asg.quiz, studentId: ids.ava }]);
+    const steps = trails.get(trailKey(ids.asg.quiz, ids.ava))!;
+    expect(steps.map((s) => [s.percent, s.label])).toEqual([
+      [40, "attempt 1"],
+      [80, "relearning path"],
+      [100, "retake"],
+    ]);
+    const cell = await (async () => {
+      const gb = (await getClassGradebook(ids.cls))!;
+      return gb.rows
+        .find((r) => r.student.id === ids.ava)!
+        .cells.find((c) => c.assignmentId === ids.asg.quiz)!;
+    })();
+    expect(cell.trail?.map((s) => s.percent)).toEqual([40, 80, 100]);
+    // The same trail in the results table and on the student's My results.
+    const row = (await getGradebook(ids.asg.quiz)).find((r) => r.studentId === ids.ava)!;
+    expect(row.trail?.map((s) => s.label)).toEqual(["attempt 1", "relearning path", "retake"]);
+    const mine = await listStudentResults(ids.ava, await listStudentAssignments(ids.ava));
+    expect(mine.find((r) => r.assignmentId === ids.asg.quiz)?.trail?.map((s) => s.percent)).toEqual(
+      [40, 80, 100]
+    );
+  });
+
+  it("seeds a starting point for scores from before R7, once", async () => {
+    // A score with no history, as every score had before R7 shipped.
+    await db
+      .delete(schema.scoreHistory)
+      .where(
+        and(
+          eq(schema.scoreHistory.assignmentId, ids.asg.bioQuiz),
+          eq(schema.scoreHistory.studentId, ids.dee)
+        )
+      );
+    expect(await seedScoreHistory()).toBeGreaterThan(0);
+    expect(await seedScoreHistory()).toBe(0);
+    const steps = (
+      await loadScoreTrails([{ assignmentId: ids.asg.bioQuiz, studentId: ids.dee }])
+    ).get(trailKey(ids.asg.bioQuiz, ids.dee))!;
+    expect(steps.map((s) => [s.percent, s.label])).toEqual([
+      [40, "attempt 1"],
+      [80, "corrections"],
+    ]);
   });
 });
