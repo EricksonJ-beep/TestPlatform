@@ -1,7 +1,8 @@
 # Relearning revamp: a shorter, clearer path to the retake (Jon, Nov 2–4 2026)
 
 **Status: approved by Jon, Nov 4 2026. R0 (spec updates), R1 (schema), R2 (the rule) and R3
-(the practice check) are done. Nothing else below is built yet.**
+(the practice check) are done, and R8 (Skyward export) is built. Nothing else below is built
+yet.**
 
 Jon's ask: "Right now the students are struggling with the corrections, activity, and then
 practice. I think it is too much for them to 'earn' a retake. The correction piece is working
@@ -413,7 +414,7 @@ results. Live refresh is unchanged.
 
 **Done when** a 40 → 80 → 95 student shows that trail in all four places, each step dated.
 
-### R8 · Skyward export
+### R8 · Skyward export ✅ (built Nov 4 2026; waiting on Jon's test import)
 - New export (K1, K2): per-target files for quizzes and one file for tests, each with the header
   row.
 - Zip plus single-file buttons, and Skyward-style file names (editable before download).
@@ -422,6 +423,18 @@ results. Live refresh is unchanged.
 
 **Done when** Jon imports one quiz-target file and one test file into Skyward and every student
 matches.
+
+*Built Nov 4:*
+- *Results → **Skyward export** (`/app/results/[id]/skyward`) lists one file per Skyward
+  assignment, each with an editable name, a Download button and a "Download all" .zip. It also
+  lists students with no Skyward ID, and links the old CSV as "Detailed CSV."*
+- *Files come from `/api/results/[id]/skyward`. The rules are `src/lib/skyward.ts`; the reads are
+  `src/lib/queries/skyward.ts`.*
+- *A quiz's target files use the per-target counting percent the path stores. A one-target quiz
+  from before the path uses its counting score.*
+- *A multi-target quiz from before the path uses each target's best attempt, and the page says so.*
+- *Tests: `src/lib/skyward.test.ts` and the route test. The "Done when" still needs Jon's first
+  import into Skyward.*
 
 ### C1 · Physical Science Practice banks to about 100 per target
 - 25 targets, today about 50 each (docs/ps-practice-banks-plan.md), so about 1,275 new
