@@ -616,6 +616,17 @@ Same as C2.
 **Done when** a fresh quiz and a fresh test in each course show the new path, a pre-launch
 assignment still shows its old checklist, and Anatomy is unchanged.
 
+*Ready Nov 4 (the switch itself waits for Jon and the content):*
+- *Each course page has a **New relearning path** setting. Pick a date and choose "Turn on now"
+  (today) or "Schedule it" (a later day, starting at midnight Central).*
+  - *A past date is refused, so tests already taken keep the old rules (decision 26).*
+  - *A scheduled start can be cancelled. Once it is in effect, it stays.*
+  - *A CVTC course shows the switch, with a note that its own rules win.*
+  - *Code: `setCourseRelearningPath` (owner only), rules `src/lib/relearning-switch.ts`.*
+- *The student home shows a "How your path works" card once a student has an assignment on the
+  path: four steps (fix your mistakes · relearn it your way · practice check · earn it), closed
+  with "Got it", remembered on that device.*
+
 ## Not building (parked or out of scope)
 
 - Anatomy & Physiology (CVTC rules stay as they are).

@@ -4,9 +4,12 @@ import { notFound } from "next/navigation";
 import { ChevronLeft, FileText } from "lucide-react";
 import { isAuthzError, requireOwner } from "@/lib/authz";
 import { getCourseDetail } from "@/lib/queries/courses";
+import { pathSwitchState } from "@/lib/relearning-switch";
+import { schoolDate } from "@/lib/reopen";
 import { CourseHeader } from "./course-header";
 import { CvtcToggle } from "./cvtc-toggle";
 import { PoolsPanel } from "./pools-panel";
+import { RelearningPathSetting } from "./relearning-path-setting";
 import { TargetsPanel } from "./targets-panel";
 import { UnitsPanel } from "./units-panel";
 
@@ -22,6 +25,10 @@ export default async function CoursePage({ params }: PageProps<"/app/courses/[co
   }
   const course = await getCourseDetail(courseId);
   if (!course) notFound();
+  // The relearning path's switch (L1), read against the school's clock.
+  const now = new Date();
+  const t = schoolDate(now);
+  const today = `${t.y}-${String(t.m).padStart(2, "0")}-${String(t.d).padStart(2, "0")}`;
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-5">
@@ -44,6 +51,13 @@ export default async function CoursePage({ params }: PageProps<"/app/courses/[co
       </div>
 
       <CvtcToggle courseId={course.id} on={course.cvtcRules} />
+      <RelearningPathSetting
+        courseId={course.id}
+        from={course.relearningPathFrom}
+        state={pathSwitchState(course.relearningPathFrom, now)}
+        cvtcRules={course.cvtcRules}
+        today={today}
+      />
 
       <div className="grid gap-4 lg:grid-cols-[1fr_1.4fr]">
         <div className="flex flex-col gap-4">

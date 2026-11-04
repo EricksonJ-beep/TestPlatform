@@ -13,6 +13,7 @@ import { AssessmentsTab } from "./assessments-tab";
 import { PracticeTab } from "./practice-tab";
 import { ResultsTab } from "./results-tab";
 import { ToDoList } from "./todo-list";
+import { PathIntro } from "./path/path-intro";
 
 const TAB_TITLE = {
   assessments: "Assessments",
@@ -131,6 +132,9 @@ export default async function StudentHome({ searchParams }: PageProps<"/student"
           <span className="font-medium">Change it →</span>
         </Link>
       ) : null}
+
+      {/* The new relearning path (L1): a first-time "how it works", once they're on it. */}
+      {assignments.some((a) => a.path) ? <PathIntro /> : null}
 
       <ToDoList lanes={lanes} />
     </div>
