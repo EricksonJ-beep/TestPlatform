@@ -1,9 +1,9 @@
 # Relearning revamp: a shorter, clearer path to the retake (Jon, Nov 2–4 2026)
 
 **Status: approved by Jon, Nov 4 2026. R0 (spec updates), R1 (schema), R2 (the rule), R3
-(the practice check), R6 (the test retake picker) and R7 (score history) are done. R4 (Read ·
-Watch · Do), R5 (the step path) and R8 (Skyward export) are built and wait on Jon: videos to
-pick, a walk-through on a Chromebook and a phone, and a test import. The content tickets and L1
+(the practice check), R6 (the test retake picker) and R7 (score history) are done. R8 (Skyward export)
+is done. R4 (Read · Watch · Do) and R5 (the step path) are built and wait on Jon: videos to
+pick, and a walk-through on a Chromebook and a phone. The content tickets and L1
 are next.**
 
 Jon's ask: "Right now the students are struggling with the corrections, activity, and then
@@ -550,7 +550,7 @@ results. Live refresh is unchanged.
   (all four places, and the seed runs once), and the 0031 re-run check in
   `src/db/relearning-schema.test.ts`.*
 
-### R8 · Skyward export ✅ (built Nov 4 2026; waiting on Jon's test import)
+### R8 · Skyward export ✅ (built Nov 4 2026; Jon imported every class into Skyward Nov 5)
 - New export (K1, K2): per-target files for quizzes and one file for tests, each with the header
   row.
 - Zip plus single-file buttons, and Skyward-style file names (editable before download).
@@ -569,8 +569,10 @@ matches.
 - *A quiz's target files use the per-target counting percent the path stores. A one-target quiz
   from before the path uses its counting score.*
 - *A multi-target quiz from before the path uses each target's best attempt, and the page says so.*
-- *Tests: `src/lib/skyward.test.ts` and the route test. The "Done when" still needs Jon's first
-  import into Skyward.*
+- *Tests: `src/lib/skyward.test.ts` and the route test.*
+- *Nov 5: students log in with usernames, so the lunch code now comes from the class page's
+  **Lunch codes** box. The teacher pastes the school roster once, and codes are matched by name
+  (`users.lunch_code`, migration 0033). Jon's imports worked for all his classes.*
 
 ### C1 · Physical Science Practice banks to about 100 per target
 - 25 targets, today about 50 each (docs/ps-practice-banks-plan.md), so about 1,275 new
