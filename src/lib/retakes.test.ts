@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { correctionsRule, cycleState, gateOpen, growthFor, planRetake } from "./retakes";
+import {
+  correctionsRule,
+  cycleState,
+  gateOpen,
+  growthFor,
+  planRetake,
+  retakeChoice,
+} from "./retakes";
 
 const open = { correctionsOk: true, activityOk: true, practiceOk: true };
 const closed = { correctionsOk: false, activityOk: true, practiceOk: true };
@@ -70,6 +77,35 @@ describe("planRetake", () => {
       })
     ).toMatchObject({ canStart: false, blocker: "no_attempts" });
     expect(gateOpen(closed)).toBe(false);
+  });
+});
+
+describe("retakeChoice (the test retake picker, R6)", () => {
+  const plan = (optedIn: string[], optionalRetakes = true) =>
+    planRetake({
+      targets: targets.map((t) => ({ ...t, optedIn: optedIn.includes(t.id), gate: open })),
+      threshold: 80,
+      optionalRetakes,
+      attemptsUsed: 1,
+      attemptsAllowed: 2,
+    });
+
+  it("is Full test with every target in, otherwise Custom", () => {
+    expect(retakeChoice(plan(["lt1", "lt2", "lt3"]))).toBe("full");
+    expect(retakeChoice(plan([]))).toBe("custom");
+    expect(retakeChoice(plan(["lt2"]))).toBe("custom");
+  });
+
+  it("offers no choice when every target is required or optional retakes are off", () => {
+    expect(retakeChoice(plan([], false))).toBeNull();
+    const allBelow = planRetake({
+      targets: targets.map((t) => ({ ...t, percent: 50, gate: open })),
+      threshold: 80,
+      optionalRetakes: true,
+      attemptsUsed: 1,
+      attemptsAllowed: 2,
+    });
+    expect(retakeChoice(allBelow)).toBeNull();
   });
 });
 

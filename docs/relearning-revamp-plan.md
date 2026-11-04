@@ -1,8 +1,8 @@
 # Relearning revamp: a shorter, clearer path to the retake (Jon, Nov 2–4 2026)
 
 **Status: approved by Jon, Nov 4 2026. R0 (spec updates), R1 (schema), R2 (the rule), R3
-(the practice check) and R7 (score history) are done, and R8 (Skyward export) is built. Nothing
-else below is built yet.**
+(the practice check), R6 (the test retake picker) and R7 (score history) are done, and R8
+(Skyward export) is built. Nothing else below is built yet.**
 
 Jon's ask: "Right now the students are struggling with the corrections, activity, and then
 practice. I think it is too much for them to 'earn' a retake. The correction piece is working
@@ -400,13 +400,35 @@ must offer Read or Do and land in Needs you.
 test on a Chromebook and a phone without help text, and the student's path matches the teacher
 gradebook cell at every step.
 
-### R6 · Retake picker for tests
+### R6 · Retake picker for tests ✅ (built Nov 4 2026)
 Full test or Custom (S3), using `planRetake`'s required/optional split. A target added beyond
 the required ones asks for its corrections first.
 
 **Done when** a student with LT2 and LT4 below 80% can pick Full or Custom (LT2 + LT4, plus an
 optional LT1 after its corrections), and the retake serves the right sections from each target's
 pool.
+
+*Built Nov 4:*
+- *On a test on the path, the assignment page's "Retake by learning target" panel starts with two
+  big choices: **Full test** ("Every target on the test. Do corrections on every question you
+  missed first.") and **Custom** ("U3.LT2 and U3.LT4, plus any target at 80% or higher you tick.
+  A target you add needs its corrections first.").*
+- *Full test puts every target at or above the line in the retake; its rows read "In your
+  retake". Custom starts again from the required targets, and each other target gets an Add tick
+  box. Ticking every box is the same as Full test.*
+- *The checklist shows the path's steps. A required target shows corrections, relearning and
+  practice check. An added target shows corrections only (decision 29).*
+- *The choice can't change while an attempt is open. There's no choice when every target is
+  required, when no attempts are left, or when the test has optional retakes turned off (then
+  the retake covers the required targets only, as before).*
+- *The rule is `retakeChoice` (`src/lib/retakes.ts`). The new student action is
+  `chooseRetakeScope` (`src/app/student/actions.ts`, behind `requireAssignmentAccess`), which
+  writes every opt-in at once (`setOptIns`). The retake still serves each chosen target's
+  section from its retake pool when it has one.*
+- *Tests: `retakeChoice` in `src/lib/retakes.test.ts`, and the R6 block in
+  `src/app/student/relearning-path.test.ts`. Custom with LT3 added owes LT3's corrections, then
+  serves LT2, LT3 and LT4. Full test owes corrections on every missed question, then serves all
+  four targets.*
 
 ### R7 · Gradebook history ✅ (built Nov 4 2026)
 The score trail (G1) in the class gradebook cell, results table, student results page and My

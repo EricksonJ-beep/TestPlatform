@@ -256,6 +256,7 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
               retake={a.retake}
               checklist={a.state === "relearning"}
               compact
+              onPath={!!a.path}
             />
           </div>
         ) : null}

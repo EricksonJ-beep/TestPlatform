@@ -158,6 +158,7 @@ export default async function StudentAssignmentPage({
             assignmentId={a.id}
             retake={a.retake}
             checklist={a.cycle === "relearning" || retaking}
+            onPath={!!a.path}
           />
         </section>
       ) : null}

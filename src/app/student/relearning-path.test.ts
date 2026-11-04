@@ -34,7 +34,8 @@ import { getGradebook } from "@/lib/queries/results";
 import { loadScoreTrails, trailKey } from "@/lib/queries/score-trail";
 import { listStudentResults } from "@/lib/queries/student-results";
 import { seedScoreHistory } from "@/lib/score-history";
-import { requestRetake, startAttempt } from "./actions";
+import { retakeChoice } from "@/lib/retakes";
+import { chooseRetakeScope, requestRetake, setRetakeOptIn, startAttempt } from "./actions";
 import { saveCorrection, submitCorrections } from "./corrections/actions";
 
 type Q = { id: string; right: string; wrong: string };
@@ -47,6 +48,8 @@ const ids = {
   cal: "",
   dee: "",
   eve: "",
+  fay: "",
+  gus: "",
   cls: "",
   lt: {} as Record<Lt, string>,
   q: {} as Record<Lt, Q[]>,
@@ -165,7 +168,7 @@ async function passCheck(studentId: string, key: Asg, targets: Lt[], bundleId: s
 }
 
 beforeAll(async () => {
-  const [t, ava, ben, cal, dee, eve] = await db
+  const [t, ava, ben, cal, dee, eve, fay, gus] = await db
     .insert(schema.users)
     .values([
       { email: "t@t", passwordHash: "x", role: "teacher", firstName: "Jon", lastName: "E" },
@@ -174,6 +177,8 @@ beforeAll(async () => {
       { email: "1003@s", passwordHash: "x", role: "student", firstName: "Cal", lastName: "C" },
       { email: "1004@s", passwordHash: "x", role: "student", firstName: "Dee", lastName: "D" },
       { email: "1005@s", passwordHash: "x", role: "student", firstName: "Eve", lastName: "E" },
+      { email: "1006@s", passwordHash: "x", role: "student", firstName: "Fay", lastName: "F" },
+      { email: "1007@s", passwordHash: "x", role: "student", firstName: "Gus", lastName: "G" },
     ])
     .returning();
   Object.assign(ids, {
@@ -183,6 +188,8 @@ beforeAll(async () => {
     cal: cal.id,
     dee: dee.id,
     eve: eve.id,
+    fay: fay.id,
+    gus: gus.id,
   });
   const day = 86_400_000;
   const [ps, bio, ap] = await db
@@ -262,6 +269,8 @@ beforeAll(async () => {
     { classId: cls.id, studentId: ava.id },
     { classId: cls.id, studentId: ben.id },
     { classId: cls.id, studentId: cal.id },
+    { classId: cls.id, studentId: fay.id },
+    { classId: cls.id, studentId: gus.id },
     { classId: bioCls.id, studentId: dee.id },
     { classId: apCls.id, studentId: eve.id },
   ]);
@@ -476,6 +485,91 @@ describe("a test with LT2 and LT4 below the line (S1–S6)", () => {
       where: eq(schema.attempts.id, attemptId),
     }))!;
     expect([...(attempt.scope ?? [])].sort()).toEqual([ids.lt.lt2, ids.lt.lt4].sort());
+  });
+});
+
+describe("the test retake picker: Full test or Custom (R6, S3)", () => {
+  /** Attempt 1 at LT1 100, LT2 60, LT3 80, LT4 60; then corrections, relearning and a check on LT2 and LT4. */
+  async function readyForRetake(studentId: string) {
+    const first = await take(studentId, "test", { lt1: 5, lt2: 3, lt3: 4, lt4: 3 });
+    await correct(studentId, first);
+    for (const lt of ["lt2", "lt4"] as Lt[]) {
+      const bundleId = await relearn(studentId, "test", [lt]);
+      await passCheck(studentId, "test", [lt], bundleId);
+    }
+    return first;
+  }
+  /** The retake's scope, and the targets its questions came from. */
+  async function served(attemptId: string) {
+    const attempt = (await db.query.attempts.findFirst({
+      where: eq(schema.attempts.id, attemptId),
+    }))!;
+    const ltOf = new Map<string, Lt>();
+    for (const lt of ["lt1", "lt2", "lt3", "lt4"] as Lt[])
+      for (const q of ids.q[lt]) ltOf.set(q.id, lt);
+    return {
+      scope: [...(attempt.scope ?? [])].sort(),
+      targets: [...new Set(attempt.questionSet.map((q) => ltOf.get(q.questionId)))].sort(),
+    };
+  }
+  const idsOf = (lts: Lt[]) => lts.map((lt) => ids.lt[lt]).sort();
+
+  it("Custom: LT2 and LT4 are locked in; an added LT3 needs its corrections, then the retake serves LT2, LT3 and LT4", async () => {
+    const first = await readyForRetake(ids.fay);
+    let c = await card(ids.fay, "test");
+    expect(c.cycle).toBe("retake_required");
+    expect(c.retake!.plan).toMatchObject({
+      required: [ids.lt.lt2, ids.lt.lt4],
+      canStart: true,
+    });
+    expect(retakeChoice(c.retake!.plan)).toBe("custom");
+
+    as(ids.fay, "student");
+    await ok(setRetakeOptIn(ids.asg.test, ids.lt.lt3, true));
+    expect((await getCorrectionsSummary(first))!.needed).toBe(5);
+    c = await card(ids.fay, "test");
+    expect([...c.retake!.plan.selected].sort()).toEqual(idsOf(["lt2", "lt3", "lt4"]));
+    expect(retakeChoice(c.retake!.plan)).toBe("custom");
+    // Corrections only: no relearning or practice check for a target already at 80% (decision 29).
+    await refused(startAttempt(ids.asg.test, null), /Finish your corrections on U3\.LT3 first/);
+
+    await correct(ids.fay, first);
+    const { attemptId } = await ok(startAttempt(ids.asg.test, null));
+    expect(await served(attemptId)).toEqual({
+      scope: idsOf(["lt2", "lt3", "lt4"]),
+      targets: ["lt2", "lt3", "lt4"],
+    });
+  });
+
+  it("Full test: every target in, corrections on every missed question first, then the whole test", async () => {
+    const first = await readyForRetake(ids.gus);
+    as(ids.gus, "student");
+    expect(await ok(chooseRetakeScope(ids.asg.test, "full"))).toEqual({ choice: "full" });
+    let c = await card(ids.gus, "test");
+    expect(retakeChoice(c.retake!.plan)).toBe("full");
+    expect([...c.retake!.plan.selected].sort()).toEqual(idsOf(["lt1", "lt2", "lt3", "lt4"]));
+    // LT1 was 100%, so nothing to correct there; LT3's missed question is owed.
+    expect((await getCorrectionsSummary(first))!.needed).toBe(5);
+    await refused(startAttempt(ids.asg.test, null), /Finish your corrections on U3\.LT3 first/);
+
+    // Custom starts again from the required targets.
+    expect(await ok(chooseRetakeScope(ids.asg.test, "custom"))).toEqual({ choice: "custom" });
+    c = await card(ids.gus, "test");
+    expect([...c.retake!.plan.selected].sort()).toEqual(idsOf(["lt2", "lt4"]));
+    expect((await getCorrectionsSummary(first))!.needed).toBe(4);
+
+    await ok(chooseRetakeScope(ids.asg.test, "full"));
+    await correct(ids.gus, first);
+    const { attemptId } = await ok(startAttempt(ids.asg.test, null));
+    expect(await served(attemptId)).toEqual({
+      scope: idsOf(["lt1", "lt2", "lt3", "lt4"]),
+      targets: ["lt1", "lt2", "lt3", "lt4"],
+    });
+    // The choice holds while the retake is open.
+    expect(await chooseRetakeScope(ids.asg.test, "custom")).toMatchObject({
+      ok: false,
+      status: 409,
+    });
   });
 });
 

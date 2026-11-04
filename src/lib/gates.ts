@@ -345,16 +345,35 @@ export async function setOptIn(
   learningTargetId: string,
   optedIn: boolean
 ): Promise<void> {
-  await db
-    .insert(schema.retakeGates)
-    .values({ studentId, assignmentId, learningTargetId, optedIn })
-    .onConflictDoUpdate({
-      target: [
-        schema.retakeGates.studentId,
-        schema.retakeGates.assignmentId,
-        schema.retakeGates.learningTargetId,
-      ],
-      set: { optedIn },
-    });
+  await setOptIns(assignmentId, studentId, [learningTargetId], optedIn);
+}
+
+/** Opt several targets in or out at once (the test retake picker's Full test or Custom, R6), then recompute the gates once. */
+export async function setOptIns(
+  assignmentId: string,
+  studentId: string,
+  learningTargetIds: string[],
+  optedIn: boolean
+): Promise<void> {
+  if (learningTargetIds.length) {
+    await db
+      .insert(schema.retakeGates)
+      .values(
+        learningTargetIds.map((learningTargetId) => ({
+          studentId,
+          assignmentId,
+          learningTargetId,
+          optedIn,
+        }))
+      )
+      .onConflictDoUpdate({
+        target: [
+          schema.retakeGates.studentId,
+          schema.retakeGates.assignmentId,
+          schema.retakeGates.learningTargetId,
+        ],
+        set: { optedIn },
+      });
+  }
   await recomputeGates(assignmentId, studentId);
 }

@@ -16,7 +16,7 @@ import {
   touchAttempt,
 } from "@/lib/attempt-pause";
 import { correctionsClear } from "@/lib/corrections";
-import { setOptIn } from "@/lib/gates";
+import { setOptIn, setOptIns } from "@/lib/gates";
 import { correctionsCapOn } from "@/lib/grading";
 import { practiceOwed, practiceOwedText, quizPracticeNeeds } from "@/lib/quiz-practice";
 import { getCorrectionsSummary, latestFinishedAttemptId } from "@/lib/queries/corrections";
@@ -26,7 +26,7 @@ import { capWindowPassed, openUntilFor } from "@/lib/queries/reopen";
 import { pathBlockerText } from "@/lib/relearning-path";
 import { effectiveClose } from "@/lib/reopen";
 import { getRetakeStatus } from "@/lib/queries/retakes";
-import { BLOCKER_TEXT, correctionsRule, TO_FULL_TEXT } from "@/lib/retakes";
+import { BLOCKER_TEXT, correctionsRule, TO_FULL_TEXT, type RetakeChoice } from "@/lib/retakes";
 import {
   ActionError,
   type AttemptAccess,
@@ -421,20 +421,48 @@ export const setRetakeOptIn = withAuthz(
     const target = status.targets.find((t) => t.id === learningTargetId);
     if (!target) throw new ActionError("That target isn't on this test.", 400);
     if (target.required) throw new ActionError("That target is already required.", 409);
-    const open = await db.query.attempts.findFirst({
-      columns: { id: true },
-      where: and(
-        eq(schema.attempts.assignmentId, assignmentId),
-        eq(schema.attempts.studentId, access.userId),
-        eq(schema.attempts.status, "in_progress")
-      ),
-    });
-    if (open) throw new ActionError("Finish the attempt you're on first.", 409);
+    await assertNoOpenAttempt(assignmentId, access.userId);
     await setOptIn(assignmentId, access.userId, learningTargetId, !!optedIn);
     revalidate(assignmentId);
     return { optedIn: !!optedIn };
   }
 );
+
+/**
+ * The test retake picker (relearning revamp S3, decision 19; ticket R6). **Full test** puts every
+ * target at or above the line in the retake, so corrections cover every missed question first;
+ * **Custom** starts again from the required targets, and the student ticks any others
+ * (`setRetakeOptIn`). Either way an added target needs only its corrections (decision 29).
+ */
+export const chooseRetakeScope = withAuthz(async (assignmentId: string, choice: RetakeChoice) => {
+  const access = await requireAssignmentAccess(assignmentId);
+  if (access.as !== "student") throw new ActionError("Students only.", 403);
+  if (choice !== "full" && choice !== "custom")
+    throw new ActionError("Choose Full test or Custom.", 400);
+  const status = await getRetakeStatus(assignmentId, access.userId);
+  if (!status) throw new ActionError("There's no retake to choose on this assignment.", 409);
+  if (!status.optionalRetakes)
+    throw new ActionError("Optional retakes are turned off for this test.", 403);
+  if (status.plan.optional.length === 0)
+    throw new ActionError("Every target on this test is already in your retake.", 409);
+  await assertNoOpenAttempt(assignmentId, access.userId);
+  await setOptIns(assignmentId, access.userId, status.plan.optional, choice === "full");
+  revalidate(assignmentId);
+  return { choice };
+});
+
+/** The retake's targets can't change while an attempt is open. */
+async function assertNoOpenAttempt(assignmentId: string, studentId: string): Promise<void> {
+  const open = await db.query.attempts.findFirst({
+    columns: { id: true },
+    where: and(
+      eq(schema.attempts.assignmentId, assignmentId),
+      eq(schema.attempts.studentId, studentId),
+      eq(schema.attempts.status, "in_progress")
+    ),
+  });
+  if (open) throw new ActionError("Finish the attempt you're on first.", 409);
+}
 
 // Rule: only the attempt's own student may write to it, only while in progress and not paused, only before the deadline (+ grace).
 async function writableAttempt(access: AttemptAccess) {

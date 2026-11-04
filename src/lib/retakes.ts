@@ -69,6 +69,20 @@ export function planRetake(input: {
   return { required, optional, selected, locked, canStart: blocker === null, blocker };
 }
 
+/** The test retake picker (relearning revamp S3, decision 19; ticket R6). */
+export type RetakeChoice = "full" | "custom";
+
+/**
+ * Rule: **Full test** when every target at or above the line is in the retake, otherwise
+ * **Custom** (the required targets plus any the student ticked). Null when there is nothing to
+ * choose: every target is required, or the test has optional retakes off.
+ */
+export function retakeChoice(plan: Pick<RetakePlan, "optional" | "selected">): RetakeChoice | null {
+  if (plan.optional.length === 0) return null;
+  const selected = new Set(plan.selected);
+  return plan.optional.every((id) => selected.has(id)) ? "full" : "custom";
+}
+
 /** One target of a student's summative retake picture, as the card, the start action, and the gradebook read it. */
 export type RetakeTarget = {
   id: string;
