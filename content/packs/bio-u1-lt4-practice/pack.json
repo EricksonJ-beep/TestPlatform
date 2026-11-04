@@ -1,13 +1,13 @@
 {
   "name": "bio-u1-lt4-practice",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology A",
   "unit": "Unit 1 · The Science of Biology",
   "bank": "Bio · U1.LT4 · Practice",
   "openPractice": true,
   "practiceSet": {
-    "title": "U1.LT4 Practice: Communicate experimental data",
+    "title": "U1.LT4 Practice: Communicating Experimental Data",
     "description": "Practice sorting qualitative and quantitative data, building clear data tables and graphs, reading trends, calculating averages, and writing short, data-backed conclusions.",
     "drawCount": 10,
     "targets": ["U1.LT4"]

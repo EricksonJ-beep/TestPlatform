@@ -641,6 +641,10 @@ the student-account test.
   - *No stem matches a Biology test or retake question.*
   - *One near-copy (U1.LT4 P013, repeated trials) was rewritten as a new scenario.*
 - *Genotype fill-ins ("Bb", "hh") are graded case-sensitive (`tolerance_mode=case_sensitive`).*
+- *Revision 2: a 50-question version of these packs (Oct 14, unmerged branch
+  `claude/focused-goodall-4xyf49`) had already loaded through its preview build.*
+  - *P001–P050 update in place, and P051–P100 are added.*
+  - *Three set titles stay on their live names, so no second set is made.*
 - *Known tell: in 53% of the multiple-choice questions, the right answer is the longest choice
   (PS banks: 33%). The keys are right, but it makes guessing easier. A distractor pass would fix
   it.*
