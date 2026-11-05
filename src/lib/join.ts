@@ -29,7 +29,7 @@ export function normalizeJoinCode(code: string): string {
   return code.replace(/[\s-]/g, "").toUpperCase();
 }
 
-/** "Karmalynne", "Barnard" → "karmalynne.barnard"; ASCII letters and digits only. */
+/** "Rosalind", "Barker" → "rosalind.barker"; ASCII letters and digits only. */
 export function usernameBase(firstName: string, lastName: string): string {
   const slug = (s: string) =>
     s

@@ -40,11 +40,11 @@ beforeAll(async () => {
       { email: "t@t", passwordHash: "x", role: "teacher", firstName: "Jon", lastName: "E" },
       { email: "o@t", passwordHash: "x", role: "teacher", firstName: "O", lastName: "T" },
       {
-        email: "2977@cadott.k12.wi.us",
+        email: "9001@example.test",
         passwordHash: "x",
         role: "student",
-        firstName: "Isaac",
-        lastName: "Anderson",
+        firstName: "Ivy",
+        lastName: "Anders",
       },
       {
         email: "tim@gmail.com",
@@ -54,11 +54,11 @@ beforeAll(async () => {
         lastName: "Bauer",
       },
       {
-        email: "8631@cadott.k12.wi.us",
+        email: "9002@example.test",
         passwordHash: "x",
         role: "student",
-        firstName: "Damien",
-        lastName: "Wood",
+        firstName: "Dev",
+        lastName: "Walsh",
       },
     ])
     .returning();
@@ -133,9 +133,9 @@ describe("GET /api/results/[id]/skyward", () => {
     expect(Object.keys(files).sort()).toEqual(["F_LT1U2.csv", "F_LT2U2.csv"]);
     expect(parseCsv(strFromU8(files["F_LT1U2.csv"]))).toEqual([
       ["Last Name", "First Name", "ID", "Score"],
-      ["Anderson", "Isaac", "2977", "80"],
+      ["Anders", "Ivy", "9001", "80"],
       ["Bauer", "Tim", "", "60"],
-      ["Wood", "Damien", "8631", ""],
+      ["Walsh", "Dev", "9002", ""],
     ]);
     expect(parseCsv(strFromU8(files["F_LT2U2.csv"]))[2]).toEqual(["Bauer", "Tim", "", "70"]);
   });
@@ -144,14 +144,14 @@ describe("GET /api/results/[id]/skyward", () => {
     asTeacher(ids.teacher);
     const res = await get(ids.mixed, "?file=1&n=F_LT1U2&n=My%20LT2:");
     expect(res.headers.get("Content-Disposition")).toBe('attachment; filename="MyLT2.csv"');
-    expect(parseCsv(await res.text())[1]).toEqual(["Anderson", "Isaac", "2977", "100"]);
+    expect(parseCsv(await res.text())[1]).toEqual(["Anders", "Ivy", "9001", "100"]);
   });
 
   it("sends a one-target quiz's counting score as one CSV", async () => {
     asTeacher(ids.teacher);
     const res = await get(ids.single);
     expect(res.headers.get("Content-Disposition")).toBe('attachment; filename="F_LT3U2.csv"');
-    expect(parseCsv(await res.text())[1]).toEqual(["Anderson", "Isaac", "2977", "80"]);
+    expect(parseCsv(await res.text())[1]).toEqual(["Anders", "Ivy", "9001", "80"]);
   });
 
   it("sends a test as one overall file, named like the S_LT columns", async () => {
@@ -160,9 +160,9 @@ describe("GET /api/results/[id]/skyward", () => {
     expect(res.headers.get("Content-Disposition")).toBe('attachment; filename="S_LT1,2,3U2.csv"');
     const rows = parseCsv(await res.text());
     expect(rows.slice(1, 4)).toEqual([
-      ["Anderson", "Isaac", "2977", "88"],
+      ["Anders", "Ivy", "9001", "88"],
       ["Bauer", "Tim", "", ""],
-      ["Wood", "Damien", "8631", "72"],
+      ["Walsh", "Dev", "9002", "72"],
     ]);
   });
 

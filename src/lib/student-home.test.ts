@@ -635,7 +635,7 @@ describe("the home's lanes", () => {
 
 describe("the Assessments tab", () => {
   it("groups by status: open (soonest due first), opens soon, closed newest first", () => {
-    // Braeden's screen (Oct 8 2026): the closed Sep 25 quiz sorted above the one in progress.
+    // A student's screen (Oct 8 2026): the closed Sep 25 quiz sorted above the one in progress.
     const s = assessmentsByStatus([
       violaLt1,
       a("Unit 2 Quiz: Carbohydrates", { state: "in_progress", closesAt: OCT20 }),

@@ -30,7 +30,7 @@ export function parseRosterNames(text: string): { firstName: string; lastName: s
   return out;
 }
 
-/** "ALLARD" → "Allard", "SIMPSON-GREENE" → "Simpson-Greene"; mixed-case input is left alone. */
+/** "ADAMS" → "Adams", "VAN-DYKE" → "Van-Dyke"; mixed-case input is left alone. */
 export function tidyCase(name: string): string {
   if (name !== name.toUpperCase() || !/[A-Z]/.test(name)) return name;
   return name

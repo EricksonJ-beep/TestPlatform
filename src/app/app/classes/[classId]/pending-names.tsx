@@ -73,7 +73,7 @@ export function PendingNames({
                   id="pn-names"
                   name="names"
                   rows={8}
-                  placeholder={"ALLARD, BRAEDEN R\nAMADON, KAYLA R"}
+                  placeholder={"ADAMS, AVA R\nBROOKS, BEN R"}
                   required
                 />
               </div>
