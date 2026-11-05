@@ -226,3 +226,29 @@ describe("a two-target test: one line per target, the retake after every line (S
     expect(v.next).toMatchObject({ headline: "Do your corrections on LT3." });
   });
 });
+
+describe("dates on done steps", () => {
+  it("shows the school-time date each step was finished; steps without a date show none", () => {
+    const first = attempt("att1", 1, { lt1: [2, 5] });
+    // 3:00 UTC on Nov 5 is still Nov 4 in Cadott (Central time).
+    const v = view({
+      attempts: [first],
+      corrections: { lt1: "approved" },
+      correctionsDoneAt: { lt1: new Date("2026-11-03T15:00:00Z") },
+      relearning: [{ ...rel("lt1", "b1"), finishedAt: new Date("2026-11-05T03:00:00Z") }],
+      checks: [{ ...passed(["lt1"], "b1"), passedAt: new Date("2026-11-05T16:00:00Z") }],
+    });
+    expect(v.lines[0].steps.slice(0, 3).map((s) => [s.label, s.state, s.note])).toEqual([
+      ["Corrections", "done", "Done Nov 3"],
+      ["Relearn", "done", "Done Nov 4"],
+      ["Practice check", "done", "Done Nov 5"],
+    ]);
+    const undated = view({
+      attempts: [first],
+      corrections: { lt1: "approved" },
+      relearning: [rel("lt1", "b1")],
+      checks: [passed(["lt1"], "b1")],
+    });
+    expect(undated.lines[0].steps.slice(0, 3).map((s) => s.note)).toEqual([null, null, null]);
+  });
+});

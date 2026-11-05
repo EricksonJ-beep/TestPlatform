@@ -6,6 +6,7 @@
  * retake). Built from the path rule (`pathFor`) and the card's cycle (`pathCycle`), the same state
  * the teacher's gradebook cell reads, so the two always agree.
  */
+import { SCHOOL_TIME_ZONE } from "@/lib/reopen";
 import type { CycleState } from "@/lib/retakes";
 import { nextCheck, type PathState, type PathTargetState } from "@/lib/relearning-path";
 
@@ -81,6 +82,13 @@ const LOCKED = {
   retake: "Opens when your path is done",
 };
 
+/** A done step's date, in school time: "Done Nov 4". Null when the date isn't known. */
+export function doneNote(at: Date | null): string | null {
+  return at
+    ? `Done ${at.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: SCHOOL_TIME_ZONE })}`
+    : null;
+}
+
 /** "U3.LT1", "U3.LT1 and U3.LT2", "U3.LT1, U3.LT2 and U3.LT3". */
 function list(codes: string[]): string {
   return codes.length <= 1
@@ -100,7 +108,9 @@ function correctionsStep(t: PathTargetState): PathStep | null {
         ? "Turned in, waiting for your teacher's OK"
         : returned
           ? "Sent back: fix them and turn them in"
-          : null,
+          : t.corrections === "done"
+            ? doneNote(t.doneAt.corrections)
+            : null,
   };
 }
 
@@ -111,7 +121,8 @@ function relearnStep(t: PathTargetState): PathStep {
     kind: "relearn",
     label: "Relearn",
     state,
-    note: state === "locked" ? LOCKED.relearn : null,
+    note:
+      state === "locked" ? LOCKED.relearn : state === "done" ? doneNote(t.doneAt.relearn) : null,
   };
 }
 
@@ -121,7 +132,8 @@ function practiceStep(t: PathTargetState): PathStep {
     kind: "practice",
     label: "Practice check",
     state,
-    note: state === "locked" ? LOCKED.practice : null,
+    note:
+      state === "locked" ? LOCKED.practice : state === "done" ? doneNote(t.doneAt.practice) : null,
   };
 }
 

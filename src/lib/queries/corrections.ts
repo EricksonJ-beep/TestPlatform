@@ -219,7 +219,13 @@ type ScopeItem = {
 export type CorrectionScopeRow = {
   items: ScopeItem[];
   targetPercents: Record<string, number>;
-  corrections: { questionId: string; status: CorrectionStatus; reviewerNote: string | null }[];
+  corrections: {
+    questionId: string;
+    status: CorrectionStatus;
+    reviewerNote: string | null;
+    /** ISO time it was approved or sent back (JSON); absent in older callers' rows. */
+    reviewedAt?: string | null;
+  }[];
 };
 
 /**
@@ -246,7 +252,7 @@ export async function loadCorrectionScopes(
           fromJson<Record<string, number>>
         ),
       corrections:
-        sql`(select coalesce(jsonb_agg(jsonb_build_object('questionId', c.question_id, 'status', c.status, 'reviewerNote', c.reviewer_note)), '[]'::jsonb) from ${schema.corrections} c where c.attempt_id = attempts.id)`.mapWith(
+        sql`(select coalesce(jsonb_agg(jsonb_build_object('questionId', c.question_id, 'status', c.status, 'reviewerNote', c.reviewer_note, 'reviewedAt', c.reviewed_at)), '[]'::jsonb) from ${schema.corrections} c where c.attempt_id = attempts.id)`.mapWith(
           fromJson<CorrectionScopeRow["corrections"]>
         ),
     })

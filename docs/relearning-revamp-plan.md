@@ -485,7 +485,9 @@ gradebook cell at every step.
   - *Needs you says "corrections raise it to 90%, and the relearning path to 100%", or "They
     already have 100%".*
 - *Left for later:*
-  - *Dates on done steps. The path state doesn't carry them yet.*
+  - *~~Dates on done steps.~~ Done Nov 5. A done step reads "Done Nov 4", in school time. The
+    date comes from the last approval (corrections), the relearning finishing or being checked
+    off, or the practice check passing.*
   - *~~The tier board's readiness lines still use the old words.~~ Done Nov 5: on the path, a
     target reads "U3.LT4: corrections ✓ · relearn ✓ · practice check ✗ · retake locked"
     (corrections the teacher hasn't OK'd yet read "waiting for your OK"). The card's relearning

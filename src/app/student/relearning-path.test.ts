@@ -403,6 +403,13 @@ describe("a quiz at 40% on the path (Q1, Q5)", () => {
       "done",
       "current",
     ]);
+    // Each done step carries the date it was finished (approved, finished, passed).
+    const doneAt = (await getPathState(ids.asg.quiz, ids.ava))!.state.targets.find(
+      (t) => t.id === ids.lt.lt1
+    )!.doneAt;
+    for (const at of [doneAt.corrections, doneAt.relearn, doneAt.practice])
+      expect(Date.now() - at!.getTime()).toBeLessThan(60_000);
+    expect(row.path?.[0].steps.slice(0, 3).every((x) => x.note?.startsWith("Done "))).toBe(true);
   });
 
   it("Keep my 80%: done for now, and the retake stays open (decision 28)", async () => {
