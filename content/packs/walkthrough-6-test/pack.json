@@ -1,0 +1,24 @@
+{
+  "name": "walkthrough-6-test",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Relearning Walkthrough",
+  "unit": "Unit 3 · Bonding",
+  "bank": "WT · Test",
+  "assessment": {
+    "title": "Walkthrough Test: Formulas and Bonding",
+    "type": "summative",
+    "instructions": "A practice test for walking through the relearning path and the retake picker. Five questions per target. Miss some on each target to see two lines on the path.",
+    "retakePools": {
+      "U3.LT1": "WT U3.LT1 Retake Pool",
+      "U3.LT2": "WT U3.LT2 Retake Pool"
+    },
+    "retakeDrawCount": 5
+  },
+  "assign": [
+    {
+      "class": "Walkthrough Practice Class",
+      "attemptsAllowed": 2
+    }
+  ]
+}

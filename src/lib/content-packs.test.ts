@@ -20,6 +20,7 @@ import { db, schema } from "@/db";
 import { gradeResponse } from "@/lib/grading";
 import { applyAllPacks, applyPack, listPacks } from "./content-packs";
 import { loadBankHealth } from "@/lib/queries/bank-health";
+import { ensureWalkthrough, readWalkthroughSetup } from "@/lib/walkthrough";
 
 const ids = { teacher: "", course: "", cls: "" };
 let ps: { id: string };
@@ -147,6 +148,8 @@ beforeAll(async () => {
     url: "/activities/osteon-labeling.html",
   });
   Object.assign(ids, { teacher: t.id, course: course.id, cls: cls.id });
+  // The walkthrough's course and class come first on a deploy (scripts/migrate-on-build.mjs).
+  await ensureWalkthrough(readWalkthroughSetup());
 });
 
 describe("content packs", () => {

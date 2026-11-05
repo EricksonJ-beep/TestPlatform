@@ -708,6 +708,29 @@ assignment still shows its old checklist, and Anatomy is unchanged.
   path: four steps (fix your mistakes · relearn it your way · practice check · earn it), closed
   with "Got it", remembered on that device.*
 
+### L0 · Walkthrough course (Jon, Nov 5: "Test course walkthrough")
+A practice course to walk through the path as a student before switching the real courses on.
+- *Setup (`src/lib/walkthrough.ts`, run before the packs on every deploy, `content/walkthrough/setup.json`):*
+  - *Jon gets a course called **Relearning Walkthrough**, with the path switched on, and a class
+    called **Walkthrough Practice Class** (joining by code is off).*
+  - *Once they exist, nothing changes them again. No student is ever created.*
+- *Content (`walkthrough-1` … `walkthrough-6` packs, copies of PS U3.LT1 and U3.LT2 with WT-
+  question ids):*
+  - *Practice banks of 82 and 80 questions.*
+  - *Read · Watch · Do for both targets.*
+  - *A 10-question quiz (3 attempts) and a 10-question test (2 attempts) on the class.*
+  - *The test's retake pools.*
+- *How Jon uses it:*
+  1. *On Classes → Walkthrough Practice Class, add a pretend student. The temporary password
+     shows once.*
+  2. *In a private window, sign in as that student. Take the quiz and miss most U3.LT1
+     questions.*
+  3. *Walk the path: corrections → relearn (Read, Watch or Do) → practice check → 80% → keep or
+     retake. Approve the corrections as the teacher in the other window.*
+  4. *For the retake picker and two lines on the path, take the test and miss some on each
+     target.*
+  5. *Archive the course when done.*
+
 ## Not building (parked or out of scope)
 
 - Anatomy & Physiology (CVTC rules stay as they are).

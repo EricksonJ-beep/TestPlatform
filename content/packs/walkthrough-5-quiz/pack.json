@@ -1,0 +1,19 @@
+{
+  "name": "walkthrough-5-quiz",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Relearning Walkthrough",
+  "unit": "Unit 3 · Bonding",
+  "bank": "WT · Quiz",
+  "assessment": {
+    "title": "Walkthrough Quiz: Formulas and Bonding",
+    "type": "formative",
+    "instructions": "A practice quiz for walking through the relearning path. Five questions on reading formulas (U3.LT1) and five on ionic vs. covalent (U3.LT2). To see the path, miss most of the U3.LT1 questions on purpose."
+  },
+  "assign": [
+    {
+      "class": "Walkthrough Practice Class",
+      "attemptsAllowed": 3
+    }
+  ]
+}

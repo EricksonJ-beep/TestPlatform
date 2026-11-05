@@ -1,0 +1,29 @@
+{
+  "name": "walkthrough-2-practice-u3-lt2",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Relearning Walkthrough",
+  "unit": "Unit 3 · Bonding",
+  "bank": "WT · U3.LT2 · Practice",
+  "openPractice": true,
+  "targets": [
+    {
+      "unit": "Unit 3 · Bonding",
+      "code": "U3.LT1",
+      "title": "Reading chemical formulas",
+      "description": "I can read a chemical formula and tell what elements are in a compound and how many atoms of each."
+    },
+    {
+      "unit": "Unit 3 · Bonding",
+      "code": "U3.LT2",
+      "title": "Ionic vs. covalent compounds",
+      "description": "I can look at a compound and tell whether it's ionic or covalent."
+    }
+  ],
+  "practiceSet": {
+    "title": "U3.LT2 Practice: Ionic or Covalent?",
+    "description": "Practice classifying compounds as ionic or covalent using the metal/nonmetal rule, polyatomic ions, and property data.",
+    "drawCount": 10,
+    "targets": ["U3.LT2"]
+  }
+}
