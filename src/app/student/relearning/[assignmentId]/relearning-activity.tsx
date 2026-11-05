@@ -4,11 +4,12 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { Check, CheckCircle2, Circle, Play, RotateCcw, TriangleAlert } from "lucide-react";
 import { cn } from "cn";
-import type { RelearningProgress, RelearningSectionBody } from "@/db/schema";
+import type { QuickCheck, RelearningProgress, RelearningSectionBody } from "@/db/schema";
 import { activityFrameHeight } from "@/lib/hosted-activities";
 import { INTERACTIVE_MESSAGE_SOURCE, markWatched } from "@/lib/practice-rules";
 import {
   dueCheck,
+  gradeCheck,
   SHORT_ANSWER_MIN,
   sectionDone,
   sectionRule,
@@ -70,6 +71,9 @@ type Ops = {
  * goes; when every section of every row is done the server finishes the activity and the page
  * shows the practice check. The mode can switch until then (A4), and a video that won't play
  * offers the other modes (A6).
+ *
+ * `preview` is the teacher's "Preview as student" in the Read · Watch · Do editor: the same
+ * cards, with the option's own checks (key included) graded in the browser and nothing saved.
  */
 export function RelearningActivity({
   assignmentId,
@@ -78,6 +82,7 @@ export function RelearningActivity({
   modeLabel,
   switchTo,
   rows,
+  preview,
 }: {
   assignmentId: string;
   targetId: string | null;
@@ -85,6 +90,8 @@ export function RelearningActivity({
   modeLabel: string;
   switchTo: { mode: RelearningMode; label: string }[];
   rows: ActivityRow[];
+  /** Preview only: the checks with their answers and explanations, by check id. */
+  preview?: Record<string, QuickCheck>;
 }) {
   const router = useRouter();
   const [switching, startSwitch] = useTransition();
@@ -93,13 +100,14 @@ export function RelearningActivity({
   const switchMode = useCallback(
     (to: RelearningMode) =>
       startSwitch(async () => {
+        if (preview) return;
         const r = await startRelearning(assignmentId, to, { targetId });
         if (r.ok) {
           setSwitchError(null);
           router.refresh();
         } else setSwitchError(r.error);
       }),
-    [assignmentId, targetId, router]
+    [assignmentId, targetId, router, preview]
   );
 
   return (
@@ -133,7 +141,8 @@ export function RelearningActivity({
           stitched={rows.length > 1}
           switchTo={switchTo}
           onSwitch={switchMode}
-          onFinished={() => router.refresh()}
+          onFinished={() => (preview ? undefined : router.refresh())}
+          preview={preview}
         />
       ))}
     </section>
@@ -146,12 +155,14 @@ function RowSections({
   switchTo,
   onSwitch,
   onFinished,
+  preview,
 }: {
   row: ActivityRow;
   stitched: boolean;
   switchTo: { mode: RelearningMode; label: string }[];
   onSwitch: (mode: RelearningMode) => void;
   onFinished: () => void;
+  preview?: Record<string, QuickCheck>;
 }) {
   const [progress, setProgress] = useState<RelearningProgress>(row.progress);
   const [explanations, setExplanations] = useState(row.explanations);
@@ -167,7 +178,9 @@ function RowSections({
     progress,
     explanations,
     answer: async (sectionId, checkId, answer) => {
-      const r = await answerRelearningCheck(row.id, sectionId, checkId, answer);
+      const r = preview
+        ? previewAnswer(preview[checkId], answer)
+        : await answerRelearningCheck(row.id, sectionId, checkId, answer);
       if (!r.ok) return null;
       setProgress((p) => {
         const prior = p.checks?.[checkId];
@@ -206,19 +219,22 @@ function RowSections({
           },
         };
       });
+      if (preview) return;
       void markRelearningSection(row.id, sectionId, patch).then((r) => {
         if (r.ok) done(r.data);
       });
     },
     saveShort: async (sectionId, text) => {
-      const r = await saveRelearningShortAnswer(row.id, sectionId, text);
+      const r = preview
+        ? ({ ok: true, data: { rowFinished: false } } as const)
+        : await saveRelearningShortAnswer(row.id, sectionId, text);
       if (!r.ok) return false;
       setProgress((p) => ({ ...p, shortAnswers: { ...p.shortAnswers, [sectionId]: text } }));
       done(r.data);
       return true;
     },
     flag: (sectionId, code) => {
-      void flagRelearningVideo(row.id, sectionId, code);
+      if (!preview) void flagRelearningVideo(row.id, sectionId, code);
     },
   };
 
@@ -302,8 +318,21 @@ function SectionCard({
   );
 }
 
+/** The editor's preview grades in the browser, the way the server would (nothing is saved). */
+function previewAnswer(check: QuickCheck | undefined, answer: string) {
+  const correct = !!check && gradeCheck(check, answer);
+  return {
+    ok: true as const,
+    data: {
+      correct,
+      explanation: correct ? (check?.explanation ?? null) : null,
+      rowFinished: false,
+    },
+  };
+}
+
 /** Bloom rich text, a blank line per paragraph (the v2 reading's look). */
-function Prose({ text }: { text: string }) {
+export function Prose({ text }: { text: string }) {
   const paras = text.split(/\n\s*\n/).filter((p) => p.trim());
   return (
     <div className="flex flex-col gap-3 text-[15px] leading-relaxed">

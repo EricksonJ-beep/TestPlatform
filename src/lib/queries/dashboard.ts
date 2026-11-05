@@ -565,6 +565,8 @@ export async function listAnswersToGrade(teacherId: string): Promise<GradingRow[
 /** A relearning video that won't play for students (relearning revamp A6): one row per video. */
 export type VideoFlagRow = {
   sectionId: string;
+  /** The Read · Watch · Do option, for the editor link. */
+  optionId: string;
   optionTitle: string;
   /** Which part of the option: its core or its extension, and the section's own title. */
   part: "core" | "extension";
@@ -585,6 +587,7 @@ export async function listVideoFlags(teacherId: string): Promise<VideoFlagRow[]>
   const rows = await db
     .select({
       sectionId: f.sectionId,
+      optionId: schema.relearningOptions.id,
       optionTitle: schema.relearningOptions.title,
       part: schema.relearningSections.part,
       sectionTitle: schema.relearningSections.title,
@@ -608,6 +611,7 @@ export async function listVideoFlags(teacherId: string): Promise<VideoFlagRow[]>
     .where(and(eq(schema.relearningOptions.ownerId, teacherId), isNull(f.resolvedAt)))
     .groupBy(
       f.sectionId,
+      schema.relearningOptions.id,
       schema.relearningOptions.title,
       schema.relearningSections.part,
       schema.relearningSections.title,

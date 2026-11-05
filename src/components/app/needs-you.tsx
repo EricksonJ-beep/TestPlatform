@@ -736,13 +736,20 @@ function VideoRow({ r }: { r: VideoFlagRow }) {
                 Open the video
               </a>
             </>
-          ) : null}
+          ) : null}{" "}
+          ·{" "}
+          <Link
+            href={`/app/practice/relearning/${r.optionId}`}
+            className="text-brand-deep hover:underline"
+          >
+            Swap it
+          </Link>
         </>
       }
       note={
         <p className="text-xs text-muted-foreground">
-          Students were offered Read or Do instead. Try it on a student account; swap it if
-          Restricted Mode blocks it.
+          Students were offered Read or Do instead. Try it on a student account; swap it in the
+          editor if Restricted Mode blocks it.
         </p>
       }
       error={error}

@@ -20,13 +20,14 @@
  */
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import { and, eq, inArray, isNull, or, sql } from "drizzle-orm";
+import { and, eq, isNull, or, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { parseCsvRecords } from "@/lib/csv";
 import { parseQuestionRecords } from "@/lib/import/question-csv";
 import { commitImport } from "@/lib/import/question-import";
 import { insertTargetSections } from "@/lib/target-sections";
 import { relearningIssues, type PackRelearning } from "@/lib/relearning-pack";
+import { writeRelearningOption } from "@/lib/relearning-write";
 
 export type { PackRelearning } from "@/lib/relearning-pack";
 
@@ -674,14 +675,21 @@ async function applyActivity(
  * The Read · Watch · Do half of a pack: each option found by (teacher, target, mode) and updated,
  * or created; its sections updated in place by part and order, extras removed.
  */
+/**
+ * A pack's Read · Watch · Do options, written through `writeRelearningOption` (sections update in
+ * place by part + order). An option the teacher has saved in Bloom's editor (`edited_at` set) is
+ * left alone, so a later revision of the pack never overwrites their edits: it is listed under
+ * `kept` ("kept teacher edits") in the pack's summary instead.
+ */
 async function applyRelearning(
   list: PackRelearning[],
   teacherId: string,
   courseId: string,
   errors: string[]
-): Promise<{ options: number; sections: number }> {
+): Promise<{ options: number; sections: number; kept?: string[] }> {
   let options = 0;
   let sections = 0;
+  const kept: string[] = [];
   for (const r of list) {
     const issues = relearningIssues(r);
     if (issues.length) {
@@ -690,73 +698,23 @@ async function applyRelearning(
     }
     const [targetId] = await resolveTargets([r.target], courseId, errors);
     if (!targetId) continue;
-    const values = {
-      title: r.title.trim(),
-      description: r.description?.trim() || null,
-      isPublished: r.published ?? true,
-    };
     const existing = await db.query.relearningOptions.findFirst({
-      columns: { id: true },
+      columns: { id: true, editedAt: true },
       where: and(
         eq(schema.relearningOptions.ownerId, teacherId),
         eq(schema.relearningOptions.learningTargetId, targetId),
         eq(schema.relearningOptions.mode, r.mode)
       ),
     });
-    const optionId = existing
-      ? (
-          await db
-            .update(schema.relearningOptions)
-            .set(values)
-            .where(eq(schema.relearningOptions.id, existing.id))
-            .returning({ id: schema.relearningOptions.id })
-        )[0].id
-      : (
-          await db
-            .insert(schema.relearningOptions)
-            .values({ ...values, ownerId: teacherId, learningTargetId: targetId, mode: r.mode })
-            .returning({ id: schema.relearningOptions.id })
-        )[0].id;
-    options++;
-    const current = await db.query.relearningSections.findMany({
-      columns: { id: true, part: true, sortOrder: true },
-      where: eq(schema.relearningSections.optionId, optionId),
-    });
-    const keep = new Set<string>();
-    for (const part of ["core", "extension"] as const) {
-      const wanted = r.sections.filter((x) => x.part === part);
-      for (const [i, sec] of wanted.entries()) {
-        const row = {
-          title: sec.title?.trim() || null,
-          body: sec.body,
-          checks: sec.checks ?? [],
-          shortAnswerPrompt: sec.shortAnswer?.trim() || null,
-          estMinutes: sec.minutes ?? 3,
-        };
-        const same = current.find((c) => c.part === part && c.sortOrder === i);
-        if (same) {
-          await db
-            .update(schema.relearningSections)
-            .set(row)
-            .where(eq(schema.relearningSections.id, same.id));
-          keep.add(same.id);
-        } else {
-          const [made] = await db
-            .insert(schema.relearningSections)
-            .values({ ...row, optionId, part, sortOrder: i })
-            .returning({ id: schema.relearningSections.id });
-          keep.add(made.id);
-        }
-        sections++;
-      }
+    if (existing?.editedAt) {
+      kept.push(`${r.target} ${r.mode}: kept teacher edits`);
+      continue;
     }
-    const extra = current.filter((c) => !keep.has(c.id)).map((c) => c.id);
-    if (extra.length)
-      await db
-        .delete(schema.relearningSections)
-        .where(inArray(schema.relearningSections.id, extra));
+    const wrote = await writeRelearningOption({ ownerId: teacherId, targetId, option: r });
+    options++;
+    sections += wrote.sections;
   }
-  return { options, sections };
+  return kept.length ? { options, sections, kept } : { options, sections };
 }
 
 /** Apply every pack that has not been applied yet; never throws for one bad pack. */

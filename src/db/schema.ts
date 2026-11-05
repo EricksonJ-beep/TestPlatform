@@ -1379,6 +1379,11 @@ export const relearningOptions = pgTable(
     /** The card's one line under the title. */
     description: text("description"),
     isPublished: boolean("is_published").default(false).notNull(),
+    /**
+     * When the teacher last saved it in Bloom's editor (Nov 5 2026). A content pack's later
+     * revision leaves an option edited in the app alone ("kept teacher edits").
+     */
+    editedAt: timestamp("edited_at", { withTimezone: true }),
     ...timestamps,
   },
   (t) => [

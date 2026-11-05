@@ -428,7 +428,11 @@ must offer Read or Do and land in Needs you.
   no video could be checked. Jon picks the videos and plays them on a student account first
   (decision 37); they go into the pack as `watch` sections with timestamps.*
 - *Left for later:*
-  - *An in-app builder. Options are written in packs for now.*
+  - *~~An in-app builder. Options are written in packs for now.~~ Built Nov 5: Practice sets →
+    Read · Watch · Do (`/app/practice/relearning`), a course's targets × Read / Watch / Do, each
+    opening an editor with "Preview as student". Saves follow the pack rule (sections in place by
+    part + order) and set `relearning_options.edited_at`; a later pack revision skips an edited
+    option and lists it under `kept` in its summary.*
   - *Uploading Jon's own recordings to a section. The player already handles them.*
   - *~~The path-aware wording on the tier board's readiness lines (R5).~~ Done Nov 5.*
 - *Code: rules `src/lib/relearning.ts`; server `src/lib/relearning-server.ts` (every progress
