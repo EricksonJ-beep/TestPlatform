@@ -138,6 +138,8 @@ export type BankDetail = {
   isArchived: boolean;
   /** Students may be dealt its questions in "Build my practice". */
   openPractice: boolean;
+  /** Its column on Question banks (null: from its name; `bankKind`). */
+  kind: string | null;
 };
 
 export async function getBank(bankId: string): Promise<BankDetail | null> {
@@ -153,6 +155,7 @@ export async function getBank(bankId: string): Promise<BankDetail | null> {
       ownerLastName: schema.users.lastName,
       isArchived: schema.questionBanks.isArchived,
       openPractice: schema.questionBanks.openPractice,
+      kind: schema.questionBanks.kind,
     })
     .from(schema.questionBanks)
     .leftJoin(schema.courses, eq(schema.questionBanks.courseId, schema.courses.id))

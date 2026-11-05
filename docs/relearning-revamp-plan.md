@@ -374,8 +374,8 @@ counting score update. Tests cover:
   path takes it over.*
 - *A Practice bank is any bank in the target's course whose type (column or name) is Practice.
   A pass recomputes the final score, so the quiz raise and a test's gates follow.*
-- *The dealer reports a thin bank but doesn't store it yet; the teacher's bank health counts come
-  with R4/R5.*
+- *The dealer reports a thin bank but doesn't store it. The teacher sees the same counts in bank
+  health on Question banks (Nov 5).*
 - *Tests: `src/lib/practice-check.test.ts` (12) and `src/app/student/checks/practice-check.test.ts`
   (6, end to end). All 632 tests pass.*
 
@@ -602,8 +602,16 @@ bank health shows no thin band.
   independent re-solve of a random 64 of the new questions found every key right.*
 - *Delivered as pack revisions (Unit 1 → 4, Unit 2 → 3, Units 3–6 → 2). Each applies once and
   updates its bank in place.*
-- *The bank health view on Question banks isn't built yet. The pack checker reports the same
-  band counts for now.*
+- *Bank health (built Nov 5): on Question banks, each Practice bank card shows its band counts
+  ("45 easy · 30 medium · 25 hard") and a chip: Healthy, Thin, or Can't fill a deal.*
+  - *The bank's page has a panel with one row per target: its band counts (colored when short or
+    thin) and its question types, then what's short.*
+  - *It counts what the practice-check dealer can draw: live, auto-graded questions tagged to a
+    target in the bank's course. A deal is 3 easy · 4 medium · 3 hard (the larger of a check
+    and a 10-question practice set). A band below one deal can't fill it; below three deals'
+    worth it's thin.*
+  - *Code: rule `src/lib/bank-health.ts`, read `src/lib/queries/bank-health.ts` (two queries for
+    any number of banks), view `src/components/app/bank-health.tsx`.*
 
 ### C2 · Physical Science Read · Watch · Do (25 targets)
 - **Read:** the existing reteach readings, split into core and extension, with inline checks.

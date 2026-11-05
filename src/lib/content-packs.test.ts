@@ -19,6 +19,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { gradeResponse } from "@/lib/grading";
 import { applyAllPacks, applyPack, listPacks } from "./content-packs";
+import { loadBankHealth } from "@/lib/queries/bank-health";
 
 const ids = { teacher: "", course: "", cls: "" };
 let ps: { id: string };
@@ -175,6 +176,16 @@ describe("content packs", () => {
           errors: [],
         });
     }
+    // Bank health reads a shipped Practice bank the way the practice-check dealer does.
+    const lt2Bank = (await db.query.questionBanks.findFirst({
+      where: eq(schema.questionBanks.name, "PS · U3.LT2 · Practice"),
+    }))!;
+    const health = (await loadBankHealth([lt2Bank])).get(lt2Bank.id)!;
+    expect(health.targets.map((t) => [t.code, t.bands, t.worst])).toEqual([
+      ["U3.LT2", { easy: 45, medium: 30, hard: 25 }, "ok"],
+    ]);
+    expect(health).toMatchObject({ usable: 100, notAutoGraded: 0, untagged: 0, worst: "ok" });
+
     const skin = first.find((o) => o.name === "anatomy-u2-lab-quiz-integumentary")!;
     expect(skin.status).toBe("applied");
     if (skin.status !== "applied") throw new Error("unreachable");

@@ -2,10 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Library } from "lucide-react";
 import { requireTeacher } from "@/lib/authz";
+import { bankKind } from "@/lib/bank-kinds";
+import { loadBankHealth } from "@/lib/queries/bank-health";
 import { getCurrentCourse } from "@/lib/current-course";
 import { listMyBanks } from "@/lib/queries/banks";
 import { listUnitsForTeacher } from "@/lib/queries/courses";
 import { focusShelves, groupByUnit } from "@/lib/unit-shelves";
+import { BankHealthLine } from "@/components/app/bank-health";
 import { EmptyState } from "@/components/empty-state";
 import { KindBoard } from "@/components/app/kind-board";
 import { autoOrderColumn, placeBankInColumn } from "./actions";
@@ -22,6 +25,10 @@ export default async function BanksPage({ searchParams }: PageProps<"/app/banks"
     listUnitsForTeacher(session.userId),
     getCurrentCourse(session.userId),
   ]);
+  // Bank health on each live Practice bank: what its practice checks can draw.
+  const health = await loadBankHealth(
+    banks.filter((b) => !b.isArchived && bankKind(b) === "practice")
+  );
   // Cards render here (server) and the board only moves them around.
   const { course: focused, orphans } = focusShelves(
     banks.map((b) => ({
@@ -43,6 +50,7 @@ export default async function BanksPage({ searchParams }: PageProps<"/app/banks"
               </span>
             ) : null}
           </p>
+          {health.get(b.id) ? <BankHealthLine health={health.get(b.id)!} /> : null}
         </Link>
       ),
     })),
