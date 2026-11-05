@@ -1,6 +1,6 @@
 {
   "name": "ps-u1-lt2-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science A",
   "relearning": [
@@ -188,6 +188,79 @@
               "afterStepId": "s5"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U1.LT2",
+      "mode": "watch",
+      "title": "U1.LT2 Watch: significant figures",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Significant Figures: A Fast Review",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "l2yuDvwYq5g"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "How many sig figs are in 4,050 m?",
+              "options": [
+                { "id": "a", "text": "2" },
+                { "id": "b", "text": "3" },
+                { "id": "c", "text": "4" }
+              ],
+              "answer": "b",
+              "explanation": "The 4 and the 5 are non-zero, so they count. The zero between them is sandwiched, so it counts. The last zero is a placeholder with no decimal, so it does not count: 3 sig figs. Counting the placeholder zero is the common mistake."
+            },
+            {
+              "id": "w2",
+              "kind": "fill_blank",
+              "prompt": "How many sig figs are in 0.00720 g? Type a number.",
+              "answer": ["3", "three", "3 sig figs"],
+              "explanation": "The zeroes in front are placeholders, so they don't count. The 7 and the 2 are non-zero. The last zero is a trailing zero with a decimal present, so it counts: 3 sig figs. Counting the zeroes in front is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Unit Conversion & Significant Figures (Crash Course Chemistry #2)",
+          "minutes": 11,
+          "body": {
+            "type": "video",
+            "youtubeId": "hQpQ0hxVNTg"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "15.2 cm + 3.47 cm. The calculator shows 18.67. Which answer has the right sig figs?",
+              "options": [
+                { "id": "a", "text": "18.67 cm" },
+                { "id": "b", "text": "18.7 cm" },
+                { "id": "c", "text": "19 cm" }
+              ],
+              "answer": "b",
+              "explanation": "When you add, keep the fewest decimal places. 15.2 has one, so the answer is 18.7 cm. Counting sig figs instead of decimal places gives 19 cm, the common mistake."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "A rectangle is 2.0 m by 4.15 m. The calculator shows 8.3 for the area. Which answer has the right sig figs?",
+              "options": [
+                { "id": "a", "text": "8.30 m²" },
+                { "id": "b", "text": "8.3 m²" },
+                { "id": "c", "text": "8 m²" }
+              ],
+              "answer": "b",
+              "explanation": "When you multiply, keep the fewest sig figs. 2.0 has 2 sig figs, so the area gets 2: 8.3 m². Writing 8.30 adds a sig fig you didn't measure, and 8 drops one."
+            }
+          ],
+          "shortAnswer": "Count the sig figs in 0.0450 g and in 2,300 m. For each zero, say whether it counts and name the rule that told you."
         }
       ]
     }

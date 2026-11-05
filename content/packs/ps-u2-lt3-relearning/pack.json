@@ -1,6 +1,6 @@
 {
   "name": "ps-u2-lt3-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science A",
   "relearning": [
@@ -206,6 +206,79 @@
               "afterStepId": "s5"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U2.LT3",
+      "mode": "watch",
+      "title": "U2.LT3 Watch: isotopes and isotope notation",
+      "sections": [
+        {
+          "part": "core",
+          "title": "What Are Isotopes? (FuseSchool)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "xjY5p-1CDr8"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "What makes two atoms isotopes of each other?",
+              "options": [
+                { "id": "a", "text": "Same number of protons, different numbers of neutrons" },
+                { "id": "b", "text": "Same number of neutrons, different numbers of protons" },
+                { "id": "c", "text": "Same mass number, different elements" }
+              ],
+              "answer": "a",
+              "explanation": "Isotopes are atoms of the same element, so they have the same protons (the name tag), but different neutrons (the extra books). Different protons would make a different element."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Oxygen-16 and oxygen-18 are isotopes. What is different between them?",
+              "options": [
+                { "id": "a", "text": "The number of protons" },
+                { "id": "b", "text": "The number of neutrons" },
+                { "id": "c", "text": "The atomic number" }
+              ],
+              "answer": "b",
+              "explanation": "Both are oxygen, so both have 8 protons and atomic number 8. Neutrons: 16 − 8 = 8 and 18 − 8 = 10. Only the neutrons (and so the mass number) are different."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Isotope Notation",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "BYiu0kIWd30"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "Uranium (U) has atomic number 92. Which is the correct nuclear notation for uranium-238?",
+              "options": [
+                { "id": "a", "text": "$^{238}_{92}\\text{U}$" },
+                { "id": "b", "text": "$^{92}_{238}\\text{U}$" },
+                { "id": "c", "text": "$^{146}_{92}\\text{U}$" }
+              ],
+              "answer": "a",
+              "explanation": "The mass number (238) goes on top and the atomic number (92) on the bottom. Writing the atomic number on top, or putting the neutrons (146) on top, is the common mistake."
+            },
+            {
+              "id": "w4",
+              "kind": "fill_blank",
+              "prompt": "How many neutrons are in $^{37}_{17}\\text{Cl}$? Type a number.",
+              "answer": ["20", "twenty", "20 neutrons"],
+              "explanation": "n⁰ = mass number − atomic number = 37 − 17 = 20. Adding the numbers or giving the mass number is the common mistake."
+            }
+          ],
+          "shortAnswer": "Write sodium-23 (atomic number 11) in nuclear notation. Explain what the top number and the bottom number tell you, and find its number of neutrons."
         }
       ]
     }

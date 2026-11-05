@@ -1,6 +1,6 @@
 {
   "name": "ps-u5-lt3-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science B",
   "relearning": [
@@ -236,6 +236,79 @@
               "explanation": "Acceleration is how much the velocity changes each second, so its unit is m/s². Writing m/s (a speed unit) is the common mistake, and newtons are for force."
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U5.LT3",
+      "mode": "watch",
+      "title": "U5.LT3 Watch: Newton's 1st and 2nd laws",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Balanced and unbalanced forces",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "YyJSlcIbd-s"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Which has more inertia: an empty shopping cart or a cart full of groceries?",
+              "options": [
+                { "id": "a", "text": "The empty cart" },
+                { "id": "b", "text": "The full cart" },
+                { "id": "c", "text": "They have the same inertia" }
+              ],
+              "answer": "b",
+              "explanation": "Inertia is an object's resistance to a change in motion, and more mass = more inertia. The full cart is harder to start and harder to stop. Thinking inertia depends on speed instead of mass is the common mistake."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "A hockey puck slides across smooth ice. If no unbalanced force acts on it, what does Newton's 1st law say it will do?",
+              "options": [
+                { "id": "a", "text": "Slow down and stop on its own" },
+                { "id": "b", "text": "Keep moving at a constant speed in a straight line" },
+                { "id": "c", "text": "Speed up" }
+              ],
+              "answer": "b",
+              "explanation": "An object in motion stays in motion at a constant speed in a straight line unless an unbalanced force acts on it. A real puck slows down only because friction is an unbalanced force. Thinking moving things stop on their own is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Newton's 2nd law",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "0efXaBr_JcU"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "fill_blank",
+              "prompt": "A net force of 24 N pushes an 8 kg cart. What is its acceleration? Type a number (in m/s²).",
+              "answer": ["3", "3 m/s²", "3 m/s2", "3 m/s^2", "3.0", "3.0 m/s²", "3.0 m/s2"],
+              "explanation": "a = F ÷ m = 24 N ÷ 8 kg = 3 m/s². Multiplying (192) is the common mistake."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "A cart speeds up at 3 m/s². The same force pushes a cart with double the mass. What is the new acceleration?",
+              "options": [
+                { "id": "a", "text": "6 m/s²" },
+                { "id": "b", "text": "3 m/s²" },
+                { "id": "c", "text": "1.5 m/s²" }
+              ],
+              "answer": "c",
+              "explanation": "Mass and acceleration are inverse: double the mass, cut the acceleration in half, so 3 m/s² ÷ 2 = 1.5 m/s². Doubling it (6 m/s²) is the common mistake; that's what doubling the force would do."
+            }
+          ],
+          "shortAnswer": "A student pushes an empty cart and a full cart with the same force. Use F = m × a to explain which one speeds up faster and why."
         }
       ]
     }

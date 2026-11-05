@@ -30,6 +30,7 @@ import { listStudentAssignments } from "@/lib/queries/assignments";
 import { getClassGradebook } from "@/lib/queries/class-gradebook";
 import { getCorrectionScope, getCorrectionsSummary } from "@/lib/queries/corrections";
 import { getPathState } from "@/lib/queries/relearning-path";
+import { getRelearningMonitor, getTierBoard } from "@/lib/queries/tiers";
 import { getGradebook } from "@/lib/queries/results";
 import { loadScoreTrails, trailKey } from "@/lib/queries/score-trail";
 import { listStudentResults } from "@/lib/queries/student-results";
@@ -402,6 +403,13 @@ describe("a quiz at 40% on the path (Q1, Q5)", () => {
       "done",
       "current",
     ]);
+    // Each done step carries the date it was finished (approved, finished, passed).
+    const doneAt = (await getPathState(ids.asg.quiz, ids.ava))!.state.targets.find(
+      (t) => t.id === ids.lt.lt1
+    )!.doneAt;
+    for (const at of [doneAt.corrections, doneAt.relearn, doneAt.practice])
+      expect(Date.now() - at!.getTime()).toBeLessThan(60_000);
+    expect(row.path?.[0].steps.slice(0, 3).every((x) => x.note?.startsWith("Done "))).toBe(true);
   });
 
   it("Keep my 80%: done for now, and the retake stays open (decision 28)", async () => {
@@ -524,6 +532,20 @@ describe("a test with LT2 and LT4 below the line (S1–S6)", () => {
     expect((await agree(ids.cal, "test")).cycle).toBe("relearning");
     await refused(startAttempt(ids.asg.test, null), /Pass the practice check on U3\.LT4 first/);
     expect((await final(ids.cal, "test")).percent).toBe(75);
+
+    // The tier board and the monitor use the path's words (R5): LT2 done, LT4 owes its check.
+    const board = (await getTierBoard(ids.asg.test))!;
+    const cardRow = board.cards.find((c) => c.studentId === ids.cal)!;
+    expect(cardRow.stageLabel).toBe("Relearning (U3.LT4: practice check)");
+    expect(cardRow.readiness).toMatchObject({ [ids.lt.lt2]: "ready", [ids.lt.lt4]: "not_ready" });
+    const monitor = (await getRelearningMonitor(ids.asg.test, ids.cal))!;
+    const line = (lt: Lt) => monitor.targets.find((t) => t.id === ids.lt[lt])!.line;
+    expect(line("lt2")).toMatch(
+      /^U3\.LT2: corrections ✓.* · relearn ✓ · practice check ✓ · retake/
+    );
+    expect(line("lt4")).toMatch(
+      /^U3\.LT4: corrections ✓.* · relearn ✓ · practice check ✗ · retake locked$/
+    );
 
     await passCheck(ids.cal, "test", ["lt4"], bundles.lt4);
     const c = await agree(ids.cal, "test");

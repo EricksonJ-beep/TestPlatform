@@ -1,6 +1,6 @@
 {
   "name": "ps-u2-lt2-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science A",
   "relearning": [
@@ -202,6 +202,79 @@
               "afterStepId": "s5"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U2.LT2",
+      "mode": "watch",
+      "title": "U2.LT2 Watch: protons, neutrons and electrons",
+      "sections": [
+        {
+          "part": "core",
+          "title": "What's Inside an Atom? Protons, Electrons and Neutrons",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "e9GuJUaX0UM"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Which particle is negative and moves in the electron cloud?",
+              "options": [
+                { "id": "a", "text": "Proton" },
+                { "id": "b", "text": "Neutron" },
+                { "id": "c", "text": "Electron" }
+              ],
+              "answer": "c",
+              "explanation": "The electron (e⁻) is negative and moves in the electron cloud. The proton (p⁺) is positive and the neutron (n⁰) has no charge, and both sit in the nucleus."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Where is almost all of an atom's mass?",
+              "options": [
+                { "id": "a", "text": "In the nucleus" },
+                { "id": "b", "text": "In the electron cloud" },
+                { "id": "c", "text": "Spread evenly through the atom" }
+              ],
+              "answer": "a",
+              "explanation": "Protons and neutrons are 1 amu each and electrons are about 0 amu, so the mass is in the nucleus, like the marble on the 50-yard line. The electron cloud holds the volume, not the mass."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Calculating the Protons, Neutrons and Electrons for an Atom",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "kDnNB18whC0"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "fill_blank",
+              "prompt": "Potassium (K) has atomic number 19 and an average atomic mass of 39.098. How many neutrons are in its most common isotope? Type a number.",
+              "answer": ["20", "twenty", "20 neutrons"],
+              "explanation": "Round 39.098 to get the mass number, 39. n⁰ = mass # − atomic # = 39 − 19 = 20. Using the decimal or subtracting backwards is the common mistake."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "Fluorine (F) has atomic number 9 and an average atomic mass of 18.998. How many electrons does a neutral fluorine atom have?",
+              "options": [
+                { "id": "a", "text": "9" },
+                { "id": "b", "text": "10" },
+                { "id": "c", "text": "19" }
+              ],
+              "answer": "a",
+              "explanation": "In a neutral atom, e⁻ = p⁺ = atomic number, so fluorine has 9 electrons. 10 is the number of neutrons (19 − 9), and 19 is the mass number."
+            }
+          ],
+          "shortAnswer": "Magnesium (Mg) has atomic number 12 and an average atomic mass of 24.305. Find the numbers of protons, neutrons and electrons in a neutral atom, and explain how you got each one."
         }
       ]
     }

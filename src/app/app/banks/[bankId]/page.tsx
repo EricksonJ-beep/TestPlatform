@@ -3,11 +3,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft, Eye, FileUp, Library, Plus } from "lucide-react";
 import { isAuthzError, requireShared } from "@/lib/authz";
+import { bankKind } from "@/lib/bank-kinds";
+import { loadBankHealth } from "@/lib/queries/bank-health";
 import { getBank, listBankQuestions, listBankTags, listMoveTargets } from "@/lib/queries/banks";
 import { getCourseDetail, listCourses } from "@/lib/queries/courses";
 import { listShares } from "@/lib/queries/shares";
 import { listStimulusOptions, stimulusLabel } from "@/lib/queries/stimuli";
 import { isStorageConfigured } from "@/lib/storage";
+import { BankHealthPanel } from "@/components/app/bank-health";
 import { EmptyState } from "@/components/empty-state";
 import { ShareDialog } from "@/components/app/share-dialog";
 import { Button } from "@/components/ui/button";
@@ -55,6 +58,10 @@ export default async function BankPage({ params, searchParams }: PageProps<"/app
         ? listShares({ type: "question_bank", id: bank.id })
         : Promise.resolve([]),
     ]);
+  const health =
+    bankKind(bank) === "practice" && !archivedView
+      ? (await loadBankHealth([bank])).get(bank.id)
+      : undefined;
   const stimuli = stimulusOptions.map((s) => ({ id: s.id, label: stimulusLabel(s) }));
   const targets = (course?.targets ?? []).map((t) => ({ id: t.id, code: t.code, title: t.title }));
   const units = (course?.units ?? []).map((u) => ({ id: u.id, name: u.name }));
@@ -117,6 +124,8 @@ export default async function BankPage({ params, searchParams }: PageProps<"/app
           }
         />
       </div>
+
+      {health ? <BankHealthPanel health={health} /> : null}
 
       <Filters
         bankId={bank.id}

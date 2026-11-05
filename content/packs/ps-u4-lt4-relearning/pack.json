@@ -1,6 +1,6 @@
 {
   "name": "ps-u4-lt4-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science B",
   "relearning": [
@@ -227,6 +227,91 @@
               "afterStepId": "s5"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U4.LT4",
+      "mode": "watch",
+      "title": "U4.LT4 Watch: motion graphs",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Distance-time graphs",
+          "minutes": 5,
+          "body": { "type": "video", "youtubeId": "lrHAnr9cYdQ" },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "On a distance-time graph, lines A and B both go up in straight lines, but A is steeper. What does that tell you?",
+              "options": [
+                { "id": "a", "text": "A is moving faster than B" },
+                { "id": "b", "text": "A is moving slower than B" },
+                { "id": "c", "text": "A is stopped" },
+                { "id": "d", "text": "A is heading back toward the start" }
+              ],
+              "answer": "a",
+              "explanation": "The slope of a distance-time graph is the speed, so steeper = faster."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "On a distance-time graph, what does a straight line going down mean?",
+              "options": [
+                { "id": "a", "text": "The object is slowing down" },
+                {
+                  "id": "b",
+                  "text": "The object is moving at a constant speed back toward the start"
+                },
+                { "id": "c", "text": "The object is stopped" },
+                { "id": "d", "text": "The object is speeding up" }
+              ],
+              "answer": "b",
+              "explanation": "A line going down means the distance from the start is shrinking at a steady rate: constant speed back toward the start. Calling it \"slowing down\" is the common mistake; a flat line means stopped."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Velocity-time graphs",
+          "minutes": 5,
+          "body": { "type": "video", "youtubeId": "AJF2n5RWXKE" },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "On a velocity-time graph, what does a straight line rising from 0 m/s mean?",
+              "options": [
+                { "id": "a", "text": "The object is accelerating" },
+                { "id": "b", "text": "The object is moving at a constant velocity" },
+                { "id": "c", "text": "The object is stopped" },
+                { "id": "d", "text": "The object is moving backward" }
+              ],
+              "answer": "a",
+              "explanation": "On a velocity-time graph the y-axis is velocity, so a rising line means the velocity is going up: the object is accelerating. A flat line above zero is constant velocity."
+            },
+            {
+              "id": "w4",
+              "kind": "fill_blank",
+              "prompt": "A velocity-time graph rises in a straight line from 0 m/s at 0 s to 12 m/s at 3 s. What is the acceleration, in m/s²? Type a number.",
+              "answer": [
+                "4",
+                "4 m/s²",
+                "4m/s²",
+                "4 m/s2",
+                "4m/s2",
+                "4 m/s^2",
+                "4m/s^2",
+                "4 m/s/s",
+                "4m/s/s",
+                "4.0",
+                "four"
+              ],
+              "explanation": "The slope of a velocity-time graph is the acceleration. Formula: a = (v_{f} − v_{i}) / t. Set Up: a = (12 m/s − 0 m/s) / 3 s. Answer: 4 m/s²."
+            }
+          ],
+          "shortAnswer": "A distance-time graph and a velocity-time graph each show a straight line going up. Explain what the object is doing in each case."
         }
       ]
     }

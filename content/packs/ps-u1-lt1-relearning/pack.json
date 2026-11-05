@@ -1,6 +1,6 @@
 {
   "name": "ps-u1-lt1-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science A",
   "relearning": [
@@ -242,6 +242,84 @@
               "afterStepId": "s5"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U1.LT1",
+      "mode": "watch",
+      "title": "U1.LT1 Watch: isolating variables",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Bowled Over: Isolating Variables",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "BXFU86GNmrg"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "A group wants to know if the type of ball affects how high it bounces. Which plan is a fair test?",
+              "options": [
+                { "id": "a", "text": "Drop every ball from the same height onto the same floor" },
+                { "id": "b", "text": "Drop each ball from a different height onto the same floor" },
+                { "id": "c", "text": "Drop one ball onto carpet and the other balls onto tile" }
+              ],
+              "answer": "a",
+              "explanation": "Like a fair race, change one thing (the ball) and keep everything else the same (the height and the floor). Changing the height or the floor too means you can't tell what made the difference. Changing two things at once is the common mistake."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "In that test, the group changes the type of ball and measures how high it bounces. What is the type of ball?",
+              "options": [
+                { "id": "a", "text": "The independent variable (IV)" },
+                { "id": "b", "text": "The dependent variable (DV)" },
+                { "id": "c", "text": "A constant" }
+              ],
+              "answer": "a",
+              "explanation": "The type of ball is what the group changes, so it is the IV. The bounce height is measured, so it is the DV. Mixing up changed and measured is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Nature of Science (Amoeba Sisters)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "3nAETHZTObk"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "A group tests whether a sports drink helps runners recover. One group of runners drinks the sports drink. Another group gets the same run and rest, but drinks only plain water. What is the plain-water group?",
+              "options": [
+                { "id": "a", "text": "A constant" },
+                { "id": "b", "text": "The control group" },
+                { "id": "c", "text": "The independent variable" }
+              ],
+              "answer": "b",
+              "explanation": "The control group gets none of the treatment (no sports drink), so it is the baseline you compare to. A constant is a thing you keep the same, like the length of the run, not a group. Calling the control group a constant is the common mistake."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "A group makes paper airplanes from 1, 2 or 3 sheets of paper and measures how far each one flies. Where does the flight distance go on the graph?",
+              "options": [
+                { "id": "a", "text": "The x-axis" },
+                { "id": "b", "text": "The y-axis" },
+                { "id": "c", "text": "It does not go on the graph" }
+              ],
+              "answer": "b",
+              "explanation": "The flight distance is measured, so it is the DV, and the DV goes on the y-axis. The number of sheets (the IV) goes on the x-axis. Swapping the axes is the common mistake."
+            }
+          ],
+          "shortAnswer": "A group tests whether the height of a ramp affects how fast a toy car rolls down it. Name the IV, the DV and two constants, and explain why they should change only one thing."
         }
       ]
     }

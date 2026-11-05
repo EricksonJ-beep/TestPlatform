@@ -374,8 +374,8 @@ counting score update. Tests cover:
   path takes it over.*
 - *A Practice bank is any bank in the target's course whose type (column or name) is Practice.
   A pass recomputes the final score, so the quiz raise and a test's gates follow.*
-- *The dealer reports a thin bank but doesn't store it yet; the teacher's bank health counts come
-  with R4/R5.*
+- *The dealer reports a thin bank but doesn't store it. The teacher sees the same counts in bank
+  health on Question banks (Nov 5).*
 - *Tests: `src/lib/practice-check.test.ts` (12) and `src/app/student/checks/practice-check.test.ts`
   (6, end to end). All 632 tests pass.*
 
@@ -430,7 +430,7 @@ must offer Read or Do and land in Needs you.
 - *Left for later:*
   - *An in-app builder. Options are written in packs for now.*
   - *Uploading Jon's own recordings to a section. The player already handles them.*
-  - *The path-aware wording on the tier board's readiness lines (R5).*
+  - *~~The path-aware wording on the tier board's readiness lines (R5).~~ Done Nov 5.*
 - *Code: rules `src/lib/relearning.ts`; server `src/lib/relearning-server.ts` (every progress
   write is one atomic statement); actions `src/app/student/relearning/actions.ts` (guard
   `requireRelearningRowAccess`) and `checkOffRelearning` / `resolveVideoFlag` in
@@ -485,9 +485,13 @@ gradebook cell at every step.
   - *Needs you says "corrections raise it to 90%, and the relearning path to 100%", or "They
     already have 100%".*
 - *Left for later:*
-  - *Dates on done steps. The path state doesn't carry them yet.*
-  - *The tier board's readiness lines still use the old words. The relearning monitor shows the
-    new Read · Watch · Do section above them.*
+  - *~~Dates on done steps.~~ Done Nov 5. A done step reads "Done Nov 4", in school time. The
+    date comes from the last approval (corrections), the relearning finishing or being checked
+    off, or the practice check passing.*
+  - *~~The tier board's readiness lines still use the old words.~~ Done Nov 5: on the path, a
+    target reads "U3.LT4: corrections ✓ · relearn ✓ · practice check ✗ · retake locked"
+    (corrections the teacher hasn't OK'd yet read "waiting for your OK"). The card's relearning
+    stage uses the gradebook's words: "Relearning (U3.LT4: practice check)".*
 - *Tests: `src/lib/step-path.test.ts` (the 40% quiz, the 40/90 mixed quiz, the two-target test,
   waiting, keep, ask). `src/app/student/relearning-path.test.ts` covers Keep my 80%, the quiz
   opt-in, and the to-do row built from the path.*
@@ -598,8 +602,16 @@ bank health shows no thin band.
   independent re-solve of a random 64 of the new questions found every key right.*
 - *Delivered as pack revisions (Unit 1 → 4, Unit 2 → 3, Units 3–6 → 2). Each applies once and
   updates its bank in place.*
-- *The bank health view on Question banks isn't built yet. The pack checker reports the same
-  band counts for now.*
+- *Bank health (built Nov 5): on Question banks, each Practice bank card shows its band counts
+  ("45 easy · 30 medium · 25 hard") and a chip: Healthy, Thin, or Can't fill a deal.*
+  - *The bank's page has a panel with one row per target: its band counts (colored when short or
+    thin) and its question types, then what's short.*
+  - *It counts what the practice-check dealer can draw: live, auto-graded questions tagged to a
+    target in the bank's course. A deal is 3 easy · 4 medium · 3 hard (the larger of a check
+    and a 10-question practice set). A band below one deal can't fill it; below three deals'
+    worth it's thin.*
+  - *Code: rule `src/lib/bank-health.ts`, read `src/lib/queries/bank-health.ts` (two queries for
+    any number of banks), view `src/components/app/bank-health.tsx`.*
 
 ### C2 · Physical Science Read · Watch · Do (25 targets)
 - **Read:** the existing reteach readings, split into core and extension, with inline checks.
@@ -618,8 +630,15 @@ the student-account test.
 - *Sources: Jon's reteach readings and practice banks.*
 - *Checks: `scripts/check-pack.ts` is clean on all 25. About 50 quick checks re-solved by hand
   were all right.*
-- *Watch: Jon picks the videos and tests them on a student account (decision 37). They're added
-  to these packs as `watch` options.*
+- *Watch added Nov 5 (Jon approved the list in `docs/watch-videos/physical-science.md`):*
+  - *Each target's core video is the list's first choice, and its extension is the backup.*
+  - *Each video has 2 quick checks after it, on the target's core idea in Jon's wording (none
+    on details only that video would have). The extension also has a short answer.*
+  - *Lengths are 5 minutes unless the list gives one. The videos aren't trimmed and the checks
+    don't pause the video, because nobody has timed them yet.*
+  - *All 25 pass `scripts/check-pack.ts`. I re-solved 20 of the 100 checks, and all were right.*
+  - *If a video won't play on a student device, the student's flag reaches Jon's Needs you
+    list, and the student is offered Read or Do instead.*
 
 ### C3 · Biology Practice banks (33 targets × about 100)
 - Biology has Retake banks but no Practice banks, so this is about 3,300 new questions from

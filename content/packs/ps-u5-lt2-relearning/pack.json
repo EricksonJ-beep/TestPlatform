@@ -1,6 +1,6 @@
 {
   "name": "ps-u5-lt2-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science B",
   "relearning": [
@@ -188,6 +188,85 @@
               "afterStepId": "t4"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U5.LT2",
+      "mode": "watch",
+      "title": "U5.LT2 Watch: free-body diagrams and net force",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Balanced and unbalanced forces",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "kco4p5z9-gI"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "fill_blank",
+              "prompt": "A box is pushed right with 50 N, and friction pushes left with 15 N. What is the net force? Type a number (in N).",
+              "answer": [
+                "35",
+                "35 N",
+                "35N",
+                "35 newtons",
+                "35.0",
+                "35 N to the right",
+                "35 N right"
+              ],
+              "explanation": "Opposite directions subtract: 50 N − 15 N = 35 N to the right, toward the bigger side. Adding them (65 N) is the common mistake."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "A car drives down the road at a constant velocity. What is true about the forces on it?",
+              "options": [
+                { "id": "a", "text": "They are balanced: the net force is 0 N (Type A)" },
+                {
+                  "id": "b",
+                  "text": "They are unbalanced: the forward force must be bigger than friction (Type B)"
+                },
+                { "id": "c", "text": "There are no forces on the car at all" }
+              ],
+              "answer": "a",
+              "explanation": "Constant velocity means the motion isn't changing, so the forces are balanced and the net force is 0 N (Type A). Thinking a moving object needs a bigger forward force to keep going is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Forces and free-body diagrams",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "i447NWNpScM"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "On a free-body diagram, how do you show that one force is bigger than another?",
+              "options": [
+                { "id": "a", "text": "Draw its arrow longer" },
+                { "id": "b", "text": "Draw its arrow thicker but the same length" },
+                { "id": "c", "text": "Draw it pointing up" }
+              ],
+              "answer": "a",
+              "explanation": "Each arrow shows a force's direction, and its length shows the force's size, so a bigger force gets a longer arrow. Drawing every arrow the same length is the common mistake."
+            },
+            {
+              "id": "w4",
+              "kind": "fill_blank",
+              "prompt": "A 12 kg box sits at rest on a level floor. What is the normal force on it? Use g = 9.8 m/s². Type a number (in N).",
+              "answer": ["117.6", "117.6 N", "117.6N", "117.6 newtons", "117.60", "117.6 N up"],
+              "explanation": "At rest on a level floor, FN = Fg = m × g = 12 kg × 9.8 m/s² = 117.6 N up. Dividing (12 ÷ 9.8 ≈ 1.2) is the common mistake."
+            }
+          ],
+          "shortAnswer": "A sled is pulled to the right with 60 N while friction pulls left with 60 N. Describe its free-body diagram (which arrows, and how long) and tell whether it is Type A or Type B."
         }
       ]
     }

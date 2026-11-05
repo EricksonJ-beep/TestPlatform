@@ -1,6 +1,6 @@
 {
   "name": "ps-u4-lt1-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science B",
   "relearning": [
@@ -182,6 +182,75 @@
               "afterStepId": "t4"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U4.LT1",
+      "mode": "watch",
+      "title": "U4.LT1 Watch: calculating speed",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Calculating speed",
+          "minutes": 5,
+          "body": { "type": "video", "youtubeId": "_nAKwhZyXnw" },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "A cyclist rides 600 m in 120 s. What is her speed?",
+              "options": [
+                { "id": "a", "text": "5 m/s" },
+                { "id": "b", "text": "72,000 m/s" },
+                { "id": "c", "text": "0.2 m/s" },
+                { "id": "d", "text": "5 m" }
+              ],
+              "answer": "a",
+              "explanation": "Formula: S = d/t. Set Up: S = 600 m / 120 s. Answer: 5 m/s. Multiplying (72,000) or dividing time by distance (0.2) uses the wrong form of the triangle, and a speed unit is always distance over time, not just m."
+            },
+            {
+              "id": "w2",
+              "kind": "fill_blank",
+              "prompt": "A dog runs 48 m at a speed of 8 m/s. How many seconds does it take? Type a number.",
+              "answer": ["6", "6 s", "6s", "6 sec", "6sec", "6 seconds", "6seconds", "6.0", "six"],
+              "explanation": "Cover t on the speed triangle: t = d/s. Set Up: t = 48 m / 8 m/s. Answer: 6 s."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Average speed",
+          "minutes": 5,
+          "body": { "type": "video", "youtubeId": "K9rZQJuOgDk" },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "A car drives 120 km in the first 2 h and 30 km in the next 1 h. What is its average speed for the whole trip?",
+              "options": [
+                { "id": "a", "text": "45 km/h" },
+                { "id": "b", "text": "50 km/h" },
+                { "id": "c", "text": "75 km/h" },
+                { "id": "d", "text": "150 km/h" }
+              ],
+              "answer": "b",
+              "explanation": "Average speed = total distance / total time. Set Up: (120 km + 30 km) / (2 h + 1 h) = 150 km / 3 h. Answer: 50 km/h. Averaging the two speeds (60 and 30 km/h gives 45 km/h) is the common mistake."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "A speedometer reads 45 mph at one moment during a trip. What does that number show?",
+              "options": [
+                { "id": "a", "text": "The average speed for the trip" },
+                { "id": "b", "text": "The instantaneous speed" },
+                { "id": "c", "text": "The total distance traveled" }
+              ],
+              "answer": "b",
+              "explanation": "A speedometer shows the speed at one moment, which is the instantaneous speed. Average speed is total distance / total time for the whole trip."
+            }
+          ],
+          "shortAnswer": "A family drives 100 miles in 2 hours, with a stop for lunch. Explain why their average speed is 50 mph even though the speedometer did not always read 50."
         }
       ]
     }

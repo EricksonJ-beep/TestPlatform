@@ -106,6 +106,8 @@ export type PathRelearning = {
   /** Finished, or checked off by the teacher (A5). */
   finished: boolean;
   added: boolean;
+  /** When it was finished (or checked off), for the step path's date. */
+  finishedAt?: Date | null;
 };
 
 /** A `practice_checks` row: passed once any round reached its pass mark. */
@@ -115,6 +117,8 @@ export type PathCheck = {
   bundleId: string | null;
   unlocksAttemptNumber: number | null;
   passed: boolean;
+  /** When it passed, for the step path's date. */
+  passedAt?: Date | null;
 };
 
 export type PathInput = {
@@ -135,6 +139,8 @@ export type PathInput = {
   optedIn: string[];
   relearning: PathRelearning[];
   checks: PathCheck[];
+  /** When each target's corrections were all approved (the last approval), for the step path's date. */
+  correctionsDoneAt?: Record<string, Date | null>;
   /** Right first answers out of 5 that pass a practice check (P4); 4 when absent. */
   passMark?: number;
 };
@@ -165,6 +171,8 @@ export type PathTargetState = PathTargetInfo & {
   counting: number;
   /** The attempt the counting percent came from. */
   countingFrom: string;
+  /** When each done step was finished; null when not done or the date isn't known. */
+  doneAt: { corrections: Date | null; relearn: Date | null; practice: Date | null };
 };
 
 export type PathBlocker =
@@ -331,6 +339,18 @@ export function pathFor(input: PathInput): PathState {
       }
     }
 
+    const passedAt = input.checks
+      .filter((c) => c.purpose === "path" && c.passed && c.targetIds.includes(id) && c.passedAt)
+      .map((c) => c.passedAt!.getTime());
+    const doneAt = {
+      corrections:
+        corrections === "done" && correctionsState === "approved"
+          ? (input.correctionsDoneAt?.[id] ?? null)
+          : null,
+      relearn: relearn === "done" ? (rel?.finishedAt ?? null) : null,
+      practice: practice === "done" && passedAt.length ? new Date(Math.min(...passedAt)) : null,
+    };
+
     return {
       ...t,
       firstPercent,
@@ -346,6 +366,7 @@ export function pathFor(input: PathInput): PathState {
       raisedBy,
       counting,
       countingFrom,
+      doneAt,
     };
   });
 

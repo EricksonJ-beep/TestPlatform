@@ -1,6 +1,6 @@
 {
   "name": "ps-u4-lt3-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science B",
   "relearning": [
@@ -206,6 +206,82 @@
               "afterStepId": "t5"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U4.LT3",
+      "mode": "watch",
+      "title": "U4.LT3 Watch: acceleration",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Acceleration",
+          "minutes": 5,
+          "body": { "type": "video", "youtubeId": "xdHPTYYBTn8" },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Which of these is NOT accelerating?",
+              "options": [
+                { "id": "a", "text": "A bus slowing down for a stop sign" },
+                { "id": "b", "text": "A car going around a curve at a constant 30 mph" },
+                { "id": "c", "text": "A plane cruising in a straight line at a steady 500 mph" },
+                { "id": "d", "text": "A runner speeding up at the start of a race" }
+              ],
+              "answer": "c",
+              "explanation": "There are three ways to accelerate: speeding up, slowing down and changing direction. The bus slows down, the car changes direction and the runner speeds up. Only the plane has constant speed in a straight line, which is zero acceleration."
+            },
+            {
+              "id": "w2",
+              "kind": "fill_blank",
+              "prompt": "Acceleration is the rate of change of ___. Type one word.",
+              "answer": ["velocity", "the velocity"],
+              "explanation": "Acceleration is the rate of change of velocity. Velocity is speed and direction, which is why changing direction counts as accelerating."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Acceleration calculations",
+          "minutes": 5,
+          "body": { "type": "video", "youtubeId": "cciPvVyQIEU" },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "fill_blank",
+              "prompt": "A car starts from rest and reaches 24 m/s in 6 s. What is its acceleration, in m/s²? Type a number.",
+              "answer": [
+                "4",
+                "4 m/s²",
+                "4m/s²",
+                "4 m/s2",
+                "4m/s2",
+                "4 m/s^2",
+                "4m/s^2",
+                "4 m/s/s",
+                "4m/s/s",
+                "4.0",
+                "four"
+              ],
+              "explanation": "From rest means v_{i} = 0. Formula: a = (v_{f} − v_{i}) / t. Set Up: a = (24 m/s − 0 m/s) / 6 s. Answer: 4 m/s²."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "A runner moving forward slows from 9 m/s to 3 m/s in 2 s. What is her acceleration?",
+              "options": [
+                { "id": "a", "text": "3 m/s²" },
+                { "id": "b", "text": "−3 m/s²" },
+                { "id": "c", "text": "−6 m/s²" },
+                { "id": "d", "text": "6 m/s²" }
+              ],
+              "answer": "b",
+              "explanation": "Formula: a = (v_{f} − v_{i}) / t. Set Up: a = (3 m/s − 9 m/s) / 2 s = −6 m/s / 2 s. Answer: −3 m/s² (negative because she is slowing down). −6 forgets to divide by the time, and subtracting backwards gives the wrong sign."
+            }
+          ],
+          "shortAnswer": "A bike speeds up from 2 m/s to 8 m/s in 3 s. Find its acceleration with Formula / Set Up / Answer, and explain what the unit m/s² means."
         }
       ]
     }

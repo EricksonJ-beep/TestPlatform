@@ -223,6 +223,7 @@ export async function loadPathStates(pairs: PathPair[]): Promise<Map<string, Pat
     if (Object.keys(firstTargets).length === 0) continue;
     const scope = scopes.get(first.id);
     const corrections: Record<string, CorrectionsState> = {};
+    const correctionsDoneAt: Record<string, Date | null> = {};
     if (scope) {
       const items = correctableItems(
         scope.items,
@@ -233,6 +234,13 @@ export async function loadPathStates(pairs: PathPair[]): Promise<Map<string, Pat
           .filter((i) => i.learningTargetId === id && i.earned !== null && i.earned < i.points)
           .map((i) => i.questionId);
         corrections[id] = summarizeSet(missed, scope.corrections).state;
+        if (corrections[id] === "approved") {
+          const times = scope.corrections
+            .filter((c) => missed.includes(c.questionId) && c.reviewedAt)
+            .map((c) => Date.parse(c.reviewedAt!))
+            .filter(Number.isFinite);
+          correctionsDoneAt[id] = times.length ? new Date(Math.max(...times)) : null;
+        }
       }
     }
     const type = asg.type as "formative" | "summative";
@@ -250,12 +258,14 @@ export async function loadPathStates(pairs: PathPair[]): Promise<Map<string, Pat
         perTarget: scoresBy.get(a.id) ?? {},
       })),
       corrections,
+      correctionsDoneAt,
       optedIn: (gatesBy.get(k) ?? []).map((g) => g.learningTargetId),
       relearning: (relearningBy.get(k) ?? []).map((r) => ({
         learningTargetId: r.learningTargetId,
         bundleId: r.bundleId,
         finished: r.finishedAt !== null,
         added: r.added,
+        finishedAt: r.finishedAt,
       })),
       checks: (checksBy.get(k) ?? []).map((c) => ({
         purpose: c.purpose,
@@ -263,6 +273,7 @@ export async function loadPathStates(pairs: PathPair[]): Promise<Map<string, Pat
         bundleId: c.relearningBundleId,
         unlocksAttemptNumber: c.unlocksAttemptNumber,
         passed: c.passedAt !== null,
+        passedAt: c.passedAt,
       })),
     });
     out.set(k, {

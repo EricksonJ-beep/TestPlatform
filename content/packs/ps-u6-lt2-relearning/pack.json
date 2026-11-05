@@ -1,6 +1,6 @@
 {
   "name": "ps-u6-lt2-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science B",
   "relearning": [
@@ -211,6 +211,79 @@
               "afterStepId": "s4"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U6.LT2",
+      "mode": "watch",
+      "title": "U6.LT2 Watch: levers",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Lever calculations: IMA, AMA and % efficiency",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "9FJRkIDG5t4"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "fill_blank",
+              "prompt": "A lever's effort arm (De) is 3 m and its resistance arm (Dr) is 0.5 m. What is its IMA? Type a number.",
+              "answer": ["6", "6.0"],
+              "explanation": "IMA = De ÷ Dr = 3 m ÷ 0.5 m = 6 (no units). Flipping the ratio (0.5 ÷ 3 ≈ 0.17) is the common mistake."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "A lever has an AMA of 4 and an IMA of 5. What is its efficiency?",
+              "options": [
+                { "id": "a", "text": "80%" },
+                { "id": "b", "text": "125%" },
+                { "id": "c", "text": "20%" }
+              ],
+              "answer": "a",
+              "explanation": "Efficiency = AMA ÷ IMA × 100 = 4 ÷ 5 × 100 = 80%. Flipping it (125%) is the common mistake; a real lever is always below 100%."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Levers",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "ykuSpo4taZI"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "On a wheelbarrow, the wheel is the fulcrum, the load sits in the middle, and you lift the handles. Which class of lever is it?",
+              "options": [
+                { "id": "a", "text": "1st class" },
+                { "id": "b", "text": "2nd class" },
+                { "id": "c", "text": "3rd class" }
+              ],
+              "answer": "b",
+              "explanation": "F-R-E: whatever is in the middle names the class. The resistance (the load) is in the middle, so it is 2nd class. Calling it 1st class because it has a fulcrum is the common mistake; every lever has one."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "When you squeeze tweezers, your fingers push between the hinge and the tips. Which class of lever are tweezers?",
+              "options": [
+                { "id": "a", "text": "1st class" },
+                { "id": "b", "text": "2nd class" },
+                { "id": "c", "text": "3rd class" }
+              ],
+              "answer": "c",
+              "explanation": "The effort (your fingers) is in the middle, between the fulcrum (the hinge) and the resistance (the tips), so tweezers are 3rd class. Their IMA is less than 1, but the tips move farther than your fingers."
+            }
+          ],
+          "shortAnswer": "Explain how to tell 1st-, 2nd- and 3rd-class levers apart using F-R-E. Give an example of each."
         }
       ]
     }

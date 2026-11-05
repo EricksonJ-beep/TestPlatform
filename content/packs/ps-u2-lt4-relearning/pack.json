@@ -1,6 +1,6 @@
 {
   "name": "ps-u2-lt4-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science A",
   "relearning": [
@@ -212,6 +212,79 @@
               "afterStepId": "s5"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U2.LT4",
+      "mode": "watch",
+      "title": "U2.LT4 Watch: periods, groups and valence electrons",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Periods, Groups and Valence Electrons",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "jTql_p9XGYM"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "What does an element's period number tell you?",
+              "options": [
+                { "id": "a", "text": "The number of energy levels" },
+                { "id": "b", "text": "The number of valence electrons" },
+                { "id": "c", "text": "The number of protons" }
+              ],
+              "answer": "a",
+              "explanation": "Periods are the rows, and the period number = the number of energy levels (floors). The group tells the valence electrons. Mixing up groups and periods is the common mistake."
+            },
+            {
+              "id": "w2",
+              "kind": "fill_blank",
+              "prompt": "Oxygen is in Group 16. How many valence electrons does it have? Type a number.",
+              "answer": ["6", "six", "6 valence electrons"],
+              "explanation": "Skip the transition metals in Groups 3–12: Group 13 = 3, so Group 16 = 6 valence electrons. Counting Groups 3–12 gives 16, the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Valence Electrons and the Periodic Table",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "yADrWdNTWEc"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "Helium is in Group 18. How many valence electrons does it have?",
+              "options": [
+                { "id": "a", "text": "2" },
+                { "id": "b", "text": "8" },
+                { "id": "c", "text": "18" }
+              ],
+              "answer": "a",
+              "explanation": "Group 18 = 8 valence electrons, except helium, which has only 2. Giving helium 8 is the common mistake."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "Aluminum is in Group 13, Period 3. Which is correct?",
+              "options": [
+                { "id": "a", "text": "3 valence electrons and 3 energy levels" },
+                { "id": "b", "text": "13 valence electrons and 3 energy levels" },
+                { "id": "c", "text": "3 valence electrons and 13 energy levels" }
+              ],
+              "answer": "a",
+              "explanation": "Group 13 → skip Groups 3–12 → 3 valence electrons. Period 3 → 3 energy levels. Its arrangement is 2-8-3."
+            }
+          ],
+          "shortAnswer": "Nitrogen and phosphorus are both in Group 15. Predict how many valence electrons each one has, and explain why they have similar chemical properties."
         }
       ]
     }

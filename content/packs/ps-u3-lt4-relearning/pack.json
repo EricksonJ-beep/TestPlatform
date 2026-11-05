@@ -1,6 +1,6 @@
 {
   "name": "ps-u3-lt4-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science A",
   "relearning": [
@@ -211,6 +211,75 @@
               "afterStepId": "s4"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U3.LT4",
+      "mode": "watch",
+      "title": "U3.LT4 Watch: naming compounds",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Naming ionic compounds with transition metals",
+          "minutes": 5,
+          "body": { "type": "video", "youtubeId": "Rq0A-AHdB74" },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "In the name iron(III) chloride, what does the Roman numeral III tell you?",
+              "options": [
+                { "id": "a", "text": "Each iron ion has a +3 charge" },
+                { "id": "b", "text": "The formula has 3 iron atoms" },
+                { "id": "c", "text": "Iron is in Group 3" }
+              ],
+              "answer": "a",
+              "explanation": "Like saying which size coffee you want, the Roman numeral is the size of the charge, not a count of atoms. Iron(III) means Fe³⁺. Iron(III) chloride is FeCl₃, with only 1 iron."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Oxide is O²⁻. What is the correct name of Fe₂O₃?",
+              "options": [
+                { "id": "a", "text": "iron(II) oxide" },
+                { "id": "b", "text": "iron(III) oxide" },
+                { "id": "c", "text": "diiron trioxide" },
+                { "id": "d", "text": "iron oxide" }
+              ],
+              "answer": "b",
+              "explanation": "Total negative: 3 × (−2) = −6. Two irons must total +6, so each is +6 ÷ 2 = +3. Check: 2(+3) + 3(−2) = 0. Iron has more than one charge, so it needs the numeral: iron(III) oxide. Using the subscript 2 as the numeral is the common mistake, and ionic names never use prefixes."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Naming covalent molecular compounds",
+          "minutes": 5,
+          "body": { "type": "video", "youtubeId": "DejkvR4pvRw" },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "Carbon and oxygen are both nonmetals. What is the correct name of CO?",
+              "options": [
+                { "id": "a", "text": "carbon oxide" },
+                { "id": "b", "text": "monocarbon monoxide" },
+                { "id": "c", "text": "carbon monoxide" },
+                { "id": "d", "text": "carbon(II) oxide" }
+              ],
+              "answer": "c",
+              "explanation": "Covalent, so use prefixes. The first element gets a prefix except mono, so just carbon. The second element always gets a prefix and -ide: monoxide. Answer: carbon monoxide."
+            },
+            {
+              "id": "w4",
+              "kind": "fill_blank",
+              "prompt": "Sulfur and oxygen are both nonmetals. Complete the name of SO₃: sulfur ___",
+              "answer": ["trioxide", "sulfur trioxide"],
+              "explanation": "Covalent, so use prefixes. One sulfur gets no prefix (no mono on the first element). Three oxygens → tri + oxide = trioxide. Answer: sulfur trioxide."
+            }
+          ],
+          "shortAnswer": "Explain why CaCl₂ is named calcium chloride but SCl₂ is named sulfur dichloride."
         }
       ]
     }

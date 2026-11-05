@@ -8,11 +8,15 @@
 import { and, asc, eq, inArray, isNotNull, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { assignmentStatus, type AssignmentStatus } from "@/lib/assignments";
+import { pathNeeds } from "@/lib/class-gradebook";
 import { getCorrectionsSummary, latestFinishedAttemptId } from "@/lib/queries/corrections";
+import { getPathState, loadPathStates, pathKey } from "@/lib/queries/relearning-path";
 import { getRetakeStatus } from "@/lib/queries/retakes";
+import type { PathState } from "@/lib/relearning-path";
 import {
   movedUp,
   mostMissedTarget,
+  pathStageLabel,
   readinessLine,
   readinessSortKey,
   readinessState,
@@ -27,6 +31,13 @@ import {
 } from "@/lib/tiers";
 
 export type BoardTarget = { id: string; code: string; title: string };
+
+/** A target's steps on the relearning path, for the readiness line; undefined off the path. */
+function pathSteps(path: PathState | null | undefined, targetId: string): TargetReadiness["path"] {
+  const t = path?.targets.find((x) => x.id === targetId);
+  if (!t || !(t.role === "required" || t.onPath || t.optedIn)) return undefined;
+  return { corrections: t.corrections, relearn: t.relearn, practice: t.practice };
+}
 
 export type TierChip = { id: string; code: string; percent: number };
 
@@ -203,6 +214,14 @@ export async function getTierBoard(
       })
       .from(schema.attempts)
       .where(eq(schema.attempts.assignmentId, period.assignmentId));
+    // The relearning path, where the course is switched on (one small query when it isn't).
+    const paths = await loadPathStates(
+      roster
+        .filter((s) =>
+          attempts.some((a) => a.studentId === s.studentId && a.status !== "in_progress")
+        )
+        .map((s) => ({ assignmentId: period.assignmentId, studentId: s.studentId }))
+    );
 
     for (const s of roster) {
       const mine = attempts.filter((a) => a.studentId === s.studentId);
@@ -214,6 +233,7 @@ export async function getTierBoard(
         continue;
       }
       finalsForMissed.push(f.perTarget);
+      const path = paths.get(pathKey(period.assignmentId, s.studentId))?.state ?? null;
       const retake = await getRetakeStatus(period.assignmentId, s.studentId);
       const latest = await latestFinishedAttemptId(period.assignmentId, s.studentId);
       const corrections = latest ? await getCorrectionsSummary(latest) : null;
@@ -236,6 +256,7 @@ export async function getTierBoard(
           optedIn: t.optedIn,
           gate: t.gate,
           retaken: false,
+          path: pathSteps(path, t.id),
         };
         readiness[t.id] = readinessState(tr);
         if (t.required) required.push({ id: t.id, code: t.code, percent: t.percent });
@@ -253,7 +274,9 @@ export async function getTierBoard(
         movedUpToday: movedUp(move, today),
         movedUpThisWeek: movedUp(move, week),
         stage,
-        stageLabel: stageLabel(stage, corrections, asg.reviewMode),
+        stageLabel: path
+          ? pathStageLabel(stage, pathNeeds(path), corrections, asg.reviewMode)
+          : stageLabel(stage, corrections, asg.reviewMode),
         required,
         optional,
         readiness,
@@ -402,6 +425,7 @@ export async function getRelearningMonitor(
   const retake = await getRetakeStatus(assignmentId, studentId);
   const latest = await latestFinishedAttemptId(assignmentId, studentId);
   const summary = latest ? await getCorrectionsSummary(latest) : null;
+  const path = (await getPathState(assignmentId, studentId))?.state ?? null;
   // Corrections per target: needed items on the latest attempt, by the served item's target.
   const corrByTarget = new Map<
     string,
@@ -565,6 +589,7 @@ export async function getRelearningMonitor(
         unlocked: false,
       },
       retaken: retakenTargets.has(t.id),
+      path: pathSteps(path, t.id),
       correctionsDetail: c
         ? c.approved === c.needed
           ? `${c.approved} of ${c.needed} approved`
@@ -613,7 +638,9 @@ export async function getRelearningMonitor(
     tier: (final?.tier as 1 | 2 | 3 | null) ?? null,
     percent: final?.percent ?? null,
     stage,
-    stageLabel: stageLabel(stage, summary, board.assignment.reviewMode),
+    stageLabel: path
+      ? pathStageLabel(stage, pathNeeds(path), summary, board.assignment.reviewMode)
+      : stageLabel(stage, summary, board.assignment.reviewMode),
     latestAttemptId: latest,
     attempts,
     minutesOnTask: attemptMinutes + Math.round(Number(practiceMinutes[0]?.m ?? 0)),
