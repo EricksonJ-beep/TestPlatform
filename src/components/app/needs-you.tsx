@@ -16,6 +16,7 @@ import {
   PenLine,
   Play,
   RotateCcw,
+  RefreshCw,
   VideoOff,
 } from "lucide-react";
 import {
@@ -81,6 +82,11 @@ const GROUPS: Record<
     icon: VideoOff,
     chip: (n) => `${n} ${n === 1 ? "video" : "videos"} won't play`,
   },
+  skyward: {
+    title: "Skyward updates",
+    icon: RefreshCw,
+    chip: (n) => `${n} ${n === 1 ? "grade" : "grades"} to update in Skyward`,
+  },
   worksheets: {
     title: "Worksheet emails",
     icon: FileSpreadsheet,
@@ -94,6 +100,7 @@ const ORDER: NeedsYouGroup[] = [
   "grading",
   "activities",
   "videos",
+  "skyward",
   "worksheets",
 ];
 
@@ -260,6 +267,9 @@ export function NeedsYouInbox({ inbox }: { inbox: NeedsYou }) {
               {inbox.videos.map((r) => (
                 <VideoRow key={r.sectionId} r={r} />
               ))}
+            </Group>
+            <Group id="skyward" count={counts.skyward ? 1 : 0} rows={counts.skyward ? 1 : 0}>
+              <SkywardRow grades={counts.skyward} />
             </Group>
             <Group id="worksheets" count={counts.worksheets} rows={counts.worksheets}>
               <WorksheetRow emails={inbox.worksheetEmails} />
@@ -745,6 +755,26 @@ function VideoRow({ r }: { r: VideoFlagRow }) {
         >
           <Check data-icon="inline-start" aria-hidden />
           {pending ? "Saving…" : "Fixed it"}
+        </Button>
+      }
+    />
+  );
+}
+
+function SkywardRow({ grades }: { grades: number }) {
+  return (
+    <Row
+      data={{ "data-needs-skyward": String(grades) }}
+      who={`${grades} ${grades === 1 ? "grade" : "grades"} to update`}
+      meta="Corrections, the relearning path or retakes changed these since they went to Skyward."
+      actions={
+        <Button
+          size="sm"
+          variant="outline"
+          nativeButton={false}
+          render={<Link href="/app/skyward" />}
+        >
+          Review →
         </Button>
       }
     />

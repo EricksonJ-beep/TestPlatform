@@ -109,7 +109,7 @@ export const users = pgTable(
     id: id(),
     /** Teachers always have one; students who joined with a class code may have none. */
     email: text("email"),
-    /** Login name for students created through a join code (e.g. "braeden.allard"). */
+    /** Login name for students created through a join code (e.g. "ava.adams"). */
     username: text("username"),
     /**
      * The student's lunch code, Skyward's "Other ID" (Jon, Nov 5 2026): set from the class roster
@@ -1000,6 +1000,36 @@ export const scoreHistory = pgTable(
     ...timestamps,
   },
   (t) => [index("score_history_pair_idx").on(t.assignmentId, t.studentId, t.at)]
+);
+
+/**
+ * What Skyward has (Jon, Nov 5 2026: "an efficient process to know what grades need to be changed in
+ * Skyward"): the score Bloom last handed Jon for each student in each Skyward column of an
+ * assignment, when he downloaded its file or marked it entered. "Skyward updates" lists the
+ * counting scores that differ from it. `columnKey` is the learning target's id for a quiz's
+ * per-target file, or "whole" for a file holding the whole assignment (a test).
+ */
+export const skywardMarks = pgTable(
+  "skyward_marks",
+  {
+    id: id(),
+    assignmentId: uuid("assignment_id")
+      .notNull()
+      .references(() => assignments.id, { onDelete: "cascade" }),
+    columnKey: text("column_key").notNull(),
+    studentId: uuid("student_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    /** The whole-number percent handed over (`skywardScore`). */
+    score: integer("score").notNull(),
+    /** Downloaded in a Skyward file, or marked as typed in by hand. */
+    source: text("source").$type<"export" | "marked">().notNull(),
+    recordedAt: timestamp("recorded_at", { withTimezone: true }).defaultNow().notNull(),
+    ...timestamps,
+  },
+  (t) => [
+    uniqueIndex("skyward_marks_cell_unique").on(t.assignmentId, t.columnKey, t.studentId),
+  ]
 );
 
 // ---------------------------------------------------------------------------

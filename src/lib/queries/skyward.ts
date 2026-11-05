@@ -13,6 +13,9 @@ import {
   type SkywardStudent,
 } from "@/lib/skyward";
 
+/** The column key of a file that holds the whole assignment (a test, or an untagged quiz). */
+export const WHOLE = "whole";
+
 export type SkywardExport = {
   assignment: {
     id: string;
@@ -128,6 +131,7 @@ export async function getSkywardExport(assignmentId: string): Promise<SkywardExp
   ): SkywardStudent => {
     const f = finalBy.get(s.id);
     return {
+      id: s.id,
       lastName: s.lastName,
       firstName: s.firstName,
       email: s.email,
@@ -151,16 +155,19 @@ export async function getSkywardExport(assignmentId: string): Promise<SkywardExp
         })
       );
       return {
+        key: t.id,
         name: skywardFileName({ kind: "target", code: t.code }),
         label: t.code,
         csv: skywardCsv(rows),
         rows: rows.length,
+        students: rows,
       };
     });
   } else {
     const rows = students.map((s) => row(s, (f) => f.percent));
     files = [
       {
+        key: WHOLE,
         name:
           targets.length > 0
             ? skywardFileName({ kind: "test", codes: targets.map((t) => t.code) })
@@ -168,6 +175,7 @@ export async function getSkywardExport(assignmentId: string): Promise<SkywardExp
         label: asg.type === "summative" ? "Whole test" : "Whole quiz",
         csv: skywardCsv(rows),
         rows: rows.length,
+        students: rows,
       },
     ];
   }

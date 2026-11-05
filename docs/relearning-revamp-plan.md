@@ -578,6 +578,28 @@ matches.
   **Lunch codes** box. The teacher pastes the school roster once, and codes are matched by name
   (`users.lunch_code`, migration 0033). Jon's imports worked for all his classes.*
 
+### R8b · Skyward updates (Jon, Nov 5: "an efficient process to know what grades need to be changed in Skyward")
+- *Bloom remembers what Skyward has (`skyward_marks`, migration 0034): the score it handed over
+  for each student, in each Skyward column of an assignment.*
+  - *It's recorded by a Download on the export page (now a form post, checked to come from
+    Bloom's own pages) or by "Mark as entered".*
+  - *The plain GET link still works and records nothing.*
+- ***Skyward updates** (`/app/skyward`, linked from Needs you and the export page) lists every
+  grade whose counting score is different now, by assignment and file: student · Skyward has ·
+  now · why (relearning path, corrections, retake, regrade, new score) · when. "Download
+  changes" gives Skyward import files of just those rows. Either way they clear.*
+- *Needs you shows one row: "N grades to update in Skyward".*
+- *Grades entered before tracking existed: **Start tracking** picks a course and the day Jon
+  last entered its grades. From the score history Bloom works out what Skyward had then:*
+  - *Unchanged since that day: today's score.*
+  - *A test changed since: its score as of that day.*
+  - *A quiz target changed since: no mark, so it shows as an update.*
+- *Code: rules `src/lib/skyward-updates.ts`, reads `src/lib/queries/skyward-updates.ts`, page and
+  actions `src/app/app/skyward/`.*
+- *Tests: `src/lib/skyward-updates.test.ts` (rules) and `src/app/app/skyward/skyward-updates.test.ts`
+  (end to end: records, changes with reasons, changes-only files, mark entered, start tracking,
+  another teacher and another site refused).*
+
 ### C1 · Physical Science Practice banks to about 100 per target
 - 25 targets, today about 50 each (docs/ps-practice-banks-plan.md), so about 1,275 new
   questions, from Jon's Drive materials.

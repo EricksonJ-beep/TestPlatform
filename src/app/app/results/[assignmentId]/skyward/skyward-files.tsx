@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 
 /**
  * The files of a Skyward export with names the teacher can edit before downloading (K1): each one
- * on its own, or all of them in one .zip.
+ * on its own, or all of them in one .zip. The buttons post (`POST /api/results/…/skyward`), so
+ * Bloom remembers what it handed over and Skyward updates can list what changes after.
  */
 export function SkywardFiles({
   assignmentId,
@@ -17,11 +18,14 @@ export function SkywardFiles({
 }) {
   const [names, setNames] = useState(files.map((f) => f.name));
   const base = `/api/results/${assignmentId}/skyward`;
-  const query = (extra: Record<string, string> = {}) => {
-    const p = new URLSearchParams(extra);
-    for (const n of names) p.append("n", n);
-    return `${base}?${p.toString()}`;
-  };
+  const hidden = (file: number | null) => (
+    <>
+      {file === null ? null : <input type="hidden" name="file" value={String(file)} />}
+      {names.map((n, j) => (
+        <input key={j} type="hidden" name="n" value={n} />
+      ))}
+    </>
+  );
   return (
     <section className="flex flex-col gap-3" aria-label="Skyward files">
       <ul className="flex flex-col gap-2">
@@ -46,25 +50,24 @@ export function SkywardFiles({
             <span className="text-xs text-muted-foreground tabular">
               {f.rows} {f.rows === 1 ? "student" : "students"}
             </span>
-            <Button
-              variant="outline"
-              size="sm"
-              nativeButton={false}
-              render={<a href={query({ file: String(i) })} />}
-            >
-              <Download data-icon="inline-start" aria-hidden />
-              Download
-            </Button>
+            <form method="post" action={base}>
+              {hidden(i)}
+              <Button type="submit" variant="outline" size="sm">
+                <Download data-icon="inline-start" aria-hidden />
+                Download
+              </Button>
+            </form>
           </li>
         ))}
       </ul>
       {files.length > 1 ? (
-        <div>
-          <Button nativeButton={false} render={<a href={query()} />}>
+        <form method="post" action={base}>
+          {hidden(null)}
+          <Button type="submit">
             <FileArchive data-icon="inline-start" aria-hidden />
             Download all ({files.length} files, .zip)
           </Button>
-        </div>
+        </form>
       ) : null}
     </section>
   );

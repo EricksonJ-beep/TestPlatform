@@ -63,6 +63,8 @@ export function skywardFileName(
 }
 
 export type SkywardStudent = {
+  /** The student's user id, for Skyward updates (what Skyward has, per student). */
+  id?: string;
   lastName: string;
   firstName: string;
   email: string | null;
@@ -73,12 +75,16 @@ export type SkywardStudent = {
 };
 
 export type SkywardFile = {
+  /** The Skyward column this file fills: a quiz target's id, or "whole" for the whole assignment. */
+  key: string;
   /** Suggested file name, without ".csv". */
   name: string;
   /** What the file holds, for the page: "U2.LT3" or "Whole test". */
   label: string;
   csv: string;
   rows: number;
+  /** Its rows, for Skyward updates. */
+  students: SkywardStudent[];
 };
 
 /** One file: the header, then a row per student, last name first (K1). */
