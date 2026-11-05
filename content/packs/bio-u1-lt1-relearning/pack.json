@@ -1,0 +1,289 @@
+{
+  "name": "bio-u1-lt1-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "relearning": [
+    {
+      "target": "U1.LT1",
+      "mode": "read",
+      "title": "Read: the five parts of a controlled experiment",
+      "description": "A short reading with the cookie bake-off analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Change one thing, measure one thing",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can design a scientific experiment that includes a control group, experimental group, constants, independent variable and dependent variable.**\n\n**Think of a cookie bake-off.** You want to know if an extra egg makes cookies softer. You bake one batch with the normal recipe and one batch with an extra egg. Same oven, same temperature, same baking time, same pan. If the extra-egg cookies come out softer, the egg is the only thing that could have caused it. A controlled experiment works the same way: change one thing on purpose, measure what happens, and keep everything else the same.\n\n**The five parts.**\n**Independent variable (IV):** the one thing the scientist changes on purpose (the egg).\n**Dependent variable (DV):** what the scientist measures. It depends on the IV (how soft the cookies are).\n**Constants:** everything kept the same in every group (oven, time, pan).\n**Control group:** the group that does not get the treatment. It is the baseline you compare to (the normal recipe).\n**Experimental group:** the group that gets the treatment being tested (the extra-egg batch).\n\n**Worked example:** A student tests whether the amount of fertilizer affects how tall bean plants grow. Pots get 0 g, 5 g or 10 g of fertilizer, and the student measures the height of each plant after 3 weeks. **IV:** the amount of fertilizer. **DV:** plant height (cm). **Constants:** the type of bean, soil, pot size, water and light. **Control group:** the 0 g pots, because they get no fertilizer. **Experimental groups:** the 5 g and 10 g pots."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "A student tests whether the color of light (red, blue or white) affects how many oxygen bubbles a water plant gives off in 5 minutes. What is the independent variable?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The color of light"
+                },
+                {
+                  "id": "b",
+                  "text": "The number of bubbles"
+                },
+                {
+                  "id": "c",
+                  "text": "The 5 minutes"
+                }
+              ],
+              "answer": "a",
+              "explanation": "The student changes the color of light on purpose, so it is the IV. The bubbles are what she counts (the DV), and the 5 minutes is a constant. Mixing up what is changed and what is measured is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "multiple_choice",
+              "prompt": "A scientist tests whether a new medicine lowers fever in mice. Group 1 gets a shot of the medicine. Group 2 gets a shot of plain salt water with no medicine. Which is the control group?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Group 1"
+                },
+                {
+                  "id": "b",
+                  "text": "Group 2"
+                },
+                {
+                  "id": "c",
+                  "text": "The body temperature of the mice"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Group 2 gets no medicine, so it is the baseline: the control group. Group 1 is the experimental group, and body temperature is the DV. Picking the group that gets the treatment is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Hypotheses, fair tests and reliable results",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**The hypothesis.** A hypothesis is a testable prediction, not a guess. Write it as **If [the IV changes], then [the DV will change]**. You can add **because** and a reason. The If part names the IV and the then part names the DV.\n\n**Worked example 2: build an experiment from a question.** Question: Does water temperature affect how much gas yeast makes? **IV:** water temperature (10 °C, 25 °C and 40 °C). **DV:** how big a balloon on top of each bottle gets in 20 minutes. **Constants:** the same amount of yeast, sugar and water, and the same size bottle and balloon. **Control group:** when the IV can't be zero, the control is the normal condition, here room temperature (25 °C). **Hypothesis:** If the water is warmer, then the balloon will get bigger, because yeast is more active when it is warm.\n\n**Worked example 3: spot the unfair test.** Plant A gets music and sits in a sunny window. Plant B gets no music and sits in a dark corner. If Plant A grows more, was it the music or the light? You can't tell, because two things changed. Fix it: put both plants in the same spot, so music is the only difference.\n\n**Make it reliable.** Use several subjects in each group (a large sample size) and repeat the trials. One plant could be sick by chance, but ten plants averaged together give a result you can trust.\n\n**Watch out for:** changing two things at once, calling a constant the control (the control is a whole group, while a constant is one thing kept the same), mixing up the IV (changed) and the DV (measured), writing a question instead of a prediction, and testing only one subject per group."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "A student tests how hours of sleep affect reaction time. Which one is a correctly written hypothesis?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Do students who sleep more react faster?"
+                },
+                {
+                  "id": "b",
+                  "text": "Sleep is the most important part of a healthy life."
+                },
+                {
+                  "id": "c",
+                  "text": "If students sleep more hours, then their reaction time will be faster."
+                }
+              ],
+              "answer": "c",
+              "explanation": "A hypothesis is a testable If... then... prediction that names the IV (hours of sleep) and the DV (reaction time). The question is not a prediction, and the sentence about health is an opinion. Writing a question instead of a prediction is the common mistake."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "A student tests whether salt water affects how fast radish seeds sprout. She waters 10 seeds with tap water on a sunny windowsill and 10 seeds with salt water in a dark closet. What is wrong with her experiment?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "She has no dependent variable"
+                },
+                {
+                  "id": "b",
+                  "text": "Two variables change: the salt and the light"
+                },
+                {
+                  "id": "c",
+                  "text": "She used too many seeds"
+                }
+              ],
+              "answer": "b",
+              "explanation": "The water and the light both change, so she can't tell which one caused any difference. The light should be a constant. Ten seeds per group is good, not too many. Missing a second changed variable is the common mistake."
+            }
+          ],
+          "shortAnswer": "You want to test whether the amount of sunlight affects how many leaves a plant grows. Name the IV, the DV, two constants and the control group."
+        }
+      ]
+    },
+    {
+      "target": "U1.LT1",
+      "mode": "do",
+      "title": "Do: pick apart an experiment, then design one",
+      "description": "Two worked problems, one step at a time, with quick checks along the way.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Worked problem: name every part",
+          "minutes": 4,
+          "body": {
+            "type": "worked_steps",
+            "problem": "A student wonders if sugar in the water keeps cut flowers fresh longer. She sets up 4 vases, each with 500 mL of water and 0 g, 5 g, 10 g or 15 g of sugar. She puts the same kind of carnation in each vase, keeps all the vases in the same room, and counts the days until the petals wilt. Name every part of her experiment.",
+            "steps": [
+              {
+                "id": "t1",
+                "text": "Find the IV: what did she change on purpose? The amount of sugar (0 g, 5 g, 10 g and 15 g)."
+              },
+              {
+                "id": "t2",
+                "text": "Find the DV: what does she measure? The number of days until the petals wilt."
+              },
+              {
+                "id": "t3",
+                "text": "Find the constants: 500 mL of water, the same kind of flower, the same room (same light and temperature) and the same kind of vase."
+              },
+              {
+                "id": "t4",
+                "text": "Find the groups. The 0 g vase gets no sugar, so it is the control group. The 5 g, 10 g and 15 g vases get the treatment, so they are the experimental groups."
+              },
+              {
+                "id": "t5",
+                "text": "Write the hypothesis: If more sugar is added to the water, then the flowers will stay fresh for more days."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: a student tests whether the type of music (none, rock or classical) affects how many push-ups people can do in 1 minute. What is the dependent variable?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The type of music"
+                },
+                {
+                  "id": "b",
+                  "text": "The number of push-ups"
+                },
+                {
+                  "id": "c",
+                  "text": "The 1 minute"
+                }
+              ],
+              "answer": "b",
+              "explanation": "The push-ups are what gets counted, so they are the DV. The type of music is what was changed (the IV), and the 1 minute is a constant. Mixing up changed and measured is the common mistake.",
+              "afterStepId": "t2"
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "A test of whether a cleaning spray kills bacteria uses 4 dishes of bacteria. Three dishes are sprayed, and one dish is not sprayed. What is the dish that is not sprayed?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The control group"
+                },
+                {
+                  "id": "b",
+                  "text": "An experimental group"
+                },
+                {
+                  "id": "c",
+                  "text": "A constant"
+                }
+              ],
+              "answer": "a",
+              "explanation": "The dish with no spray gets none of the treatment, so it is the control group you compare the others to. The sprayed dishes are the experimental groups. Calling the control a constant is the common mistake.",
+              "afterStepId": "t4"
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: design a fair test",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "Design a controlled experiment to answer this question: Does the number of minutes of jumping jacks affect a person's heart rate?",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "Pick the IV and its levels: minutes of jumping jacks, with 0, 1, 2 and 3 minutes."
+              },
+              {
+                "id": "s2",
+                "text": "Pick the DV and how to measure it: heart rate in beats per minute, taken right after the jumping jacks stop."
+              },
+              {
+                "id": "s3",
+                "text": "List the constants: the same speed of jumping jacks, the same way of taking the pulse (count for 15 seconds, then multiply by 4), a full rest between trials and the same time of day."
+              },
+              {
+                "id": "s4",
+                "text": "Name the control: 0 minutes of jumping jacks, which gives the resting heart rate to compare to."
+              },
+              {
+                "id": "s5",
+                "text": "Make it reliable: test 10 students, do 3 trials at each level, and find the average for each level."
+              },
+              {
+                "id": "s6",
+                "text": "Write the hypothesis: If a person does jumping jacks for more minutes, then their heart rate will be higher."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: which of these should be a constant in the jumping jack experiment?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The number of minutes of jumping jacks"
+                },
+                {
+                  "id": "b",
+                  "text": "The heart rate"
+                },
+                {
+                  "id": "c",
+                  "text": "How fast each jumping jack is done"
+                }
+              ],
+              "answer": "c",
+              "explanation": "The speed must stay the same, or faster jumpers would have higher heart rates no matter the minutes. The minutes are the IV, and the heart rate is the DV. Picking a variable as a constant is the common mistake.",
+              "afterStepId": "s3"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Why test 10 students with 3 trials each instead of one student one time?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "So the IV changes more"
+                },
+                {
+                  "id": "b",
+                  "text": "So one unusual result can't decide the conclusion"
+                },
+                {
+                  "id": "c",
+                  "text": "So you don't need a control group"
+                }
+              ],
+              "answer": "b",
+              "explanation": "More subjects and repeated trials make the results reliable, because one odd result gets averaged out. They don't change the IV, and you still need a control. Thinking one trial is enough is the common mistake.",
+              "afterStepId": "s5"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

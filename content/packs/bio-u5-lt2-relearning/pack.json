@@ -1,0 +1,280 @@
+{
+  "name": "bio-u5-lt2-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "relearning": [
+    {
+      "target": "U5.LT2",
+      "mode": "read",
+      "title": "Read: meiosis and sexual reproduction",
+      "description": "A short reading with the pairs-of-shoes analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "From 46 to 23",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can model meiosis and discuss its importance in sexual reproduction.**\n\n**Think of pairs of shoes.** Your closet has 23 pairs of shoes, 46 shoes in all, and in each pair one shoe came from mom and one from dad. Now pack a bag with exactly one shoe from every pair: 23 shoes. That is what meiosis does. A body cell has 23 **pairs** of chromosomes (46). A **gamete** (sperm or egg) gets **one from each pair** (23).\n\n**Why it matters:** when a sperm (23) fertilizes an egg (23), the first cell of the baby, the **zygote**, has 23 + 23 = **46**. Without meiosis, the chromosome number would double every generation.\n\n**Key words:**\n**Diploid (2n):** two sets of chromosomes, like body cells (46 in humans).\n**Haploid (n):** one set, like gametes (23 in humans).\n**Homologous chromosomes:** a matching pair, one from each parent, with the same genes.\n\n**The process:** the DNA is copied once, then the cell divides **twice**. **Meiosis I** separates the homologous pairs. **Meiosis II** separates the sister chromatids. Result: **4 haploid cells**, all genetically different.\n\n**Worked example:** A fruit fly has 2n = 8. Its gametes have n = 8 ÷ 2 = **4** chromosomes."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "fill_blank",
+              "prompt": "A human body cell has 46 chromosomes. How many chromosomes does a human egg cell have? Type a number.",
+              "answer": ["23", "twenty-three", "twenty three"],
+              "explanation": "Meiosis halves the number: 46 ÷ 2 = 23. 46 is the body-cell (diploid) number, which is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "multiple_choice",
+              "prompt": "What does meiosis produce?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "2 identical diploid cells"
+                },
+                {
+                  "id": "b",
+                  "text": "4 genetically different haploid cells"
+                },
+                {
+                  "id": "c",
+                  "text": "4 identical diploid cells"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Meiosis divides twice, making 4 haploid cells that are all different. 2 identical diploid cells is what mitosis makes, the common mix-up."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Where the variety comes from",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Mitosis vs. meiosis:**\nMitosis: 1 division, 2 identical diploid cells, for growth and repair.\nMeiosis: 2 divisions, 4 different haploid cells, for making gametes.\n\n**Crossing over** happens in **prophase I**. Homologous chromosomes pair up tightly and swap pieces, like two friends trading a few songs between their playlists. Each chromosome ends up with a new mix of mom's and dad's genes.\n\n**Independent assortment** happens when the pairs line up in metaphase I. Each pair lines up in a random direction, so each gamete gets a random mix of mom's and dad's chromosomes. In humans that alone gives over 8 million (2^{23}) combinations.\n\n**Why it matters:** this **genetic variation** is why brothers and sisters with the same parents look different (except identical twins). Variation helps a species survive when its environment changes.\n\n**Worked example 2:** A dog has 2n = 78. Gametes: 78 ÷ 2 = **39**. After fertilization, the zygote has 39 + 39 = **78**.\n\n**Worked example 3:** If chromosomes fail to separate in meiosis (**nondisjunction**), a gamete can end up with 24 or 22 chromosomes. A 24-chromosome egg fertilized by a normal sperm makes a zygote with 47, as in Down syndrome (an extra chromosome 21).\n\n**Watch out for:** saying meiosis makes 2 cells (it makes 4), saying gametes are diploid (they are haploid), confusing homologous chromosomes (a pair, one from each parent) with sister chromatids (two copies made in the S phase), and putting crossing over in prophase II (it is prophase I)."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "Crossing over happens during which phase?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Prophase I"
+                },
+                {
+                  "id": "b",
+                  "text": "Prophase II"
+                },
+                {
+                  "id": "c",
+                  "text": "Anaphase II"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Crossing over happens in prophase I, when the homologous chromosomes are paired up. In meiosis II the partners have already separated, so prophase II is the common wrong answer."
+            },
+            {
+              "id": "e2",
+              "kind": "fill_blank",
+              "prompt": "A cat has 38 chromosomes in its body cells. How many chromosomes are in each of its sperm cells? Type a number.",
+              "answer": ["19", "nineteen"],
+              "explanation": "Sperm are haploid: 38 ÷ 2 = 19. Answering 38 forgets that meiosis halves the number."
+            }
+          ],
+          "shortAnswer": "Explain two ways meiosis makes each gamete genetically different, and why that variation is important."
+        }
+      ]
+    },
+    {
+      "target": "U5.LT2",
+      "mode": "do",
+      "title": "Do: flip the key terms, then follow a cell through meiosis",
+      "description": "Flashcards with a 3-question self-quiz, then a cell with 2n = 4 followed through meiosis one step at a time.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: meiosis words",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Meiosis",
+                "back": "Cell division that makes gametes: 2 divisions, 4 haploid cells, all genetically different."
+              },
+              {
+                "id": "k2",
+                "front": "Gamete",
+                "back": "A sex cell: sperm or egg. Haploid (23 chromosomes in humans)."
+              },
+              {
+                "id": "k3",
+                "front": "Diploid (2n)",
+                "back": "Two sets of chromosomes, like body cells. 46 in humans."
+              },
+              {
+                "id": "k4",
+                "front": "Haploid (n)",
+                "back": "One set of chromosomes, like gametes. 23 in humans."
+              },
+              {
+                "id": "k5",
+                "front": "Homologous chromosomes",
+                "back": "A matching pair, one from each parent, with the same genes. Like a pair of shoes."
+              },
+              {
+                "id": "k6",
+                "front": "Crossing over",
+                "back": "Homologous chromosomes swap pieces in prophase I, mixing the genes."
+              },
+              {
+                "id": "k7",
+                "front": "Fertilization",
+                "back": "Sperm (n) + egg (n) = zygote (2n). In humans, 23 + 23 = 46."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "A gamete is...",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Diploid"
+                },
+                {
+                  "id": "b",
+                  "text": "Haploid"
+                },
+                {
+                  "id": "c",
+                  "text": "Identical to the parent cell"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Gametes have one set of chromosomes, so they are haploid. Body cells are diploid, which is the common mix-up."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "A fruit fly has 2n = 8. How many chromosomes are in its gametes?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "16"
+                },
+                {
+                  "id": "b",
+                  "text": "8"
+                },
+                {
+                  "id": "c",
+                  "text": "4"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Gametes are haploid: 8 ÷ 2 = 4. Doubling to 16 is the common mistake."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "What happens at fertilization?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Two haploid gametes join to make a diploid zygote"
+                },
+                {
+                  "id": "b",
+                  "text": "Two diploid cells join to make a haploid cell"
+                },
+                {
+                  "id": "c",
+                  "text": "One cell splits into four"
+                }
+              ],
+              "answer": "a",
+              "explanation": "A haploid sperm and a haploid egg join, so the zygote is diploid (23 + 23 = 46 in humans). Splitting into four is meiosis, not fertilization."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked steps: a cell with 2n = 4",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "Follow one cell with 2n = 4 (two homologous pairs: one long pair and one short pair) through meiosis.",
+            "steps": [
+              {
+                "id": "t1",
+                "text": "**Interphase:** every chromosome is copied. The cell still has 4 chromosomes, but each one is now two sister chromatids."
+              },
+              {
+                "id": "t2",
+                "text": "**Prophase I:** the homologous chromosomes pair up (long with long, short with short). Crossing over swaps pieces between the partners."
+              },
+              {
+                "id": "t3",
+                "text": "**Metaphase I and anaphase I:** the pairs line up in the middle in a random direction, then the partners separate. Each side gets one long and one short chromosome."
+              },
+              {
+                "id": "t4",
+                "text": "**Telophase I and cytokinesis:** 2 cells, each with 2 chromosomes (n = 2). Each chromosome still has two chromatids."
+              },
+              {
+                "id": "t5",
+                "text": "**Meiosis II:** in each cell, the chromosomes line up and the sister chromatids are pulled apart, just like in mitosis."
+              },
+              {
+                "id": "t6",
+                "text": "**Result:** 4 haploid cells, each with 2 chromosomes (one long, one short), and each with a different mix of genes."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: what separates in anaphase I?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Sister chromatids"
+                },
+                {
+                  "id": "b",
+                  "text": "Homologous pairs"
+                },
+                {
+                  "id": "c",
+                  "text": "Nothing; the cell just grows"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Meiosis I separates the homologous pairs, and meiosis II separates the sister chromatids. Mixing up which division splits what is the common mistake.",
+              "afterStepId": "t3"
+            },
+            {
+              "id": "w2",
+              "kind": "fill_blank",
+              "prompt": "Your turn: a cell with 2n = 12 goes through meiosis. How many chromosomes are in each of the 4 cells at the end? Type a number.",
+              "answer": ["6", "six"],
+              "explanation": "Each cell is haploid: 12 ÷ 2 = 6. Dividing by 4 because there are 4 cells (to get 3) is the common mistake.",
+              "afterStepId": "t6"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

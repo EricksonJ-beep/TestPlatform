@@ -1,0 +1,318 @@
+{
+  "name": "bio-u5-lt4-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "relearning": [
+    {
+      "target": "U5.LT4",
+      "mode": "read",
+      "title": "Read: cancer and cell division",
+      "description": "A short reading with the gas-pedal-and-brakes analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "When cell division loses control",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can define cancer and the relationship to cell division.**\n\n**Think of a car.** A car has a gas pedal to go and brakes to stop. Normal cells have \"go\" signals that tell them to divide and \"stop\" signals that tell them to wait. **Cancer** happens when the gas pedal gets stuck down or the brakes fail, and the cell keeps dividing out of control.\n\n**Cancer is a disease of uncontrolled cell growth and division.**\n\n**Checkpoints** in the cell cycle are like inspection stops. Before dividing, the cell checks: Was the DNA copied correctly? Is the cell big enough? Are the chromosomes attached to the spindle? If something is wrong, the cell stops to fix it, or it goes through **apoptosis** (programmed cell death).\n\n**What goes wrong:** **mutations** (changes in the DNA) in the genes that control the cell cycle. When those genes are damaged, a bad cell can skip the checkpoints and keep dividing.\n\n**Worked example:** UV light damages a skin cell's DNA. Normally a checkpoint catches it, and the cell repairs the damage or dies. If the mutation breaks the checkpoint itself, the cell divides again and again, passing the mutation to every new cell. The pile of extra cells forms a **tumor**."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "Which is the best definition of cancer?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "A virus that changes a cell's shape"
+                },
+                {
+                  "id": "b",
+                  "text": "A disease of uncontrolled cell growth and division"
+                },
+                {
+                  "id": "c",
+                  "text": "The normal death of old cells"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Cancer is cells dividing out of control. The normal death of old or damaged cells is apoptosis, which actually protects against cancer."
+            },
+            {
+              "id": "c2",
+              "kind": "multiple_choice",
+              "prompt": "What is apoptosis?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Programmed cell death that removes damaged cells"
+                },
+                {
+                  "id": "b",
+                  "text": "The fast division of cancer cells"
+                },
+                {
+                  "id": "c",
+                  "text": "The phase where chromosomes line up"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Apoptosis is programmed cell death, the body's way of removing damaged cells. Mixing it up with cancer's fast division is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Tumors, spreading and causes",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Two kinds of tumors:** a **benign** tumor stays in one place and doesn't spread. A **malignant** tumor invades nearby tissue and can spread. Malignant tumors are cancer.\n\n**Metastasis:** cancer cells break off and travel through the blood or lymph to start new tumors in other parts of the body.\n\n**Carcinogens** are things that cause the mutations that lead to cancer: tobacco smoke, UV radiation from the sun and tanning beds, and some chemicals.\n\n**Why risk rises with age:** mutations build up over a lifetime, and usually several mutations are needed before a cell loses control.\n\n**How treatment connects to cell division:** chemotherapy and radiation target cells that divide quickly. Hair follicles and the stomach lining also divide quickly, which is why treatment can cause hair loss and nausea.\n\n**Worked example 2:** A tumor is found in the lung, and cells from it are also found in the liver. The tumor is malignant and has **metastasized**.\n\n**Worked example 3:** Why wear sunscreen? UV radiation is a carcinogen. Blocking it means fewer DNA mutations in skin cells, so fewer chances for a cell to lose control.\n\n**Watch out for:** calling every tumor cancer (benign tumors aren't), saying cancer cells divide more slowly (they divide out of control), and mixing up apoptosis (helpful: removes damaged cells) with metastasis (harmful: cancer spreading)."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "Cancer cells break off from a tumor and travel through the blood to form new tumors. What is this called?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Apoptosis"
+                },
+                {
+                  "id": "b",
+                  "text": "Metastasis"
+                },
+                {
+                  "id": "c",
+                  "text": "Mitosis"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Spreading to new places is metastasis. Apoptosis is programmed cell death, which is the common mix-up."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "Which kind of tumor stays in one place and does not spread?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Benign"
+                },
+                {
+                  "id": "b",
+                  "text": "Malignant"
+                },
+                {
+                  "id": "c",
+                  "text": "Metastatic"
+                }
+              ],
+              "answer": "a",
+              "explanation": "A benign tumor stays put. Malignant tumors invade and can spread, and metastatic means it already has. Thinking every tumor is cancer is the common mistake."
+            }
+          ],
+          "shortAnswer": "Explain how a mutation in a gene that controls a cell cycle checkpoint can lead to a tumor."
+        }
+      ]
+    },
+    {
+      "target": "U5.LT4",
+      "mode": "do",
+      "title": "Do: flip the terms, then put the steps in order",
+      "description": "Flashcards with a 3-question self-quiz, then how a normal cell becomes a spreading cancer, one step at a time.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: cancer words",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Cancer",
+                "back": "A disease of uncontrolled cell growth and division."
+              },
+              {
+                "id": "k2",
+                "front": "Cell cycle checkpoint",
+                "back": "An inspection stop where the cell checks its DNA and size before it divides. Like the brakes on a car."
+              },
+              {
+                "id": "k3",
+                "front": "Apoptosis",
+                "back": "Programmed cell death. It removes damaged or unneeded cells."
+              },
+              {
+                "id": "k4",
+                "front": "Benign tumor",
+                "back": "A mass of extra cells that stays in one place and doesn't spread."
+              },
+              {
+                "id": "k5",
+                "front": "Malignant tumor",
+                "back": "A tumor that invades nearby tissue and can spread. This is cancer."
+              },
+              {
+                "id": "k6",
+                "front": "Metastasis",
+                "back": "Cancer cells breaking off and traveling through the blood or lymph to form new tumors."
+              },
+              {
+                "id": "k7",
+                "front": "Carcinogen",
+                "back": "Something that causes cancer-causing mutations, like tobacco smoke or UV radiation."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "Tobacco smoke and UV radiation are examples of...",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Carcinogens"
+                },
+                {
+                  "id": "b",
+                  "text": "Enzymes"
+                },
+                {
+                  "id": "c",
+                  "text": "Hormones"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Carcinogens cause the DNA mutations that can lead to cancer. Tobacco smoke and UV radiation are two of the most common ones."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "What is the main job of cell cycle checkpoints?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "To speed up mitosis"
+                },
+                {
+                  "id": "b",
+                  "text": "To make sure the DNA is copied correctly and the cell is ready before it divides"
+                },
+                {
+                  "id": "c",
+                  "text": "To create new mutations"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Checkpoints are the brakes: they stop a cell from dividing until it is ready. They slow things down when needed, not speed them up."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "How is a malignant tumor different from a benign tumor?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "It can invade nearby tissue and spread"
+                },
+                {
+                  "id": "b",
+                  "text": "It is always smaller"
+                },
+                {
+                  "id": "c",
+                  "text": "It is made of dead cells"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Malignant tumors invade and spread, and they are cancer. Size doesn't decide it: a benign tumor can be large and still stay put."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked steps: from one mutation to a spreading cancer",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "Put the steps in order: how a normal cell can become a cancer that spreads.",
+            "steps": [
+              {
+                "id": "t1",
+                "text": "**Damage:** a carcinogen, like UV light or tobacco smoke, damages a cell's DNA. This change is a mutation."
+              },
+              {
+                "id": "t2",
+                "text": "**Broken controls:** the mutation hits a gene that controls the cell cycle. The gas pedal sticks, or a brake (a checkpoint) fails."
+              },
+              {
+                "id": "t3",
+                "text": "**No stopping:** the cell skips its checkpoints and doesn't go through apoptosis. It divides again and again, and every new cell carries the mutation."
+              },
+              {
+                "id": "t4",
+                "text": "**Tumor:** the extra cells pile up into a tumor. More mutations build up over time."
+              },
+              {
+                "id": "t5",
+                "text": "**Spreading:** if the tumor becomes malignant, it invades nearby tissue. Cells break off and travel in the blood (metastasis) to form new tumors."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: what normally removes a cell with badly damaged DNA?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Apoptosis"
+                },
+                {
+                  "id": "b",
+                  "text": "Metastasis"
+                },
+                {
+                  "id": "c",
+                  "text": "Crossing over"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Apoptosis, programmed cell death, removes damaged cells before they can divide. Metastasis is cancer spreading, the opposite of helpful.",
+              "afterStepId": "t3"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Chemotherapy targets cells that divide quickly. Why does it often cause hair loss?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Hair follicle cells also divide quickly"
+                },
+                {
+                  "id": "b",
+                  "text": "Hair cells are cancer cells"
+                },
+                {
+                  "id": "c",
+                  "text": "Chemotherapy only affects hair"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Hair follicles are normal cells that divide fast, so chemotherapy hits them too. They aren't cancer; they're just caught by the same target.",
+              "afterStepId": "t5"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

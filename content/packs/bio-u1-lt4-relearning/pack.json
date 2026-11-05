@@ -1,0 +1,269 @@
+{
+  "name": "bio-u1-lt4-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "relearning": [
+    {
+      "target": "U1.LT4",
+      "mode": "read",
+      "title": "Read: sharing data clearly",
+      "description": "A short reading with the box-score analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Tables, graphs and the right kind of data",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can communicate data and information from a scientific experiment in a concise way.**\n\n**Think of a box score after a basketball game.** You don't get a story of every play. You get a neat table with the numbers, so anyone can read it fast. Scientists share results the same way: a clear data table, a labeled graph and a short conclusion.\n\n**Qualitative vs. quantitative.** **Qualitative** data describe qualities with words: color, smell, texture (the leaf is yellow). **Quantitative** data are numbers with units (the leaf is 6 cm long).\n\n**The data table.** The IV goes in the first (left) column. The DV goes in the next column. Put units in the column headings. If you ran several trials, add an Average column.\n\n**The graph.** The IV goes on the **x-axis** and the DV goes on the **y-axis**. Label both axes with units, space the numbers evenly, and give it a title: **The Effect of [IV] on [DV]**.\n\n**Which graph?** A **line graph** shows change over time or with numbers on both axes. A **bar graph** compares separate groups. A **pie chart** shows parts of a whole, as percents.\n\n**Worked example:** A student tests how the hours of light per day (4, 8 or 12) affect the number of leaves on a plant. Hours of light was changed, so it is the IV: first column and x-axis, labeled Light (hours per day). The number of leaves was counted, so it is the DV: second column and y-axis. Title: The Effect of Light on the Number of Leaves. Both variables are numbers, so a line graph fits."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "A student counts the oxygen bubbles a water plant gives off when a lamp is 10 cm, 20 cm and 30 cm away. What goes on the x-axis?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Distance of the lamp (cm)"
+                },
+                {
+                  "id": "b",
+                  "text": "Number of bubbles"
+                },
+                {
+                  "id": "c",
+                  "text": "Type of plant"
+                }
+              ],
+              "answer": "a",
+              "explanation": "The lamp distance is what the student changed, so it is the IV, and the IV goes on the x-axis. The bubbles (DV) go on the y-axis. Swapping the axes is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "multiple_choice",
+              "prompt": "Which observation is qualitative?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The solution is 45 °C."
+                },
+                {
+                  "id": "b",
+                  "text": "The test tube holds 10 mL."
+                },
+                {
+                  "id": "c",
+                  "text": "The solution turned brick red."
+                }
+              ],
+              "answer": "c",
+              "explanation": "A color described with words is qualitative. A temperature or a volume with a number and unit is quantitative. Thinking any lab observation is quantitative is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Averages, trends and conclusions",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Averages.** To find the average (mean) of your trials, add them and divide by how many there are. **Worked example 2:** Three plants grew 8 cm, 10 cm and 9 cm. Average = (8 + 10 + 9) ÷ 3 = 27 ÷ 3 = **9 cm**.\n\n**Reading a graph.** Describe the trend in words: the line goes up, goes down, levels off, or goes up and then down. To estimate a value between two points, find the spot halfway between them.\n\n**Outliers.** If one trial is far from the others (12, 13, 12 and 41 seconds), something may have gone wrong. Check for a mistake and repeat the trial. Don't hide it, and don't let it pull your average way off.\n\n**Writing a concise conclusion.** Keep it short and use the data:\n1. Say whether the data **support** or **do not support** the hypothesis.\n2. Give the numbers that show it.\n3. Explain why in one sentence.\n\n**Worked example 3:** The hypothesis was supported. Plants with 12 hours of light grew an average of 14 leaves, while plants with 4 hours grew only 5 leaves. More light gives the plant more energy to grow.\n\n**Concise means short and complete.** Leave out feelings and extra stories (I think it was fun). Never say the data prove the hypothesis. Data support it or don't.\n\n**Watch out for:** swapping the axes, leaving off units, uneven number spacing, using a line graph for separate groups, a conclusion with no numbers, and saying the data prove something."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "fill_blank",
+              "prompt": "Three trials took 21 seconds, 18 seconds and 24 seconds. What is the average time in seconds? Type a number.",
+              "answer": ["21", "21 s", "21s", "21 seconds", "21 sec"],
+              "explanation": "Add the trials and divide by 3: (21 + 18 + 24) ÷ 3 = 63 ÷ 3 = 21 seconds. Forgetting to divide (63) is the common mistake."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "Which conclusion is the most complete and concise?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The plants grew."
+                },
+                {
+                  "id": "b",
+                  "text": "Fertilizer is great, and I think everyone should use it on their gardens because it was a fun lab."
+                },
+                {
+                  "id": "c",
+                  "text": "The hypothesis was supported: plants given 10 g of fertilizer grew an average of 12 cm, while plants with 0 g grew 6 cm."
+                }
+              ],
+              "answer": "c",
+              "explanation": "A good conclusion says whether the hypothesis was supported and gives the numbers as evidence. Just saying the plants grew gives no data, and calling fertilizer great is an opinion. Leaving out the numbers is the common mistake."
+            }
+          ],
+          "shortAnswer": "Plants given 0, 2 and 4 hours of music a day grew 10 cm, 10 cm and 11 cm. Write a one- or two-sentence conclusion that uses the data."
+        }
+      ]
+    },
+    {
+      "target": "U1.LT4",
+      "mode": "do",
+      "title": "Do: graph the data, then pick the right graph",
+      "description": "A worked problem one step at a time, then guess-and-flip cards on graphs and data.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Worked problem: from data to a graph",
+          "minutes": 4,
+          "body": {
+            "type": "worked_steps",
+            "problem": "A student tests how the distance of a lamp affects the number of oxygen bubbles a water plant gives off in 5 minutes. She runs 3 trials at each distance. 10 cm: 30, 34 and 32 bubbles. 20 cm: 21, 19 and 20 bubbles. 30 cm: 11, 9 and 10 bubbles. Organize the data and set up the graph.",
+            "steps": [
+              {
+                "id": "t1",
+                "text": "Name the variables. She changed the lamp distance, so it is the IV (cm). She counted bubbles, so that is the DV."
+              },
+              {
+                "id": "t2",
+                "text": "Build the table. First column: Lamp Distance (cm). Next columns: Trial 1, Trial 2, Trial 3, then Average Number of Bubbles."
+              },
+              {
+                "id": "t3",
+                "text": "Average each row. 10 cm: (30 + 34 + 32) ÷ 3 = 96 ÷ 3 = 32. 20 cm: (21 + 19 + 20) ÷ 3 = 60 ÷ 3 = 20. 30 cm: (11 + 9 + 10) ÷ 3 = 30 ÷ 3 = 10."
+              },
+              {
+                "id": "t4",
+                "text": "Set up the graph. x-axis: Lamp Distance (cm). y-axis: Average Number of Bubbles. Title: The Effect of Lamp Distance on the Number of Bubbles. Both variables are numbers, so use a line graph."
+              },
+              {
+                "id": "t5",
+                "text": "Describe the trend: as the lamp moves farther away, the number of bubbles goes down."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "fill_blank",
+              "prompt": "Your turn: three trials gave 15, 17 and 22 bubbles. What is the average? Type a number.",
+              "answer": ["18", "18 bubbles", "eighteen"],
+              "explanation": "Add the trials and divide by 3: (15 + 17 + 22) ÷ 3 = 54 ÷ 3 = 18. Forgetting to divide (54) is the common mistake.",
+              "afterStepId": "t3"
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "A student tests how the amount of fertilizer affects plant height. Which graph title fits?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The Effect of Plant Height on Fertilizer"
+                },
+                {
+                  "id": "b",
+                  "text": "The Effect of Fertilizer on Plant Height"
+                },
+                {
+                  "id": "c",
+                  "text": "Plants"
+                }
+              ],
+              "answer": "b",
+              "explanation": "The title is The Effect of [IV] on [DV]. Fertilizer was changed (IV), and height was measured (DV). Writing the title backwards is the common mistake.",
+              "afterStepId": "t4"
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Guess, then flip: which graph, which data?",
+          "minutes": 6,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "x1",
+                "front": "The height of a sunflower, measured every week for 10 weeks",
+                "back": "Line graph. It shows change over time, and time goes on the x-axis."
+              },
+              {
+                "id": "x2",
+                "front": "The number of students with each eye color in class",
+                "back": "Bar graph. It compares separate groups."
+              },
+              {
+                "id": "x3",
+                "front": "The percent of a cell's mass that is water, protein, lipid and other molecules",
+                "back": "Pie chart. It shows the parts of a whole."
+              },
+              {
+                "id": "x4",
+                "front": "The bread mold is fuzzy and gray-green.",
+                "back": "Qualitative. It describes qualities with words, not numbers."
+              },
+              {
+                "id": "x5",
+                "front": "The bread mold covers 4.5 cm² of the slice.",
+                "back": "Quantitative. It uses a number with a unit."
+              },
+              {
+                "id": "x6",
+                "front": "Trials of 12, 13, 12 and 41 seconds",
+                "back": "41 is an outlier. Check for a mistake and repeat the trial. Don't just hide it."
+              },
+              {
+                "id": "x7",
+                "front": "A graph with no units on the y-axis",
+                "back": "Incomplete. A reader can't tell if 5 means 5 cm, 5 g or 5 seconds. Label both axes with units."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "A student records one runner's pulse every minute for 10 minutes after a race. Which graph fits best?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Bar graph"
+                },
+                {
+                  "id": "b",
+                  "text": "Pie chart"
+                },
+                {
+                  "id": "c",
+                  "text": "Line graph"
+                }
+              ],
+              "answer": "c",
+              "explanation": "The pulse changes over time, so a line graph shows it best, with time on the x-axis. Bar graphs compare separate groups, and pie charts show parts of a whole. Using a bar graph for change over time is the common mistake."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Which observation is quantitative?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The runner's face turned red."
+                },
+                {
+                  "id": "b",
+                  "text": "The heart rate was 88 beats per minute."
+                },
+                {
+                  "id": "c",
+                  "text": "The runner felt tired."
+                }
+              ],
+              "answer": "b",
+              "explanation": "88 beats per minute is a number with a unit, so it is quantitative. A color or a feeling described in words is qualitative."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

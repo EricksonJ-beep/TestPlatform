@@ -1,0 +1,265 @@
+{
+  "name": "bio-u2-lt5-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "relearning": [
+    {
+      "target": "U2.LT5",
+      "mode": "read",
+      "title": "Read: how enzymes work",
+      "description": "A short reading with the lock-and-key analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "The lock and the key",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can explain how enzymes work and why they are important in the human body.**\n\n**Think of a lock and key.** A lock opens only for the key with the right shape. An enzyme works the same way. Its **active site** has a shape that fits only one kind of molecule, called its **substrate**. That's why each enzyme does just one job.\n\n**What an enzyme is.** An **enzyme** is a protein that speeds up a chemical reaction. It is a **catalyst**: it speeds up the reaction without being used up, so it can be used over and over. Many enzyme names end in **-ase**.\n\n**How it works.**\n1. The substrate fits into the enzyme's active site.\n2. The enzyme changes the substrate into new molecules, the **products**.\n3. The products leave, and the enzyme is ready for another substrate.\n\n**Activation energy.** Every reaction needs a push of energy to get started, called **activation energy**. Enzymes lower it. Think of a tunnel through a hill: instead of climbing over the top, the reaction takes the easy way through, so it happens much faster.\n\n**Worked example:** Lactase breaks lactose (milk sugar) into glucose and galactose. **Enzyme:** lactase (the -ase). **Substrate:** lactose. **Products:** glucose and galactose. People who don't make enough lactase can't digest lactose well. They are lactose intolerant."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "Sucrase breaks sucrose into glucose and fructose. What is the substrate?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Sucrase"
+                },
+                {
+                  "id": "b",
+                  "text": "Glucose and fructose"
+                },
+                {
+                  "id": "c",
+                  "text": "Sucrose"
+                }
+              ],
+              "answer": "c",
+              "explanation": "The substrate is the molecule the enzyme acts on: sucrose. Sucrase (the -ase) is the enzyme, and glucose and fructose are the products. Mixing up -ase and -ose is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "multiple_choice",
+              "prompt": "What happens to an enzyme after it finishes a reaction?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "It can be used again on another substrate"
+                },
+                {
+                  "id": "b",
+                  "text": "It is used up"
+                },
+                {
+                  "id": "c",
+                  "text": "It becomes one of the products"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Enzymes are catalysts, so they are not changed or used up by the reaction. The same enzyme works on substrate after substrate. Thinking the enzyme gets used up is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "What helps and what hurts an enzyme",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Temperature.** Most human enzymes work best near **37 °C**, normal body temperature. This is their **optimum**. Colder slows them down, because molecules move slower and meet less often, but the enzyme isn't damaged. Too hot, and the enzyme **denatures**.\n\n**Denature.** To denature is to unfold. Heat or the wrong pH changes the enzyme's shape, so the active site no longer fits the substrate. It's like a lock melted out of shape: the key can't go in. A denatured enzyme stops working.\n\n**pH.** Each enzyme has a best pH. Pepsin works in the stomach at about pH 2, but enzymes in the small intestine work near pH 8.\n\n**Amount of substrate.** More substrate means the enzyme meets it more often, so the reaction speeds up. Once every active site is busy, adding more substrate can't speed it up, and the rate levels off.\n\n**Worked example 2: read an enzyme graph.** The rate rises from 10 °C to 37 °C, peaks at 37 °C, then drops to zero by 60 °C. The optimum is 37 °C. Above it, heat denatures the enzyme, so the rate falls fast.\n\n**Why enzymes matter.** Amylase in saliva starts breaking down starch. Pepsin breaks down proteins. Lipase breaks down fats. Enzymes also help copy DNA and release energy in your cells. Without enzymes, these reactions would be far too slow to keep you alive.\n\n**Watch out for:** saying enzymes are used up, thinking cold denatures an enzyme (it only slows it), thinking hotter is always faster, mixing up the enzyme (-ase) and the substrate, and thinking one enzyme works on any substrate."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "An enzyme from a bacterium that lives in a hot spring has an optimum temperature of 75 °C. At 37 °C, it will most likely",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "denature"
+                },
+                {
+                  "id": "b",
+                  "text": "work, but slower than at 75 °C"
+                },
+                {
+                  "id": "c",
+                  "text": "work faster than at 75 °C"
+                }
+              ],
+              "answer": "b",
+              "explanation": "37 °C is below this enzyme's optimum, so it slows down but is not damaged. Denaturing happens when it gets too hot, not too cold. Assuming 37 °C is best for every enzyme is the common mistake."
+            },
+            {
+              "id": "e2",
+              "kind": "fill_blank",
+              "prompt": "When high heat or the wrong pH ruins an enzyme's shape so the substrate no longer fits, we say the enzyme is ___. Type one word.",
+              "answer": ["denatured", "denature", "denatures"],
+              "explanation": "A denatured enzyme has unfolded, so its active site has lost its shape. Saying the enzyme died or was used up is the common mistake: it was never alive, and it isn't used up."
+            }
+          ],
+          "shortAnswer": "Use the lock-and-key model to explain why boiling an enzyme stops it from working."
+        }
+      ]
+    },
+    {
+      "target": "U2.LT5",
+      "mode": "do",
+      "title": "Do: follow one enzyme, then predict what happens to it",
+      "description": "A worked problem one step at a time, then guess-and-flip cards on what helps and hurts enzymes.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Worked problem: follow one catalase",
+          "minutes": 4,
+          "body": {
+            "type": "worked_steps",
+            "problem": "In the liver lab, the enzyme catalase breaks down hydrogen peroxide (H₂O₂) into water and oxygen gas, which makes bubbles. Follow one catalase molecule through its job.",
+            "steps": [
+              {
+                "id": "t1",
+                "text": "Name the parts. Enzyme: catalase (the -ase). Substrate: hydrogen peroxide. Products: water and oxygen gas (the bubbles)."
+              },
+              {
+                "id": "t2",
+                "text": "The substrate fits the active site. Hydrogen peroxide fits into catalase's active site like a key in a lock. Other molecules don't fit."
+              },
+              {
+                "id": "t3",
+                "text": "The reaction happens. Catalase lowers the activation energy, so hydrogen peroxide splits into water and oxygen very fast."
+              },
+              {
+                "id": "t4",
+                "text": "Release and repeat. The products leave, and catalase is unchanged. It grabs another hydrogen peroxide molecule and does it again, over and over."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "fill_blank",
+              "prompt": "Your turn: amylase breaks starch into smaller sugars. What is the substrate? Type one word.",
+              "answer": ["starch"],
+              "explanation": "The substrate is what the enzyme acts on, which is starch. Amylase (the -ase) is the enzyme, and the smaller sugars are the products. Typing the enzyme's name is the common mistake.",
+              "afterStepId": "t1"
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "Why can a small amount of catalase break down a large amount of hydrogen peroxide?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "It turns into more catalase during the reaction"
+                },
+                {
+                  "id": "b",
+                  "text": "It isn't used up, so each catalase is reused many times"
+                },
+                {
+                  "id": "c",
+                  "text": "It adds activation energy to the reaction"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Catalase is a catalyst, so it comes out of each reaction unchanged and keeps working. Enzymes lower activation energy, they don't add it. Thinking enzymes are used up is the common mistake.",
+              "afterStepId": "t4"
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Guess, then flip: what happens to the enzyme?",
+          "minutes": 6,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "x1",
+                "front": "A human enzyme at 37 °C",
+                "back": "Works best. 37 °C is normal body temperature, the optimum for most human enzymes."
+              },
+              {
+                "id": "x2",
+                "front": "A human enzyme at 4 °C, in a refrigerator",
+                "back": "Slows down. Molecules move slower and meet less often. The enzyme isn't damaged and works again when warmed."
+              },
+              {
+                "id": "x3",
+                "front": "A human enzyme at 70 °C",
+                "back": "Denatures. Heat unfolds it, the active site loses its shape, and it stops working for good."
+              },
+              {
+                "id": "x4",
+                "front": "Pepsin (best at pH 2) moved to pH 8",
+                "back": "Stops working well. Far from its best pH, its shape changes."
+              },
+              {
+                "id": "x5",
+                "front": "More substrate added, same amount of enzyme",
+                "back": "Faster at first, then the rate levels off once every active site is busy."
+              },
+              {
+                "id": "x6",
+                "front": "More enzyme added, with plenty of substrate",
+                "back": "Faster, because more active sites are working at once."
+              },
+              {
+                "id": "x7",
+                "front": "A molecule that doesn't fit the active site",
+                "back": "Nothing happens. Each enzyme is specific to its substrate, like a lock and its key."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Fresh pineapple has an enzyme that breaks down protein, and gelatin made with fresh pineapple won't set. Canned pineapple is heated during canning, and gelatin made with it sets fine. Why?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The heat denatured the enzyme in the canned pineapple"
+                },
+                {
+                  "id": "b",
+                  "text": "Canned pineapple has more of the enzyme"
+                },
+                {
+                  "id": "c",
+                  "text": "The cold of the gelatin killed the enzyme"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Heating unfolds the enzyme, so it can no longer break down the gelatin's protein. Cold only slows enzymes down, it doesn't ruin them. Blaming the cold is the common mistake."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Which change would slow a human enzyme down WITHOUT damaging it?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Cooling it to 10 °C"
+                },
+                {
+                  "id": "b",
+                  "text": "Heating it to 80 °C"
+                },
+                {
+                  "id": "c",
+                  "text": "Putting it in a strong acid far from its best pH"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Cold slows the enzyme, but it works again when warmed. High heat and the wrong pH change the enzyme's shape, which denatures it. Thinking cold denatures enzymes is the common mistake."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "bio-u5-lt4-practice",
+  "revision": 3,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "unit": "Unit 5 · Cell Growth & Division",
+  "bank": "Bio · U5.LT4 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U5.LT4 Practice: Cancer and cell division",
+    "description": "Practice defining cancer as uncontrolled cell division and connecting it to checkpoints, mutations, tumors, metastasis, carcinogens, and treatment.",
+    "drawCount": 10,
+    "targets": ["U5.LT4"]
+  }
+}

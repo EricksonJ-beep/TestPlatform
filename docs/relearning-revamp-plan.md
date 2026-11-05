@@ -1,9 +1,9 @@
 # Relearning revamp: a shorter, clearer path to the retake (Jon, Nov 2–4 2026)
 
 **Status: approved by Jon, Nov 4 2026. R0 (spec updates), R1 (schema), R2 (the rule), R3
-(the practice check), R6 (the test retake picker) and R7 (score history) are done. R4 (Read ·
-Watch · Do), R5 (the step path) and R8 (Skyward export) are built and wait on Jon: videos to
-pick, a walk-through on a Chromebook and a phone, and a test import. The content tickets and L1
+(the practice check), R6 (the test retake picker) and R7 (score history) are done. R8 (Skyward export)
+is done. R4 (Read · Watch · Do) and R5 (the step path) are built and wait on Jon: videos to
+pick, and a walk-through on a Chromebook and a phone. The content tickets and L1
 are next.**
 
 Jon's ask: "Right now the students are struggling with the corrections, activity, and then
@@ -550,7 +550,7 @@ results. Live refresh is unchanged.
   (all four places, and the seed runs once), and the 0031 re-run check in
   `src/db/relearning-schema.test.ts`.*
 
-### R8 · Skyward export ✅ (built Nov 4 2026; waiting on Jon's test import)
+### R8 · Skyward export ✅ (built Nov 4 2026; Jon imported every class into Skyward Nov 5)
 - New export (K1, K2): per-target files for quizzes and one file for tests, each with the header
   row.
 - Zip plus single-file buttons, and Skyward-style file names (editable before download).
@@ -569,8 +569,10 @@ matches.
 - *A quiz's target files use the per-target counting percent the path stores. A one-target quiz
   from before the path uses its counting score.*
 - *A multi-target quiz from before the path uses each target's best attempt, and the page says so.*
-- *Tests: `src/lib/skyward.test.ts` and the route test. The "Done when" still needs Jon's first
-  import into Skyward.*
+- *Tests: `src/lib/skyward.test.ts` and the route test.*
+- *Nov 5: students log in with usernames, so the lunch code now comes from the class page's
+  **Lunch codes** box. The teacher pastes the school roster once, and codes are matched by name
+  (`users.lunch_code`, migration 0033). Jon's imports worked for all his classes.*
 
 ### C1 · Physical Science Practice banks to about 100 per target
 - 25 targets, today about 50 each (docs/ps-practice-banks-plan.md), so about 1,275 new
@@ -627,8 +629,44 @@ the student-account test.
 
 **Done when** every Biology target has a Practice bank of about 100 questions with no thin band.
 
+*Built Nov 4–5 for all 33 targets, 3,300 questions in all:*
+- *One pack per target, `bio-uX-ltY-practice`. Each has 100 questions: easy 45, medium 30,
+  hard 25. They are open practice with a 10-question draw, like the PS banks.*
+- *Checks:*
+  - *`scripts/check-pack.ts` is clean on all 33.*
+  - *A second writer re-solved every row and made 127 fixes. Most were to wording, hints or
+    distractors, and a few were keys.*
+  - *I re-solved a random 30 of the 3,300, and all were right.*
+- *Not copied from Jon's tests:*
+  - *No stem matches a Biology test or retake question.*
+  - *One near-copy (U1.LT4 P013, repeated trials) was rewritten as a new scenario.*
+- *Genotype fill-ins ("Bb", "hh") are graded case-sensitive (`tolerance_mode=case_sensitive`).*
+- *Revision 2: a 50-question version of these packs (Oct 14, unmerged branch
+  `claude/focused-goodall-4xyf49`) had already loaded through its preview build.*
+  - *P001–P050 update in place, and P051–P100 are added.*
+  - *Three set titles stay on their live names, so no second set is made.*
+- *Longest-answer tell fixed (revision 3, Jon's call Nov 4): in 53% of the multiple-choice
+  questions the right answer was the longest choice. Now it is 15% (8% shortest), and no bank is
+  over 22%.*
+  - *Wrong choices got the same kind of detail as the key ("because…", a condition), and a few
+    padded keys were trimmed. About 1,290 choices changed in 32 banks.*
+  - *A guard script confirmed that only option text (and two explanations) changed. No stem,
+    answer letter or correct choice moved. Every edited row was re-read for a single defensible
+    answer.*
+
 ### C4 · Biology Read · Watch · Do (33 targets)
 Same as C2.
+
+*Read and Do built Nov 5 for all 33 targets (Watch waits on Jon):*
+- *One pack per target, `bio-uX-ltY-relearning`. Read is a core and an extension text with 4
+  quick checks and one short answer. Do is flashcards with a self-quiz or worked steps, varied by
+  target. It includes Punnett squares drawn as math grids, DNA → mRNA → amino acids with the
+  codons given, and pedigrees.*
+- *Sources: Jon's Biology packs and his Drive files. Fungi and Plants use standard 10th-grade
+  content (no notes found).*
+- *Checks: `scripts/check-pack.ts` is clean on all 33. Each writer re-solved its own checks. I
+  re-solved a random 24 of the 285, and all were right. All 12 math grids render.*
+- *Genotypes are never fill-ins, because fill-in grading ignores case, so "Bb" would match "bb".*
 
 **Done when** every Biology target has all three modes and its videos are approved.
 

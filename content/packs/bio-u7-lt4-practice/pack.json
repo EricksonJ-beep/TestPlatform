@@ -1,0 +1,17 @@
+{
+  "name": "bio-u7-lt4-practice",
+  "revision": 3,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "unit": "Unit 7 · DNA, RNA and Protein Synthesis",
+  "bank": "Bio · U7.LT4 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U7.LT4 Practice: Mutations",
+    "description": "Practice predicting how substitutions, insertions, deletions and chromosomal mutations change DNA, mRNA and proteins, and what causes mutations and decides whether they help or harm.",
+    "drawCount": 10,
+    "targets": [
+      "U7.LT4"
+    ]
+  }
+}

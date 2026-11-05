@@ -1,0 +1,15 @@
+{
+  "name": "bio-u8-lt2-practice",
+  "revision": 3,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "unit": "Unit 8 · Kingdoms",
+  "bank": "Bio · U8.LT2 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U8.LT2 Practice: Bacteria",
+    "description": "Practice describing bacteria and their roles: prokaryote cell parts, Eubacteria and Archaebacteria, the three shapes, binary fission and population growth, helpful roles in the environment and human health, harmful pathogens, and antibiotics and resistance.",
+    "drawCount": 10,
+    "targets": ["U8.LT2"]
+  }
+}

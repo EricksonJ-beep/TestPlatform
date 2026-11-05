@@ -1,0 +1,15 @@
+{
+  "name": "bio-u2-lt4-practice",
+  "revision": 3,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "unit": "Unit 2 · Biochemistry",
+  "bank": "Bio · U2.LT4 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U2.LT4 Practice: The four macromolecules",
+    "description": "Practice comparing carbohydrates, lipids, proteins, and nucleic acids: their building blocks, elements, structures, and jobs in living things, plus reading the Benedict's, iodine, Biuret, and Sudan IV food tests.",
+    "drawCount": 10,
+    "targets": ["U2.LT4"]
+  }
+}

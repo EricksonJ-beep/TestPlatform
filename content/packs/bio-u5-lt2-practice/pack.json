@@ -1,0 +1,15 @@
+{
+  "name": "bio-u5-lt2-practice",
+  "revision": 3,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "unit": "Unit 5 · Cell Growth & Division",
+  "bank": "Bio · U5.LT2 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U5.LT2 Practice: Meiosis",
+    "description": "Practice modeling meiosis: diploid and haploid chromosome numbers, the phases of meiosis I and II, crossing over and independent assortment, and why meiosis matters for sexual reproduction.",
+    "drawCount": 10,
+    "targets": ["U5.LT2"]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "bio-u3-lt3-practice",
+  "revision": 3,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "unit": "Unit 3 · Cell Structure and Function",
+  "bank": "Bio · U3.LT3 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U3.LT3 Practice: Model of cell structure",
+    "description": "Practice building and judging models of cell structure: what each organelle looks like and does, where it belongs in the cell, plant vs. animal cell parts, analogies and their limits, specialized cells, the protein-making pathway, and scale-model math.",
+    "drawCount": 10,
+    "targets": ["U3.LT3"]
+  }
+}

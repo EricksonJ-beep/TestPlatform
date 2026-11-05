@@ -1,0 +1,271 @@
+{
+  "name": "bio-u6-lt2-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "relearning": [
+    {
+      "target": "U6.LT2",
+      "mode": "read",
+      "title": "Read: complex inheritance patterns",
+      "description": "A short reading with paint-mixing and checkered-shirt analogies, worked crosses and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Blends, both and more than two",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can identify complex patterns of inheritance and predict the outcome of complex inheritance crosses.**\n\nNot every trait is simple dominant and recessive. Here are the patterns to know.\n\n**Incomplete dominance: a blend.** Think of mixing red and white paint to get pink. Neither allele fully wins, so the heterozygote is in between. In snapdragons, red (RR) × white (WW) gives all pink (RW).\n\n**Codominance: both show.** Think of a checkered shirt: the red squares and white squares both show, side by side, with no blending. In cattle, red (RR) × white (WW) gives roan (RW), with both red hairs and white hairs.\n\n**Multiple alleles:** blood type has three alleles: A, B and O. A and B are codominant, and O is recessive. AA or AO = type A. BB or BO = type B. AB = type AB. OO = type O.\n\n**Worked example:** Cross two pink snapdragons: RW × RW.\n\n$$\\begin{array}{c|cc} & \\mathrm{R} & \\mathrm{W} \\\\ \\hline \\mathrm{R} & \\mathrm{RR} & \\mathrm{RW} \\\\ \\mathrm{W} & \\mathrm{RW} & \\mathrm{WW} \\end{array}$$\n\nBoxes: 1 RR (red), 2 RW (pink), 1 WW (white). That is 25% red, 50% pink and 25% white. In incomplete dominance, the genotypic and phenotypic ratios match (1:2:1), because each genotype looks different."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "A red snapdragon (RR) is crossed with a white one (WW), and all of the offspring are pink. Which pattern is this?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Codominance"
+                },
+                {
+                  "id": "b",
+                  "text": "Incomplete dominance"
+                },
+                {
+                  "id": "c",
+                  "text": "Sex-linked"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Pink is a blend of red and white, so this is incomplete dominance. In codominance both colors would show separately, like red and white patches."
+            },
+            {
+              "id": "c2",
+              "kind": "fill_blank",
+              "prompt": "What percent of the offspring from RW × RW (pink × pink) are expected to be pink? Type a number.",
+              "answer": ["50", "50%", "50 %", "1/2", "0.5", ".5", "half", "50 percent"],
+              "explanation": "2 of the 4 boxes are RW (pink): 50%. Answering 75% is the common mistake: that treats R as dominant, but here only RW is pink."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Blood types and sex-linked traits",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Worked example 2 (blood type):** A type A parent (AO) and a type B parent (BO) have children.\n\n$$\\begin{array}{c|cc} & \\mathrm{A} & \\mathrm{O} \\\\ \\hline \\mathrm{B} & \\mathrm{AB} & \\mathrm{BO} \\\\ \\mathrm{O} & \\mathrm{AO} & \\mathrm{OO} \\end{array}$$\n\nBoxes: AB, BO, AO and OO, so there is a 25% chance each of type AB, type B, type A and type O. Two parents who aren't type O can still have a type O child.\n\n**Sex-linked traits:** some genes are on the X chromosome. Think of the X as a long book and the Y as a short pamphlet that is missing that page. Females (XX) have two copies of the gene, but males (XY) have only one, so a male with one recessive allele shows the trait. That is why colorblindness and hemophilia are more common in males.\n\n**Worked example 3:** X^{B} = normal vision, X^{b} = colorblind. A carrier mother (X^{B}X^{b}) × a father with normal vision (X^{B}Y). Mom's alleles go across the top, dad's down the side:\n\n$$\\begin{array}{c|cc} & \\mathrm{X^{B}} & \\mathrm{X^{b}} \\\\ \\hline \\mathrm{X^{B}} & \\mathrm{X^{B}X^{B}} & \\mathrm{X^{B}X^{b}} \\\\ \\mathrm{Y} & \\mathrm{X^{B}Y} & \\mathrm{X^{b}Y} \\end{array}$$\n\nDaughters: X^{B}X^{B} and X^{B}X^{b}, so all have normal vision, and half of the daughters are carriers. Sons: X^{B}Y (normal) and X^{b}Y (colorblind), so **50% of the sons** are colorblind. Out of all the children, 1 box of 4 = 25% are colorblind.\n\n**Polygenic traits**, like height and skin color, are controlled by many genes, so they show a smooth range instead of a few types.\n\n**Watch out for:** mixing up incomplete dominance (a blend) and codominance (both show), forgetting that O is recessive (AO is type A), giving a son his X from his dad (sons get their X from mom and their Y from dad), and confusing \"50% of the sons\" with \"50% of all the children.\""
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "Parents with genotypes AO (type A) and BO (type B) have a child. What is the chance the child has type O blood?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "0%"
+                },
+                {
+                  "id": "b",
+                  "text": "25%"
+                },
+                {
+                  "id": "c",
+                  "text": "50%"
+                }
+              ],
+              "answer": "b",
+              "explanation": "OO is 1 box of 4, so 25%. Answering 0% is the common mistake: neither parent is type O, but each carries an O allele."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "A carrier mother (X^{B}X^{b}) and a father with normal vision (X^{B}Y) have a son. What is the chance he is colorblind?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "0%"
+                },
+                {
+                  "id": "b",
+                  "text": "25%"
+                },
+                {
+                  "id": "c",
+                  "text": "50%"
+                }
+              ],
+              "answer": "c",
+              "explanation": "A son gets the Y from dad and one of mom's X's: half get X^{B} and half get X^{b}, so 50%. 25% is the chance for all children, not just sons, which is the common mix-up."
+            }
+          ],
+          "shortAnswer": "Explain why colorblindness is much more common in males than in females."
+        }
+      ]
+    },
+    {
+      "target": "U6.LT2",
+      "mode": "do",
+      "title": "Do: work a codominance cross, then a sex-linked cross",
+      "description": "Two complex crosses shown one step at a time: roan cattle, then hemophilia.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Worked problem: codominance in cattle",
+          "minutes": 4,
+          "body": {
+            "type": "worked_steps",
+            "problem": "In cattle, red (RR) and white (WW) are codominant: RW cattle are roan, with both red hairs and white hairs. Cross a roan bull with a roan cow. Find the ratios.",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "**Name the pattern:** both colors show in RW, so this is codominance. Use two capital letters and no lowercase."
+              },
+              {
+                "id": "s2",
+                "text": "**Parents:** roan × roan = RW × RW."
+              },
+              {
+                "id": "s3",
+                "text": "**Fill the square:**\n\n$$\\begin{array}{c|cc} & \\mathrm{R} & \\mathrm{W} \\\\ \\hline \\mathrm{R} & \\mathrm{RR} & \\mathrm{RW} \\\\ \\mathrm{W} & \\mathrm{RW} & \\mathrm{WW} \\end{array}$$"
+              },
+              {
+                "id": "s4",
+                "text": "**Genotypic ratio:** 1 RR : 2 RW : 1 WW."
+              },
+              {
+                "id": "s5",
+                "text": "**Phenotypic ratio:** 1 red : 2 roan : 1 white, or 25% red, 50% roan and 25% white. Each genotype has its own look, so the two ratios match."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: black chickens crossed with white chickens give chicks with separate black feathers and white feathers. Which pattern is this?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Codominance (both colors show)"
+                },
+                {
+                  "id": "b",
+                  "text": "Incomplete dominance (a blend)"
+                },
+                {
+                  "id": "c",
+                  "text": "Simple recessive"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Separate black and white feathers means both alleles show: codominance. A blend would give one in-between color, like gray or blue, which is incomplete dominance.",
+              "afterStepId": "s1"
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: cross a roan (RW) with a white (WW). What percent of the calves are expected to be roan?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "25%"
+                },
+                {
+                  "id": "b",
+                  "text": "50%"
+                },
+                {
+                  "id": "c",
+                  "text": "100%"
+                }
+              ],
+              "answer": "b",
+              "explanation": "The boxes are RW, WW, RW and WW: 2 of 4 are roan, so 50%. 25% is the answer for RW × RW, the common mix-up.",
+              "afterStepId": "s5"
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: a sex-linked cross",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "Hemophilia is X-linked recessive. X^{H} = normal clotting, X^{h} = hemophilia. A carrier woman (X^{H}X^{h}) has children with a man who has hemophilia (X^{h}Y). Predict the children.",
+            "steps": [
+              {
+                "id": "t1",
+                "text": "**Parents:** mom is X^{H}X^{h}. Dad is X^{h}Y. Dad has only one X, so his one X^{h} gives him hemophilia."
+              },
+              {
+                "id": "t2",
+                "text": "**Set up the square:** mom's X^{H} and X^{h} go across the top, and dad's X^{h} and Y go down the side."
+              },
+              {
+                "id": "t3",
+                "text": "**Fill the square:**\n\n$$\\begin{array}{c|cc} & \\mathrm{X^{H}} & \\mathrm{X^{h}} \\\\ \\hline \\mathrm{X^{h}} & \\mathrm{X^{H}X^{h}} & \\mathrm{X^{h}X^{h}} \\\\ \\mathrm{Y} & \\mathrm{X^{H}Y} & \\mathrm{X^{h}Y} \\end{array}$$"
+              },
+              {
+                "id": "t4",
+                "text": "**Daughters:** X^{H}X^{h} (a carrier with normal clotting) and X^{h}X^{h} (hemophilia). So 50% of the daughters have hemophilia."
+              },
+              {
+                "id": "t5",
+                "text": "**Sons:** X^{H}Y (normal) and X^{h}Y (hemophilia). So 50% of the sons have hemophilia. Out of all the children, 2 boxes of 4 = 50%."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: where does a son get his X chromosome?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "From his father"
+                },
+                {
+                  "id": "b",
+                  "text": "From his mother"
+                },
+                {
+                  "id": "c",
+                  "text": "From either parent"
+                }
+              ],
+              "answer": "b",
+              "explanation": "A son gets his Y from his father, so his X has to come from his mother. That is why an X-linked trait in a son traces back to his mom.",
+              "afterStepId": "t1"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: a woman who is NOT a carrier (X^{H}X^{H}) has children with a man who has hemophilia (X^{h}Y). What percent of their daughters will be carriers?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "0%"
+                },
+                {
+                  "id": "b",
+                  "text": "50%"
+                },
+                {
+                  "id": "c",
+                  "text": "100%"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Every daughter gets X^{H} from mom and dad's only X, which is X^{h}, so every daughter is X^{H}X^{h}: 100% carriers. The sons get dad's Y, so none of them have hemophilia.",
+              "afterStepId": "t5"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

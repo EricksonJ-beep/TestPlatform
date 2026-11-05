@@ -1,0 +1,300 @@
+{
+  "name": "bio-u8-lt3-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "relearning": [
+    {
+      "target": "U8.LT3",
+      "mode": "read",
+      "title": "Read: the protists",
+      "description": "A short reading with the junk-drawer analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Plant-like, animal-like and fungus-like",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can give a general description of the organisms in the Kingdom Protista.**\n\n**Think of the junk drawer in your kitchen.** It holds everything that doesn't fit in any other drawer. Kingdom Protista is biology's junk drawer: it holds the **eukaryotes that are not plants, animals or fungi**.\n\n**What all protists share:** every protist is **eukaryotic** (its cells have a nucleus). Most are **unicellular** (one cell), but some, like kelp, are multicellular. Most live in water or damp places.\n\n**Three main types:**\n- **Plant-like protists (algae)** have chloroplasts and make their own food by photosynthesis, so they are **autotrophs**. They are grouped by color: green, red, brown (kelp) and golden algae. Tiny floating algae, called **phytoplankton**, feed many ocean animals.\n- **Animal-like protists (protozoans)** are **heterotrophs**: they take in food. They are one-celled and most can move. \"Protozoa\" means \"first animals\".\n- **Fungus-like protists** are the **slime molds** and **water molds**. They feed on dead or decaying material and help recycle it.\n\n**Worked example:** A paramecium is one cell with a nucleus. It has no chloroplasts, eats bacteria and swims with short hairs called cilia. It is an **animal-like protist**."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "Which statement is true of ALL protists?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "They are all unicellular"
+                },
+                {
+                  "id": "b",
+                  "text": "They are eukaryotic: their cells have a nucleus"
+                },
+                {
+                  "id": "c",
+                  "text": "They all make their own food"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Every protist is a eukaryote. Not all are one cell (kelp is multicellular), and only the plant-like ones make their own food."
+            },
+            {
+              "id": "c2",
+              "kind": "multiple_choice",
+              "prompt": "A protist has chloroplasts and floats near the ocean surface as phytoplankton. What type is it?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Plant-like"
+                },
+                {
+                  "id": "b",
+                  "text": "Animal-like"
+                },
+                {
+                  "id": "c",
+                  "text": "Fungus-like"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Chloroplasts mean it makes its own food by photosynthesis, so it is a plant-like protist (an alga)."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "How protozoans move, and why protists matter",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Animal-like protists are grouped by how they move:**\n- **Sarcodines** move with **pseudopods** (\"false feet\"), bulges of cytoplasm that stretch out and pull the cell along. Example: the amoeba. It also wraps its pseudopods around food and engulfs it (**phagocytosis**), then digests it in a **food vacuole**.\n- **Ciliates** move with **cilia**, short hairs that beat in waves. Example: the paramecium.\n- **Flagellates** move with one or more **flagella**, long whip-like tails. Example: the flagellate that causes African sleeping sickness.\n- **Sporozoans** can't move on their own. They are parasites that reproduce by spores. Example: *Plasmodium*, which causes **malaria**.\n\n**Worked example 2 (malaria):** An *Anopheles* mosquito bites a person who has malaria and picks up *Plasmodium*. The mosquito bites another person, and *Plasmodium* enters the blood. It hides inside red blood cells, makes spores and bursts the cells. *Plasmodium* needs two hosts: a person and a mosquito.\n\n**Reproduction:** most protozoans reproduce asexually by **binary fission**. A paramecium can also swap genetic material with another paramecium by **conjugation**.\n\n**Why protists matter:** phytoplankton make a large share of Earth's oxygen and are the base of ocean food chains. Protozoans (zooplankton) feed small water animals. Some protists cause diseases: malaria, sleeping sickness and dysentery.\n\n**Watch out for:** calling algae plants (they have no roots, stems or leaves), saying every protist is one cell, calling slime molds fungi, and mixing up cilia (short hairs) with flagella (long tails)."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "Malaria is caused by *Plasmodium*. What kind of protist is it?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "A ciliate that swims with cilia"
+                },
+                {
+                  "id": "b",
+                  "text": "A sporozoan that can't move on its own"
+                },
+                {
+                  "id": "c",
+                  "text": "A plant-like alga"
+                }
+              ],
+              "answer": "b",
+              "explanation": "*Plasmodium* is a sporozoan: a parasite with no way to move that spreads by spores and needs a mosquito to reach a new host."
+            },
+            {
+              "id": "e2",
+              "kind": "fill_blank",
+              "prompt": "An amoeba moves by stretching out \"false feet\". Type their name.",
+              "answer": ["pseudopods", "pseudopod", "pseudopodia", "pseudopodium", "false feet"],
+              "explanation": "They are pseudopods (pseudopodia). Cilia are short hairs and flagella are long tails, and the amoeba uses neither."
+            }
+          ],
+          "shortAnswer": "Explain how plant-like protists and animal-like protists are different in the way they get food."
+        }
+      ]
+    },
+    {
+      "target": "U8.LT3",
+      "mode": "do",
+      "title": "Do: flip the protist cards, then classify a mystery protist",
+      "description": "Flashcards with a 3-question self-quiz, then a mystery protist classified one step at a time.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: the protist groups",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Kingdom Protista",
+                "back": "Eukaryotes that are not plants, animals or fungi. Most are one cell and live in water."
+              },
+              {
+                "id": "k2",
+                "front": "Plant-like protists (algae)",
+                "back": "Autotrophs with chloroplasts. Grouped by color: green, red, brown and golden."
+              },
+              {
+                "id": "k3",
+                "front": "Animal-like protists (protozoans)",
+                "back": "One-celled heterotrophs that take in food. Most can move. Grouped by how they move."
+              },
+              {
+                "id": "k4",
+                "front": "Fungus-like protists",
+                "back": "Slime molds and water molds. They feed on dead or decaying material."
+              },
+              {
+                "id": "k5",
+                "front": "Pseudopod",
+                "back": "A \"false foot\" of cytoplasm an amoeba uses to move and to engulf food."
+              },
+              {
+                "id": "k6",
+                "front": "Cilia",
+                "back": "Short hairs that beat in waves to move a ciliate like the paramecium."
+              },
+              {
+                "id": "k7",
+                "front": "Flagellum",
+                "back": "A long, whip-like tail that moves a flagellate."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "Which group of protists makes its own food by photosynthesis?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Animal-like protists (protozoans)"
+                },
+                {
+                  "id": "b",
+                  "text": "Fungus-like protists (slime molds)"
+                },
+                {
+                  "id": "c",
+                  "text": "Plant-like protists (algae)"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Algae have chloroplasts, so they are autotrophs. Protozoans and slime molds both take in food made by other living things."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "A paramecium moves with –",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "cilia"
+                },
+                {
+                  "id": "b",
+                  "text": "pseudopods"
+                },
+                {
+                  "id": "c",
+                  "text": "one long flagellum"
+                }
+              ],
+              "answer": "a",
+              "explanation": "A paramecium is a ciliate: it is covered in short cilia. The amoeba is the one that uses pseudopods."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "Why are slime molds put in Kingdom Protista instead of Kingdom Fungi?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "They have chloroplasts"
+                },
+                {
+                  "id": "b",
+                  "text": "They are prokaryotes"
+                },
+                {
+                  "id": "c",
+                  "text": "They look like fungi but have life cycles unlike true fungi"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Slime molds are fungus-like: they feed on decaying material, but part of their life is spent as moving, amoeba-like cells, which true fungi never do. They have no chloroplasts, and every protist is a eukaryote."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: classify a mystery protist",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "A single cell from pond water has a nucleus but no chloroplasts. It eats bacteria, and it is covered in short hairs that beat in waves. Classify it.",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "Is it a eukaryote? Yes, it has a nucleus. It is one cell and is not a plant, animal or fungus, so it is a protist."
+              },
+              {
+                "id": "s2",
+                "text": "Does it make its own food? No chloroplasts, and it eats bacteria, so it is a heterotroph. It moves and eats, so it is an animal-like protist (a protozoan)."
+              },
+              {
+                "id": "s3",
+                "text": "How does it move? Short hairs that beat in waves are cilia, so it is a ciliate."
+              },
+              {
+                "id": "s4",
+                "text": "The best match is the paramecium: an animal-like protist in the ciliate group."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: a protist with chloroplasts floats in a lake and makes its own food. Which type is it?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Animal-like"
+                },
+                {
+                  "id": "b",
+                  "text": "Plant-like"
+                },
+                {
+                  "id": "c",
+                  "text": "Fungus-like"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Chloroplasts and making its own food mean it is an autotroph: a plant-like protist (an alga). Animal-like protists take in food instead.",
+              "afterStepId": "s2"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "A protist lives inside human red blood cells, can't move on its own and spreads by spores. Which group is it in?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Sporozoans"
+                },
+                {
+                  "id": "b",
+                  "text": "Sarcodines"
+                },
+                {
+                  "id": "c",
+                  "text": "Flagellates"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Sporozoans have no way to move and are parasites that reproduce by spores, like *Plasmodium* (malaria). Sarcodines use pseudopods and flagellates use flagella.",
+              "afterStepId": "s4"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

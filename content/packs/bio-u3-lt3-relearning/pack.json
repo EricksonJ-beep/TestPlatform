@@ -1,0 +1,318 @@
+{
+  "name": "bio-u3-lt3-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "relearning": [
+    {
+      "target": "U3.LT3",
+      "mode": "read",
+      "title": "Read: the parts of a cell and how to model them",
+      "description": "A short reading with the cell-as-a-factory analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "The cell as a factory",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can create a model that shows understanding of basic cell structure.**\n\n**Think of a cell as a factory.** Every part has a job, and the parts work together to make and ship products.\n\n**Nucleus:** the main office. It holds the blueprints (DNA) and controls the cell's activities.\n**Cell membrane:** the security doors. It controls what comes in and goes out.\n**Cytoplasm:** the factory floor, a jelly where all the parts sit.\n**Ribosomes:** the workers who build proteins. They float in the cytoplasm or sit on the rough ER.\n**Rough ER:** the assembly line. It is covered with ribosomes, so it makes proteins and moves them through the cell.\n**Smooth ER:** a second assembly line with no ribosomes. It makes lipids.\n**Golgi apparatus:** the shipping department. It sorts and packages proteins into vesicles and ships them out.\n**Mitochondria:** the power plant. They release energy from food and store it as ATP.\n**Lysosomes:** the clean-up crew. They hold enzymes that break down food, worn-out parts and invaders.\n**Vacuoles:** storage rooms for water and other materials.\n\n**Plant cells add three parts:** a rigid **cell wall** outside the membrane (the fence), **chloroplasts** that use sunlight to make food by photosynthesis (the solar panels), and a large **central vacuole** that stores water (the water tower).\n\n**Worked example: follow one protein.** A ribosome on the rough ER builds a protein. The ER carries it to the Golgi apparatus. The Golgi packages it into a vesicle. The vesicle moves to the cell membrane and releases the protein outside the cell."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "A muscle cell needs a lot of energy. Which organelle would it have many of?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Mitochondria"
+                },
+                {
+                  "id": "b",
+                  "text": "Chloroplasts"
+                },
+                {
+                  "id": "c",
+                  "text": "Vacuoles"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Mitochondria release energy from food as ATP, so cells that work hard have many of them. Chloroplasts are only in plant cells and make food, not usable energy for the muscle. Mixing up mitochondria and chloroplasts is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "multiple_choice",
+              "prompt": "In the factory model, which organelle is the clean-up crew that carries digestive enzymes?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Nucleus"
+                },
+                {
+                  "id": "b",
+                  "text": "Rough ER"
+                },
+                {
+                  "id": "c",
+                  "text": "Lysosome"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Lysosomes hold enzymes that break down food, worn-out parts and invaders. The nucleus is the main office, and the rough ER is the assembly line for proteins."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Building a good model",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**What makes a good cell model.**\n1. It shows the right kind of cell, plant or animal.\n2. Each part is in the right place: the membrane around everything, the cell wall outside the membrane (plants only), the nucleus inside the cytoplasm, ribosomes on the rough ER and floating in the cytoplasm, and the Golgi near the ER.\n3. Each part is labeled, with a key that gives its job.\n4. The materials match the jobs, like folded ribbon for the folded ER or beans for the bean-shaped mitochondria.\n\n**Plant vs. animal cells.**\n**Both have:** a nucleus, cell membrane, cytoplasm, ribosomes, ER, Golgi apparatus and **mitochondria**.\n**Only plant cells have:** a cell wall, chloroplasts and a large central vacuole. Plant cells usually look boxy.\n**Animal cells:** no cell wall and no chloroplasts, only small vacuoles, and a rounder shape.\n\n**Plants need mitochondria too.** Chloroplasts make food (sugar) from sunlight. Mitochondria release the energy stored in that food. A plant cell needs both, so a plant model without mitochondria is wrong.\n\n**Worked example 2: fix the model.** A student's plant cell model has a nucleus, mitochondria, ER, Golgi, a cell membrane and a few small vacuoles. What is missing? The three plant parts: a cell wall outside the membrane, chloroplasts and one large central vacuole.\n\n**Watch out for:** putting the cell wall inside the membrane, leaving mitochondria out of a plant cell, giving an animal cell chloroplasts or a cell wall, putting ribosomes on the smooth ER, and drawing a nucleus in a bacterial cell."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "A student's model of a plant cell has a cell wall, chloroplasts and a nucleus, but no mitochondria. What should the student do?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Nothing, because chloroplasts do the job of mitochondria"
+                },
+                {
+                  "id": "b",
+                  "text": "Remove the chloroplasts"
+                },
+                {
+                  "id": "c",
+                  "text": "Add mitochondria, because plant cells have them too"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Chloroplasts make food, and mitochondria release the energy from it, so plant cells need both. Thinking chloroplasts replace mitochondria is the common mistake."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "In a correct cell model, where should the ribosomes go?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Only inside the nucleus"
+                },
+                {
+                  "id": "b",
+                  "text": "On the rough ER and floating in the cytoplasm"
+                },
+                {
+                  "id": "c",
+                  "text": "On the smooth ER"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Ribosomes sit on the rough ER, which is what makes it rough, and also float free in the cytoplasm. The smooth ER has no ribosomes. Putting ribosomes on the smooth ER is the common mistake."
+            }
+          ],
+          "shortAnswer": "Pick three organelles. For each one, name what you would use to model it and explain how your choice matches its job."
+        }
+      ]
+    },
+    {
+      "target": "U3.LT3",
+      "mode": "do",
+      "title": "Do: flip the organelles, then plan a 3D model",
+      "description": "Flashcards with a 3-question self-quiz, then a worked problem one step at a time.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: organelles and their jobs",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Nucleus",
+                "back": "The control center. It holds the DNA, like the main office that keeps the blueprints."
+              },
+              {
+                "id": "k2",
+                "front": "Cell membrane",
+                "back": "The thin outer boundary. It controls what goes in and out, like security doors."
+              },
+              {
+                "id": "k3",
+                "front": "Ribosomes",
+                "back": "Tiny dots that build proteins. They sit on the rough ER or float in the cytoplasm."
+              },
+              {
+                "id": "k4",
+                "front": "Endoplasmic reticulum (ER)",
+                "back": "Folded membranes that move materials. Rough ER has ribosomes and makes proteins. Smooth ER has none and makes lipids."
+              },
+              {
+                "id": "k5",
+                "front": "Golgi apparatus",
+                "back": "A stack of flat sacs. It packages proteins into vesicles and ships them, like a post office."
+              },
+              {
+                "id": "k6",
+                "front": "Mitochondria",
+                "back": "Bean-shaped power plants that release energy from food as ATP. Found in plant AND animal cells."
+              },
+              {
+                "id": "k7",
+                "front": "Plant-only parts",
+                "back": "Cell wall (rigid outer layer), chloroplasts (photosynthesis) and a large central vacuole (stores water)."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "In a model, which organelle would you show as a mailroom that packs and ships boxes?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Golgi apparatus"
+                },
+                {
+                  "id": "b",
+                  "text": "Nucleus"
+                },
+                {
+                  "id": "c",
+                  "text": "Mitochondrion"
+                }
+              ],
+              "answer": "a",
+              "explanation": "The Golgi apparatus packages proteins into vesicles and ships them, just like a mailroom. The nucleus is the control center, and mitochondria release energy."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "Which part is found in BOTH plant and animal cells?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Mitochondria"
+                },
+                {
+                  "id": "b",
+                  "text": "Cell wall"
+                },
+                {
+                  "id": "c",
+                  "text": "Chloroplasts"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Plant and animal cells both have mitochondria. The cell wall and chloroplasts are plant-only. Thinking plants have chloroplasts instead of mitochondria is the common mistake."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "Rough ER looks bumpy because it is covered with",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "ribosomes"
+                },
+                {
+                  "id": "b",
+                  "text": "chloroplasts"
+                },
+                {
+                  "id": "c",
+                  "text": "lysosomes"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Ribosomes dot the surface of the rough ER, which is why it makes proteins. Smooth ER has no ribosomes."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: plan a 3D plant cell",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "You are building a 3D model of a plant cell in a plastic shoebox. Plan where each part goes and what it shows.",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "Work from the outside in. The stiff shoebox is the cell wall. A plastic bag lining the inside of the box is the cell membrane, just inside the wall."
+              },
+              {
+                "id": "s2",
+                "text": "Fill the bag with clear gel for the cytoplasm. Add a large water balloon for the central vacuole. It takes up most of the space and pushes the other parts toward the edges."
+              },
+              {
+                "id": "s3",
+                "text": "Add a ping-pong ball for the nucleus. Wrap folded ribbon next to it for the ER. Glue sprinkles (ribosomes) on part of the ribbon to make rough ER, and leave the rest bare for smooth ER."
+              },
+              {
+                "id": "s4",
+                "text": "Add a stack of curved pasta near the ER for the Golgi apparatus, beans for the mitochondria, and green candies for the chloroplasts."
+              },
+              {
+                "id": "s5",
+                "text": "Make a key that labels each part and its job. Check it: the plant-only parts (cell wall, chloroplasts, large central vacuole) and the shared parts, including mitochondria, are all there."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: if this were an animal cell model, which of these parts would you take out?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The plastic bag (the cell membrane)"
+                },
+                {
+                  "id": "b",
+                  "text": "The ping-pong ball (the nucleus)"
+                },
+                {
+                  "id": "c",
+                  "text": "The shoebox (the cell wall)"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Animal cells have no cell wall, so the shoebox goes. Every cell has a membrane, and animal cells have a nucleus. Removing the membrane instead of the wall is the common mistake.",
+              "afterStepId": "s1"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "A classmate's model has ribosomes glued all over the smooth ER. What is wrong?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Ribosomes belong only inside the nucleus."
+                },
+                {
+                  "id": "b",
+                  "text": "Ribosomes belong on the rough ER. Smooth ER has none."
+                },
+                {
+                  "id": "c",
+                  "text": "Nothing is wrong."
+                }
+              ],
+              "answer": "b",
+              "explanation": "Rough ER is rough because ribosomes sit on it. Smooth ER has no ribosomes and makes lipids. Ribosomes also float in the cytoplasm, so they are not only in the nucleus.",
+              "afterStepId": "s5"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

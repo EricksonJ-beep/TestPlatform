@@ -1,0 +1,15 @@
+{
+  "name": "bio-u4-lt1-practice",
+  "revision": 3,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "unit": "Unit 4 · Cell Energy",
+  "bank": "Bio · U4.LT1 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U4.LT1 Practice: Cellular respiration",
+    "description": "Practice explaining what cellular respiration is: its reactants (glucose and oxygen) and products (carbon dioxide, water, and ATP), the balanced equation, where it happens and its stages, how ATP powers cell work, and how it connects to breathing and photosynthesis.",
+    "drawCount": 10,
+    "targets": ["U4.LT1"]
+  }
+}

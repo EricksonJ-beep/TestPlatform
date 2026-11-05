@@ -1,0 +1,280 @@
+{
+  "name": "bio-u7-lt1-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "relearning": [
+    {
+      "target": "U7.LT1",
+      "mode": "read",
+      "title": "Read: the structure of DNA",
+      "description": "A short reading with the twisted-ladder analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "The twisted ladder",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can describe the structure of DNA and the double helix model.**\n\n**Think of a ladder that has been twisted like a spiral staircase.** A ladder has two side rails and rungs that connect them. DNA has the same parts. That twisted shape is called a **double helix** (\"double\" because there are two strands, \"helix\" because it spirals).\n\n**The building block is a nucleotide.** Each nucleotide has three parts: a **phosphate**, a sugar called **deoxyribose**, and a **nitrogen base**. There are four bases: **adenine (A)**, **thymine (T)**, **cytosine (C)** and **guanine (G)**.\n\n**The sides of the ladder** are made of sugar and phosphate, alternating: sugar, phosphate, sugar, phosphate. This is called the **sugar-phosphate backbone**.\n\n**The rungs of the ladder** are pairs of bases, one from each strand, held together by weak **hydrogen bonds**. The bases always pair the same way. This is the **base pairing rule**: **A pairs with T**, and **C pairs with G**.\n\n**Worked example:** One strand of DNA reads ATTGCA. Pair each base: A→T, T→A, T→A, G→C, C→G, A→T. The other strand reads **TAACGT**."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "Which three parts make up one DNA nucleotide?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "A phosphate, a ribose sugar and an amino acid"
+                },
+                {
+                  "id": "b",
+                  "text": "A phosphate, a deoxyribose sugar and a nitrogen base"
+                },
+                {
+                  "id": "c",
+                  "text": "A nitrogen base, a hydrogen bond and a protein"
+                }
+              ],
+              "answer": "b",
+              "explanation": "A DNA nucleotide is a phosphate, the sugar deoxyribose and one nitrogen base (A, T, C or G). Ribose is the sugar in RNA, and amino acids build proteins, not DNA."
+            },
+            {
+              "id": "c2",
+              "kind": "fill_blank",
+              "prompt": "One DNA strand reads GCTA. Type the bases on the matching strand.",
+              "answer": ["CGAT", "C G A T", "C-G-A-T"],
+              "explanation": "G pairs with C, C with G, T with A and A with T, so GCTA pairs with CGAT. Pairing A with G, or writing U (an RNA base), is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Chargaff's rule and who found the helix",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Who figured it out?** In 1952, **Rosalind Franklin** made an X-ray picture of DNA (Photo 51) that showed an X pattern, a sign of a helix. In 1953, **James Watson and Francis Crick** used her picture and other data to build the double helix model.\n\n**Chargaff's rule.** Because A always pairs with T, a DNA molecule has the **same amount of A as T**. Because C always pairs with G, it has the **same amount of C as G**. All four percentages add up to 100%.\n\n**Worked example 2:** A DNA sample is 30% adenine. T = A, so T = 30%. A + T = 60%, which leaves 100 − 60 = 40% for C and G. Split it evenly: **C = 20% and G = 20%**.\n\n**Worked example 3:** A sample is 15% cytosine. G = C = 15%. C + G = 30%, which leaves 70% for A and T, so **A = 35% and T = 35%**.\n\n**Why the rungs are always the same width.** A and G are big bases, and T and C are small bases. Each rung is one big base plus one small base, so every rung is the same length and the ladder stays even.\n\n**The two strands run in opposite directions.** One strand runs \"up\" and the other runs \"down\", like the two lanes of a highway. This is called **antiparallel**.\n\n**Watch out for:** putting U (uracil) in DNA (U is only in RNA), pairing A with G or C with T, saying the bases form the sides (the sides are sugar and phosphate), and forgetting to split the leftover percentage in half."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "A DNA sample is 40% guanine. What percentage is adenine?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "10%"
+                },
+                {
+                  "id": "b",
+                  "text": "20%"
+                },
+                {
+                  "id": "c",
+                  "text": "40%"
+                },
+                {
+                  "id": "d",
+                  "text": "60%"
+                }
+              ],
+              "answer": "a",
+              "explanation": "G = C = 40%, so C + G = 80%. That leaves 20% for A and T, and half of it is A: 10%. Picking 20% forgets to split the leftover between A and T."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "Which part of DNA forms the rungs of the ladder?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Sugar and phosphate"
+                },
+                {
+                  "id": "b",
+                  "text": "Amino acids"
+                },
+                {
+                  "id": "c",
+                  "text": "Pairs of nitrogen bases"
+                }
+              ],
+              "answer": "c",
+              "explanation": "The rungs are base pairs (A–T and C–G) held by hydrogen bonds. Sugar and phosphate make the sides, which is the part students often mix up."
+            }
+          ],
+          "shortAnswer": "Explain how the base pairing rule lets you figure out one strand of DNA if you know the other."
+        }
+      ]
+    },
+    {
+      "target": "U7.LT1",
+      "mode": "do",
+      "title": "Do: flip the DNA cards, then use Chargaff's rule",
+      "description": "Flashcards with a 3-question self-quiz, then a base-percentage problem one step at a time.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: the parts of DNA",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Nucleotide",
+                "back": "The building block of DNA: a phosphate, a deoxyribose sugar and a nitrogen base."
+              },
+              {
+                "id": "k2",
+                "front": "Deoxyribose",
+                "back": "The sugar in DNA. It alternates with phosphate to make the sides of the ladder."
+              },
+              {
+                "id": "k3",
+                "front": "The four nitrogen bases",
+                "back": "Adenine (A), thymine (T), cytosine (C) and guanine (G)."
+              },
+              {
+                "id": "k4",
+                "front": "Base pairing rule",
+                "back": "A pairs with T, and C pairs with G. They form the rungs of the ladder."
+              },
+              {
+                "id": "k5",
+                "front": "Hydrogen bonds",
+                "back": "The weak bonds that hold the two bases of each rung together, so the strands can unzip."
+              },
+              {
+                "id": "k6",
+                "front": "Double helix",
+                "back": "The shape of DNA: two strands twisted like a spiral staircase."
+              },
+              {
+                "id": "k7",
+                "front": "Watson, Crick and Franklin",
+                "back": "Franklin's X-ray picture showed a helix. Watson and Crick used it to build the double helix model in 1953."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "Which base pairs with cytosine (C) in DNA?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Guanine (G)"
+                },
+                {
+                  "id": "b",
+                  "text": "Adenine (A)"
+                },
+                {
+                  "id": "c",
+                  "text": "Thymine (T)"
+                }
+              ],
+              "answer": "a",
+              "explanation": "C always pairs with G, and A always pairs with T. Pairing C with T is the common mix-up."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "What makes up the sides (the backbone) of the DNA ladder?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Pairs of nitrogen bases"
+                },
+                {
+                  "id": "b",
+                  "text": "Hydrogen bonds"
+                },
+                {
+                  "id": "c",
+                  "text": "Alternating sugar and phosphate"
+                }
+              ],
+              "answer": "c",
+              "explanation": "The sides are sugar, phosphate, sugar, phosphate. The bases are the rungs, and hydrogen bonds hold the rungs together."
+            },
+            {
+              "id": "d3",
+              "kind": "fill_blank",
+              "prompt": "One DNA strand reads TTAG. Type the bases on the matching strand.",
+              "answer": ["AATC", "A A T C", "A-A-T-C"],
+              "explanation": "T→A, T→A, A→T, G→C, so TTAG pairs with AATC. Writing U instead of T is the common mistake: U is only in RNA."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: base percentages",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "A DNA sample is 22% adenine (A). Find the percentage of thymine (T), cytosine (C) and guanine (G).",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "A always pairs with T, so there is the same amount of each. T = 22%."
+              },
+              {
+                "id": "s2",
+                "text": "Add A and T: 22% + 22% = 44%. All four bases add up to 100%, so C and G share what is left: 100% − 44% = 56%."
+              },
+              {
+                "id": "s3",
+                "text": "C always pairs with G, so they are equal. Split 56% in half: C = 28% and G = 28%."
+              },
+              {
+                "id": "s4",
+                "text": "Check your work: 22 + 22 + 28 + 28 = 100. The answer is T = 22%, C = 28%, G = 28%."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "fill_blank",
+              "prompt": "Your turn: a sample is 35% thymine. What percent is adenine? Type a number.",
+              "answer": ["35", "35%"],
+              "explanation": "A pairs with T, so A = T = 35%. Subtracting from 100 (65) is the common mistake. That is the amount left for C and G together.",
+              "afterStepId": "s1"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "A sample is 18% cytosine. What percent is adenine?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "18%"
+                },
+                {
+                  "id": "b",
+                  "text": "32%"
+                },
+                {
+                  "id": "c",
+                  "text": "64%"
+                },
+                {
+                  "id": "d",
+                  "text": "82%"
+                }
+              ],
+              "answer": "b",
+              "explanation": "G = C = 18%, so C + G = 36%. That leaves 64% for A and T, and half is A: 32%. Picking 64% forgets to split the leftover in half.",
+              "afterStepId": "s4"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

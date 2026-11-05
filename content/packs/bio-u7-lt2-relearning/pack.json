@@ -1,0 +1,272 @@
+{
+  "name": "bio-u7-lt2-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "relearning": [
+    {
+      "target": "U7.LT2",
+      "mode": "read",
+      "title": "Read: how DNA copies itself",
+      "description": "A short reading with the zipper analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Unzip, match, repeat",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can model and explain the process of DNA replication.**\n\n**Think of a zipper.** Pull the zipper down and the two sides come apart. Now picture each loose side getting a brand-new matching side zipped onto it. You started with one zipper and end with two, and each one has one old side and one new side. That is DNA replication.\n\n**Why it happens.** Before a cell divides, it copies all of its DNA so each new cell gets a full set. Replication happens in the **nucleus** during the **S phase** of interphase.\n\n**Step 1: Unzip.** An enzyme called **helicase** breaks the weak hydrogen bonds between the bases, and the two strands separate.\n\n**Step 2: Match.** An enzyme called **DNA polymerase** reads each old strand and adds free nucleotides that follow the base pairing rule: **A with T** and **C with G**. Each old strand is the **template** (the pattern) for a new strand.\n\n**Step 3: Two copies.** The result is two DNA molecules that are exactly the same as the original. Each one has **one old strand and one new strand**, so replication is called **semi-conservative** (\"half saved\").\n\n**Worked example:** An old strand reads ATG CCA. DNA polymerase matches each base: A→T, T→A, G→C, C→G, C→G, A→T. The new strand reads **TAC GGT**."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "Which enzyme unzips DNA by breaking the hydrogen bonds between the bases?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "DNA polymerase"
+                },
+                {
+                  "id": "b",
+                  "text": "Helicase"
+                },
+                {
+                  "id": "c",
+                  "text": "Ligase"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Helicase unzips the strands. DNA polymerase comes next and builds the new strands. Mixing up these two jobs is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "fill_blank",
+              "prompt": "An old strand reads AGTCCA. Type the new strand DNA polymerase builds on it.",
+              "answer": ["TCAGGT", "TCA GGT", "T C A G G T"],
+              "explanation": "A→T, G→C, T→A, C→G, C→G, A→T gives TCAGGT. Using U is the common mistake: U is an RNA base and never goes into DNA."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Semi-conservative, ligase and mistakes",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Semi-conservative, one more time.** After replication, neither copy is \"all old\" or \"all new\". Each copy keeps one strand from the original and gets one new strand. Think of splitting a pair of shoes between two friends and buying each of them a new matching shoe.\n\n**More than one helper.** DNA is very long, so it unzips at many places at once. The Y-shaped spot where it is unzipping is the **replication fork**. On one side, DNA polymerase can only build in short pieces. An enzyme called **DNA ligase** glues those pieces into one strand.\n\n**Proofreading.** DNA polymerase checks its own work and fixes most wrong bases. A mistake that is not fixed becomes a **mutation** (that is LT4).\n\n**Worked example 2:** A short DNA molecule has the strands ATGCTA and TACGAT. Helicase unzips them. The old ATGCTA strand gets a new TACGAT partner, and the old TACGAT strand gets a new ATGCTA partner. You now have **two identical molecules**, each matching the original.\n\n**Worked example 3:** An old strand reads TTAGC. The new strand is **AATCG**.\n\n**Replication is not transcription.** Replication copies **all** the DNA into more DNA (using T). Transcription copies **one gene** into RNA (using U). That is LT3.\n\n**Watch out for:** putting U in a new DNA strand, saying one copy is all old and the other is all new, mixing up helicase (unzips) and DNA polymerase (builds), and forgetting that replication happens before the cell divides."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "After one round of replication, which statement describes the two DNA molecules?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Each molecule has one old strand and one new strand"
+                },
+                {
+                  "id": "b",
+                  "text": "One molecule is all old DNA and the other is all new DNA"
+                },
+                {
+                  "id": "c",
+                  "text": "Each molecule is a mix of old and new bases on both strands"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Replication is semi-conservative: each copy keeps one old strand as its template and gets one new strand. Thinking one copy is all old is the common mistake."
+            },
+            {
+              "id": "e2",
+              "kind": "fill_blank",
+              "prompt": "An old strand reads GGATC. Type the new strand that is built on it.",
+              "answer": ["CCTAG", "C C T A G", "C-C-T-A-G"],
+              "explanation": "G→C, G→C, A→T, T→A, C→G gives CCTAG. Writing U for the A pairing is the common mistake: new DNA uses T."
+            }
+          ],
+          "shortAnswer": "Explain why DNA replication is called semi-conservative."
+        }
+      ]
+    },
+    {
+      "target": "U7.LT2",
+      "mode": "do",
+      "title": "Do: replicate a strand step by step, then flip the enzyme cards",
+      "description": "A replication problem one step at a time, then flashcards with a 3-question self-quiz.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Worked problem: copy a DNA molecule",
+          "minutes": 4,
+          "body": {
+            "type": "worked_steps",
+            "problem": "A short DNA molecule has a top strand ATGCTA and a bottom strand TACGAT. Model how it replicates.",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "Unzip. Helicase breaks the hydrogen bonds between the base pairs, and the top strand (ATGCTA) and the bottom strand (TACGAT) come apart."
+              },
+              {
+                "id": "s2",
+                "text": "Build on the top strand. DNA polymerase adds matching nucleotides: A→T, T→A, G→C, C→G, T→A, A→T. The new strand is TACGAT."
+              },
+              {
+                "id": "s3",
+                "text": "Build on the bottom strand. T→A, A→T, C→G, G→C, A→T, T→A. The new strand is ATGCTA."
+              },
+              {
+                "id": "s4",
+                "text": "Check the result. There are now two molecules, and both are ATGCTA paired with TACGAT, just like the original. Each one has one old strand and one new strand."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "fill_blank",
+              "prompt": "Your turn: DNA polymerase is building on the old strand CATTG. Type the new strand.",
+              "answer": ["GTAAC", "G T A A C", "G-T-A-A-C"],
+              "explanation": "C→G, A→T, T→A, T→A, G→C gives GTAAC. Pairing A with U is the common mistake: DNA uses T, not U.",
+              "afterStepId": "s2"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Why is DNA replication called semi-conservative?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Only half of the DNA in the cell gets copied"
+                },
+                {
+                  "id": "b",
+                  "text": "Each new molecule keeps one old strand and gets one new strand"
+                },
+                {
+                  "id": "c",
+                  "text": "The cell saves energy by copying slowly"
+                }
+              ],
+              "answer": "b",
+              "explanation": "\"Semi-conservative\" means half saved: each copy saves one original strand. All of the DNA is copied, not half of it.",
+              "afterStepId": "s4"
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Flashcards: the replication crew",
+          "minutes": 6,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "DNA replication",
+                "back": "Copying all of a cell's DNA before the cell divides, in the nucleus during S phase."
+              },
+              {
+                "id": "k2",
+                "front": "Helicase",
+                "back": "The enzyme that unzips DNA by breaking the hydrogen bonds between the bases."
+              },
+              {
+                "id": "k3",
+                "front": "DNA polymerase",
+                "back": "The enzyme that adds matching nucleotides to build each new strand, and proofreads its work."
+              },
+              {
+                "id": "k4",
+                "front": "DNA ligase",
+                "back": "The enzyme that glues short pieces of new DNA into one continuous strand."
+              },
+              {
+                "id": "k5",
+                "front": "Template strand",
+                "back": "An old strand used as the pattern for building a new strand."
+              },
+              {
+                "id": "k6",
+                "front": "Replication fork",
+                "back": "The Y-shaped spot where the DNA is being unzipped and copied."
+              },
+              {
+                "id": "k7",
+                "front": "Semi-conservative",
+                "back": "Each new DNA molecule has one old strand and one new strand."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "Which enzyme adds new nucleotides to build the new strand?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Helicase"
+                },
+                {
+                  "id": "b",
+                  "text": "DNA ligase"
+                },
+                {
+                  "id": "c",
+                  "text": "DNA polymerase"
+                }
+              ],
+              "answer": "c",
+              "explanation": "DNA polymerase builds the new strand. Helicase only unzips, and ligase only glues pieces together."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "When in the cell cycle does DNA replication happen?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "During S phase, before the cell divides"
+                },
+                {
+                  "id": "b",
+                  "text": "After the cell has already divided"
+                },
+                {
+                  "id": "c",
+                  "text": "Only when the cell is making a protein"
+                }
+              ],
+              "answer": "a",
+              "explanation": "The DNA is copied in S phase of interphase so each new cell gets a full set. Making a protein uses transcription, not replication."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "What does DNA ligase do?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "It unzips the two strands"
+                },
+                {
+                  "id": "b",
+                  "text": "It turns DNA into RNA"
+                },
+                {
+                  "id": "c",
+                  "text": "It glues short pieces of new DNA into one strand"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Ligase seals the gaps between short pieces of new DNA. Unzipping is helicase's job."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

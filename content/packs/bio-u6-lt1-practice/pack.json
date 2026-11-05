@@ -1,0 +1,17 @@
+{
+  "name": "bio-u6-lt1-practice",
+  "revision": 3,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "unit": "Unit 6 · Genetics & Human Heredity",
+  "bank": "Bio · U6.LT1 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U6.LT1 Practice: Punnett squares",
+    "description": "Practice setting up Punnett squares for one trait, turning genotypes into phenotypes, finding genotypic and phenotypic ratios, percents and expected counts, and working backward from offspring to parents.",
+    "drawCount": 10,
+    "targets": [
+      "U6.LT1"
+    ]
+  }
+}

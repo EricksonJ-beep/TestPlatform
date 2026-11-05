@@ -1,0 +1,15 @@
+{
+  "name": "bio-u5-lt1-practice",
+  "revision": 3,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "unit": "Unit 5 · Cell Growth & Division",
+  "bank": "Bio · U5.LT1 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U5.LT1 Practice: Mitosis",
+    "description": "Practice modeling mitosis: the cell cycle and interphase, the phases of mitosis and cytokinesis, chromosome and chromatid counts, onion root tip lab data, and why mitosis matters for growth, repair, development, and asexual reproduction.",
+    "drawCount": 10,
+    "targets": ["U5.LT1"]
+  }
+}

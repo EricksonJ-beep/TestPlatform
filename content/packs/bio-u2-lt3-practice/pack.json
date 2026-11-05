@@ -1,0 +1,15 @@
+{
+  "name": "bio-u2-lt3-practice",
+  "revision": 3,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "unit": "Unit 2 · Biochemistry",
+  "bank": "Bio · U2.LT3 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U2.LT3 Practice: pH, acids, and bases",
+    "description": "Practice reading the pH scale, comparing H⁺ and OH⁻, using the 10-times rule, indicators, neutralization, and buffers, and explaining how pH affects enzymes, the human body, and ecosystems.",
+    "drawCount": 10,
+    "targets": ["U2.LT3"]
+  }
+}

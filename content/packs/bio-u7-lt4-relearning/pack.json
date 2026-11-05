@@ -1,0 +1,246 @@
+{
+  "name": "bio-u7-lt4-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "relearning": [
+    {
+      "target": "U7.LT4",
+      "mode": "read",
+      "title": "Read: predicting what a mutation does",
+      "description": "A short reading with the three-letter-word sentence analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Swaps and shifts",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can predict the effects of mutations on DNA.**\n\n**Think of a sentence made only of three-letter words:** THE CAT ATE THE RAT. Each word is like a codon. Now make one mistake.\n\n**Swap one letter:** THE CAT ATE THE **H**AT. One word changes, and the rest still reads fine. This is a **substitution** (also called a **point mutation**): one base is swapped for another.\n\n**Delete one letter** (the C in CAT): THE ATA TET HER AT. Every word after the mistake turns into nonsense, because the reading groups shifted. This is a **frameshift mutation**, caused by an **insertion** (adding a base) or a **deletion** (removing a base).\n\n**A mutation** is any change in the DNA sequence. Because DNA → mRNA → protein, a change in the DNA can change the protein.\n\n**What a substitution can do:**\n- **Silent:** the new codon codes for the same amino acid, so the protein does not change.\n- **Missense:** one amino acid changes.\n- **Nonsense:** the new codon is a stop codon, so the protein is cut short.\n\n**Worked example (sickle cell):** Part of the normal mRNA for hemoglobin is AUG GAG AAA = Met – Glu – Lys. A substitution changes GAG to **GUG**. Codons: GAG = Glu, GUG = Val. The chain becomes **Met – Val – Lys**. One amino acid changed, and that one change makes red blood cells bend into a sickle shape."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "The mRNA AUG UUU GGA changes to AUG UUC GGA. Both UUU and UUC code for Phe. What happens to the protein?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Nothing changes (a silent mutation)"
+                },
+                {
+                  "id": "b",
+                  "text": "One amino acid changes"
+                },
+                {
+                  "id": "c",
+                  "text": "The protein stops early"
+                }
+              ],
+              "answer": "a",
+              "explanation": "UUU and UUC both code for Phe, so the chain is still Met – Phe – Gly. A change in the DNA does not always change the protein."
+            },
+            {
+              "id": "c2",
+              "kind": "multiple_choice",
+              "prompt": "Which mutation will most likely change the protein the most?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Swapping one base near the end of the gene"
+                },
+                {
+                  "id": "b",
+                  "text": "Swapping one base that makes a silent mutation"
+                },
+                {
+                  "id": "c",
+                  "text": "Deleting one base near the start of the gene"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Deleting a base causes a frameshift, so every codon after it changes. Near the start, that is almost the whole protein. A swap changes one codon at most."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Frameshifts, chromosomes and causes",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Worked example 2 (frameshift):** The mRNA AUG GCA UUA CGA codes for Met – Ala – Leu – Arg. Delete the G at the start of the second codon. The bases now regroup as AUG CAU UAC GA. Codons: CAU = His, UAC = Tyr. The chain becomes **Met – His – Tyr**, and every amino acid after the deletion changed.\n\n**Worked example 3 (nonsense):** The mRNA AUG UAC GGA codes for Met – Tyr – Gly. A substitution changes UAC to **UAA**, a stop codon. The chain is now just **Met**, then stop. A protein cut that short usually can't do its job.\n\n**Inserting or deleting three bases** adds or removes one whole codon. The reading frame stays the same, so it is not a frameshift. Only one amino acid is added or lost.\n\n**Chromosomal mutations** change big pieces of a chromosome: a **deletion** loses a piece, a **duplication** copies a piece, an **inversion** flips a piece backward, and a **translocation** moves a piece to a different chromosome.\n\n**What causes mutations?** Some are copying mistakes during DNA replication. Others come from **mutagens**: UV light from the sun, X-rays, and chemicals like those in cigarette smoke.\n\n**Effects can be harmful, neutral or helpful.** Most are neutral or harmful, but some help an organism survive, and those add the variation that evolution works on.\n\n**Watch out for:** thinking every mutation changes the protein (silent ones do not), thinking a frameshift only changes one amino acid, calling a three-base insertion a frameshift, and thinking all mutations are harmful."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "The mRNA AUG AAA UGG changes to AUG AAA UGA. UGG = Trp and UGA = stop. What kind of mutation is this?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Silent: the protein stays the same"
+                },
+                {
+                  "id": "b",
+                  "text": "Nonsense: the protein is cut short"
+                },
+                {
+                  "id": "c",
+                  "text": "Missense: one amino acid is swapped"
+                }
+              ],
+              "answer": "b",
+              "explanation": "UGA is a stop codon, so the chain ends after Met – Lys. A substitution that makes a stop codon is a nonsense mutation. Calling it missense misses that no amino acid takes Trp's place."
+            },
+            {
+              "id": "e2",
+              "kind": "fill_blank",
+              "prompt": "Inserting or deleting one base shifts how every codon after it is read. What is this kind of mutation called?",
+              "answer": [
+                "frameshift",
+                "frameshift mutation",
+                "frame shift",
+                "frame-shift",
+                "frame shift mutation",
+                "frame-shift mutation"
+              ],
+              "explanation": "It is a frameshift mutation, because the three-base reading frame shifts. A substitution changes only one codon, so it is not a frameshift."
+            }
+          ],
+          "shortAnswer": "Explain why a deletion of one base usually changes a protein more than a substitution of one base."
+        }
+      ]
+    },
+    {
+      "target": "U7.LT4",
+      "mode": "do",
+      "title": "Do: find the mutation and predict its effect",
+      "description": "Two worked problems that reveal one step at a time: a substitution, then a frameshift.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Worked problem: a substitution",
+          "minutes": 4,
+          "body": {
+            "type": "worked_steps",
+            "problem": "Normal DNA: TAC CTT TTT ACT. Mutated DNA: TAC CAT TTT ACT. Predict the effect on the protein. Codons you need: AUG = Met, GAA = Glu, GUA = Val, AAA = Lys, UGA = stop.",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "Find the difference. Compare base by base: the second triplet changed from CTT to CAT. One T was swapped for an A, so this is a substitution."
+              },
+              {
+                "id": "s2",
+                "text": "Transcribe both strands (DNA A → U, T → A, C → G, G → C). Normal mRNA: AUG GAA AAA UGA. Mutated mRNA: AUG GUA AAA UGA."
+              },
+              {
+                "id": "s3",
+                "text": "Translate both. Normal: Met – Glu – Lys, then stop. Mutated: Met – Val – Lys, then stop."
+              },
+              {
+                "id": "s4",
+                "text": "Predict the effect. One amino acid changed (Glu → Val), so this is a missense mutation. The protein may fold into a different shape and work poorly, like hemoglobin in sickle cell disease."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "fill_blank",
+              "prompt": "Your turn: transcribe the mutated DNA triplet CAT into mRNA.",
+              "answer": ["GUA", "G U A", "G-U-A"],
+              "explanation": "C→G, A→U, T→A gives GUA. Writing GTA is the common mistake: mRNA uses U, not T.",
+              "afterStepId": "s2"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "A substitution changes the codon GAA (Glu) to GAG (also Glu). What is the effect on the protein?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "No change: it is a silent mutation"
+                },
+                {
+                  "id": "b",
+                  "text": "One amino acid changes: it is a missense mutation"
+                },
+                {
+                  "id": "c",
+                  "text": "Every amino acid after it changes: it is a frameshift"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Both codons code for Glu, so the protein is the same. A substitution never shifts the reading frame, so it can't be a frameshift.",
+              "afterStepId": "s4"
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: a deletion",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "Normal DNA: TAC GGT AAT CCG ATT. A mutation deletes the first G of the second triplet. Predict the effect. Codons you need: AUG = Met, CCA = Pro, UUA = Leu, GGC = Gly, CAU = His, UAA, UAG and UGA = stop.",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "Translate the normal gene first. mRNA: AUG CCA UUA GGC UAA. Protein: Met – Pro – Leu – Gly, then stop."
+              },
+              {
+                "id": "s2",
+                "text": "Delete the base. The DNA is now TACGTAATCCGATT. Regroup it in threes from the start: TAC GTA ATC CGA TT."
+              },
+              {
+                "id": "s3",
+                "text": "Transcribe the mutated DNA: AUG CAU UAG GCU AA."
+              },
+              {
+                "id": "s4",
+                "text": "Translate: AUG = Met, CAU = His, and UAG is a stop codon. The protein is just Met – His, then stop."
+              },
+              {
+                "id": "s5",
+                "text": "Predict the effect. Removing one base shifted the reading frame, so every codon after it changed, and a stop codon showed up early. This frameshift makes a short, broken protein."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "fill_blank",
+              "prompt": "Your turn: in the mutated DNA TAC GTA ATC, transcribe the third triplet ATC into mRNA.",
+              "answer": ["UAG", "U A G", "U-A-G"],
+              "explanation": "A→U, T→A, C→G gives UAG, which is a stop codon. Writing TAG is the common mistake: mRNA uses U.",
+              "afterStepId": "s3"
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "Which one-base mutation near the start of a gene would most likely cause the least harm?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Deleting one base"
+                },
+                {
+                  "id": "b",
+                  "text": "Substituting one base"
+                },
+                {
+                  "id": "c",
+                  "text": "Inserting one base"
+                }
+              ],
+              "answer": "b",
+              "explanation": "A substitution changes one codon at most, and it might even be silent. Deleting or inserting one base causes a frameshift that changes every codon after it.",
+              "afterStepId": "s5"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

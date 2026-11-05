@@ -1,0 +1,271 @@
+{
+  "name": "bio-u4-lt4-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "relearning": [
+    {
+      "target": "U4.LT4",
+      "mode": "read",
+      "title": "Read: designing a photosynthesis experiment",
+      "description": "A short reading with the fair-race analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Change one thing, measure one thing",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can design an experiment to investigate how factors affect photosynthesis.**\n\n**Think of a fair race.** To find out if new shoes make you faster, you run the same track, on the same day, for the same distance, and change only the shoes. If you also switched tracks, you couldn't tell which change made the difference. A good experiment changes just one thing.\n\n**The parts (from Unit 1):**\n**Independent variable (IV):** the one factor you change on purpose.\n**Dependent variable (DV):** what you measure.\n**Constants:** everything you keep the same.\n**Control group:** the normal setup you compare the others to.\n**Hypothesis:** If..., then..., because...\n\n**Factors that affect photosynthesis:** light intensity, light color, the amount of CO₂, and temperature.\n\n**How to measure photosynthesis (the DV):** count the O₂ bubbles an underwater plant like Elodea gives off per minute, or time how long leaf disks take to float (they float as they fill with O₂).\n\n**Worked example:** Does light intensity affect photosynthesis? IV: lamp distance (10, 20 and 30 cm). DV: O₂ bubbles per minute. Constants: same type and size of plant, same water temperature, same amount of baking soda (the CO₂ source), same counting time. Control: a plant in the dark. Hypothesis: If the lamp is moved closer, then the plant will give off more bubbles, because more light gives more energy for photosynthesis."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "A student tests how lamp distance affects the number of O₂ bubbles from Elodea. What is the dependent variable?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The lamp distance"
+                },
+                {
+                  "id": "b",
+                  "text": "The number of O₂ bubbles"
+                },
+                {
+                  "id": "c",
+                  "text": "The type of plant"
+                }
+              ],
+              "answer": "b",
+              "explanation": "The DV is what you measure: the bubbles. Lamp distance is the IV, the factor changed on purpose. Swapping the two is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "multiple_choice",
+              "prompt": "In that same experiment, which should be kept constant?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The lamp distance"
+                },
+                {
+                  "id": "b",
+                  "text": "The water temperature"
+                },
+                {
+                  "id": "c",
+                  "text": "The number of bubbles"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Water temperature should stay the same so it can't affect the results. Lamp distance is the IV and the bubbles are the DV, so neither is a constant."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Reading results and limiting factors",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Repeat trials.** Run each setup at least 3 times and average the results. One trial can be off by chance or by a mistake.\n\n**Temperature makes an upside-down U.** Photosynthesis uses enzymes. The rate rises as the water warms up to the **optimum** (best) temperature, then drops when it gets too hot because the enzymes stop working well.\n\n**Worked example 2:** A student's data: 0°C → 0, 10°C → 100, 25°C → 350, 40°C → 50. The rate is highest at 25°C, so that is the optimum. At 40°C it is too hot.\n\n**Limiting factor:** the factor in shortest supply holds back the whole rate, like the slowest worker on an assembly line. A plant with plenty of water and CO₂ at sunset is limited by **light**. Adding more CO₂ won't help until there is more light.\n\n**Light color:** chlorophyll absorbs red and blue best, so a plant under green light photosynthesizes the least.\n\n**Worked example 3:** Testing CO₂. IV: grams of baking soda in the water (0 g, 1 g, 2 g). DV: number of leaf disks floating after 10 minutes. Constants: same light, temperature, water volume and leaf disk size. The 0 g cup is the control.\n\n**Watch out for:** changing more than one thing at once, mixing up the IV (what you change) and the DV (what you measure), doing only one trial, and a lamp so close that it heats the water, which secretly changes the temperature too."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "A plant has plenty of water and CO₂, but the sun is setting. What is the limiting factor for photosynthesis?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Water"
+                },
+                {
+                  "id": "b",
+                  "text": "CO₂"
+                },
+                {
+                  "id": "c",
+                  "text": "Light intensity"
+                }
+              ],
+              "answer": "c",
+              "explanation": "The plant has enough water and CO₂, so the factor in short supply is light. Picking CO₂ is the common mistake: adding more of something it already has won't raise the rate."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "A student puts plant A under a bright lamp in a warm room and plant B under a dim lamp in a cold room. Why is this a poor experiment?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "It changes two variables, so you can't tell which one caused a difference"
+                },
+                {
+                  "id": "b",
+                  "text": "It has no dependent variable"
+                },
+                {
+                  "id": "c",
+                  "text": "Plants can't be tested indoors"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Light and temperature both changed, so any difference could come from either one. A fair test changes only the IV and keeps everything else constant."
+            }
+          ],
+          "shortAnswer": "Design a quick experiment to test whether light color affects photosynthesis. Name your IV, your DV, two constants and your hypothesis."
+        }
+      ]
+    },
+    {
+      "target": "U4.LT4",
+      "mode": "do",
+      "title": "Do: design an experiment, then read the data",
+      "description": "Two worked problems shown one step at a time: designing a temperature experiment, then reading light-intensity results.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Worked problem: design a temperature experiment",
+          "minutes": 4,
+          "body": {
+            "type": "worked_steps",
+            "problem": "Design an experiment to test how temperature affects the rate of photosynthesis in Elodea.",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "**Question and IV:** Does temperature affect photosynthesis? The IV is the water temperature: 10°C, 20°C, 30°C and 40°C."
+              },
+              {
+                "id": "s2",
+                "text": "**DV:** the rate of photosynthesis, measured as O₂ bubbles per minute."
+              },
+              {
+                "id": "s3",
+                "text": "**Constants:** the same type and size of Elodea, the same lamp at the same distance, the same amount of baking soda, the same volume of water, and the same counting time."
+              },
+              {
+                "id": "s4",
+                "text": "**Control:** the room-temperature setup (20°C), the normal condition you compare the others to."
+              },
+              {
+                "id": "s5",
+                "text": "**Hypothesis and trials:** If the water temperature increases from 10°C to 30°C, then the bubble rate will increase, because the enzymes for photosynthesis work faster when warmer. Run 3 trials at each temperature and average them."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: which of these does NOT belong on the constants list for this experiment?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The lamp distance"
+                },
+                {
+                  "id": "b",
+                  "text": "The water temperature"
+                },
+                {
+                  "id": "c",
+                  "text": "The amount of baking soda"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Water temperature is the IV, so it changes on purpose. Everything else stays the same. Listing the IV as a constant is the common mistake.",
+              "afterStepId": "s3"
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "Why run 3 trials at each temperature?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "To make the results more reliable"
+                },
+                {
+                  "id": "b",
+                  "text": "To test more independent variables"
+                },
+                {
+                  "id": "c",
+                  "text": "So you don't need a control"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Repeating trials shows whether the results are consistent, since one trial could be off by chance. It doesn't add variables or replace the control.",
+              "afterStepId": "s5"
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: read the light data",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "A student counted O₂ bubbles per minute from Elodea with a lamp at different distances. 10 cm: 30 bubbles. 20 cm: 18. 30 cm: 9. 40 cm: 4. In the dark: 0. What do the results show?",
+            "steps": [
+              {
+                "id": "t1",
+                "text": "**Name the variables.** IV: lamp distance (closer means brighter light). DV: bubbles per minute. The dark setup is the control."
+              },
+              {
+                "id": "t2",
+                "text": "**Find the pattern.** As the lamp moves from 40 cm to 10 cm, the bubbles rise from 4 to 30. More light, more photosynthesis."
+              },
+              {
+                "id": "t3",
+                "text": "**Check the control.** In the dark there were 0 bubbles, so the bubbles come from light-powered photosynthesis, not from something else."
+              },
+              {
+                "id": "t4",
+                "text": "**Conclusion:** light intensity affects the rate of photosynthesis. The closer (brighter) the lamp, the faster the rate. This supports the hypothesis \"If light intensity increases, then the bubble rate will increase.\""
+              },
+              {
+                "id": "t5",
+                "text": "**Next step:** if moving the lamp even closer stops raising the rate, light is no longer the limiting factor; something else, like CO₂ or temperature, is. A very close lamp can also heat the water, so keep the temperature constant."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "fill_blank",
+              "prompt": "Your turn: how many more bubbles per minute were there at 10 cm than at 30 cm? Type a number.",
+              "answer": ["21", "twenty-one", "twenty one", "21 bubbles"],
+              "explanation": "30 − 9 = 21 bubbles per minute. Using the 20 cm row (18) instead of the 30 cm row is the common slip, so read the right row.",
+              "afterStepId": "t2"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "The student moves the lamp to 5 cm, and the bubble count stays at 30. What is the best explanation?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Light is no longer the limiting factor; another factor, like CO₂, is"
+                },
+                {
+                  "id": "b",
+                  "text": "The plant has stopped photosynthesizing"
+                },
+                {
+                  "id": "c",
+                  "text": "The bubble count has become the independent variable"
+                }
+              ],
+              "answer": "a",
+              "explanation": "The rate stopped rising even with more light, so something else is now in short supply. The plant is still making 30 bubbles, so it hasn't stopped.",
+              "afterStepId": "t5"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

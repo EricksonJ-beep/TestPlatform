@@ -1,0 +1,318 @@
+{
+  "name": "bio-u2-lt2-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "relearning": [
+    {
+      "target": "U2.LT2",
+      "mode": "read",
+      "title": "Read: why water is special",
+      "description": "A short reading with the tiny-magnets analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Polar water and hydrogen bonds",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can explain how water's structure gives it unique properties that support life.**\n\n**Think of tiny magnets.** Each magnet has two ends, and the opposite ends of two magnets snap together. A water molecule is like a tiny magnet. Its oxygen end is slightly negative and its hydrogen ends are slightly positive, so water molecules line up and stick to each other: the positive end of one next to the negative end of the next.\n\n**The structure.** A water molecule (H₂O) is one oxygen atom bonded to two hydrogen atoms by **covalent bonds**, in a bent shape. Oxygen pulls the shared electrons closer to itself. That makes the oxygen end **slightly negative** and the hydrogen ends **slightly positive**. A molecule with charged ends like this is **polar**.\n\n**Hydrogen bonds.** A **hydrogen bond** is the weak attraction between the slightly positive hydrogen of one water molecule and the slightly negative oxygen of a **different** water molecule. One hydrogen bond is weak, but billions of them together are strong. Almost every special property of water comes from them.\n\n**Worked example:** Why can you put many drops of water on a penny before it spills? Water is polar, so the molecules form hydrogen bonds with each other. Water sticking to water is called **cohesion**. Cohesion pulls the surface molecules tight, like a stretchy skin called **surface tension**, so the water domes up into a bubble shape instead of running off."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "What makes a water molecule polar?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "It is made of 3 atoms"
+                },
+                {
+                  "id": "b",
+                  "text": "It has a slightly negative end and slightly positive ends"
+                },
+                {
+                  "id": "c",
+                  "text": "It is a liquid at room temperature"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Polar means the molecule has charged ends: oxygen is slightly negative and the hydrogens are slightly positive. The number of atoms and being a liquid don't make a molecule polar."
+            },
+            {
+              "id": "c2",
+              "kind": "multiple_choice",
+              "prompt": "Where do hydrogen bonds form?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Between the oxygen and a hydrogen inside the same water molecule"
+                },
+                {
+                  "id": "b",
+                  "text": "Between the two hydrogens inside one water molecule"
+                },
+                {
+                  "id": "c",
+                  "text": "Between the hydrogen of one water molecule and the oxygen of a nearby water molecule"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Hydrogen bonds are attractions between different water molecules. The bonds inside one molecule, holding the hydrogens to the oxygen, are covalent bonds. Mixing up the two is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Water's properties and why life needs them",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Cohesion:** water sticks to water. It gives water surface tension, so some insects can walk on a pond.\n\n**Adhesion:** water sticks to other substances, like glass or the walls of a plant's tubes. Adhesion and cohesion together cause **capillary action**: water climbs up thin tubes, which is how water rises from the roots to the leaves of a plant.\n\n**High specific heat:** water takes a lot of energy to change temperature, because hydrogen bonds must be broken before the molecules can speed up. Lakes and oceans warm and cool slowly, and your body (about 60% water) stays near 37 °C.\n\n**Cooling by evaporation:** water needs a lot of heat to evaporate, so sweat pulls heat away from your skin as it dries.\n\n**Ice floats:** when water freezes, hydrogen bonds lock the molecules into an open pattern, farther apart than in liquid water. Ice is less dense, so it floats and forms a layer that insulates the water below.\n\n**Universal solvent:** water's charged ends surround and pull apart many substances, like salt and sugar. That's how blood and the cytoplasm of cells carry dissolved materials. Water does not dissolve nonpolar things like oil.\n\n**Worked example 2: why salt dissolves.** Salt is made of Na⁺ and Cl⁻ ions. The slightly negative oxygen ends of water crowd around Na⁺, and the slightly positive hydrogen ends crowd around Cl⁻. The water pulls the ions apart, one by one.\n\n**Watch out for:** mixing up cohesion (water to water) and adhesion (water to something else), calling the bonds inside a water molecule hydrogen bonds (they are covalent), thinking water dissolves everything, and thinking ice is denser than liquid water."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "A stalk of celery is set in a cup of colored water, and the color slowly moves up the stalk. Which two properties work together to do this?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Adhesion and cohesion"
+                },
+                {
+                  "id": "b",
+                  "text": "High specific heat and ice floating"
+                },
+                {
+                  "id": "c",
+                  "text": "Evaporation and the universal solvent"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Adhesion pulls water up the walls of the celery's thin tubes, and cohesion pulls more water along behind it. Together that is capillary action. Naming only one of the two is the common mistake."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "On a hot, sunny afternoon, the sand on a beach is burning hot, but the lake water is still cool. Which property of water explains this?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Cohesion"
+                },
+                {
+                  "id": "b",
+                  "text": "High specific heat"
+                },
+                {
+                  "id": "c",
+                  "text": "Ice is less dense than water"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Water needs a lot of energy to change temperature, so the lake warms much more slowly than the sand. Cohesion is water sticking to water, which doesn't explain temperature."
+            }
+          ],
+          "shortAnswer": "Pick one property of water. Explain how hydrogen bonds cause it and how it helps living things."
+        }
+      ]
+    },
+    {
+      "target": "U2.LT2",
+      "mode": "do",
+      "title": "Do: flip the properties, then link structure to survival",
+      "description": "Flashcards with a 3-question self-quiz, then a worked problem one step at a time.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: water's properties",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Polar",
+                "back": "A molecule with charged ends. In water, oxygen is slightly negative and the hydrogens are slightly positive."
+              },
+              {
+                "id": "k2",
+                "front": "Hydrogen bond",
+                "back": "A weak attraction between the hydrogen of one water molecule and the oxygen of another water molecule."
+              },
+              {
+                "id": "k3",
+                "front": "Cohesion",
+                "back": "Water sticking to water. It causes surface tension."
+              },
+              {
+                "id": "k4",
+                "front": "Adhesion",
+                "back": "Water sticking to a different substance, like glass or the walls of a plant's tubes."
+              },
+              {
+                "id": "k5",
+                "front": "Capillary action",
+                "back": "Water climbing up a thin tube because of adhesion and cohesion together, like water rising in a plant stem."
+              },
+              {
+                "id": "k6",
+                "front": "High specific heat",
+                "back": "Water takes a lot of energy to change temperature, so lakes, oceans and your body stay steady."
+              },
+              {
+                "id": "k7",
+                "front": "Universal solvent",
+                "back": "Water dissolves more substances than almost any other liquid, like salt and sugar, but not oil."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "You can fill a glass of water slightly above the rim before it spills. Which property makes this possible?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Cohesion"
+                },
+                {
+                  "id": "b",
+                  "text": "Adhesion"
+                },
+                {
+                  "id": "c",
+                  "text": "High specific heat"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Water molecules stick to each other (cohesion), which makes surface tension, so the water bulges above the rim. Adhesion is water sticking to something else. Mixing up cohesion and adhesion is the common mistake."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "Which one describes adhesion?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Water sticking to water"
+                },
+                {
+                  "id": "b",
+                  "text": "Water sticking to a different substance"
+                },
+                {
+                  "id": "c",
+                  "text": "Water dissolving salt"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Adhesion is water sticking to something that isn't water, like glass. Water sticking to water is cohesion. A trick: adhesion is like adhesive tape sticking to other things."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "Sugar dissolves easily when it is stirred into tea. Which property of water does this show?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Universal solvent"
+                },
+                {
+                  "id": "b",
+                  "text": "High specific heat"
+                },
+                {
+                  "id": "c",
+                  "text": "Capillary action"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Water's charged ends surround the sugar molecules and spread them through the tea. That is water acting as the universal solvent."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: from structure to survival",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "Explain, step by step, how water's structure lets fish in a Wisconsin lake survive the winter.",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "Start with the structure. Water is polar: the oxygen end is slightly negative and the hydrogen ends are slightly positive."
+              },
+              {
+                "id": "s2",
+                "text": "Polarity makes hydrogen bonds between neighboring water molecules."
+              },
+              {
+                "id": "s3",
+                "text": "As water freezes, hydrogen bonds lock the molecules into an open pattern, farther apart than in liquid water. So ice is less dense than liquid water."
+              },
+              {
+                "id": "s4",
+                "text": "Because ice is less dense, it floats and forms a layer on top of the lake."
+              },
+              {
+                "id": "s5",
+                "text": "The ice layer insulates the water below, so it stays liquid all winter, and the fish survive in it."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Hydrogen bonds also give water its high specific heat, which helps keep your body near 37 °C. Why do hydrogen bonds make water slow to warm up?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Energy must first break hydrogen bonds before the molecules can speed up"
+                },
+                {
+                  "id": "b",
+                  "text": "Hydrogen bonds make water nonpolar"
+                },
+                {
+                  "id": "c",
+                  "text": "Hydrogen bonds make water molecules very large"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Much of the heat added to water goes into breaking hydrogen bonds, so the temperature rises slowly. Hydrogen bonds come from water being polar, not nonpolar, and they don't change the size of the molecules.",
+              "afterStepId": "s2"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "If ice were MORE dense than liquid water, what would most likely happen to a lake in winter?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Ice would sink, and the lake could freeze solid from the bottom up"
+                },
+                {
+                  "id": "b",
+                  "text": "The lake would never freeze"
+                },
+                {
+                  "id": "c",
+                  "text": "The fish would stay warmer"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Dense ice would sink to the bottom, and new ice would keep forming on top and sinking. With no floating layer to insulate it, the lake could freeze solid and the fish would die.",
+              "afterStepId": "s4"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

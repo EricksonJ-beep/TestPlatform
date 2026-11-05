@@ -1,0 +1,304 @@
+{
+  "name": "bio-u6-lt3-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "relearning": [
+    {
+      "target": "U6.LT3",
+      "mode": "read",
+      "title": "Read: reading a pedigree",
+      "description": "A short reading with the detective's evidence board analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Symbols and the first clue",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can use a pedigree to demonstrate the patterns of inheritance human traits follow.**\n\n**Think of a family tree crossed with a detective's evidence board.** Each symbol is a person, each line is a relationship, and the pattern of shaded shapes is the clue that tells you how a trait is inherited.\n\n**The symbols:**\n**Square** = male. **Circle** = female.\n**Shaded** = has the trait (affected). **Unshaded** = doesn't have it.\n**Half-shaded** = carrier (has one recessive allele but doesn't show the trait).\n**Horizontal line** between a square and a circle = a couple (the parents).\n**Vertical line** down from the couple = leads to their children.\n**Roman numerals** (I, II, III) label the generations, oldest at the top.\n\n**Clue 1: a trait that skips a generation is recessive.** If two unaffected parents have an affected child, both parents must be carriers (Aa × Aa).\n\n**Worked example:** Generation I is an unshaded square and an unshaded circle. Generation II is their four children, and one of them, a daughter, is shaded. The trait shows up in a child but not in the parents, so it is **recessive**. The affected daughter is aa, and each parent is Aa."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "In a pedigree, a shaded square stands for...",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "An unaffected female"
+                },
+                {
+                  "id": "b",
+                  "text": "An affected male"
+                },
+                {
+                  "id": "c",
+                  "text": "A carrier female"
+                }
+              ],
+              "answer": "b",
+              "explanation": "A square is a male, and shading means affected. Circles are females, so reading a square as female is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "multiple_choice",
+              "prompt": "Two unaffected parents have an affected child. What does that tell you?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The trait is recessive, and both parents are carriers"
+                },
+                {
+                  "id": "b",
+                  "text": "The trait is dominant"
+                },
+                {
+                  "id": "c",
+                  "text": "The trait can't be genetic"
+                }
+              ],
+              "answer": "a",
+              "explanation": "The child got a recessive allele from each parent, so both parents are carriers (Aa). A dominant trait can't skip like this, because an affected child would need an affected parent."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Dominant, recessive or X-linked?",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Clue 2: dominant traits don't skip.** Every affected person has at least one affected parent. If two affected parents have an unaffected child, the trait must be **dominant**: both parents are Aa, and the child is aa.\n\n**Clue 3: X-linked recessive traits mostly affect males.** Look for many shaded squares and few or no shaded circles. An affected son usually has a carrier mother. An affected father gives his X to every daughter, so all his daughters are at least carriers, but he never passes the trait to his sons, because they get his Y.\n\n**Worked example 2:** In a pedigree for hemophilia, Generation III has three shaded squares and no shaded circles, and their mothers are unshaded. The pattern is X-linked recessive, and the mothers are carriers (X^{H}X^{h}).\n\n**Worked example 3 (predicting):** In the recessive pedigree from the first part, both parents are Aa. Their chance of another affected child comes from the Punnett square for Aa × Aa:\n\n$$\\begin{array}{c|cc} & \\mathrm{A} & \\mathrm{a} \\\\ \\hline \\mathrm{A} & \\mathrm{AA} & \\mathrm{Aa} \\\\ \\mathrm{a} & \\mathrm{Aa} & \\mathrm{aa} \\end{array}$$\n\n1 aa box out of 4 = **25%**.\n\n**Watch out for:** reading a square as a female, calling a trait dominant just because a lot of people have it (look at parents and children, not the count), forgetting that unshaded people can still be carriers, and thinking X-linked traits pass from father to son."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "Two affected parents have an unaffected child. Is the trait dominant or recessive?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Dominant"
+                },
+                {
+                  "id": "b",
+                  "text": "Recessive"
+                },
+                {
+                  "id": "c",
+                  "text": "You can't tell"
+                }
+              ],
+              "answer": "a",
+              "explanation": "If the trait were recessive, both affected parents would be aa and could only have aa (affected) children. An unaffected child means the parents are Aa, so the trait is dominant. Calling it recessive because it skipped a child is the common mistake."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "A pedigree shows a trait in 5 males and 0 females, passed down through unaffected mothers. Which pattern fits best?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Autosomal dominant"
+                },
+                {
+                  "id": "b",
+                  "text": "X-linked recessive"
+                },
+                {
+                  "id": "c",
+                  "text": "Codominance"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Mostly males affected, passed through unaffected (carrier) mothers, is the X-linked recessive pattern. A dominant trait wouldn't pass through unaffected people."
+            }
+          ],
+          "shortAnswer": "In a pedigree, an affected father and an unaffected mother have only unaffected children, but one of their daughters later has an affected son. Explain what pattern this suggests and what the daughter's genotype must be."
+        }
+      ]
+    },
+    {
+      "target": "U6.LT3",
+      "mode": "do",
+      "title": "Do: flip the symbols, then solve a pedigree",
+      "description": "Flashcards with a 3-question self-quiz, then a family pedigree solved one step at a time.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: pedigree symbols",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Square",
+                "back": "A male."
+              },
+              {
+                "id": "k2",
+                "front": "Circle",
+                "back": "A female."
+              },
+              {
+                "id": "k3",
+                "front": "Shaded shape",
+                "back": "A person who has the trait (affected)."
+              },
+              {
+                "id": "k4",
+                "front": "Half-shaded shape",
+                "back": "A carrier: has one recessive allele but doesn't show the trait."
+              },
+              {
+                "id": "k5",
+                "front": "Horizontal line between a square and a circle",
+                "back": "A couple: the two parents."
+              },
+              {
+                "id": "k6",
+                "front": "Vertical line coming down from a couple",
+                "back": "Leads to their children."
+              },
+              {
+                "id": "k7",
+                "front": "Roman numerals (I, II, III)",
+                "back": "The generations, with the oldest at the top."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "A half-shaded circle means...",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "A female carrier"
+                },
+                {
+                  "id": "b",
+                  "text": "An affected male"
+                },
+                {
+                  "id": "c",
+                  "text": "An unaffected male"
+                }
+              ],
+              "answer": "a",
+              "explanation": "A circle is a female, and half-shading means a carrier. Squares are males, which is the common mix-up."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "What do the Roman numerals on a pedigree label?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The generations"
+                },
+                {
+                  "id": "b",
+                  "text": "The number of children"
+                },
+                {
+                  "id": "c",
+                  "text": "The number of affected people"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Roman numerals label the generations, with I at the top. The people within a generation get regular numbers (1, 2, 3)."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "A vertical line comes down from the horizontal line between a square and a circle. Where does it lead?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "To the couple's children"
+                },
+                {
+                  "id": "b",
+                  "text": "To the couple's parents"
+                },
+                {
+                  "id": "c",
+                  "text": "To the couple's brothers and sisters"
+                }
+              ],
+              "answer": "a",
+              "explanation": "The horizontal line joins the couple, and the vertical line drops down to their children. Parents are drawn above, not below."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: solve a pedigree",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "A family pedigree for albinism: Generation I is an unaffected man (I-1) and an unaffected woman (I-2). Generation II is their children: II-1, an unaffected son; II-2, an affected daughter; and II-3, an unaffected daughter. What is the pattern, what are the genotypes, and what is the chance their next child is affected?",
+            "steps": [
+              {
+                "id": "t1",
+                "text": "**Look for skipping:** neither parent is affected, but a child is. The trait skipped a generation, so it is recessive."
+              },
+              {
+                "id": "t2",
+                "text": "**Rule out X-linked:** an affected daughter with an X-linked recessive trait (X^{a}X^{a}) would need an affected father, and I-1 is unaffected. So it is autosomal recessive."
+              },
+              {
+                "id": "t3",
+                "text": "**Genotypes:** II-2 is aa. She got one a from each parent, and both parents are unaffected, so I-1 and I-2 are both Aa."
+              },
+              {
+                "id": "t4",
+                "text": "**Predict with Aa × Aa:**\n\n$$\\begin{array}{c|cc} & \\mathrm{A} & \\mathrm{a} \\\\ \\hline \\mathrm{A} & \\mathrm{AA} & \\mathrm{Aa} \\\\ \\mathrm{a} & \\mathrm{Aa} & \\mathrm{aa} \\end{array}$$\n\n1 box of 4 is aa: a 25% chance the next child is affected."
+              },
+              {
+                "id": "t5",
+                "text": "**The unaffected children** (II-1 and II-3) could be AA or Aa. A pedigree often can't show who is a carrier until that person has children of their own."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: why can't this pedigree be X-linked recessive?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "An affected daughter would need an affected father, and her father is unaffected"
+                },
+                {
+                  "id": "b",
+                  "text": "X-linked traits never affect anyone in Generation II"
+                },
+                {
+                  "id": "c",
+                  "text": "Because the family has three children"
+                }
+              ],
+              "answer": "a",
+              "explanation": "A daughter gets one X from each parent, so an X-linked recessive daughter needs an X^{a} from dad, which would make him affected. Her father is unaffected, so the gene must be on an autosome.",
+              "afterStepId": "t2"
+            },
+            {
+              "id": "w2",
+              "kind": "fill_blank",
+              "prompt": "Your turn: what is the percent chance that the next child of I-1 and I-2 is a carrier (Aa)? Type a number.",
+              "answer": ["50", "50%", "50 %", "1/2", "0.5", ".5", "half", "50 percent"],
+              "explanation": "2 of the 4 boxes are Aa, so 50%. Answering 25% is the common mistake: that is the chance of aa (affected), not Aa.",
+              "afterStepId": "t4"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

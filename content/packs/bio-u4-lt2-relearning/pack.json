@@ -1,0 +1,264 @@
+{
+  "name": "bio-u4-lt2-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "relearning": [
+    {
+      "target": "U4.LT2",
+      "mode": "read",
+      "title": "Read: aerobic vs. anaerobic respiration",
+      "description": "A short reading with the two-jobs analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Same start, different finish",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can compare and contrast aerobic and anaerobic respiration.**\n\n**Think of two jobs.** You do the same first hour of work at both, but one job pays 36 dollars and the other pays 2 dollars. Aerobic respiration is the 36-dollar job. Anaerobic respiration is the 2-dollar job you take when the good one isn't open. **Oxygen** decides which job the cell gets.\n\n**Aerobic respiration** needs **oxygen**. It goes glycolysis → Krebs cycle → electron transport chain, mostly in the mitochondria, and makes about **36 ATP** per glucose. Products: CO₂ and H₂O.\n\n**Anaerobic respiration (fermentation)** happens **without oxygen**. Only glycolysis runs, in the cytoplasm, so it makes just **2 ATP** per glucose. Then fermentation turns the pyruvate into **lactic acid**, or into **alcohol and CO₂**, so glycolysis can keep going.\n\n**How they're alike:** both start with glycolysis, and both break down glucose to release energy.\n\n**Worked example:** During a hard sprint, your muscles use oxygen faster than your blood can bring it. The muscle cells switch to fermentation. They get a quick 2 ATP per glucose, and lactic acid builds up, which causes the burning feeling."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "What is missing when a cell uses anaerobic respiration?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Glucose"
+                },
+                {
+                  "id": "b",
+                  "text": "Oxygen"
+                },
+                {
+                  "id": "c",
+                  "text": "Water"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Anaerobic means without oxygen. Glucose is still needed, because both kinds break down glucose. Thinking anaerobic means no glucose is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "fill_blank",
+              "prompt": "Aerobic respiration makes about 36 ATP per glucose. How many ATP does anaerobic respiration make per glucose? Type a number.",
+              "answer": ["2", "two", "2 atp"],
+              "explanation": "Fermentation only runs glycolysis, which makes 2 ATP. 36 is the aerobic number; mixing the two up is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Two kinds of fermentation",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Lactic acid fermentation.** Your muscle cells and some bacteria do this. Pyruvate is turned into **lactic acid**. Bacteria use it to make yogurt and cheese. In your muscles, the buildup of lactic acid during hard exercise causes the burning feeling.\n\n**Alcoholic fermentation.** Yeast and some bacteria do this. Pyruvate becomes **ethyl alcohol** and **CO₂**. The CO₂ bubbles make bread rise and make the foam in the Yeast Lab.\n\n**Neither one uses oxygen, and both make only 2 ATP per glucose.**\n\n**Worked example 2:** Compare the ATP. 36 ÷ 2 = 18, so aerobic respiration gets about **18 times** more ATP from each glucose. That is why large, active organisms like humans rely mostly on aerobic respiration.\n\n**Worked example 3:** Bread dough rises in a warm spot. Which process? Yeast are fermenting sugar, so it's **alcoholic fermentation**. The CO₂ makes the bubbles, and the alcohol bakes off in the oven.\n\n**Side by side:**\nAerobic: needs oxygen, mitochondria, about 36 ATP, makes CO₂ + H₂O.\nAnaerobic: no oxygen, cytoplasm, 2 ATP, makes lactic acid (muscles) or alcohol + CO₂ (yeast).\n\n**Watch out for:** saying fermentation makes no ATP (it makes 2), saying human muscles make alcohol (they make lactic acid), forgetting that glycolysis is the shared first step, and thinking anaerobic means no glucose (it means no oxygen)."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "What do human muscle cells make during fermentation?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Ethyl alcohol"
+                },
+                {
+                  "id": "b",
+                  "text": "Lactic acid"
+                },
+                {
+                  "id": "c",
+                  "text": "Glucose"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Human muscles do lactic acid fermentation. Yeast make alcohol, and mixing the two up is the common mistake."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "Which is true of BOTH aerobic respiration and fermentation?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Both need oxygen"
+                },
+                {
+                  "id": "b",
+                  "text": "Both make about 36 ATP"
+                },
+                {
+                  "id": "c",
+                  "text": "Both start with glycolysis and break down glucose"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Both start with glycolysis and break down glucose for energy. Only aerobic respiration needs oxygen and makes about 36 ATP; fermentation makes 2."
+            }
+          ],
+          "shortAnswer": "A runner sprints hard for 30 seconds, then jogs slowly for 10 minutes. Explain which kind of respiration the leg muscles rely on most during each part, and why."
+        }
+      ]
+    },
+    {
+      "target": "U4.LT2",
+      "mode": "do",
+      "title": "Do: compare step by step, then flip real-life cards",
+      "description": "A side-by-side comparison revealed one step at a time, then flashcards on fermentation in real life.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Worked steps: compare them one feature at a time",
+          "minutes": 4,
+          "body": {
+            "type": "worked_steps",
+            "problem": "Compare aerobic and anaerobic respiration, one feature at a time.",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "**Oxygen.** Aerobic: needs oxygen. Anaerobic: no oxygen."
+              },
+              {
+                "id": "s2",
+                "text": "**First step.** Both start with glycolysis in the cytoplasm, which splits glucose into 2 pyruvate."
+              },
+              {
+                "id": "s3",
+                "text": "**Where it finishes.** Aerobic: pyruvate goes into the mitochondria for the Krebs cycle and the electron transport chain. Anaerobic: pyruvate stays in the cytoplasm and is fermented."
+              },
+              {
+                "id": "s4",
+                "text": "**ATP per glucose.** Aerobic: about 36. Anaerobic: 2."
+              },
+              {
+                "id": "s5",
+                "text": "**Products.** Aerobic: CO₂ and H₂O. Anaerobic: lactic acid (muscles and some bacteria), or ethyl alcohol and CO₂ (yeast)."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: which step do aerobic and anaerobic respiration share?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Krebs cycle"
+                },
+                {
+                  "id": "b",
+                  "text": "Glycolysis"
+                },
+                {
+                  "id": "c",
+                  "text": "Electron transport chain"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Both begin with glycolysis in the cytoplasm. The Krebs cycle and the electron transport chain only run when oxygen is present.",
+              "afterStepId": "s2"
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "A cell has glucose but no oxygen, and it makes CO₂ and alcohol. What is it doing?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Aerobic respiration"
+                },
+                {
+                  "id": "b",
+                  "text": "Lactic acid fermentation"
+                },
+                {
+                  "id": "c",
+                  "text": "Alcoholic fermentation"
+                }
+              ],
+              "answer": "c",
+              "explanation": "No oxygen plus alcohol and CO₂ means alcoholic fermentation, like yeast. CO₂ alone doesn't mean aerobic, since yeast fermentation makes CO₂ too. That is the common trap.",
+              "afterStepId": "s5"
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Flashcards: fermentation in real life",
+          "minutes": 6,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Yogurt and cheese",
+                "back": "Bacteria do lactic acid fermentation, turning milk sugar into lactic acid. No oxygen needed."
+              },
+              {
+                "id": "k2",
+                "front": "Burning muscles in a sprint",
+                "back": "Muscles run short of oxygen and switch to lactic acid fermentation. The lactic acid buildup causes the burn."
+              },
+              {
+                "id": "k3",
+                "front": "Bread rising",
+                "back": "Yeast do alcoholic fermentation. The CO₂ bubbles make the dough rise, and the alcohol bakes off."
+              },
+              {
+                "id": "k4",
+                "front": "Yeast Lab foam",
+                "back": "The bubbles are CO₂ from yeast breaking down sugar."
+              },
+              {
+                "id": "k5",
+                "front": "A long, slow jog",
+                "back": "Enough oxygen reaches the muscles, so they use aerobic respiration: about 36 ATP per glucose."
+              },
+              {
+                "id": "k6",
+                "front": "Why humans rely on aerobic respiration",
+                "back": "It gets about 18 times more ATP from each glucose: 36 vs. 2."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "Which process makes the bubbles that make bread dough rise?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Lactic acid fermentation"
+                },
+                {
+                  "id": "b",
+                  "text": "Alcoholic fermentation"
+                },
+                {
+                  "id": "c",
+                  "text": "Photosynthesis"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Yeast do alcoholic fermentation, which makes ethyl alcohol and CO₂. The CO₂ makes the bubbles. Lactic acid fermentation makes no gas, so picking it is the common mistake."
+            },
+            {
+              "id": "e2",
+              "kind": "fill_blank",
+              "prompt": "Aerobic respiration makes about 36 ATP per glucose and fermentation makes 2. How many times more ATP is that? Type a number.",
+              "answer": ["18", "eighteen", "18 times", "18x"],
+              "explanation": "36 ÷ 2 = 18. Subtracting (36 − 2 = 34) is the common mistake: \"how many times\" means divide."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

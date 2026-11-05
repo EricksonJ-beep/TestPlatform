@@ -1,0 +1,17 @@
+{
+  "name": "bio-u4-lt2-practice",
+  "revision": 3,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "unit": "Unit 4 · Cell Energy",
+  "bank": "Bio · U4.LT2 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U4.LT2 Practice: Aerobic vs. anaerobic respiration",
+    "description": "Practice comparing aerobic and anaerobic respiration: oxygen use, stages and where they happen, products, ATP yield and speed, alcoholic vs. lactic acid fermentation, real organisms and foods, exercise, and lab evidence.",
+    "drawCount": 10,
+    "targets": [
+      "U4.LT2"
+    ]
+  }
+}

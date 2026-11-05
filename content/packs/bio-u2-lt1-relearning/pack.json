@@ -1,0 +1,290 @@
+{
+  "name": "bio-u2-lt1-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "relearning": [
+    {
+      "target": "U2.LT1",
+      "mode": "read",
+      "title": "Read: atoms, molecules and bonds",
+      "description": "A short reading with the LEGO analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "From atoms to compounds",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can describe atoms, elements, molecules, compounds, and types of chemical bonds.**\n\n**Think of LEGO bricks.** One brick is an **atom**, the smallest unit. A bag of only red bricks is like an **element**: only one kind of atom. Snap two or more bricks together and you have a **molecule**. If the bricks you snapped together are different colors, it is a **compound**.\n\n**Inside an atom.** The **nucleus** in the center holds **protons** (positive charge) and **neutrons** (no charge). **Electrons** (negative charge) move in the space around the nucleus. The **atomic number** is the number of protons, and it decides which element the atom is. A neutral atom has the same number of electrons as protons.\n\n**Element:** a pure substance made of only one kind of atom, like carbon (C) or oxygen (O).\n**Molecule:** two or more atoms bonded together, like O₂ or H₂O.\n**Compound:** two or more **different** elements bonded together, like H₂O or CO₂.\n\nEvery compound is made of different elements, but not every molecule is a compound. O₂ is a molecule (two atoms bonded) but not a compound (only one element).\n\n**Worked example:** CO₂ has 1 carbon atom and 2 oxygen atoms bonded together, so it is a **molecule**. It has two different elements, so it is also a **compound**. Helium (He) is a single atom of one element, so it is an **element** only."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "Which one is a molecule but NOT a compound?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "CH₄"
+                },
+                {
+                  "id": "b",
+                  "text": "C₆H₁₂O₆"
+                },
+                {
+                  "id": "c",
+                  "text": "Cl₂"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Cl₂ is two chlorine atoms bonded together, so it is a molecule, but it has only one element, so it is not a compound. CH₄ and C₆H₁₂O₆ have different elements, so they are both. Thinking every molecule is a compound is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "fill_blank",
+              "prompt": "A neutral atom has 8 protons. How many electrons does it have? Type a number.",
+              "answer": ["8", "eight", "8 electrons"],
+              "explanation": "In a neutral atom the positive protons and negative electrons balance, so 8 protons means 8 electrons. Counting neutrons is the common mistake: they have no charge."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Ions and the two kinds of bonds",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Ions.** An atom that gains or loses electrons is no longer balanced, so it has a charge. It is now an **ion**. Lose electrons and it becomes **positive** (more protons than electrons). Gain electrons and it becomes **negative**. Its protons don't change, so it is still the same element.\n\n**Covalent bonds: sharing.** Think of two friends both holding the same rope. In a covalent bond, two atoms **share** electrons. Water, glucose and most molecules in living things are held together by covalent bonds.\n\n**Ionic bonds: giving.** Think of magnets. In an ionic bond, one atom **gives** electrons to another. That makes one positive ion and one negative ion, and opposite charges attract. Table salt forms this way: sodium gives 1 electron to chlorine, making Na⁺ and Cl⁻.\n\n**Worked example 2:** An atom has 12 protons, 12 neutrons and 10 electrons. Charge = protons − electrons = 12 − 10 = **+2**. It is a positive ion (Mg²⁺). The neutrons don't count, because they have no charge.\n\n**Worked example 3:** In O₂, two oxygen atoms share electrons. Neither one gives electrons away, so the bond is **covalent**.\n\n**CHNOPS.** The six most common elements in living things are carbon, hydrogen, nitrogen, oxygen, phosphorus and sulfur.\n\n**Watch out for:** putting electrons in the nucleus, thinking every molecule is a compound, counting neutrons when finding the charge, mixing up sharing (covalent) and giving (ionic), and thinking that gaining or losing electrons changes the element."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "An atom has 17 protons, 18 neutrons and 18 electrons. What is its charge?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "−1"
+                },
+                {
+                  "id": "b",
+                  "text": "+1"
+                },
+                {
+                  "id": "c",
+                  "text": "0"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Charge = protons − electrons = 17 − 18 = −1. It has one extra electron, so it is a negative ion (Cl⁻). Counting the 18 neutrons is the common mistake: neutrons have no charge."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "In a molecule of ammonia (NH₃), the nitrogen atom and the hydrogen atoms share electrons. What kind of bond is this?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Ionic bond"
+                },
+                {
+                  "id": "b",
+                  "text": "Hydrogen bond"
+                },
+                {
+                  "id": "c",
+                  "text": "Covalent bond"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Sharing electrons is a covalent bond. An ionic bond gives electrons away. A hydrogen bond is a weak attraction between different molecules, not a bond inside one. Picking hydrogen bond because the atoms are hydrogen is the common mistake."
+            }
+          ],
+          "shortAnswer": "Explain the difference between a covalent bond and an ionic bond, and give one example of each."
+        }
+      ]
+    },
+    {
+      "target": "U2.LT1",
+      "mode": "do",
+      "title": "Do: flip the terms, then follow an atom as it becomes an ion",
+      "description": "Flashcards with a 3-question self-quiz, then a worked problem one step at a time.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: atoms and bonds",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Atom",
+                "back": "The smallest unit of matter that still has the properties of an element."
+              },
+              {
+                "id": "k2",
+                "front": "Proton, neutron, electron",
+                "back": "Proton: positive, in the nucleus. Neutron: no charge, in the nucleus. Electron: negative, moving around the nucleus."
+              },
+              {
+                "id": "k3",
+                "front": "Element",
+                "back": "A pure substance made of only one kind of atom, like carbon or oxygen. The number of protons decides which element it is."
+              },
+              {
+                "id": "k4",
+                "front": "Molecule",
+                "back": "Two or more atoms bonded together, like O₂ or H₂O."
+              },
+              {
+                "id": "k5",
+                "front": "Compound",
+                "back": "Two or more different elements bonded together, like H₂O or CO₂. O₂ is not a compound."
+              },
+              {
+                "id": "k6",
+                "front": "Ion",
+                "back": "An atom that gained or lost electrons, so it has a charge. Lose electrons: positive. Gain electrons: negative."
+              },
+              {
+                "id": "k7",
+                "front": "Covalent vs. ionic bond",
+                "back": "Covalent: atoms share electrons. Ionic: one atom gives electrons to another, and the opposite charges attract."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "Which one is an element?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Fe (iron)"
+                },
+                {
+                  "id": "b",
+                  "text": "H₂O (water)"
+                },
+                {
+                  "id": "c",
+                  "text": "NaCl (table salt)"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Iron is made of only one kind of atom, so it is an element. Water and table salt each have two different elements bonded together, so they are compounds."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "Which one is BOTH a molecule and a compound?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "O₂"
+                },
+                {
+                  "id": "b",
+                  "text": "CO₂"
+                },
+                {
+                  "id": "c",
+                  "text": "Ne"
+                }
+              ],
+              "answer": "b",
+              "explanation": "CO₂ has atoms bonded together (a molecule) from two different elements (a compound). O₂ has only one element, and Ne is a single atom. Calling O₂ a compound is the common mistake."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "A magnesium atom gives two electrons to an oxygen atom. What kind of bond forms?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Covalent bond"
+                },
+                {
+                  "id": "b",
+                  "text": "No bond forms"
+                },
+                {
+                  "id": "c",
+                  "text": "Ionic bond"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Giving electrons makes a positive ion and a negative ion that attract: an ionic bond. A covalent bond shares electrons instead. Mixing up giving and sharing is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: from atom to ion",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "A sodium atom has 11 protons, 12 neutrons and 11 electrons. To make table salt, it gives 1 electron to a chlorine atom, which has 17 protons and 17 electrons. Describe both atoms before and after, and name the bond.",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "Find the element. 11 protons means atomic number 11, which is sodium (Na). The number of protons decides the element."
+              },
+              {
+                "id": "s2",
+                "text": "Find the charge before. 11 protons (+) and 11 electrons (−) balance, so the charge is 0. It is a neutral atom. Neutrons have no charge, so they don't count."
+              },
+              {
+                "id": "s3",
+                "text": "After giving away 1 electron, sodium has 11 protons and 10 electrons. Charge = 11 − 10 = +1. It is now a positive ion, Na⁺. It is still sodium, because its protons did not change."
+              },
+              {
+                "id": "s4",
+                "text": "Chlorine gained that electron: 17 protons and 18 electrons. Charge = 17 − 18 = −1. It is now a negative ion, Cl⁻."
+              },
+              {
+                "id": "s5",
+                "text": "Name the bond. An electron was given away, and the opposite charges attract, so this is an ionic bond. Together they make NaCl."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "fill_blank",
+              "prompt": "Your turn: a calcium atom has 20 protons and 20 electrons. It loses 2 electrons. What is its charge? Type it like +1 or −1.",
+              "answer": ["+2", "2+", "+ 2", "positive 2", "positive two", "plus 2", "2"],
+              "explanation": "After losing 2 electrons it has 20 protons and 18 electrons. Charge = 20 − 18 = +2. Losing negative electrons makes the charge positive, not negative, which is the common mistake.",
+              "afterStepId": "s3"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "In which case do the atoms share electrons instead of giving them away?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Potassium and chlorine forming KCl"
+                },
+                {
+                  "id": "b",
+                  "text": "Sodium and fluorine forming NaF"
+                },
+                {
+                  "id": "c",
+                  "text": "Two hydrogen atoms forming H₂"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Two atoms of the same element can't pull an electron away from each other, so they share: a covalent bond. In KCl and NaF, the metal gives an electron to the nonmetal, making an ionic bond.",
+              "afterStepId": "s5"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

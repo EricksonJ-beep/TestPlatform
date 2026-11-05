@@ -1,0 +1,229 @@
+{
+  "name": "bio-u6-lt1-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "relearning": [
+    {
+      "target": "U6.LT1",
+      "mode": "read",
+      "title": "Read: Punnett squares, genotypes and phenotypes",
+      "description": "A short reading with the times-table analogy, worked crosses and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Setting up the square",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can create Punnett squares that illustrate how genotypes and phenotypes are related.**\n\n**Think of a times table.** Write one parent's alleles across the top and the other parent's down the side. Fill each box with the letter from its column and the letter from its row. Each box is one equally likely outcome, like a coin flip from each parent.\n\n**Key words:**\n**Allele:** one version of a gene.\n**Dominant** (capital letter, T): shows whenever it is present.\n**Recessive** (lowercase letter, t): shows only with two copies.\n**Genotype:** the letters (TT, Tt or tt). **Phenotype:** the trait you see (tall or short).\n**Homozygous:** two of the same allele (TT or tt). **Heterozygous:** two different alleles (Tt).\n\n**Worked example:** In pea plants, tall (T) is dominant over short (t). Cross two heterozygous plants: Tt × Tt.\n\n$$\\begin{array}{c|cc} & \\mathrm{T} & \\mathrm{t} \\\\ \\hline \\mathrm{T} & \\mathrm{TT} & \\mathrm{Tt} \\\\ \\mathrm{t} & \\mathrm{Tt} & \\mathrm{tt} \\end{array}$$\n\nBoxes: 1 TT, 2 Tt, 1 tt. **Genotypic ratio:** 1 TT : 2 Tt : 1 tt. TT and Tt are both tall and only tt is short, so the **phenotypic ratio** is **3 tall : 1 short**, or 75% tall and 25% short."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "A pea plant has the genotype Tt. Which word describes it?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Homozygous dominant"
+                },
+                {
+                  "id": "b",
+                  "text": "Heterozygous"
+                },
+                {
+                  "id": "c",
+                  "text": "Homozygous recessive"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Two different alleles (T and t) means heterozygous. Homozygous means two of the same, TT or tt."
+            },
+            {
+              "id": "c2",
+              "kind": "fill_blank",
+              "prompt": "In the Tt × Tt cross, what percent of the offspring are expected to be short? Type a number.",
+              "answer": ["25", "25%", "25 %", "1/4", "0.25", ".25", "25 percent"],
+              "explanation": "Only tt is short, and that is 1 box of 4: 25%. Counting the Tt boxes as short is the common mistake; one T is enough to make the plant tall."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "More crosses and reading the ratios",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Worked example 2:** Homozygous dominant × homozygous recessive. Yellow seeds (Y) are dominant over green (y). Cross YY × yy. Every box is Yy, so the offspring are 100% Yy and 100% yellow.\n\n**Worked example 3:** Heterozygous × homozygous recessive. Round seeds (R) are dominant over wrinkled (r). Cross Rr × rr.\n\n$$\\begin{array}{c|cc} & \\mathrm{R} & \\mathrm{r} \\\\ \\hline \\mathrm{r} & \\mathrm{Rr} & \\mathrm{rr} \\\\ \\mathrm{r} & \\mathrm{Rr} & \\mathrm{rr} \\end{array}$$\n\nBoxes: 2 Rr and 2 rr. **Genotypic ratio:** 2 Rr : 2 rr, which simplifies to 1:1. **Phenotypic ratio:** 2 round : 2 wrinkled = 1:1, or 50% round and 50% wrinkled.\n\n**From boxes to percent:** each box is 25%. 1 box = 25%, 2 boxes = 50%, 3 boxes = 75%, 4 boxes = 100%.\n\n**Test cross:** to find out whether a tall plant is TT or Tt, cross it with a short plant (tt). If any short offspring show up, the tall parent must be Tt.\n\n**Watch out for:** writing both parents' alleles on the same side, mixing up genotype (the letters) and phenotype (the trait), counting Tt as short (one dominant allele is enough to show the trait), and expecting exactly 3:1 in a small family (a ratio is a prediction, not a guarantee)."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "Cross YY × yy (yellow is dominant over green). What percent of the offspring will have yellow seeds?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "50%"
+                },
+                {
+                  "id": "b",
+                  "text": "75%"
+                },
+                {
+                  "id": "c",
+                  "text": "100%"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Every box is Yy, and one Y is enough for yellow, so 100% are yellow. 75% is the answer for Yy × Yy, the common mix-up."
+            },
+            {
+              "id": "e2",
+              "kind": "fill_blank",
+              "prompt": "Cross Rr × rr (round is dominant over wrinkled). What is the phenotypic ratio of round to wrinkled? Type it like 3:1.",
+              "answer": ["1:1", "2:2", "1 to 1", "2 to 2", "1 : 1", "2 : 2", "50:50", "50 : 50"],
+              "explanation": "The boxes are 2 Rr (round) and 2 rr (wrinkled), so 2:2, which is 1:1. Answering 3:1 is the common mistake; that ratio only comes from two heterozygous parents."
+            }
+          ],
+          "shortAnswer": "A tall pea plant could be TT or Tt. Explain how a test cross with a short (tt) plant would tell you which it is."
+        }
+      ]
+    },
+    {
+      "target": "U6.LT1",
+      "mode": "do",
+      "title": "Do: build a Punnett square, then work backward",
+      "description": "Two worked crosses shown one step at a time: building a square from the parents, then finding the parents from a baby.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Worked problem: build the square",
+          "minutes": 4,
+          "body": {
+            "type": "worked_steps",
+            "problem": "In guinea pigs, black fur (B) is dominant over white fur (b). Cross a heterozygous black guinea pig with a white guinea pig. Find the genotypic and phenotypic ratios.",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "**Parents' genotypes:** heterozygous black = Bb. White only shows with two recessive alleles, so the white parent is bb."
+              },
+              {
+                "id": "s2",
+                "text": "**Set up the square:** one parent's alleles (B, b) go across the top, and the other parent's (b, b) go down the side."
+              },
+              {
+                "id": "s3",
+                "text": "**Fill each box** with its column letter and its row letter, capital first:\n\n$$\\begin{array}{c|cc} & \\mathrm{B} & \\mathrm{b} \\\\ \\hline \\mathrm{b} & \\mathrm{Bb} & \\mathrm{bb} \\\\ \\mathrm{b} & \\mathrm{Bb} & \\mathrm{bb} \\end{array}$$"
+              },
+              {
+                "id": "s4",
+                "text": "**Genotypic ratio:** 2 Bb : 2 bb, which simplifies to 1:1."
+              },
+              {
+                "id": "s5",
+                "text": "**Phenotypic ratio:** Bb is black and bb is white, so 2 black : 2 white = 1:1, or 50% black and 50% white."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: in this problem, what is the genotype of a homozygous dominant guinea pig?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "BB"
+                },
+                {
+                  "id": "b",
+                  "text": "Bb"
+                },
+                {
+                  "id": "c",
+                  "text": "bb"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Homozygous dominant means two dominant alleles: BB. Bb is heterozygous, and bb is homozygous recessive (white).",
+              "afterStepId": "s1"
+            },
+            {
+              "id": "d2",
+              "kind": "fill_blank",
+              "prompt": "Your turn: if these two guinea pigs have 8 babies, about how many are expected to be white? Type a number.",
+              "answer": ["4", "four"],
+              "explanation": "50% are expected to be white, and 50% of 8 is 4. Answering 2 means using 25%, which is the ratio for two heterozygous parents.",
+              "afterStepId": "s5"
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: work backward from a baby",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "Two black guinea pigs have a white baby. What are the parents' genotypes, and what is the chance their next baby is white?",
+            "steps": [
+              {
+                "id": "t1",
+                "text": "**Start with the baby:** white is recessive, so the white baby is bb. It got one b from each parent."
+              },
+              {
+                "id": "t2",
+                "text": "**Now the parents:** both are black, so each has at least one B. Each also gave a b, so each parent is Bb."
+              },
+              {
+                "id": "t3",
+                "text": "**Cross Bb × Bb:**\n\n$$\\begin{array}{c|cc} & \\mathrm{B} & \\mathrm{b} \\\\ \\hline \\mathrm{B} & \\mathrm{BB} & \\mathrm{Bb} \\\\ \\mathrm{b} & \\mathrm{Bb} & \\mathrm{bb} \\end{array}$$"
+              },
+              {
+                "id": "t4",
+                "text": "**Ratios:** genotypic 1 BB : 2 Bb : 1 bb. Phenotypic 3 black : 1 white."
+              },
+              {
+                "id": "t5",
+                "text": "**Next baby:** 1 white box out of 4 = 25%. Each baby is a new coin flip, so earlier babies don't change the chance."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: a black guinea pig is crossed with a white one, and all 10 babies are black. What is the black parent's genotype most likely to be?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "BB"
+                },
+                {
+                  "id": "b",
+                  "text": "Bb"
+                },
+                {
+                  "id": "c",
+                  "text": "bb"
+                }
+              ],
+              "answer": "a",
+              "explanation": "If the black parent were Bb, about half the babies would be white. All 10 black points to BB. bb can't be right, because a bb guinea pig would be white.",
+              "afterStepId": "t2"
+            },
+            {
+              "id": "w2",
+              "kind": "fill_blank",
+              "prompt": "Your turn: in the Bb × Bb cross, what percent of the babies are expected to be black? Type a number.",
+              "answer": ["75", "75%", "75 %", "3/4", "0.75", ".75", "75 percent"],
+              "explanation": "BB, Bb and Bb are all black: 3 boxes of 4 = 75%. Counting only BB (25%) is the common mistake; one B is enough for black fur.",
+              "afterStepId": "t5"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

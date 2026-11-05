@@ -1,0 +1,15 @@
+{
+  "name": "bio-u3-lt1-practice",
+  "revision": 3,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "unit": "Unit 3 · Cell Structure and Function",
+  "bank": "Bio · U3.LT1 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U3.LT1 Practice: Cell theory",
+    "description": "Practice explaining the parts of the modern cell theory (cells make up all living things, are the basic unit of structure and function, come from pre-existing cells, carry DNA, have similar chemistry, and are where energy flows), the scientists and experiments behind it, and how to use it to tell living from nonliving.",
+    "drawCount": 10,
+    "targets": ["U3.LT1"]
+  }
+}

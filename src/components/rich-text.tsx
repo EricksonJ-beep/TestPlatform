@@ -21,7 +21,7 @@ function Math({ tex, display }: { tex: string; display: boolean }) {
   if (html === null) return <code className="text-error-foreground">{tex}</code>;
   return (
     <span
-      className={display ? "my-1 block" : undefined}
+      className={display ? "my-1 block max-w-full overflow-x-auto" : undefined}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );

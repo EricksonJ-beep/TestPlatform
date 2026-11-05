@@ -1,0 +1,290 @@
+{
+  "name": "bio-u3-lt1-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "relearning": [
+    {
+      "target": "U3.LT1",
+      "mode": "read",
+      "title": "Read: the modern cell theory",
+      "description": "A short reading with the bricks-and-sourdough analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Three statements and the people behind them",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can explain the components of the modern cell theory.**\n\n**Think of a brick building and a jar of sourdough starter.** Every wall of the building is made of bricks, and a brick is the smallest building unit. Cells are the bricks of living things. But cells are also like sourdough starter: you can't make new starter from scratch. You can only grow it from a bit of starter that already exists. New cells only come from cells that already exist.\n\n**The three original statements of the cell theory.**\n1. All living things are made of one or more cells.\n2. The cell is the basic unit of structure and function in living things.\n3. All cells come from pre-existing cells.\n\n**The modern cell theory adds:** cells contain DNA that is passed on when a cell divides, energy flow (metabolism) happens inside cells, and all cells have a similar chemical makeup.\n\n**Who figured it out.** **Robert Hooke** (1665) looked at thin slices of cork and named the tiny boxes cells. **Anton van Leeuwenhoek** built powerful lenses and was the first to see living microorganisms. **Matthias Schleiden** concluded that all plants are made of cells. **Theodor Schwann** concluded that all animals are made of cells. **Rudolf Virchow** (1855) stated that new cells come only from existing cells.\n\n**Worked example:** A bacterium divides into two new cells, and each one gets a copy of the DNA. This supports statement 3 (the new cells came from an existing cell) and the modern idea that DNA is passed on when cells divide."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "Which scientist studied plants and concluded that all plants are made of cells?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Virchow"
+                },
+                {
+                  "id": "b",
+                  "text": "Hooke"
+                },
+                {
+                  "id": "c",
+                  "text": "Schleiden"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Schleiden studied plants, and Schwann studied animals. Virchow said cells come from cells, and Hooke named cells. Mixing up Schleiden and Schwann is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "fill_blank",
+              "prompt": "Complete the cell theory: The cell is the basic unit of structure and ___ in living things. Type one word.",
+              "answer": ["function", "functions"],
+              "explanation": "The cell is the basic unit of structure (what living things are built from) and function (what does the work of life)."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Using the cell theory",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**It took about 200 years.** Cells were first seen in 1665, but the theory wasn't complete until the 1850s. Scientists needed better microscopes and evidence from many plants, animals and microorganisms before they could say the ideas are true for every living thing. Experiments also had to disprove **spontaneous generation**, the old idea that life can appear from nonliving material.\n\n**Using the theory to judge claims.**\n**Viruses** are not made of cells, so by the cell theory they are not living things.\n**Bacteria** have no nucleus, but they are still cells, so the cell theory includes them.\n**Mature red blood cells** have no nucleus, but they are still cells. The cell theory never says every cell has a nucleus.\n**An amoeba** is only one cell, but that one cell is a whole organism.\n\n**Worked example 2: the mold claim.** Claim: Mold appears on old bread out of nowhere. The cell theory says cells come only from cells. Mold spores, which are cells, float in the air and land on the bread. The mold grows from them, not from nothing.\n\n**The modern additions in action.**\n**DNA:** when a skin cell divides, each new cell gets a copy of its DNA.\n**Energy flow:** your muscle cells break down sugar to release energy when you run.\n**Similar chemistry:** bacteria and brain cells are both built from the same four kinds of macromolecules.\n\n**Watch out for:** thinking all cells have a nucleus, thinking the cell theory is only for plants and animals, thinking one scientist built it alone, mixing up Schleiden (plants) and Schwann (animals), and saying a virus is alive because it has genetic material."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "A sealed jar of soup that was heated to kill all microorganisms shows no growth for months. Once the lid is taken off, bacteria grow in it within days. Which statement does this support?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The cell is the basic unit of structure and function"
+                },
+                {
+                  "id": "b",
+                  "text": "All cells come from pre-existing cells"
+                },
+                {
+                  "id": "c",
+                  "text": "All cells have a similar chemical makeup"
+                }
+              ],
+              "answer": "b",
+              "explanation": "No bacteria grew until living cells could get in from the air, so new cells came from existing cells, not from the soup. Thinking the soup itself made the bacteria is the old idea of spontaneous generation."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "Your muscle cells break down sugar to release energy when you run. Which part of the modern cell theory does this match?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "All cells come from pre-existing cells"
+                },
+                {
+                  "id": "b",
+                  "text": "Energy flow (metabolism) happens inside cells"
+                },
+                {
+                  "id": "c",
+                  "text": "All living things are made of one or more cells"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Releasing energy from sugar is energy flow, and it happens inside the cell. The other two are true statements, but they are about where cells come from and what organisms are made of."
+            }
+          ],
+          "shortAnswer": "List the three original statements of the cell theory. Then explain one of them in your own words with an example."
+        }
+      ]
+    },
+    {
+      "target": "U3.LT1",
+      "mode": "do",
+      "title": "Do: flip the cell theory, then test a mystery sample",
+      "description": "Flashcards with a 3-question self-quiz, then a worked problem one step at a time.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: the cell theory",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Cell theory, statement 1",
+                "back": "All living things are made of one or more cells."
+              },
+              {
+                "id": "k2",
+                "front": "Cell theory, statement 2",
+                "back": "The cell is the basic unit of structure and function in living things."
+              },
+              {
+                "id": "k3",
+                "front": "Cell theory, statement 3",
+                "back": "All cells come from pre-existing cells, by cell division."
+              },
+              {
+                "id": "k4",
+                "front": "The modern additions",
+                "back": "Cells pass on DNA when they divide. Energy flow happens inside cells. All cells have a similar chemical makeup."
+              },
+              {
+                "id": "k5",
+                "front": "Robert Hooke",
+                "back": "In 1665 he looked at thin slices of cork and named the tiny boxes cells."
+              },
+              {
+                "id": "k6",
+                "front": "Anton van Leeuwenhoek",
+                "back": "Built powerful lenses and was the first to see living microorganisms, which he called animalcules."
+              },
+              {
+                "id": "k7",
+                "front": "Schleiden, Schwann and Virchow",
+                "back": "Schleiden: all plants are made of cells. Schwann: all animals are made of cells. Virchow: cells come only from cells."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "Which scientist concluded that all animals are made of cells?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Schleiden"
+                },
+                {
+                  "id": "b",
+                  "text": "Schwann"
+                },
+                {
+                  "id": "c",
+                  "text": "Hooke"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Schwann studied animals and Schleiden studied plants. Hooke named cells but didn't study animal tissue. Mixing up Schwann and Schleiden is the common mistake."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "A single paramecium cell eats, grows, responds and reproduces all by itself. Which statement does this best support?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "All cells have the same shape"
+                },
+                {
+                  "id": "b",
+                  "text": "Cells can come from nonliving matter"
+                },
+                {
+                  "id": "c",
+                  "text": "The cell is the basic unit of structure and function in living things"
+                }
+              ],
+              "answer": "c",
+              "explanation": "One cell carrying out every life process shows the cell is the basic unit of life. Cells come in many shapes, and they never come from nonliving matter."
+            },
+            {
+              "id": "d3",
+              "kind": "fill_blank",
+              "prompt": "The tiny boxes Robert Hooke saw in cork reminded him of small rooms, so he named them ___. Type one word.",
+              "answer": ["cells", "cell"],
+              "explanation": "Hooke called them cells because they looked like the small rooms, or cells, that monks lived in. He was looking at dead cork cells, so he saw only their walls."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: is the mystery sample alive?",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "Scientists find a tiny green speck in a pond sample. Use each part of the cell theory to decide whether it is a living thing.",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "Statement 1: Is it made of one or more cells? Under the microscope, they see one cell with a membrane around it. So far, it could be living."
+              },
+              {
+                "id": "s2",
+                "text": "Statement 2: Does that one cell carry out life processes by itself? It swims toward light and grows over a few days. The single cell is acting as the whole organism."
+              },
+              {
+                "id": "s3",
+                "text": "Statement 3: Where do new ones come from? Over time they watch it divide into two cells that look just like it. New cells came from a pre-existing cell."
+              },
+              {
+                "id": "s4",
+                "text": "The modern additions: a stain shows DNA in both new cells, the cell uses energy from light, and it is built from the same kinds of molecules as other cells."
+              },
+              {
+                "id": "s5",
+                "text": "Conclusion: the speck fits every part of the cell theory, so it is a living, single-celled organism."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: a second speck has no cells at all. It is a sticky clump that gets bigger as dust sticks to it. What does the cell theory say?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "It is not a living thing, because it is not made of cells"
+                },
+                {
+                  "id": "b",
+                  "text": "It is living, because it gets bigger"
+                },
+                {
+                  "id": "c",
+                  "text": "It is living, but dormant"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Statement 1 says all living things are made of cells. The clump has no cells, so it fails right away. Getting bigger by collecting dust is not growth. Thinking growing alone means living is the common mistake.",
+              "afterStepId": "s1"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Where did the two new cells in step 3 come from?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The pond water itself"
+                },
+                {
+                  "id": "b",
+                  "text": "The original cell dividing"
+                },
+                {
+                  "id": "c",
+                  "text": "Nonliving material in the mud"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Cells come only from pre-existing cells, so the new cells came from the original cell dividing. The idea that life comes from water or mud is spontaneous generation, which was disproven.",
+              "afterStepId": "s3"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

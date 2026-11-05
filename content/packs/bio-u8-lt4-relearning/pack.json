@@ -1,0 +1,318 @@
+{
+  "name": "bio-u8-lt4-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "relearning": [
+    {
+      "target": "U8.LT4",
+      "mode": "read",
+      "title": "Read: the fungi",
+      "description": "A short reading with the inside-out-stomach analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "How a fungus is built and how it eats",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can give a general description of the organisms in the Kingdom Fungi.**\n\n**Think of eating with your stomach on the outside.** Imagine pouring digestive juices onto a slice of pizza, waiting for it to turn to mush, then soaking it up through your skin. That is how a fungus eats. It releases **enzymes** onto its food, digests it outside its body, then **absorbs** the nutrients.\n\n**What all fungi share:**\n- They are **eukaryotic** (their cells have a nucleus).\n- They are **heterotrophs**: they have no chlorophyll and can't make their own food.\n- Their cell walls are made of **chitin**, the same tough material in insect shells (plant cell walls are cellulose).\n- Most are **multicellular**, but **yeasts** are one cell.\n\n**How a fungus is built.** Its body is made of thin threads called **hyphae**. A tangled mass of hyphae, usually hidden in soil or wood, is the **mycelium**. A mushroom is only the **fruiting body**, the part that pops up to make **spores**. Fungi reproduce with spores.\n\n**Worked example:** Bread left out for a week grows fuzzy mold. The fuzz is hyphae growing into the bread. They release enzymes, digest the bread and absorb the sugars. The tiny black dots are spore cases that release spores to start new mold."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "How do fungi get their food?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "They make it by photosynthesis"
+                },
+                {
+                  "id": "b",
+                  "text": "They release enzymes, digest food outside their body, then absorb it"
+                },
+                {
+                  "id": "c",
+                  "text": "They swallow food and digest it inside a stomach"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Fungi digest outside the body and absorb the nutrients. They have no chlorophyll, so thinking they photosynthesize like plants is the common mistake."
+            },
+            {
+              "id": "c2",
+              "kind": "fill_blank",
+              "prompt": "Type the name of the thin threads that make up the body of a fungus.",
+              "answer": ["hyphae", "hypha"],
+              "explanation": "The threads are hyphae (one is a hypha). A tangled mass of hyphae is the mycelium, which is the common mix-up."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Fungi as recyclers, partners, food and medicine",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Decomposers.** Fungi break down dead logs, leaves and animals and return the nutrients to the soil. Without them, a Wisconsin forest floor would be buried in dead material.\n\n**Partners.** **Mycorrhizae** are fungi that grow on or in plant roots. The hyphae help the plant soak up water and minerals, and the plant gives the fungus sugar. A **lichen** is a fungus living with an alga or cyanobacteria: the partner makes food by photosynthesis, and the fungus gives it shelter and water.\n\n**Food.** We eat mushrooms, and molds flavor blue cheese. **Yeast** makes bread rise: it ferments sugar and gives off **carbon dioxide** gas, which makes bubbles in the dough.\n\n**Medicine.** In 1928, Alexander Fleming noticed that the mold *Penicillium* killed the bacteria around it. That led to **penicillin**, the first antibiotic.\n\n**Harmful fungi.** Some fungi cause infections: **athlete's foot** and **ringworm** (a fungus, not a worm). Others ruin crops or kill trees, like Dutch elm disease. Some wild mushrooms are deadly poisonous, so never eat one you find.\n\n**Worked example 2:** A mushroom pops up in a lawn. Is it a plant? No: it has no chlorophyll, its walls are chitin, and it feeds by absorbing nutrients from the soil. The mushroom is the fruiting body, and most of the fungus is the mycelium underground.\n\n**Watch out for:** calling fungi plants, thinking the mushroom is the whole organism, thinking ringworm is a worm, and thinking all fungi are harmful."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "Why does yeast make bread dough rise?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "It makes oxygen by photosynthesis"
+                },
+                {
+                  "id": "b",
+                  "text": "Its spores swell up in the oven"
+                },
+                {
+                  "id": "c",
+                  "text": "It ferments sugar and gives off carbon dioxide gas"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Yeast ferments the sugar in dough and releases carbon dioxide, which forms bubbles. Fungi can't photosynthesize, so they never make oxygen."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "A fungus grows on a tree's roots, helping the tree absorb water and minerals while the tree gives it sugar. This partnership is called –",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "mycorrhizae"
+                },
+                {
+                  "id": "b",
+                  "text": "a lichen"
+                },
+                {
+                  "id": "c",
+                  "text": "a fruiting body"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Mycorrhizae are fungus–root partners. A lichen is a fungus with an alga or cyanobacteria, which is the common mix-up."
+            }
+          ],
+          "shortAnswer": "Give two reasons why fungi are not classified as plants."
+        }
+      ]
+    },
+    {
+      "target": "U8.LT4",
+      "mode": "do",
+      "title": "Do: two decks of fungi flashcards",
+      "description": "Two flashcard decks, each with a 3-question self-quiz: how fungi are built, then what fungi do.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: how a fungus is built",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Kingdom Fungi",
+                "back": "Eukaryotic heterotrophs that digest food outside their bodies and absorb it."
+              },
+              {
+                "id": "k2",
+                "front": "Chitin",
+                "back": "The tough material in fungal cell walls (also in insect shells). Plant cell walls are cellulose."
+              },
+              {
+                "id": "k3",
+                "front": "Hyphae",
+                "back": "Thin threads that make up the body of a fungus."
+              },
+              {
+                "id": "k4",
+                "front": "Mycelium",
+                "back": "A tangled mass of hyphae, usually hidden in soil or wood."
+              },
+              {
+                "id": "k5",
+                "front": "Fruiting body",
+                "back": "The part that grows above ground, like a mushroom, to make spores."
+              },
+              {
+                "id": "k6",
+                "front": "Spores",
+                "back": "Tiny cells that fungi release to reproduce and spread."
+              },
+              {
+                "id": "k7",
+                "front": "Yeast",
+                "back": "A one-celled fungus, used to make bread rise."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "What are fungal cell walls made of?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Cellulose"
+                },
+                {
+                  "id": "b",
+                  "text": "Protein"
+                },
+                {
+                  "id": "c",
+                  "text": "Chitin"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Fungal cell walls are chitin. Cellulose is the material in plant cell walls, which is the common mix-up."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "A mushroom you see on a log is –",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "the whole fungus"
+                },
+                {
+                  "id": "b",
+                  "text": "the fruiting body, which makes spores"
+                },
+                {
+                  "id": "c",
+                  "text": "the root of a plant"
+                }
+              ],
+              "answer": "b",
+              "explanation": "The mushroom is just the fruiting body. Most of the fungus is the mycelium hidden inside the log."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "Which fungus is made of only one cell?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Yeast"
+                },
+                {
+                  "id": "b",
+                  "text": "Mushroom"
+                },
+                {
+                  "id": "c",
+                  "text": "Bread mold"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Yeasts are one-celled fungi. Mushrooms and molds are multicellular, made of many hyphae."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Flashcards: what fungi do",
+          "minutes": 6,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k8",
+                "front": "Decomposer",
+                "back": "Breaks down dead things and returns nutrients to the soil. Many fungi are decomposers."
+              },
+              {
+                "id": "k9",
+                "front": "Mycorrhizae",
+                "back": "Fungi on plant roots. They help the plant absorb water and minerals, and the plant gives them sugar."
+              },
+              {
+                "id": "k10",
+                "front": "Lichen",
+                "back": "A fungus living with an alga or cyanobacteria. The partner makes food, and the fungus gives shelter and water."
+              },
+              {
+                "id": "k11",
+                "front": "Penicillin",
+                "back": "The first antibiotic, made from the mold *Penicillium* (found by Alexander Fleming in 1928)."
+              },
+              {
+                "id": "k12",
+                "front": "Fermentation by yeast",
+                "back": "Yeast breaks down sugar and gives off carbon dioxide, which makes bread rise."
+              },
+              {
+                "id": "k13",
+                "front": "Athlete's foot and ringworm",
+                "back": "Skin infections caused by fungi. Ringworm is not a worm."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d4",
+              "kind": "multiple_choice",
+              "prompt": "The antibiotic penicillin was first made from –",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "a bacterium"
+                },
+                {
+                  "id": "b",
+                  "text": "a mold (a fungus)"
+                },
+                {
+                  "id": "c",
+                  "text": "a plant root"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Penicillin comes from the mold *Penicillium*. It kills bacteria, which is why students sometimes think it comes from them."
+            },
+            {
+              "id": "d5",
+              "kind": "multiple_choice",
+              "prompt": "What would happen to a forest if all its fungi disappeared?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The trees would make more food by photosynthesis"
+                },
+                {
+                  "id": "b",
+                  "text": "Nothing, because fungi only cause diseases"
+                },
+                {
+                  "id": "c",
+                  "text": "Dead leaves and logs would pile up, and nutrients would not return to the soil"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Fungi are major decomposers that recycle nutrients. Thinking fungi are only harmful is the common mistake."
+            },
+            {
+              "id": "d6",
+              "kind": "fill_blank",
+              "prompt": "A fungus and an alga living together as partners on a rock form a –",
+              "answer": ["lichen", "lichens", "a lichen"],
+              "explanation": "That partnership is a lichen. Mycorrhizae are fungus–plant root partners, which is the common mix-up."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

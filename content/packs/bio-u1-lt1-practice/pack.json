@@ -1,0 +1,15 @@
+{
+  "name": "bio-u1-lt1-practice",
+  "revision": 3,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "unit": "Unit 1 · The Science of Biology",
+  "bank": "Bio · U1.LT1 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U1.LT1 Practice: Design a controlled experiment",
+    "description": "Practice identifying and planning the control group, experimental groups, constants, independent variable, and dependent variable of a controlled experiment, and spotting flaws in experimental designs.",
+    "drawCount": 10,
+    "targets": ["U1.LT1"]
+  }
+}

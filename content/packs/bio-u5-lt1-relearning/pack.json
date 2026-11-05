@@ -1,0 +1,287 @@
+{
+  "name": "bio-u5-lt1-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology B",
+  "relearning": [
+    {
+      "target": "U5.LT1",
+      "mode": "read",
+      "title": "Read: mitosis and why it matters",
+      "description": "A short reading with the copied-study-guide analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "The cell cycle and PMAT",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can model mitosis and discuss its importance in cell growth and development.**\n\n**Think of copying a study guide.** You have a 46-page study guide, and two friends each need a complete copy. First you photocopy every page, so each page has a twin clipped to it. Then you line the pairs up, pull each pair apart, and staple two identical packets. Mitosis does this with chromosomes.\n\n**Why mitosis matters:** it makes new cells for **growth**, for **repair** (like healing a cut), and for **replacing** old cells. Some organisms also use it to reproduce asexually.\n\n**The cell cycle:** **Interphase** is the longest part: G1 (the cell grows), **S** (the DNA is copied), and G2 (it gets ready to divide). Then **mitosis** divides the nucleus, and **cytokinesis** divides the cytoplasm.\n\n**Mitosis in 4 phases (PMAT):**\n**Prophase:** chromosomes condense and become visible, the nuclear membrane breaks down, and spindle fibers form.\n**Metaphase:** chromosomes line up in the **middle**.\n**Anaphase:** sister chromatids are pulled **apart** to opposite ends.\n**Telophase:** **two** new nuclei form.\n\n**Worked example:** A human skin cell has 46 chromosomes. After mitosis and cytokinesis there are **2 identical cells, each with 46**. Mitosis starts with a diploid cell and ends with diploid cells."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "During which phase do the chromosomes line up in the middle of the cell?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Prophase"
+                },
+                {
+                  "id": "b",
+                  "text": "Metaphase"
+                },
+                {
+                  "id": "c",
+                  "text": "Anaphase"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Metaphase = middle. Anaphase is when the chromatids move apart, the common mix-up."
+            },
+            {
+              "id": "c2",
+              "kind": "fill_blank",
+              "prompt": "A cell with 24 chromosomes goes through mitosis. How many chromosomes does each daughter cell have? Type a number.",
+              "answer": ["24", "twenty-four", "twenty four"],
+              "explanation": "Mitosis makes identical copies, so each daughter cell has 24. Halving to 12 is what meiosis does, and 48 forgets that the copies are split between two cells."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Watching chromosomes move",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Chromosome vs. chromatid.** After the S phase, each chromosome is a doubled X shape: two identical **sister chromatids** held together at the **centromere**. In anaphase the chromatids split, and each one becomes its own chromosome.\n\n**Spindle fibers** are the ropes that do the pulling. They attach at the centromeres and tug the chromatids to opposite ends of the cell.\n\n**Cytokinesis:** in animal cells, the membrane pinches in the middle. In plant cells, a **cell plate** forms down the middle and becomes the new cell wall.\n\n**Worked example 2:** Under the microscope you see chromosomes in two groups moving toward opposite ends. That is **anaphase**. If two nuclei have formed and the cell is pinching in two, it is **telophase** going into cytokinesis.\n\n**Worked example 3:** On an onion root tip slide, most cells are in **interphase**, because interphase is the longest part of the cell cycle. You see a nucleus but no separate chromosomes.\n\n**Why identical matters:** every new cell needs the same full set of instructions to do its job. Lining the chromosomes up in metaphase makes sure each daughter cell gets one copy of every chromosome.\n\n**Watch out for:** putting DNA copying inside mitosis (it happens in the S phase of interphase), calling interphase a phase of mitosis, mixing up metaphase and anaphase, and saying mitosis makes 4 cells (that is meiosis)."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "During which part of the cell cycle is the DNA copied?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Prophase"
+                },
+                {
+                  "id": "b",
+                  "text": "The S phase of interphase"
+                },
+                {
+                  "id": "c",
+                  "text": "Telophase"
+                }
+              ],
+              "answer": "b",
+              "explanation": "DNA is copied in the S phase, before mitosis starts. Prophase is the common wrong answer: by then the chromosomes are already doubled."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "A cell shows two nuclei forming and is starting to pinch in two. Which phase is it in?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Metaphase"
+                },
+                {
+                  "id": "b",
+                  "text": "Anaphase"
+                },
+                {
+                  "id": "c",
+                  "text": "Telophase"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Two new nuclei forming means telophase (T for two). In anaphase the chromatids are still moving apart and there are no new nuclei yet."
+            }
+          ],
+          "shortAnswer": "Explain why it matters that the two cells made by mitosis are identical to the parent cell. Give one example of where your body uses mitosis."
+        }
+      ]
+    },
+    {
+      "target": "U5.LT1",
+      "mode": "do",
+      "title": "Do: walk a cell through the cycle, then name the phase",
+      "description": "One cell taken through the cell cycle one step at a time, then flashcards that name the phase from a clue.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Worked steps: the cell cycle in order",
+          "minutes": 4,
+          "body": {
+            "type": "worked_steps",
+            "problem": "Walk one human body cell (46 chromosomes) through the cell cycle, one stage at a time.",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "**Interphase:** the cell grows (G1), copies all 46 chromosomes in the S phase, and gets ready (G2). Each chromosome is now two sister chromatids, but you can't see them yet."
+              },
+              {
+                "id": "s2",
+                "text": "**Prophase:** the chromosomes condense into visible X shapes. The nuclear membrane breaks down, and spindle fibers form."
+              },
+              {
+                "id": "s3",
+                "text": "**Metaphase:** spindle fibers line all 46 chromosomes up single file across the middle."
+              },
+              {
+                "id": "s4",
+                "text": "**Anaphase:** the sister chromatids are pulled apart to opposite ends of the cell."
+              },
+              {
+                "id": "s5",
+                "text": "**Telophase:** a new nuclear membrane forms around each group, giving two nuclei with 46 chromosomes each."
+              },
+              {
+                "id": "s6",
+                "text": "**Cytokinesis:** the cytoplasm splits. Result: 2 identical diploid cells with 46 chromosomes each."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "Your turn: what happens in the S phase?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The cell divides in two"
+                },
+                {
+                  "id": "b",
+                  "text": "The DNA is copied"
+                },
+                {
+                  "id": "c",
+                  "text": "The chromosomes line up"
+                }
+              ],
+              "answer": "b",
+              "explanation": "S stands for synthesis: the DNA is copied. The cell divides at the very end (cytokinesis), and the chromosomes line up in metaphase.",
+              "afterStepId": "s1"
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "Which order of the phases of mitosis is right?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Prophase → Anaphase → Metaphase → Telophase"
+                },
+                {
+                  "id": "b",
+                  "text": "Prophase → Metaphase → Anaphase → Telophase"
+                },
+                {
+                  "id": "c",
+                  "text": "Metaphase → Prophase → Anaphase → Telophase"
+                }
+              ],
+              "answer": "b",
+              "explanation": "PMAT: Prophase, Metaphase (middle), Anaphase (apart), Telophase (two). The chromosomes have to line up before they can be pulled apart, so metaphase comes before anaphase.",
+              "afterStepId": "s4"
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Flashcards: name the phase from a clue",
+          "minutes": 6,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Chromosomes become visible, and the nuclear membrane breaks down.",
+                "back": "Prophase"
+              },
+              {
+                "id": "k2",
+                "front": "Chromosomes line up single file across the middle.",
+                "back": "Metaphase (M for middle)"
+              },
+              {
+                "id": "k3",
+                "front": "Sister chromatids are pulled to opposite ends.",
+                "back": "Anaphase (A for apart)"
+              },
+              {
+                "id": "k4",
+                "front": "Two new nuclei form.",
+                "back": "Telophase (T for two)"
+              },
+              {
+                "id": "k5",
+                "front": "The cell grows and copies its DNA; no separate chromosomes are visible.",
+                "back": "Interphase"
+              },
+              {
+                "id": "k6",
+                "front": "The cytoplasm pinches in two, or a cell plate forms in a plant cell.",
+                "back": "Cytokinesis"
+              },
+              {
+                "id": "k7",
+                "front": "The ropes that pull chromosomes apart",
+                "back": "Spindle fibers"
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "A cell has chromosomes in two groups moving toward opposite ends. Which phase is it in?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Metaphase"
+                },
+                {
+                  "id": "b",
+                  "text": "Anaphase"
+                },
+                {
+                  "id": "c",
+                  "text": "Telophase"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Moving apart means anaphase. In metaphase they are still lined up in the middle, and in telophase new nuclei are already forming."
+            },
+            {
+              "id": "e2",
+              "kind": "multiple_choice",
+              "prompt": "Which structure pulls the sister chromatids apart?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Spindle fibers"
+                },
+                {
+                  "id": "b",
+                  "text": "The cell wall"
+                },
+                {
+                  "id": "c",
+                  "text": "The nucleus"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Spindle fibers attach at the centromeres and pull the chromatids to opposite ends. The nuclear membrane has already broken down by then, so the nucleus can't be doing it."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

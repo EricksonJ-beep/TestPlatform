@@ -1,0 +1,15 @@
+{
+  "name": "bio-u2-lt1-practice",
+  "revision": 3,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "unit": "Unit 2 · Biochemistry",
+  "bank": "Bio · U2.LT1 · Practice",
+  "openPractice": true,
+  "practiceSet": {
+    "title": "U2.LT1 Practice: Atoms, molecules, and bonds",
+    "description": "Practice describing atoms and their particles, elements (including CHNOPS), isotopes and ions, molecules and compounds, chemical formulas, and ionic, covalent, and hydrogen bonds.",
+    "drawCount": 10,
+    "targets": ["U2.LT1"]
+  }
+}
