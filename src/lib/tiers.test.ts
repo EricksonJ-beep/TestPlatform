@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   mostMissedTarget,
   movedUp,
+  pathStageLabel,
   readinessLine,
   readinessSortKey,
   readinessState,
@@ -166,5 +167,74 @@ describe("mostMissedTarget and versionStamp", () => {
     expect(mostMissedTarget(finals, 80)).toEqual({ id: "lt2", below: 2, average: 65 });
     expect(mostMissedTarget([{ lt1: { percent: 100 } }], 80)).toBeNull();
     expect(versionStamp([new Date(5), "1970-01-01T00:00:00.010Z", null])).toBe("10");
+  });
+});
+
+describe("readiness on the relearning path (revamp R5 wording)", () => {
+  const base = {
+    id: "a",
+    code: "U3.LT4",
+    percent: 60,
+    required: true,
+    optedIn: false,
+    gate: { correctionsOk: true, activityOk: true, practiceOk: false, unlocked: false },
+    retaken: false,
+    correctionsDetail: "4 of 4 approved",
+    // The old activity and practice details don't show on the path.
+    activityDetail: "0 of 2",
+    practiceDetail: "0 of 1",
+  };
+  it("names the path's steps, not the old gates", () => {
+    const t = {
+      ...base,
+      path: { corrections: "done", relearn: "done", practice: "current" } as const,
+    };
+    expect(readinessState(t)).toBe("not_ready");
+    expect(readinessLine(t)).toBe(
+      "U3.LT4: corrections ✓ (4 of 4 approved) · relearn ✓ · practice check ✗ · retake locked"
+    );
+    const ready = {
+      ...t,
+      gate: { ...t.gate, practiceOk: true, unlocked: true },
+      path: { ...t.path, practice: "done" } as const,
+    };
+    expect(readinessState(ready)).toBe("ready");
+    expect(readinessLine(ready)).toBe(
+      "U3.LT4: corrections ✓ (4 of 4 approved) · relearn ✓ · practice check ✓ · retake unlocked"
+    );
+  });
+
+  it("corrections waiting on the teacher, and a test target added at 80% (corrections only)", () => {
+    const waiting = {
+      ...base,
+      correctionsDetail: null,
+      path: { corrections: "waiting", relearn: "current", practice: "locked" } as const,
+    };
+    expect(readinessLine(waiting)).toBe(
+      "U3.LT4: corrections waiting for your OK · relearn ✗ · practice check ✗ · retake locked"
+    );
+    const added = {
+      ...base,
+      code: "U3.LT3",
+      required: false,
+      optedIn: true,
+      correctionsDetail: "1 of 1 approved",
+      path: { corrections: "done", relearn: null, practice: null } as const,
+      gate: { correctionsOk: true, activityOk: true, practiceOk: true, unlocked: true },
+    };
+    expect(readinessState(added)).toBe("ready");
+    expect(readinessLine(added)).toBe("U3.LT3: corrections ✓ (1 of 1 approved) · retake unlocked");
+  });
+
+  it("the stage label names each target's step", () => {
+    const needs = [
+      { code: "U3.LT2", step: "relearn" },
+      { code: "U3.LT4", step: "practice check" },
+    ];
+    expect(pathStageLabel("relearning", needs, null, "auto")).toBe(
+      "Relearning (U3.LT2: relearn, U3.LT4: practice check)"
+    );
+    expect(pathStageLabel("relearning", [], null, "auto")).toBe("Relearning");
+    expect(pathStageLabel("retake_ready", needs, null, "auto")).toBe("Retake ready");
   });
 });

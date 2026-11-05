@@ -430,7 +430,7 @@ must offer Read or Do and land in Needs you.
 - *Left for later:*
   - *An in-app builder. Options are written in packs for now.*
   - *Uploading Jon's own recordings to a section. The player already handles them.*
-  - *The path-aware wording on the tier board's readiness lines (R5).*
+  - *~~The path-aware wording on the tier board's readiness lines (R5).~~ Done Nov 5.*
 - *Code: rules `src/lib/relearning.ts`; server `src/lib/relearning-server.ts` (every progress
   write is one atomic statement); actions `src/app/student/relearning/actions.ts` (guard
   `requireRelearningRowAccess`) and `checkOffRelearning` / `resolveVideoFlag` in
@@ -486,8 +486,10 @@ gradebook cell at every step.
     already have 100%".*
 - *Left for later:*
   - *Dates on done steps. The path state doesn't carry them yet.*
-  - *The tier board's readiness lines still use the old words. The relearning monitor shows the
-    new Read · Watch · Do section above them.*
+  - *~~The tier board's readiness lines still use the old words.~~ Done Nov 5: on the path, a
+    target reads "U3.LT4: corrections ✓ · relearn ✓ · practice check ✗ · retake locked"
+    (corrections the teacher hasn't OK'd yet read "waiting for your OK"). The card's relearning
+    stage uses the gradebook's words: "Relearning (U3.LT4: practice check)".*
 - *Tests: `src/lib/step-path.test.ts` (the 40% quiz, the 40/90 mixed quiz, the two-target test,
   waiting, keep, ask). `src/app/student/relearning-path.test.ts` covers Keep my 80%, the quiz
   opt-in, and the to-do row built from the path.*

@@ -5,6 +5,7 @@
  * Tiers themselves come from `tierFor` in the grading library.
  */
 import type { CorrectionsSummary } from "@/lib/corrections";
+import type { StepState } from "@/lib/relearning-path";
 import type { GateFlags, RetakePlan } from "@/lib/retakes";
 
 export type RelearningStage =
@@ -86,6 +87,23 @@ export function stageLabel(
   }
 }
 
+/**
+ * The stage label on the relearning path (relearning revamp R5 wording): the relearning stage names
+ * each target's step, the gradebook's words ("Relearning (U3.LT1: relearn, U3.LT4: practice
+ * check)", from `pathNeeds` in src/lib/class-gradebook.ts); every other stage keeps its label.
+ */
+export function pathStageLabel(
+  stage: RelearningStage,
+  needs: { code: string; step: string }[],
+  corrections: Pick<CorrectionsSummary, "done" | "needed"> | null,
+  reviewMode: "auto" | "teacher_approved"
+): string {
+  if (stage !== "relearning") return stageLabel(stage, corrections, reviewMode);
+  return needs.length
+    ? `Relearning (${needs.map((n) => `${n.code}: ${n.step}`).join(", ")})`
+    : "Relearning";
+}
+
 /** Stages that still wait on the student, for the readiness sort. */
 export const STAGE_ORDER: RelearningStage[] = [
   "corrections_not_started",
@@ -147,11 +165,39 @@ export type TargetReadiness = {
   correctionsDetail?: string | null;
   activityDetail?: string | null;
   practiceDetail?: string | null;
+  /**
+   * On the relearning path: the target's steps (null where a step isn't in play, e.g. a test
+   * target added at 80%+ owes corrections only). The line then uses the path's words.
+   */
+  path?: { corrections: StepState | null; relearn: StepState | null; practice: StepState | null };
 };
 
 export function readinessState(t: TargetReadiness): ReadinessState {
-  if (!t.required && !t.optedIn) return t.retaken ? "retaken" : "proficient";
+  if (!t.required && !t.optedIn && !t.path) return t.retaken ? "retaken" : "proficient";
+  if (t.path) {
+    const steps = [t.path.corrections, t.path.relearn, t.path.practice].filter((x) => x !== null);
+    if (!t.required && !t.optedIn && steps.every((x) => x === "done"))
+      return t.retaken ? "retaken" : "proficient";
+    return steps.every((x) => x === "done") ? "ready" : "not_ready";
+  }
   return t.gate.unlocked ? "ready" : "not_ready";
+}
+
+/** "U3.LT4: corrections ✓ (4 of 4 approved) · relearn ✓ · practice check ✗ · retake locked" */
+function pathLine(t: TargetReadiness & { path: NonNullable<TargetReadiness["path"]> }): string {
+  const mark = (s: StepState, detail?: string | null) =>
+    s === "done"
+      ? `✓${detail ? ` (${detail})` : ""}`
+      : s === "waiting"
+        ? "waiting for your OK"
+        : "✗";
+  const parts = [
+    `${t.code}: corrections ${t.path.corrections ? mark(t.path.corrections, t.correctionsDetail) : "none needed"}`,
+  ];
+  if (t.path.relearn) parts.push(`relearn ${mark(t.path.relearn)}`);
+  if (t.path.practice) parts.push(`practice check ${mark(t.path.practice)}`);
+  parts.push(t.gate.unlocked ? "retake unlocked" : "retake locked");
+  return parts.join(" · ");
 }
 
 /** "LT4: corrections ✓ · activity ✓ (watched blood-flow video) · practice ✓ (best 85%) · retake unlocked" */
@@ -161,6 +207,7 @@ export function readinessLine(t: TargetReadiness): string {
   const state = readinessState(t);
   if (state === "proficient") return `${t.code}: proficient (${Math.round(t.percent)}%)`;
   if (state === "retaken") return `${t.code}: retaken, now ${Math.round(t.percent)}%`;
+  if (t.path) return pathLine({ ...t, path: t.path });
   return [
     `${t.code}: corrections ${mark(t.gate.correctionsOk, t.correctionsDetail)}`,
     `activity ${mark(t.gate.activityOk, t.activityDetail)}`,
