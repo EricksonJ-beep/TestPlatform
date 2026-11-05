@@ -4,15 +4,21 @@ import { cellTag, type CellInput, type ColumnFooter } from "./class-gradebook";
 import {
   cellMarks,
   cellSentence,
+  cellTitle,
+  compactCell,
   DEFAULT_FILTERS,
+  footerTitle,
   gradebookView,
   isToDo,
   phoneLine,
   rightNow,
   scoreText,
+  shortColumnLabel,
+  shortColumnLabels,
   studentPanel,
   studentPanelItems,
   timeLeft,
+  unitBands,
   whoChip,
 } from "./gradebook-view";
 import type {
@@ -117,6 +123,7 @@ const column = (c: Partial<ClassGradebookColumn> = {}): ClassGradebookColumn => 
   assessmentId: "x",
   title: "Cell Quiz",
   type: "formative",
+  unit: null,
   opensAt: null,
   closesAt: null,
   status: "open",
@@ -508,5 +515,131 @@ describe("one cell", () => {
         fmt,
       })
     ).toBe("Took try 1 Oct 9.");
+  });
+});
+
+describe("the compact grid (Nov 5 2026)", () => {
+  it("shortens a header to its code and kind", () => {
+    const label = (title: string, type: ClassGradebookColumn["type"] = "formative") =>
+      shortColumnLabel({ title, type });
+    expect(label("8.1 Why Atoms Bond & Electron Dot Structures Quiz")).toBe("8.1 Q");
+    expect(label("8.1 Quiz")).toBe("8.1 Q");
+    expect(label("Unit 2 Test: Atomic Structure", "summative")).toBe("U2 T");
+    expect(label("Unit 3 Quiz LT1, LT2, LT3: Cell Theory & Cell Structure")).toBe("U3 Q");
+    expect(label("Unit 1 Lab Quiz: Density of Metals")).toBe("U1 LQ");
+    expect(label("Physical Science · Unit 1 Retake Test", "summative")).toBe("U1 RT");
+    expect(label("Unit 2 Lecture Exam", "summative")).toBe("U2 E");
+    expect(label("Unit 2 Practice Test", "practice")).toBe("U2 PT");
+    expect(label("U3 Practice: Naming Compounds", "practice")).toBe("U3 P");
+    // No code or unit: the initials of the title's first part.
+    expect(label("Periodic Table & Bohr Models Quiz")).toBe("PTB Q");
+    expect(label("pH Quiz — Biology")).toBe("pH Q");
+    // No kind word: the type's letter.
+    expect(label("Atoms and isotopes", "summative")).toBe("AI S");
+    expect(label("Quiz")).toBe("Q");
+  });
+  it("numbers headers that would read the same, the oldest keeping the plain label", () => {
+    // Newest first, as the loader orders them.
+    expect(
+      shortColumnLabels([
+        { title: "Unit 2 Quiz: Muscular System", type: "formative" },
+        { title: "Unit 2 Test: Biochemistry", type: "summative" },
+        { title: "Unit 2 Quiz: Skeletal System", type: "formative" },
+        { title: "Unit 2 Quiz: Carbohydrates", type: "formative" },
+      ])
+    ).toEqual(["U2 Q3", "U2 T", "U2 Q2", "U2 Q"]);
+  });
+  it("bands neighbouring columns of the same unit, in column order", () => {
+    const u = (id: string) => ({ unit: { id, name: `Unit ${id}`, sortOrder: 0 } });
+    expect(unitBands([u("4"), u("4"), u("3"), { unit: null }, u("3")])).toEqual([
+      { unitId: "4", name: "Unit 4", start: 0, span: 2 },
+      { unitId: "3", name: "Unit 3", start: 2, span: 1 },
+      { unitId: null, name: "", start: 3, span: 1 },
+      { unitId: "3", name: "Unit 3", start: 4, span: 1 },
+    ]);
+    // No units anywhere: no band row.
+    expect(unitBands([{ unit: null }, { unit: null }])).toEqual([]);
+  });
+  it("a cell is a number or a short mark, not a sentence", () => {
+    const scored = cell({ score: { percent: 79.6, tier: 2, basis: "per_target" } });
+    expect(compactCell(scored, { hideScores: false })).toEqual({ text: "80", icon: null });
+    expect(compactCell(scored, { hideScores: true })).toEqual({ text: "", icon: "check" });
+    const owes = cell({
+      score: { percent: 60, tier: null, basis: "best_attempt" },
+      input: { card: card({ cycle: "corrections_needed" }) },
+    });
+    expect(compactCell(owes, { hideScores: true })).toEqual({ text: "", icon: "dot" });
+    const live = (l: Partial<NonNullable<CellInput["live"]>>) =>
+      compactCell(
+        cell({ input: { live: { paused: false, asked: false, answered: 3, total: 5, ...l } } }),
+        { hideScores: false }
+      );
+    expect(live({})).toEqual({ text: "3/5", icon: null });
+    expect(live({ paused: true })).toEqual({ text: "", icon: "pause" });
+    expect(live({ paused: true, asked: true })).toEqual({ text: "", icon: "hand" });
+    expect(live({ outOfTime: true })).toEqual({ text: "", icon: "timer" });
+    const none = (c: Partial<CardState>) =>
+      compactCell(
+        cell({ attemptsUsed: 0, attempts: [], input: { attemptsUsed: 0, card: card(c) } }),
+        { hideScores: false }
+      );
+    expect(none({ status: "closed" })).toEqual({ text: "M", icon: null });
+    expect(none({})).toEqual({ text: "–", icon: null });
+    expect(none({ status: "scheduled" })).toEqual({ text: "", icon: null });
+    expect(compactCell(cell({ input: { toGrade: 2 } }), { hideScores: false })).toEqual({
+      text: "",
+      icon: "pen",
+    });
+  });
+  it("the cell's tooltip carries the tag's words, the score and its history", () => {
+    const c = cell({
+      score: { percent: 80, tier: null, basis: "corrections_to_threshold" },
+      attemptsUsed: 2,
+      tabSwitches: 1,
+      cycle: "retake_available",
+      retakeBy: hours(30),
+      trail: [
+        { percent: 60, label: "attempt 1", at: hours(-50) },
+        { percent: 80, label: "corrections", at: hours(-2) },
+      ],
+      input: {
+        card: card({ cycle: "corrections_needed" }),
+        corrections: { started: 1, needed: 2 },
+      },
+    });
+    const marks = "2 of 3 tries used · retake by 10-14T21:00 · 1 tab switch";
+    expect(cellTitle(c, column(), NOW, { hideScores: false, fmt })).toBe(
+      [
+        "Cell Quiz",
+        "Corrections needed 1/2",
+        "Counts 80% via fixes",
+        "History: 60% attempt 1, Oct 11 · 80% corrections, Oct 13",
+        marks,
+      ].join("\n")
+    );
+    expect(cellTitle(c, column(), NOW, { hideScores: true, fmt })).toBe(
+      ["Cell Quiz", "Corrections needed 1/2", marks].join("\n")
+    );
+    expect(
+      cellTitle(cell({}), column({ attemptsAllowed: null }), NOW, { hideScores: false, fmt })
+    ).toBe("Cell Quiz\nDone\n1 try");
+  });
+  it("the footer's tooltip sums the column up", () => {
+    const f: ColumnFooter = {
+      done: 20,
+      enrolled: 25,
+      average: 84.4,
+      tiers: { 1: 12, 2: 6, 3: 2 },
+      movedUpThisWeek: 3,
+    };
+    expect(footerTitle({ title: "Unit 3 Test", footer: f }, { hideScores: false })).toBe(
+      "Unit 3 Test\n20 of 25 done\naverage 84%\nTier 1: 12 · Tier 2: 6 · Tier 3: 2\n3 moved up this week"
+    );
+    expect(
+      footerTitle(
+        { title: "Quiz", footer: { ...f, tiers: null, movedUpThisWeek: 0 } },
+        { hideScores: true }
+      )
+    ).toBe("Quiz\n20 of 25 done");
   });
 });

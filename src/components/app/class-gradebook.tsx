@@ -9,8 +9,12 @@ import {
   Clock,
   EyeOff,
   Flag,
+  Hand,
+  Pause,
+  PenLine,
   Play,
   Search,
+  Timer,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -20,15 +24,21 @@ import { periodLabel } from "@/lib/class-focus";
 import type { PeriodOption } from "@/lib/current-course";
 import {
   cellMarks,
+  cellTitle,
+  compactCell,
   DEFAULT_FILTERS,
+  footerTitle,
   gradebookView,
   phoneLine,
   rightNow,
   scoreText,
+  shortColumnLabels,
   timeLeft,
+  unitBands,
   WHO_CHIP_LABEL,
   WHO_CHIPS,
   whoChip,
+  type CompactCell,
   type GradebookFilters,
   type LiveRow,
   type WhoChip,
@@ -44,6 +54,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { pickDashboardClass } from "@/app/app/actions";
 import { LetContinueButton } from "@/app/app/results/[assignmentId]/let-continue-button";
+import { deviceFlag } from "./device-flag";
 import { GradebookPanel, type PanelTarget } from "./gradebook-panel";
 import { setHideScores, useHideScores } from "./hide-scores";
 import { TagPill, TONE_CLASS } from "./gradebook-tag";
@@ -57,6 +68,15 @@ const KEY: { tone: CellTone; label: string }[] = [
   { tone: "muted", label: "Quiet" },
   { tone: "success", label: "Done" },
 ];
+
+/**
+ * "Detailed" (Nov 5 2026): the compact grid is the default, so the whole semester fits on one
+ * screen; Detailed brings back the earlier cells (the tag's words, the score trail, tries, via
+ * fixes) for the days Jon wants to read a column through. Remembered per browser, like Hide
+ * scores. Kept because it costs one switch and nothing he relied on is lost; the panel has all
+ * of it either way.
+ */
+const detailedView = deviceFlag("bloom.gradebook.detailed");
 
 // ---------------------------------------------------------------------------
 // The section
@@ -91,20 +111,22 @@ export function ClassGradebookSection({
             <Users className="size-4 text-brand-deep" aria-hidden />
             Class
           </CardTitle>
-          {course ? <span className="text-sm text-muted-foreground">{course.name}</span> : null}
+          {course ? (
+            <span
+              className="text-sm text-muted-foreground"
+              title="Every test assigned this term. Click a cell or a name for what's next; switch courses in the sidebar."
+            >
+              {course.name}
+              {gradebook ? ` · ${gradebook.class.name}` : ""}
+            </span>
+          ) : null}
           {classes.length > 1 || (classes.length === 1 && classes[0].period) ? (
             <PeriodChips classes={classes} currentId={currentClassId} />
           ) : null}
           {live ? <div className="ml-auto">{live}</div> : null}
         </div>
-        {gradebook ? (
-          <p className="text-sm text-muted-foreground">
-            {gradebook.class.name}: every test assigned this term. Click a cell or a name for
-            what&apos;s next; switch courses in the sidebar.
-          </p>
-        ) : null}
       </CardHeader>
-      <CardContent className="flex flex-col gap-4">
+      <CardContent className="flex flex-col gap-2.5">
         {!course ? (
           <EmptyState
             icon={Users}
@@ -193,6 +215,7 @@ function GradebookBody({ gb }: { gb: ClassGradebook }) {
   const [filters, setFilters] = useState<GradebookFilters>(DEFAULT_FILTERS);
   const [panel, setPanel] = useState<PanelTarget | null>(null);
   const hideScores = useHideScores();
+  const detailed = detailedView.use();
   const view = gradebookView(gb, filters);
   const live = rightNow(gb);
   const set = (patch: Partial<GradebookFilters>) => setFilters((f) => ({ ...f, ...patch }));
@@ -231,11 +254,102 @@ function GradebookBody({ gb }: { gb: ClassGradebook }) {
     <>
       <RightNow live={live} now={now} onOpen={setPanel} />
 
-      <WhoChips
-        counts={view.chips}
-        active={filters.chip}
-        onPick={(chip) => set({ chip: filters.chip === chip ? null : chip })}
-      />
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs">
+        <WhoChips
+          counts={view.chips}
+          active={filters.chip}
+          onPick={(chip) => set({ chip: filters.chip === chip ? null : chip })}
+        />
+        <div className="flex flex-wrap items-center gap-1.5 md:ml-auto">
+          <Toggle
+            on={filters.onlyOwing}
+            onClick={() => set({ onlyOwing: !filters.onlyOwing })}
+            data="only-owing"
+            title="Only students who owe something"
+          >
+            Owes something
+          </Toggle>
+          {gb.columns.some((c) => c.type === "practice") ? (
+            <Toggle
+              on={filters.showPractice}
+              onClick={() => set({ showPractice: !filters.showPractice })}
+              data="practice"
+              title={
+                view.practiceColumns > 0
+                  ? `Show ${view.practiceColumns} practice ${view.practiceColumns === 1 ? "column" : "columns"}`
+                  : "Hide the practice columns"
+              }
+            >
+              Practice
+            </Toggle>
+          ) : null}
+          <span className="inline-flex items-center text-muted-foreground" role="group">
+            <span className="mr-0.5">Sort</span>
+            {(["name", "todo"] as const).map((s) => (
+              <button
+                key={s}
+                type="button"
+                aria-pressed={filters.sort === s}
+                data-sort={s}
+                className={cn(
+                  "rounded-md px-1.5 py-0.5 hover:text-foreground",
+                  filters.sort === s && "bg-muted font-medium text-foreground"
+                )}
+                onClick={() => set({ sort: s })}
+              >
+                {s === "name" ? "Name" : "Most to do"}
+              </button>
+            ))}
+          </span>
+          <label className="relative">
+            <span className="sr-only">Find a student</span>
+            <Search
+              className="pointer-events-none absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-muted-foreground"
+              aria-hidden
+            />
+            <Input
+              value={filters.find}
+              onChange={(e) => set({ find: e.target.value })}
+              placeholder="Find student"
+              className="h-7 w-32 pl-7 text-xs"
+              data-find-student
+            />
+          </label>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={hideScores}
+            title="Hides every score on the Dashboard (the gradebook, Needs you and Recent activity) for the projector; status tags stay."
+            data-hide-scores
+            className={cn(
+              "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 font-medium",
+              hideScores
+                ? "bg-brand-soft text-brand-deep"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            )}
+            onClick={() => setHideScores(!hideScores)}
+          >
+            <EyeOff className="size-3.5" aria-hidden />
+            Hide scores
+          </button>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={detailed}
+            title="Detailed: each cell spelled out (status words, score history, tries). Remembered on this device."
+            data-detailed
+            className={cn(
+              "hidden rounded-md px-1.5 py-0.5 font-medium md:inline-flex",
+              detailed
+                ? "bg-brand-soft text-brand-deep"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            )}
+            onClick={() => detailedView.set(!detailed)}
+          >
+            Detailed
+          </button>
+        </div>
+      </div>
       {filters.chip ? (
         <p className="-mt-2 text-xs text-muted-foreground" data-chip-names>
           {WHO_CHIP_LABEL[filters.chip]}:{" "}
@@ -254,81 +368,29 @@ function GradebookBody({ gb }: { gb: ClassGradebook }) {
         </p>
       ) : null}
 
-      <div className="flex flex-wrap items-center gap-2 text-xs">
-        <Toggle
-          on={filters.onlyOwing}
-          onClick={() => set({ onlyOwing: !filters.onlyOwing })}
-          data="only-owing"
-        >
-          Only students who owe something
-        </Toggle>
-        {gb.columns.some((c) => c.type === "practice") ? (
-          <Toggle
-            on={filters.showPractice}
-            onClick={() => set({ showPractice: !filters.showPractice })}
-            data="practice"
-          >
-            Practice
-          </Toggle>
-        ) : null}
-        <span className="inline-flex items-center gap-1 text-muted-foreground">
-          Sort by
-          {(["name", "todo"] as const).map((s) => (
-            <button
-              key={s}
-              type="button"
-              aria-pressed={filters.sort === s}
-              data-sort={s}
-              className={cn(
-                "rounded-md px-1.5 py-0.5 hover:text-foreground",
-                filters.sort === s && "bg-muted font-medium text-foreground"
-              )}
-              onClick={() => set({ sort: s })}
-            >
-              {s === "name" ? "Name" : "Most to do"}
-            </button>
-          ))}
-        </span>
-        <label className="relative ml-auto">
-          <span className="sr-only">Find a student</span>
-          <Search
-            className="pointer-events-none absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-muted-foreground"
-            aria-hidden
-          />
-          <Input
-            value={filters.find}
-            onChange={(e) => set({ find: e.target.value })}
-            placeholder="Find student"
-            className="h-7 w-40 pl-7 text-xs"
-            data-find-student
-          />
-        </label>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={hideScores}
-          title="Hides every score on the Dashboard (the gradebook, Needs you and Recent activity) for the projector; status tags stay."
-          data-hide-scores
-          className={cn(
-            "inline-flex items-center gap-1 rounded-md border px-2 py-0.5 font-medium",
-            hideScores
-              ? "border-brand bg-brand-soft text-brand-deep"
-              : "border-border text-muted-foreground hover:text-foreground"
-          )}
-          onClick={() => setHideScores(!hideScores)}
-        >
-          <EyeOff className="size-3.5" aria-hidden />
-          Hide scores
-        </button>
-      </div>
-
       {view.rows.length === 0 ? (
         <p className="py-4 text-center text-sm text-muted-foreground">
           No students match. Clear the filters to see the whole class.
         </p>
       ) : (
         <>
-          <Grid gb={gb} view={view} chip={filters.chip} hideScores={hideScores} onOpen={setPanel} />
+          {detailed ? (
+            <DetailedGrid
+              gb={gb}
+              view={view}
+              chip={filters.chip}
+              hideScores={hideScores}
+              onOpen={setPanel}
+            />
+          ) : (
+            <CompactGrid
+              gb={gb}
+              view={view}
+              chip={filters.chip}
+              hideScores={hideScores}
+              onOpen={setPanel}
+            />
+          )}
           <ul
             className="divide-y divide-border rounded-lg border border-border md:hidden"
             data-phone-list
@@ -359,18 +421,47 @@ function GradebookBody({ gb }: { gb: ClassGradebook }) {
       )}
 
       <ul
-        className="hidden flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground md:flex"
+        className="hidden flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground md:flex"
         aria-label="Key"
       >
         {KEY.map((k) => (
           <li key={k.tone} className="inline-flex items-center gap-1">
-            <span
-              className={cn("inline-block size-3 rounded-sm", TONE_CLASS[k.tone])}
-              aria-hidden
-            />
+            {detailed ? (
+              <span
+                className={cn("inline-block size-3 rounded-sm", TONE_CLASS[k.tone])}
+                aria-hidden
+              />
+            ) : (
+              // A sample cell, as the grid draws it.
+              <span
+                className={cn(
+                  "relative inline-flex h-4 w-6 items-center justify-center rounded-sm border border-border text-[10px] tabular",
+                  COMPACT_TONE[k.tone]
+                )}
+                aria-hidden
+              >
+                {k.tone === "brand" ? "2/5" : "80"}
+                {k.tone === "coral" ? <YourMoveDot /> : null}
+              </span>
+            )}
             {k.label}
           </li>
         ))}
+        {detailed ? null : (
+          <>
+            <li>
+              <span className="font-semibold text-warning-foreground">M</span> missing
+            </li>
+            <li>
+              <span className="font-semibold text-warning-foreground">–</span> not started
+            </li>
+            <li className="inline-flex items-center gap-1">
+              <span className="inline-block size-1.5 rounded-full bg-brand" aria-hidden />
+              open now
+            </li>
+            <li>Q quiz · T test · hover a cell for the details</li>
+          </>
+        )}
         {view.practiceColumns > 0 ? (
           <li>
             {view.practiceColumns} practice {view.practiceColumns === 1 ? "column" : "columns"}{" "}
@@ -394,11 +485,13 @@ function Toggle({
   on,
   onClick,
   data,
+  title,
   children,
 }: {
   on: boolean;
   onClick: () => void;
   data: string;
+  title?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -406,11 +499,12 @@ function Toggle({
       type="button"
       aria-pressed={on}
       data-toggle={data}
+      title={title}
       className={cn(
-        "rounded-md border px-2 py-0.5 font-medium",
+        "rounded-md px-1.5 py-0.5 font-medium",
         on
-          ? "border-brand bg-brand-soft text-brand-deep"
-          : "border-border text-muted-foreground hover:text-foreground"
+          ? "bg-brand-soft text-brand-deep"
+          : "text-muted-foreground hover:bg-muted hover:text-foreground"
       )}
       onClick={onClick}
     >
@@ -442,7 +536,7 @@ function RightNow({
     onOpen({ kind: "cell", studentId: r.student.id, assignmentId: r.assignmentId });
   return (
     <section
-      className="flex flex-col gap-2 rounded-lg border border-brand/30 bg-brand-soft/40 px-3 py-2"
+      className="flex flex-wrap items-center gap-x-6 gap-y-1 rounded-md bg-brand-soft/50 px-2.5 py-1"
       aria-label="Right now"
       data-right-now
     >
@@ -502,12 +596,12 @@ function LiveLine({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-wrap items-start gap-x-3 gap-y-1 text-xs">
-      <span className="inline-flex items-center gap-1 pt-0.5 font-semibold text-brand-deep">
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+      <span className="inline-flex items-center gap-1 font-semibold text-brand-deep">
         <Icon className="size-3.5" aria-hidden />
         {label}
       </span>
-      <ul className="flex flex-1 flex-wrap items-center gap-x-3 gap-y-1">{children}</ul>
+      <ul className="flex flex-wrap items-center gap-x-3 gap-y-1">{children}</ul>
     </div>
   );
 }
@@ -546,7 +640,7 @@ function WhoChips({
       </p>
     );
   return (
-    <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Who needs what">
+    <div className="flex flex-wrap items-center gap-0.5" role="group" aria-label="Who needs what">
       {shown.map((c) => (
         <button
           key={c}
@@ -554,14 +648,15 @@ function WhoChips({
           aria-pressed={active === c}
           data-who-chip={c}
           className={cn(
-            "inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium",
-            TONE_CLASS[CHIP_TONE[c]],
-            active === c && "ring-2 ring-ring",
+            "inline-flex items-center gap-1.5 rounded-md px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground",
+            active === c && "bg-muted text-foreground ring-1 ring-ring",
             active && active !== c && "opacity-60"
           )}
           onClick={() => onPick(c)}
         >
-          {WHO_CHIP_LABEL[c]} <span className="tabular">{counts[c]}</span>
+          <span className={cn("size-2 rounded-full", DOT_CLASS[CHIP_TONE[c]])} aria-hidden />
+          {WHO_CHIP_LABEL[c]}
+          <span className="font-semibold text-foreground tabular">{counts[c]}</span>
         </button>
       ))}
     </div>
@@ -578,11 +673,411 @@ const TYPE_MARK: Record<ClassGradebookColumn["type"], string> = {
   practice: "P",
 };
 
+/** The chips' dots and the compact cells, in the gradebook's colour families. */
+const DOT_CLASS: Record<CellTone, string> = {
+  coral: "bg-coral",
+  brand: "bg-brand",
+  warning: "bg-warning",
+  coral_outline: "ring-1 ring-coral ring-inset",
+  muted: "bg-muted-foreground/40",
+  success: "bg-success",
+};
+
 /**
- * Students down, tests across (decision 7), scrolling sideways in its own box with the name column
- * and the header row fixed. Each cell: the counting score, one status tag, small marks.
+ * A compact cell's colour (Nov 5 2026): a soft fill for what needs someone (your move, testing,
+ * the student owes), an outline for your optional OK, grey text for quiet, and plain for done, so
+ * the colour is where the work is.
  */
-function Grid({
+const COMPACT_TONE: Record<CellTone, string> = {
+  coral: "bg-coral-soft text-coral-deep font-semibold",
+  brand: "bg-brand-soft text-brand-deep font-medium",
+  warning: "bg-warning-soft text-warning-foreground",
+  coral_outline: "text-coral-deep ring-1 ring-coral/60 ring-inset",
+  muted: "text-muted-foreground",
+  success: "text-foreground",
+};
+
+/** The corner dot on the teacher's own moves, so coral reads apart from the student's amber. */
+function YourMoveDot() {
+  return (
+    <span className="absolute top-0.5 right-0.5 size-1.5 rounded-full bg-coral-deep" aria-hidden />
+  );
+}
+
+const CELL_ICON: Record<NonNullable<CompactCell["icon"]>, LucideIcon | null> = {
+  play: Play,
+  pause: Pause,
+  hand: Hand,
+  timer: Timer,
+  pen: PenLine,
+  check: Check,
+  dot: null,
+};
+
+/** Arrow keys move between the grid's cells and names (Home / End: the row's ends). */
+function onGridKey(e: React.KeyboardEvent<HTMLTableElement>) {
+  const from = (e.target as HTMLElement).closest<HTMLElement>("[data-r]");
+  if (!from) return;
+  const r = Number(from.dataset.r);
+  const c = Number(from.dataset.c);
+  const next =
+    e.key === "ArrowRight"
+      ? [r, c + 1]
+      : e.key === "ArrowLeft"
+        ? [r, c - 1]
+        : e.key === "ArrowDown"
+          ? [r + 1, c]
+          : e.key === "ArrowUp"
+            ? [r - 1, c]
+            : e.key === "Home"
+              ? [r, -1]
+              : e.key === "End"
+                ? [r, Number.MAX_SAFE_INTEGER]
+                : null;
+  if (!next) return;
+  const table = e.currentTarget;
+  let to = table.querySelector<HTMLElement>(`[data-r="${next[0]}"][data-c="${next[1]}"]`);
+  if (!to && e.key === "End") {
+    const row = table.querySelectorAll<HTMLElement>(`[data-r="${r}"]`);
+    to = row[row.length - 1] ?? null;
+  }
+  if (!to) return;
+  e.preventDefault();
+  to.focus();
+}
+
+/**
+ * The compact grid (Jon, Nov 5 2026: "see the entire semester on one view without having to
+ * scroll"): one narrow column per test under its unit, a short label with the full title on
+ * hover, and a cell that is the score and a colour; the words are in the tooltip and the panel.
+ * The name column and the header stay put if it ever has to scroll. Columns keep the loader's
+ * newest-first order.
+ */
+function CompactGrid({
+  gb,
+  view,
+  chip,
+  hideScores,
+  onOpen,
+}: {
+  gb: ClassGradebook;
+  view: ReturnType<typeof gradebookView>;
+  chip: WhoChip | null;
+  hideScores: boolean;
+  onOpen: (t: PanelTarget) => void;
+}) {
+  const labels = shortColumnLabels(view.columns);
+  const bands = unitBands(view.columns);
+  const unitStart = new Set(bands.slice(1).map((b) => b.start));
+  const n = view.columns.length;
+  const headTop = bands.length ? "top-5" : "top-0";
+  return (
+    <div
+      // Under the top bar (3.5rem), the whole grid fits the window once scrolled to.
+      className="hidden max-h-[calc(100dvh-4.5rem)] overflow-auto rounded-lg border border-border md:block"
+      data-gradebook-grid="compact"
+    >
+      <table
+        className="table-fixed border-separate border-spacing-0 text-xs"
+        // As wide as it needs (about 3.5rem a test), never wider than the card.
+        style={{ width: `min(100%, ${10 + n * 3.5}rem)` }}
+        onKeyDown={onGridKey}
+      >
+        <colgroup>
+          <col className="w-40" />
+          {view.columns.map((c) => (
+            <col key={c.assignmentId} />
+          ))}
+        </colgroup>
+        <thead>
+          {bands.length ? (
+            <tr>
+              <th
+                scope="col"
+                className="sticky top-0 left-0 z-30 h-5 border-b border-border bg-card"
+                aria-hidden
+              />
+              {bands.map((b) => (
+                <th
+                  key={`${b.unitId}:${b.start}`}
+                  scope="colgroup"
+                  colSpan={b.span}
+                  title={b.name || "No unit"}
+                  className={cn(
+                    "sticky top-0 z-20 h-5 truncate border-b border-border bg-muted/60 px-1.5 text-left text-[10px] font-medium text-muted-foreground backdrop-blur",
+                    b.start > 0 && "border-l border-l-foreground/20"
+                  )}
+                  data-unit-band={b.unitId ?? "none"}
+                >
+                  {b.name || "No unit"}
+                </th>
+              ))}
+            </tr>
+          ) : null}
+          <tr>
+            <th
+              scope="col"
+              className={cn(
+                "sticky left-0 z-30 border-r border-b border-border bg-card px-2 py-1 text-left text-[11px] font-medium text-muted-foreground",
+                headTop
+              )}
+            >
+              Student
+            </th>
+            {view.columns.map((c, i) => (
+              <th
+                key={c.assignmentId}
+                scope="col"
+                className={cn(
+                  "sticky z-20 border-r border-b border-border bg-card px-0.5 py-1 text-center font-medium",
+                  headTop,
+                  c.type === "summative" && "bg-brand-soft/60",
+                  unitStart.has(i) && "border-l border-l-foreground/20"
+                )}
+                data-column={c.assignmentId}
+              >
+                <Link
+                  href={`/app/results/${c.assignmentId}`}
+                  className={cn(
+                    "relative block truncate rounded-sm text-[11px] leading-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+                    c.type === "summative" && "font-semibold text-brand-deep",
+                    c.status === "scheduled" && "font-normal text-muted-foreground"
+                  )}
+                  title={columnTitle(c)}
+                  aria-label={`${c.title}: open its results`}
+                >
+                  {labels[i]}
+                </Link>
+                <span className="flex h-2 items-center justify-center" aria-hidden>
+                  {c.status === "open" ? <span className="size-1.5 rounded-full bg-brand" /> : null}
+                </span>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {view.rows.map((r, ri) => (
+            <tr key={r.student.id} data-student-row={r.student.id}>
+              <th
+                scope="row"
+                className="sticky left-0 z-10 border-r border-b border-border bg-card p-0 text-left font-medium"
+              >
+                <button
+                  type="button"
+                  className="flex h-[22px] w-full items-center gap-1 px-2 text-left text-[13px] hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset"
+                  onClick={() => onOpen({ kind: "student", studentId: r.student.id })}
+                  title={`${r.student.firstName} ${r.student.lastName}${r.toDo ? `: ${r.toDo} to do` : ""}`}
+                  data-open-student={r.student.id}
+                  data-r={ri}
+                  data-c={-1}
+                >
+                  <span className="truncate">
+                    {r.student.lastName}, {r.student.firstName}
+                  </span>
+                  {r.toDo ? (
+                    <span
+                      className="ml-auto shrink-0 rounded bg-warning-soft px-1 text-[10px] leading-4 font-normal text-warning-foreground tabular"
+                      aria-label={`${r.toDo} to do`}
+                    >
+                      {r.toDo}
+                    </span>
+                  ) : null}
+                </button>
+              </th>
+              {r.cells.map((cell, i) => (
+                <td
+                  key={cell.assignmentId}
+                  className={cn(
+                    "border-r border-b border-border p-0",
+                    unitStart.has(i) && "border-l border-l-foreground/20"
+                  )}
+                >
+                  <CompactCellButton
+                    cell={cell}
+                    column={view.columns[i]}
+                    student={r.student}
+                    now={gb.generatedAt}
+                    hideScores={hideScores}
+                    dim={chip !== null && whoChip(cell.tag) !== chip}
+                    lit={chip !== null && whoChip(cell.tag) === chip}
+                    r={ri}
+                    c={i}
+                    onClick={() =>
+                      onOpen({
+                        kind: "cell",
+                        studentId: r.student.id,
+                        assignmentId: cell.assignmentId,
+                      })
+                    }
+                  />
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+        <tfoot>
+          <tr>
+            <th
+              scope="row"
+              className="sticky bottom-0 left-0 z-30 border-r border-border bg-card px-2 py-1 text-left text-[11px] font-medium text-muted-foreground"
+            >
+              Class
+            </th>
+            {view.columns.map((c, i) => (
+              <td
+                key={c.assignmentId}
+                className={cn(
+                  "sticky bottom-0 z-20 border-r border-border bg-muted px-0.5 py-1 text-center align-top text-[10px] leading-3.5 text-muted-foreground",
+                  unitStart.has(i) && "border-l border-l-foreground/20"
+                )}
+                title={footerTitle(c, { hideScores })}
+                data-footer={c.assignmentId}
+              >
+                <CompactFooter column={c} hideScores={hideScores} />
+              </td>
+            ))}
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  );
+}
+
+/** A compact header's tooltip: the full title, its type and window. */
+function columnTitle(c: ClassGradebookColumn): string {
+  const day = (d: Date) =>
+    d.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/Chicago" });
+  const type = {
+    formative: "Quiz (formative)",
+    summative: "Test (summative)",
+    practice: "Practice",
+  };
+  const status =
+    c.status === "closed"
+      ? `closed${c.closesAt ? ` ${day(c.closesAt)}` : ""}`
+      : c.status === "scheduled"
+        ? `opens${c.opensAt ? ` ${day(c.opensAt)}` : " later"}`
+        : `open${c.closesAt ? ` until ${day(c.closesAt)}` : ""}`;
+  return `${c.title}\n${type[c.type]} · ${status}${c.cvtcRules ? " · CVTC" : ""}\nClick for its results`;
+}
+
+function CompactCellButton({
+  cell,
+  column,
+  student,
+  now,
+  hideScores,
+  dim,
+  lit,
+  r,
+  c,
+  onClick,
+}: {
+  cell: ClassGradebookCell;
+  column: ClassGradebookColumn;
+  student: { firstName: string; lastName: string };
+  now: Date;
+  hideScores: boolean;
+  dim: boolean;
+  lit: boolean;
+  r: number;
+  c: number;
+  onClick: () => void;
+}) {
+  const shown = compactCell(cell, { hideScores });
+  const marks = cellMarks(cell, column, now);
+  const title = cellTitle(cell, column, now, { hideScores });
+  const Icon = shown.icon ? CELL_ICON[shown.icon] : null;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      aria-label={`${student.firstName} ${student.lastName}, ${title.replaceAll("\n", ". ")}`}
+      className={cn(
+        "relative flex h-[22px] w-full items-center justify-center tabular transition-opacity hover:ring-1 hover:ring-foreground/30 hover:brightness-95 hover:ring-inset focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset",
+        COMPACT_TONE[cell.tag.tone],
+        cell.tag.kind === "missing" && "font-semibold ring-1 ring-warning ring-inset",
+        dim && "opacity-30",
+        lit && "ring-2 ring-ring ring-inset"
+      )}
+      data-cell={`${cell.assignmentId}:${cell.studentId}`}
+      data-cell-tag={cell.tag.kind}
+      data-r={r}
+      data-c={c}
+    >
+      {Icon ? (
+        <Icon className="size-3" aria-hidden />
+      ) : shown.icon === "dot" ? (
+        <span className="size-1 rounded-full bg-current" aria-hidden />
+      ) : (
+        shown.text
+      )}
+      {cell.tag.group === "your_move" && !cell.tag.closed ? <YourMoveDot /> : null}
+      {marks.retakeBy ? (
+        <Clock
+          className="absolute top-0.5 left-0.5 size-2.5 text-warning-foreground"
+          aria-hidden
+          data-retake-by
+        />
+      ) : null}
+      {marks.tabSwitches > 0 ? (
+        <Flag
+          className="absolute bottom-0.5 left-0.5 size-2.5 text-muted-foreground"
+          aria-hidden
+          data-tab-switches={marks.tabSwitches}
+        />
+      ) : null}
+    </button>
+  );
+}
+
+/** The compact footer: the average, done of enrolled, and on tests the Tier board and ↑ N. */
+function CompactFooter({
+  column: c,
+  hideScores,
+}: {
+  column: ClassGradebookColumn;
+  hideScores: boolean;
+}) {
+  const f = c.footer;
+  // A test that isn't open yet has nothing to sum up.
+  if (c.status === "scheduled" && f.done === 0) return null;
+  return (
+    <span className="flex flex-col items-center tabular">
+      <span className="font-semibold text-foreground">
+        {!hideScores && f.average !== null ? Math.round(f.average) : "–"}
+      </span>
+      <span>
+        {f.done}/{f.enrolled}
+      </span>
+      {c.type === "summative" ? (
+        <span className="inline-flex items-center gap-0.5">
+          <Link
+            href={`/app/results/${c.assignmentId}/tiers`}
+            className="font-medium text-brand-deep hover:underline"
+            aria-label={`${c.title}: Tier board`}
+          >
+            Tiers
+          </Link>
+          {f.movedUpThisWeek > 0 ? (
+            <span className="inline-flex items-center text-success-foreground">
+              <ArrowUp className="size-2.5" aria-hidden />
+              {f.movedUpThisWeek}
+            </span>
+          ) : null}
+        </span>
+      ) : null}
+    </span>
+  );
+}
+
+/**
+ * Detailed (the grid as it was before Nov 5 2026): students down, tests across (decision 7),
+ * scrolling sideways in its own box with the name column and the header row fixed. Each cell: the
+ * counting score, one status tag, small marks.
+ */
+function DetailedGrid({
   gb,
   view,
   chip,
@@ -598,7 +1093,7 @@ function Grid({
   return (
     <div
       className="hidden max-h-[70vh] overflow-auto rounded-lg border border-border md:block"
-      data-gradebook-grid
+      data-gradebook-grid="detailed"
     >
       <table className="border-separate border-spacing-0 text-sm">
         <thead>
