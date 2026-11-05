@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BarChart3, ClipboardCheck, MessageSquareText } from "lucide-react";
+import { BarChart3, ClipboardCheck, MessageSquareText, RefreshCw } from "lucide-react";
 import { requireTeacher } from "@/lib/authz";
 import { splitByCourse } from "@/lib/course-focus";
 import { getCurrentCourse } from "@/lib/current-course";
@@ -9,28 +9,42 @@ import {
   countCorrectionsAwaiting,
   countCorrectionsAwaitingByAssignment,
 } from "@/lib/queries/corrections";
-import { countPendingByAssignment } from "@/lib/queries/results";
+import { listPausedAttempts } from "@/lib/queries/dashboard";
+import { countPendingByAssignment, getResultsOverview } from "@/lib/queries/results";
+import { countSkywardUpdates } from "@/lib/queries/skyward-updates";
+import type { ResultsRow } from "@/lib/results-table";
 import { EmptyState } from "@/components/empty-state";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ResultsTable } from "./results-table";
 
 export const metadata: Metadata = { title: "Results" };
 
-const STATUS = {
-  scheduled: "bg-warning-soft text-warning-foreground",
-  open: "bg-success-soft text-success-foreground",
-  closed: "bg-muted text-muted-foreground",
-} as const;
-
-/** Results per assignment, plus the manual grading queue. */
+/**
+ * Results per assignment as one sortable table (Jon, Nov 5 2026: "sort the assessment on the
+ * result page … more in a table so they are organized and more compact"), plus the grading and
+ * corrections queues.
+ */
 export default async function ResultsPage() {
   const session = await requireTeacher();
-  const [allAssignments, pending, correctionsTotal, awaitingBy, { current }] = await Promise.all([
-    listTeacherAssignments(session.userId),
+  const now = new Date();
+  const [
+    allAssignments,
+    pending,
+    correctionsTotal,
+    awaitingBy,
+    overview,
+    paused,
+    { current },
+    skyward,
+  ] = await Promise.all([
+    listTeacherAssignments(session.userId, now),
     countPendingByAssignment(session.userId),
     countCorrectionsAwaiting(session.userId),
     countCorrectionsAwaitingByAssignment(session.userId),
+    getResultsOverview(session.userId),
+    listPausedAttempts(session.userId, now),
     getCurrentCourse(session.userId),
+    countSkywardUpdates(session.userId),
   ]);
   // Course focus (docs/course-focus-plan.md): this course's assignments (plus any whose
   // assessment has no course); the queue counts follow, with what waits elsewhere noted.
@@ -42,14 +56,42 @@ export default async function ResultsPage() {
   const corrections = sum(awaitingBy, assignments);
   const pendingElsewhere = [...pending.values()].reduce((a, b) => a + b, 0) - totalPending;
   const correctionsElsewhere = correctionsTotal - corrections;
+  // "Ask my teacher" on a paused test, counted as the Dashboard counts it.
+  const asks = new Map<string, number>();
+  for (const p of paused)
+    if (p.askedAt) asks.set(p.assignmentId, (asks.get(p.assignmentId) ?? 0) + 1);
+  const rows: ResultsRow[] = assignments.map((a) => {
+    const o = overview.get(a.id);
+    return {
+      id: a.id,
+      title: a.assessmentTitle,
+      type: a.assessmentType,
+      className: a.className,
+      period: o?.period ?? null,
+      unitName: o?.unitName ?? null,
+      unitOrder: o?.unitOrder ?? null,
+      status: a.status,
+      opensAt: a.opensAt,
+      closesAt: a.closesAt,
+      createdAt: a.createdAt,
+      enrolled: a.enrolled,
+      submitted: a.submitted,
+      inProgress: a.started - a.submitted,
+      average: o?.average ?? null,
+      median: o?.median ?? null,
+      scored: o?.scored ?? 0,
+      toGrade: pending.get(a.id) ?? 0,
+      corrections: awaitingBy.get(a.id) ?? 0,
+      requests: o?.requests ?? 0,
+      asks: asks.get(a.id) ?? 0,
+    };
+  });
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-5">
       <div className="flex flex-wrap items-center gap-3">
         <div className="mr-auto">
           <h1 className="text-2xl">Results</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Every attempt, with the highest score counting. Pick an assignment.
-          </p>
+          <p className="mt-1 text-sm text-muted-foreground">Highest score counts per student.</p>
         </div>
         <Button
           variant={corrections > 0 ? "default" : "outline"}
@@ -66,6 +108,14 @@ export default async function ResultsPage() {
         >
           <ClipboardCheck data-icon="inline-start" aria-hidden />
           Grading queue{totalPending > 0 ? ` · ${totalPending}` : ""}
+        </Button>
+        <Button
+          variant={skyward > 0 ? "default" : "outline"}
+          nativeButton={false}
+          render={<Link href="/app/skyward" />}
+        >
+          <RefreshCw data-icon="inline-start" aria-hidden />
+          Skyward updates{skyward > 0 ? ` · ${skyward}` : ""}
         </Button>
       </div>
       {pendingElsewhere > 0 || correctionsElsewhere > 0 ? (
@@ -91,41 +141,7 @@ export default async function ResultsPage() {
           />
         </div>
       ) : (
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-results-list>
-          {assignments.map((a) => {
-            const n = pending.get(a.id) ?? 0;
-            const awaiting = awaitingBy.get(a.id) ?? 0;
-            return (
-              <li key={a.id}>
-                <Link
-                  href={`/app/results/${a.id}`}
-                  className="flex h-full flex-col gap-2 rounded-lg border border-border bg-card p-4 transition-colors outline-none hover:border-brand/50 focus-visible:ring-3 focus-visible:ring-ring/50"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <h2 className="text-base leading-tight">{a.assessmentTitle}</h2>
-                    <Badge className={STATUS[a.status]}>{a.status}</Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground">{a.className}</p>
-                  <p className="mt-auto flex flex-wrap gap-x-2 text-xs text-muted-foreground tabular">
-                    <span>
-                      {a.submitted} of {a.enrolled} submitted · {a.started - a.submitted} in
-                      progress
-                    </span>
-                    {n > 0 ? (
-                      <span className="font-medium text-warning-foreground">{n} to grade</span>
-                    ) : null}
-                    {awaiting > 0 ? (
-                      <span className="font-medium text-brand-deep">
-                        {awaiting} {awaiting === 1 ? "correction set" : "correction sets"} to
-                        approve
-                      </span>
-                    ) : null}
-                  </p>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+        <ResultsTable rows={rows} now={now.getTime()} />
       )}
       {split.elsewhere > 0 ? (
         <p className="text-xs text-muted-foreground" data-elsewhere>

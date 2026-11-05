@@ -834,6 +834,63 @@ export async function countPendingByAssignment(teacherId: string): Promise<Map<s
   return new Map(rows.map((r) => [r.assignmentId, r.n]));
 }
 
+export type ResultsOverview = {
+  unitName: string | null;
+  unitOrder: number | null;
+  period: string | null;
+  /** Mean and median counting score of the enrolled students who have one (the results page's class average). */
+  average: number | null;
+  median: number | null;
+  scored: number;
+  /** Retake requests not yet approved, current or leftover (the Dashboard's request rows). */
+  requests: number;
+};
+
+/**
+ * What the Results table shows beside each assignment row (Jon, Nov 5 2026): its unit and
+ * period, the class average and median, and the retake requests waiting. Every one of the
+ * teacher's assignments, in one read.
+ */
+export async function getResultsOverview(teacherId: string): Promise<Map<string, ResultsOverview>> {
+  const fs = schema.assignmentFinalScores;
+  const enrolled = sql`exists (select 1 from ${schema.enrollments} e where e.class_id = ${schema.assignments.classId} and e.student_id = ${fs.studentId})`;
+  const rows = await db
+    .select({
+      id: schema.assignments.id,
+      unitName: schema.units.name,
+      unitOrder: schema.units.sortOrder,
+      period: schema.classes.period,
+      average: sql<number | null>`avg(${fs.percent}) filter (where ${enrolled})`,
+      median: sql<
+        number | null
+      >`percentile_cont(0.5) within group (order by ${fs.percent}) filter (where ${enrolled})`,
+      scored: sql<number>`(count(${fs.id}) filter (where ${enrolled}))::int`,
+      requests: sql<number>`(select count(*)::int from ${schema.attemptUnlocks} u where u.assignment_id = ${schema.assignments.id} and u.granted_at is null)`,
+    })
+    .from(schema.assignments)
+    .innerJoin(schema.assessments, eq(schema.assignments.assessmentId, schema.assessments.id))
+    .innerJoin(schema.classes, eq(schema.assignments.classId, schema.classes.id))
+    .leftJoin(schema.units, eq(schema.assessments.unitId, schema.units.id))
+    .leftJoin(fs, eq(fs.assignmentId, schema.assignments.id))
+    .where(eq(schema.assignments.ownerId, teacherId))
+    .groupBy(schema.assignments.id, schema.units.id, schema.classes.id);
+  const num = (v: number | string | null) => (v === null ? null : Number(v));
+  return new Map(
+    rows.map((r) => [
+      r.id,
+      {
+        unitName: r.unitName,
+        unitOrder: r.unitOrder,
+        period: r.period,
+        average: num(r.average),
+        median: num(r.median),
+        scored: r.scored,
+        requests: r.requests,
+      },
+    ])
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Export
 // ---------------------------------------------------------------------------

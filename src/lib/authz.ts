@@ -91,6 +91,7 @@ export type OwnedResourceType =
   | "assignment"
   | "practice_set"
   | "relearning_activity"
+  | "relearning_option"
   | "worksheet";
 
 export type ResourceRef = { type: OwnedResourceType; id: string };
@@ -108,6 +109,7 @@ const ownerTables = {
   assignment: schema.assignments,
   practice_set: schema.practiceSets,
   relearning_activity: schema.relearningActivities,
+  relearning_option: schema.relearningOptions,
   worksheet: schema.worksheets,
 } satisfies Record<OwnedResourceType, unknown>;
 

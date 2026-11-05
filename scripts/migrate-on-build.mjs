@@ -15,6 +15,11 @@ console.log("migrate-on-build: applying drizzle/ migrations…");
 const r = spawnSync("npx", ["drizzle-kit", "migrate"], { stdio: "inherit", shell: true });
 if (r.status !== 0) process.exit(r.status ?? 1);
 
+// The relearning walkthrough (Jon, Nov 5 2026): its practice course and class, before the packs
+// that fill them. Does nothing once they exist.
+console.log("migrate-on-build: walkthrough course…");
+spawnSync("npx", ["tsx", "scripts/walkthrough-setup.ts"], { stdio: "inherit", shell: true });
+
 // Content packs (Jon, Oct 2 2026): quizzes shipped in content/packs/ apply once, after migrations.
 console.log("migrate-on-build: applying content packs…");
 spawnSync("npx", ["tsx", "scripts/apply-packs.ts"], { stdio: "inherit", shell: true });

@@ -87,6 +87,15 @@ export default async function SkywardExportPage({
         </section>
       ) : null}
 
+      <p className="text-sm text-muted-foreground" data-skyward-updates-link>
+        Bloom remembers what each download hands over. After retakes, corrections and the relearning
+        path,{" "}
+        <Link href="/app/skyward" className="font-medium text-brand-deep hover:underline">
+          Skyward updates
+        </Link>{" "}
+        lists just the grades to change.
+      </p>
+
       <p className="text-sm text-muted-foreground">
         Need every score, attempt and how it came about?{" "}
         <Button

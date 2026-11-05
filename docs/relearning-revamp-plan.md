@@ -428,7 +428,11 @@ must offer Read or Do and land in Needs you.
   no video could be checked. Jon picks the videos and plays them on a student account first
   (decision 37); they go into the pack as `watch` sections with timestamps.*
 - *Left for later:*
-  - *An in-app builder. Options are written in packs for now.*
+  - *~~An in-app builder. Options are written in packs for now.~~ Built Nov 5: Practice sets →
+    Read · Watch · Do (`/app/practice/relearning`), a course's targets × Read / Watch / Do, each
+    opening an editor with "Preview as student". Saves follow the pack rule (sections in place by
+    part + order) and set `relearning_options.edited_at`; a later pack revision skips an edited
+    option and lists it under `kept` in its summary.*
   - *Uploading Jon's own recordings to a section. The player already handles them.*
   - *~~The path-aware wording on the tier board's readiness lines (R5).~~ Done Nov 5.*
 - *Code: rules `src/lib/relearning.ts`; server `src/lib/relearning-server.ts` (every progress
@@ -578,6 +582,28 @@ matches.
   **Lunch codes** box. The teacher pastes the school roster once, and codes are matched by name
   (`users.lunch_code`, migration 0033). Jon's imports worked for all his classes.*
 
+### R8b · Skyward updates (Jon, Nov 5: "an efficient process to know what grades need to be changed in Skyward")
+- *Bloom remembers what Skyward has (`skyward_marks`, migration 0034): the score it handed over
+  for each student, in each Skyward column of an assignment.*
+  - *It's recorded by a Download on the export page (now a form post, checked to come from
+    Bloom's own pages) or by "Mark as entered".*
+  - *The plain GET link still works and records nothing.*
+- ***Skyward updates** (`/app/skyward`, linked from Needs you and the export page) lists every
+  grade whose counting score is different now, by assignment and file: student · Skyward has ·
+  now · why (relearning path, corrections, retake, regrade, new score) · when. "Download
+  changes" gives Skyward import files of just those rows. Either way they clear.*
+- *Needs you shows one row: "N grades to update in Skyward".*
+- *Grades entered before tracking existed: **Start tracking** picks a course and the day Jon
+  last entered its grades. From the score history Bloom works out what Skyward had then:*
+  - *Unchanged since that day: today's score.*
+  - *A test changed since: its score as of that day.*
+  - *A quiz target changed since: no mark, so it shows as an update.*
+- *Code: rules `src/lib/skyward-updates.ts`, reads `src/lib/queries/skyward-updates.ts`, page and
+  actions `src/app/app/skyward/`.*
+- *Tests: `src/lib/skyward-updates.test.ts` (rules) and `src/app/app/skyward/skyward-updates.test.ts`
+  (end to end: records, changes with reasons, changes-only files, mark entered, start tracking,
+  another teacher and another site refused).*
+
 ### C1 · Physical Science Practice banks to about 100 per target
 - 25 targets, today about 50 each (docs/ps-practice-banks-plan.md), so about 1,275 new
   questions, from Jon's Drive materials.
@@ -707,6 +733,29 @@ assignment still shows its old checklist, and Anatomy is unchanged.
 - *The student home shows a "How your path works" card once a student has an assignment on the
   path: four steps (fix your mistakes · relearn it your way · practice check · earn it), closed
   with "Got it", remembered on that device.*
+
+### L0 · Walkthrough course (Jon, Nov 5: "Test course walkthrough")
+A practice course to walk through the path as a student before switching the real courses on.
+- *Setup (`src/lib/walkthrough.ts`, run before the packs on every deploy, `content/walkthrough/setup.json`):*
+  - *Jon gets a course called **Relearning Walkthrough**, with the path switched on, and a class
+    called **Walkthrough Practice Class** (joining by code is off).*
+  - *Once they exist, nothing changes them again. No student is ever created.*
+- *Content (`walkthrough-1` … `walkthrough-6` packs, copies of PS U3.LT1 and U3.LT2 with WT-
+  question ids):*
+  - *Practice banks of 82 and 80 questions.*
+  - *Read · Watch · Do for both targets.*
+  - *A 10-question quiz (3 attempts) and a 10-question test (2 attempts) on the class.*
+  - *The test's retake pools.*
+- *How Jon uses it:*
+  1. *On Classes → Walkthrough Practice Class, add a pretend student. The temporary password
+     shows once.*
+  2. *In a private window, sign in as that student. Take the quiz and miss most U3.LT1
+     questions.*
+  3. *Walk the path: corrections → relearn (Read, Watch or Do) → practice check → 80% → keep or
+     retake. Approve the corrections as the teacher in the other window.*
+  4. *For the retake picker and two lines on the path, take the test and miss some on each
+     target.*
+  5. *Archive the course when done.*
 
 ## Not building (parked or out of scope)
 

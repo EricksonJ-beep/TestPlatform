@@ -6,13 +6,14 @@
  * cell's score line and small marks, and the panel's plain sentence. No database, no clock of its
  * own: the loader's `generatedAt` is "now", so the server and the browser render the same thing.
  */
-import { CENTRAL, type CellTag, type TagFormat } from "@/lib/class-gradebook";
+import { CENTRAL, tagLabel, type CellTag, type TagFormat } from "@/lib/class-gradebook";
 import { PRACTICE_PASS_PERCENT, practiceOwed, targetList } from "@/lib/quiz-practice";
 import type {
   ClassGradebook,
   ClassGradebookCell,
   ClassGradebookColumn,
 } from "@/lib/queries/class-gradebook";
+import { trailDetail } from "@/lib/score-trail";
 import { correctionsProgress, type StudentToDo } from "@/lib/student-home";
 
 type Student = ClassGradebook["students"][number];
@@ -473,4 +474,202 @@ export function cellSentence(
   if (cell.retakeOpenUntil) parts.push(`retake open through ${fmt.date(cell.retakeOpenUntil)}`);
   const text = parts.join("; ");
   return text ? `${text[0].toUpperCase()}${text.slice(1)}.` : "";
+}
+
+// ---------------------------------------------------------------------------
+// The compact grid (Jon, Nov 5 2026: "make the grade book less wordy and more compact looking so
+// I can see the entire semester on one view without having to scroll")
+// ---------------------------------------------------------------------------
+
+/** Title words that say what kind of assessment it is, most specific first. */
+const KIND_WORDS: [RegExp, string][] = [
+  [/\blab practical\b/i, "LP"],
+  [/\blab quiz\b/i, "LQ"],
+  [/\bretake test\b/i, "RT"],
+  [/\bpractice test\b/i, "PT"],
+  [/\bexam\b/i, "E"],
+  [/\btest\b/i, "T"],
+  [/\bquiz\b/i, "Q"],
+  [/\bpractice\b/i, "P"],
+];
+/** Without one in the title, the type's letter (the old header's mark). */
+const TYPE_LETTER: Record<ClassGradebookColumn["type"], string> = {
+  formative: "F",
+  summative: "S",
+  practice: "P",
+};
+const SKIP_WORD =
+  /^(a|an|and|the|of|in|on|for|to|with|&|lab|quiz|test|exam|retake|practice|practical|unit)$/i;
+
+/**
+ * A column header's short label (Nov 5 2026): the code the title starts with or the unit it
+ * names, then a letter for its kind. "8.1 Why Atoms Bond Quiz" → "8.1 Q", "Unit 2 Test: Atomic
+ * Structure" → "U2 T", "Unit 1 Lab Quiz: Density" → "U1 LQ"; with neither, the initials of the
+ * title's first part ("Periodic Table & Bohr Models Quiz" → "PTB Q"). The full title stays in the
+ * header's tooltip and the panel.
+ */
+export function shortColumnLabel(c: Pick<ClassGradebookColumn, "title" | "type">): string {
+  const title = c.title.trim();
+  const kind = KIND_WORDS.find(([re]) => re.test(title))?.[1] ?? TYPE_LETTER[c.type];
+  const lead = /^(\d+(?:\.\d+)*)\b/.exec(title);
+  const unit = /\bunit\s+(\d+)\b/i.exec(title) ?? /^U(\d+)\b/.exec(title);
+  let code: string;
+  if (lead) code = lead[1];
+  else if (unit) code = `U${unit[1]}`;
+  else {
+    const words = title
+      .split(/\s*(?::|—|–|\s-\s)\s*/)[0]
+      .split(/\s+/)
+      .filter((w) => w && !SKIP_WORD.test(w));
+    code =
+      words.length === 0
+        ? ""
+        : words.length === 1
+          ? words[0].slice(0, 3)
+          : words
+              .map((w) => w[0])
+              .join("")
+              .slice(0, 3)
+              .toUpperCase();
+  }
+  return code ? `${code} ${kind}` : kind;
+}
+
+/**
+ * Every column's short label, told apart where two would read the same: the older one keeps the
+ * plain label and the later ones are numbered ("U2 Q", "U2 Q2"). Columns come newest first.
+ */
+export function shortColumnLabels(
+  columns: Pick<ClassGradebookColumn, "title" | "type">[]
+): string[] {
+  const labels = columns.map(shortColumnLabel);
+  const seen = new Map<string, number>();
+  for (let i = labels.length - 1; i >= 0; i--) {
+    const n = (seen.get(labels[i]) ?? 0) + 1;
+    seen.set(labels[i], n);
+    if (n > 1) labels[i] = `${labels[i]}${n}`;
+  }
+  return labels;
+}
+
+export type UnitBand = {
+  /** The unit's id; null for a run of columns with no unit. */
+  unitId: string | null;
+  name: string;
+  /** Index of its first column. */
+  start: number;
+  span: number;
+};
+
+/**
+ * The unit band over the headers (Nov 5 2026): runs of neighbouring columns from the same unit,
+ * in column order, so the newest-first order is kept. Empty when no column has a unit, so the
+ * band row is left out.
+ */
+export function unitBands(columns: Pick<ClassGradebookColumn, "unit">[]): UnitBand[] {
+  if (!columns.some((c) => c.unit)) return [];
+  const out: UnitBand[] = [];
+  columns.forEach((c, i) => {
+    const id = c.unit?.id ?? null;
+    const last = out[out.length - 1];
+    if (last && last.unitId === id) last.span += 1;
+    else out.push({ unitId: id, name: c.unit?.name ?? "", start: i, span: 1 });
+  });
+  return out;
+}
+
+export type CompactCell = {
+  /** What the cell shows: the score ("80"), answered of served while testing, "M", "–", or nothing. */
+  text: string;
+  /** A small icon in place of the text. */
+  icon: "play" | "pause" | "hand" | "timer" | "pen" | "check" | "dot" | null;
+};
+
+/**
+ * Rule (Nov 5 2026): a compact cell is a number and a colour, not a sentence. The counting score
+ * as a whole number; while testing, answered of served (or a pause / raised hand); Missing "M";
+ * Not started "–"; a test not open yet, nothing. With "Hide scores" on, a check for done and a dot
+ * for the rest. The tag's words go to the tooltip (`cellTitle`) and the panel.
+ */
+export function compactCell(cell: ClassGradebookCell, opts: { hideScores: boolean }): CompactCell {
+  const t = cell.tag;
+  switch (t.kind) {
+    case "taking":
+      return t.progress
+        ? { text: `${t.progress.answered}/${t.progress.total}`, icon: null }
+        : { text: "", icon: "play" };
+    case "paused":
+      return { text: "", icon: "pause" };
+    case "asked":
+      return { text: "", icon: "hand" };
+    case "out_of_time":
+      return { text: "", icon: "timer" };
+    case "missing":
+      return { text: "M", icon: null };
+    case "not_started":
+      return { text: "–", icon: null };
+    case "opens":
+      return { text: "", icon: null };
+  }
+  if (cell.score && !opts.hideScores)
+    return { text: String(Math.round(cell.score.percent)), icon: null };
+  if (t.kind === "to_grade") return { text: "", icon: "pen" };
+  return { text: "", icon: t.kind === "done" ? "check" : "dot" };
+}
+
+/**
+ * A compact cell's tooltip and accessible name (Nov 5 2026): the test, the full tag, the counting
+ * score with how it came about and its trail, then tries, the retake clock and tab switches, one
+ * per line. Scores drop out when "Hide scores" is on.
+ */
+export function cellTitle(
+  cell: ClassGradebookCell,
+  column: ClassGradebookColumn,
+  now: Date,
+  opts: { hideScores: boolean; fmt?: TagFormat }
+): string {
+  const fmt = opts.fmt ?? CENTRAL;
+  const marks = cellMarks(cell, column, now);
+  const lines = [column.title, tagLabel(cell.tag, fmt)];
+  if (!opts.hideScores && cell.score) {
+    lines.push(`Counts ${scoreText(cell)}${marks.viaFixes ? " via fixes" : ""}`);
+    if (cell.trail) lines.push(`History: ${trailDetail(cell.trail)}`);
+    else if (cell.growth)
+      lines.push(
+        `First try ${Math.round(cell.growth.first)}%, now ${Math.round(cell.growth.now)}%`
+      );
+  }
+  const extra = [
+    marks.tries
+      ? marks.tries.allowed
+        ? `${marks.tries.used} of ${marks.tries.allowed} tries used`
+        : `${marks.tries.used} ${marks.tries.used === 1 ? "try" : "tries"}`
+      : null,
+    marks.retakeBy ? `retake by ${fmt.time(marks.retakeBy)}` : null,
+    marks.tabSwitches
+      ? `${marks.tabSwitches} tab ${marks.tabSwitches === 1 ? "switch" : "switches"}`
+      : null,
+  ].filter(Boolean);
+  if (extra.length) lines.push(extra.join(" · "));
+  return lines.join("\n");
+}
+
+/**
+ * A compact column footer's tooltip (Nov 5 2026): done of enrolled, the average, and on
+ * summatives the tier counts and "N moved up this week". Scores drop out when hidden.
+ */
+export function footerTitle(
+  c: Pick<ClassGradebookColumn, "title" | "footer">,
+  opts: { hideScores: boolean }
+): string {
+  const f = c.footer;
+  return [
+    c.title,
+    `${f.done} of ${f.enrolled} done`,
+    !opts.hideScores && f.average !== null ? `average ${Math.round(f.average)}%` : null,
+    f.tiers ? `Tier 1: ${f.tiers[1]} · Tier 2: ${f.tiers[2]} · Tier 3: ${f.tiers[3]}` : null,
+    f.movedUpThisWeek > 0 ? `${f.movedUpThisWeek} moved up this week` : null,
+  ]
+    .filter(Boolean)
+    .join("\n");
 }

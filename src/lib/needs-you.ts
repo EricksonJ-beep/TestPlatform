@@ -182,13 +182,21 @@ export function pathRequestBlocker(state: PathState): RequestBlocker | null {
 // ---------------------------------------------------------------------------
 
 export type NeedsYouGroup =
-  "asked" | "requests" | "corrections" | "grading" | "activities" | "videos" | "worksheets";
+  | "asked"
+  | "requests"
+  | "corrections"
+  | "grading"
+  | "activities"
+  | "videos"
+  | "skyward"
+  | "worksheets";
 
 /**
  * Rule (Jon, Oct 13 2026): "N things need you" is the number of rows in the list, one per
  * thing: each student asking to finish, each retake request (leftovers too, until cleared), each
  * correction set, each test with answers to grade, each activity to check off, each relearning
- * video that won't play for students (relearning revamp A6), and one row for all worksheet emails
+ * video that won't play for students (relearning revamp A6), one row for all grades to update in
+ * Skyward (Nov 5 2026; its count is the number of grades), and one row for all worksheet emails
  * still to match. Paused tests nobody asked about are not counted.
  */
 export function needsYouCounts(inbox: {
@@ -198,6 +206,8 @@ export function needsYouCounts(inbox: {
   grading: unknown[];
   activities: unknown[];
   videos?: unknown[];
+  /** Grades whose counting score changed since they went to Skyward (Skyward updates). */
+  skywardGrades?: number;
   worksheetEmails: number;
 }): Record<NeedsYouGroup, number> & { total: number } {
   const counts = {
@@ -207,7 +217,10 @@ export function needsYouCounts(inbox: {
     grading: inbox.grading.length,
     activities: inbox.activities.length,
     videos: inbox.videos?.length ?? 0,
+    skyward: inbox.skywardGrades ?? 0,
     worksheets: inbox.worksheetEmails > 0 ? 1 : 0,
   };
-  return { ...counts, total: Object.values(counts).reduce((a, b) => a + b, 0) };
+  // Skyward is one row however many grades it holds.
+  const rows = { ...counts, skyward: counts.skyward > 0 ? 1 : 0 };
+  return { ...counts, total: Object.values(rows).reduce((a, b) => a + b, 0) };
 }

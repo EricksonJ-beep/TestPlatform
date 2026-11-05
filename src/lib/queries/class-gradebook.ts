@@ -56,6 +56,8 @@ export type ClassGradebookColumn = {
   assessmentId: string;
   title: string;
   type: "practice" | "formative" | "summative";
+  /** The assessment's course unit (its shelf on the Assessments page); the grid bands columns by it. */
+  unit: { id: string; name: string; sortOrder: number } | null;
   opensAt: Date | null;
   closesAt: Date | null;
   status: AssignmentStatus;
@@ -277,6 +279,9 @@ export async function getClassGradebook(
         assessmentId: schema.assignments.assessmentId,
         title: schema.assessments.title,
         type: schema.assessments.type,
+        unitId: schema.units.id,
+        unitName: schema.units.name,
+        unitSortOrder: schema.units.sortOrder,
         opensAt: schema.assignments.opensAt,
         closesAt: schema.assignments.closesAt,
         attemptsAllowed: schema.assignments.attemptsAllowed,
@@ -295,6 +300,7 @@ export async function getClassGradebook(
       .from(schema.assignments)
       .innerJoin(schema.assessments, eq(schema.assignments.assessmentId, schema.assessments.id))
       .leftJoin(assessmentCourse, eq(schema.assessments.courseId, assessmentCourse.id))
+      .leftJoin(schema.units, eq(schema.assessments.unitId, schema.units.id))
       .where(eq(schema.assignments.classId, classId))
       .orderBy(
         desc(sql`coalesce(${schema.assignments.opensAt}, ${schema.assignments.createdAt})`),
@@ -843,6 +849,9 @@ export async function getClassGradebook(
     assessmentId: a.assessmentId,
     title: a.title,
     type: a.type,
+    unit: a.unitId
+      ? { id: a.unitId, name: a.unitName ?? "", sortOrder: a.unitSortOrder ?? 0 }
+      : null,
     opensAt: a.opensAt,
     closesAt: a.closesAt,
     status: assignmentStatus(a, now),

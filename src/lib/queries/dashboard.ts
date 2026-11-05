@@ -28,6 +28,7 @@ import { effectiveClose, endOfNextSchoolDay } from "@/lib/reopen";
 import { loadCorrectionScopes, scopeSummary } from "@/lib/queries/corrections";
 import { listPendingVerifications, type PendingVerification } from "@/lib/queries/practice";
 import { loadPracticeResults, loadPracticeTargets } from "@/lib/queries/quiz-practice";
+import { countSkywardUpdates } from "@/lib/queries/skyward-updates";
 import { loadPathStates, pathKey } from "@/lib/queries/relearning-path";
 import { attemptOpenUntil } from "@/lib/queries/reopen";
 import { countUnmatchedEmails } from "@/lib/queries/worksheets";
@@ -564,6 +565,8 @@ export async function listAnswersToGrade(teacherId: string): Promise<GradingRow[
 /** A relearning video that won't play for students (relearning revamp A6): one row per video. */
 export type VideoFlagRow = {
   sectionId: string;
+  /** The Read · Watch · Do option, for the editor link. */
+  optionId: string;
   optionTitle: string;
   /** Which part of the option: its core or its extension, and the section's own title. */
   part: "core" | "extension";
@@ -584,6 +587,7 @@ export async function listVideoFlags(teacherId: string): Promise<VideoFlagRow[]>
   const rows = await db
     .select({
       sectionId: f.sectionId,
+      optionId: schema.relearningOptions.id,
       optionTitle: schema.relearningOptions.title,
       part: schema.relearningSections.part,
       sectionTitle: schema.relearningSections.title,
@@ -607,6 +611,7 @@ export async function listVideoFlags(teacherId: string): Promise<VideoFlagRow[]>
     .where(and(eq(schema.relearningOptions.ownerId, teacherId), isNull(f.resolvedAt)))
     .groupBy(
       f.sectionId,
+      schema.relearningOptions.id,
       schema.relearningOptions.title,
       schema.relearningSections.part,
       schema.relearningSections.title,
@@ -630,26 +635,46 @@ export type NeedsYou = {
   activities: PendingVerification[];
   /** Relearning videos that won't play for students (A6). */
   videos: VideoFlagRow[];
+  /** Grades to update in Skyward since they were last handed over (Skyward updates). */
+  skywardGrades: number;
   /** Worksheet emails on the teacher's worksheets not yet matched to a student. */
   worksheetEmails: number;
 };
 
 /** Everything waiting on the teacher, across all their courses (Jon, Oct 13 2026). */
 export async function getNeedsYou(teacherId: string, now = new Date()): Promise<NeedsYou> {
-  const [paused, requests, corrections, grading, activities, videos, worksheetEmails] =
-    await Promise.all([
-      listPausedAttempts(teacherId, now),
-      listRetakeRequests(teacherId, now),
-      listCorrectionSets(teacherId),
-      listAnswersToGrade(teacherId),
-      listPendingVerifications(teacherId),
-      listVideoFlags(teacherId),
-      countUnmatchedEmails(teacherId),
-    ]);
+  const [
+    paused,
+    requests,
+    corrections,
+    grading,
+    activities,
+    videos,
+    skywardGrades,
+    worksheetEmails,
+  ] = await Promise.all([
+    listPausedAttempts(teacherId, now),
+    listRetakeRequests(teacherId, now),
+    listCorrectionSets(teacherId),
+    listAnswersToGrade(teacherId),
+    listPendingVerifications(teacherId),
+    listVideoFlags(teacherId),
+    countSkywardUpdates(teacherId),
+    countUnmatchedEmails(teacherId),
+  ]);
   const asked = paused
     .filter((p) => p.askedAt)
     .sort((a, b) => a.askedAt!.getTime() - b.askedAt!.getTime());
-  return { asked, requests, corrections, grading, activities, videos, worksheetEmails };
+  return {
+    asked,
+    requests,
+    corrections,
+    grading,
+    activities,
+    videos,
+    skywardGrades,
+    worksheetEmails,
+  };
 }
 
 export type DashboardCounts = Record<NeedsYouGroup, number> & {

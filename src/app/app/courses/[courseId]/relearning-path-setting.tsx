@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Route } from "lucide-react";
 import { useAction } from "@/components/use-action";
@@ -93,6 +94,13 @@ export function RelearningPathSetting({
           </span>
         )}
         {error ? <span className="text-error-foreground">{error}</span> : null}
+        <Link
+          href={`/app/practice/relearning?course=${courseId}`}
+          className="self-start text-xs font-medium text-brand-deep hover:underline"
+          data-relearning-options-link
+        >
+          Edit Read · Watch · Do for this course
+        </Link>
       </div>
       <span
         className={`rounded-md px-2 py-0.5 text-xs font-medium ${state === "on" ? "bg-brand-soft text-brand-deep" : state === "scheduled" ? "bg-warning-soft text-warning-foreground" : "bg-muted text-muted-foreground"}`}

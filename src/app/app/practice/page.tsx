@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { FileSpreadsheet, Layers } from "lucide-react";
+import { FileSpreadsheet, Layers, Route } from "lucide-react";
 import { requireTeacher } from "@/lib/authz";
 import { getCurrentCourse } from "@/lib/current-course";
 import { focusPractice, groupPractice, type PracticeItem } from "@/lib/practice-groups";
@@ -37,6 +37,15 @@ export default async function PracticePage() {
             need one activity and one practice set per target before a retake.
           </p>
         </div>
+        <Button
+          variant="outline"
+          nativeButton={false}
+          render={<Link href="/app/practice/relearning" />}
+          data-relearning-options-link
+        >
+          <Route data-icon="inline-start" aria-hidden />
+          Read · Watch · Do
+        </Button>
         <Button
           variant="outline"
           nativeButton={false}

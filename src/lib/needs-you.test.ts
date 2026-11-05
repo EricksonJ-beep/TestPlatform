@@ -146,9 +146,22 @@ describe("needsYouCounts", () => {
       grading: 2,
       activities: 0,
       videos: 1,
+      skyward: 0,
       worksheets: 1,
       total: 8,
     });
+    // Skyward updates: however many grades, one row (Nov 5 2026).
+    expect(
+      needsYouCounts({
+        asked: [],
+        requests: [],
+        corrections: [],
+        grading: [],
+        activities: [],
+        skywardGrades: 6,
+        worksheetEmails: 0,
+      })
+    ).toMatchObject({ skyward: 6, total: 1 });
   });
   it("is zero when nothing waits", () => {
     expect(

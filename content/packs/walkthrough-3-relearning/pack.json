@@ -1,0 +1,782 @@
+{
+  "name": "walkthrough-3-relearning",
+  "revision": 1,
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Relearning Walkthrough",
+  "relearning": [
+    {
+      "target": "U3.LT1",
+      "mode": "read",
+      "title": "Read: reading chemical formulas",
+      "description": "A short reading with the combo-meal analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "The three rules",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can read a chemical formula and tell what elements are in a compound and how many atoms of each.**\n\n**Think of a combo meal.** One combo is a burger and 2 fries. If the sign says (burger + 2 fries) × 3, you get 3 burgers and 6 fries, because the 3 multiplies everything in the combo. A chemical formula works the same way: parentheses are a combo, and the small number outside them multiplies the whole combo.\n\n**Rule 1.** Each capital letter starts a new element symbol. Na is sodium (one element), not N plus a.\n\n**Rule 2.** A **subscript** (the small number below) counts only the symbol right before it. No subscript means 1. In H₂O there are 2 H and 1 O.\n\n**Rule 3.** A subscript **outside parentheses** multiplies everything inside. In Ba(OH)₂, the 2 doubles both the O and the H.\n\n**Worked example:** Ba(OH)₂. Ba has no subscript, so Ba = 1. O = 1 × 2 = 2. H = 1 × 2 = 2. Total = 1 + 2 + 2 = 5 atoms."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "How many hydrogen atoms are in one molecule of H₂O?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "1"
+                },
+                {
+                  "id": "b",
+                  "text": "2"
+                },
+                {
+                  "id": "c",
+                  "text": "3"
+                }
+              ],
+              "answer": "b",
+              "explanation": "The subscript 2 follows H, so there are 2 hydrogen atoms. O has no subscript, so there is 1 oxygen atom."
+            },
+            {
+              "id": "c2",
+              "kind": "fill_blank",
+              "prompt": "How many oxygen atoms are in Ca(OH)₂? Type a number.",
+              "answer": ["2", "two"],
+              "explanation": "The 2 outside the parentheses multiplies the O inside: 1 × 2 = 2."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Coefficients and bigger formulas",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Coefficients.** A big number in front multiplies the whole formula. 3H₂O means 3 molecules of water: H = 2 × 3 = 6 and O = 1 × 3 = 3. Always multiply, never add.\n\n**Worked example 2:** (NH₄)₂CO₃. The outside 2 multiplies N and H: N = 1 × 2 = 2, H = 4 × 2 = 8. C and O are outside the parentheses: C = 1, O = 3. Total = 2 + 8 + 1 + 3 = 14 atoms.\n\n**Worked example 3:** 2Al(NO₃)₃. First count one formula unit: Al = 1, N = 1 × 3 = 3, O = 3 × 3 = 9. Then the coefficient 2 doubles everything: Al = 2, N = 6, O = 18. Total = 26 atoms.\n\n**Same total does not mean same substance.** H₂O and CO₂ both have 3 atoms, but they are made of different elements, so they are different substances.\n\n**Watch out for:** counting only inside the parentheses and forgetting the outside subscript, adding numbers instead of multiplying (3 + 2 = 5), using a coefficient on only the first element, and reading a two-letter symbol like Ca or Mn as two elements."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "How many oxygen atoms are in Cu(NO₃)₂?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "3"
+                },
+                {
+                  "id": "b",
+                  "text": "5"
+                },
+                {
+                  "id": "c",
+                  "text": "6"
+                }
+              ],
+              "answer": "c",
+              "explanation": "There are 3 O inside the parentheses, and the outside 2 doubles them: 3 × 2 = 6. Adding (3 + 2 = 5) is the common mistake."
+            },
+            {
+              "id": "e2",
+              "kind": "fill_blank",
+              "prompt": "How many total atoms are in 2NaCl? Type a number.",
+              "answer": ["4", "four"],
+              "explanation": "One NaCl has 2 atoms (1 Na and 1 Cl). The coefficient 2 doubles the whole formula, so there are 4 atoms."
+            }
+          ],
+          "shortAnswer": "In 2Na₃PO₄, explain what the 2 in front does and what the 3 below does."
+        }
+      ]
+    },
+    {
+      "target": "U3.LT1",
+      "mode": "do",
+      "title": "Do: flip the rules, then count step by step",
+      "description": "Flashcards with a 3-question self-quiz, then a worked problem one step at a time.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: the formula rules",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Chemical formula",
+                "back": "Shows which elements are in a compound and how many atoms of each."
+              },
+              {
+                "id": "k2",
+                "front": "Capital letter",
+                "back": "Starts a new element symbol. Na is one element (sodium), not N plus a."
+              },
+              {
+                "id": "k3",
+                "front": "Subscript",
+                "back": "The small number below. It counts only the symbol right before it. No subscript means 1."
+              },
+              {
+                "id": "k4",
+                "front": "Subscript outside parentheses",
+                "back": "Multiplies every atom inside the parentheses, like (burger + 2 fries) × 3."
+              },
+              {
+                "id": "k5",
+                "front": "Coefficient",
+                "back": "The big number in front. It multiplies the whole formula."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "In CO₂, what does the 2 count?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The carbon atoms"
+                },
+                {
+                  "id": "b",
+                  "text": "The oxygen atoms"
+                },
+                {
+                  "id": "c",
+                  "text": "Both the carbon and the oxygen atoms"
+                }
+              ],
+              "answer": "b",
+              "explanation": "A subscript counts only the symbol right before it, so the 2 counts oxygen. CO₂ has 1 C and 2 O."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "Which of these is ONE element symbol?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Ca"
+                },
+                {
+                  "id": "b",
+                  "text": "CO"
+                },
+                {
+                  "id": "c",
+                  "text": "NO"
+                }
+              ],
+              "answer": "a",
+              "explanation": "A new element starts at each capital letter. Ca (calcium) has one capital letter. CO and NO each have two capitals, so each is two elements."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "In 3H₂O, what does the 3 do?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "It counts only the hydrogen atoms"
+                },
+                {
+                  "id": "b",
+                  "text": "It multiplies every atom in the formula"
+                },
+                {
+                  "id": "c",
+                  "text": "It adds 3 atoms to the formula"
+                }
+              ],
+              "answer": "b",
+              "explanation": "A coefficient multiplies the whole formula: 3H₂O is 3 molecules of water, so 6 H and 3 O."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Worked problem: (NH₄)₃PO₄",
+          "minutes": 6,
+          "body": {
+            "type": "worked_steps",
+            "problem": "Count every atom in one formula unit of (NH₄)₃PO₄.",
+            "steps": [
+              {
+                "id": "s1",
+                "text": "List the elements. Each capital letter starts one: N, H, P and O."
+              },
+              {
+                "id": "s2",
+                "text": "Inside the parentheses there is 1 N and 4 H. The outside 3 multiplies both: N = 1 × 3 = 3 and H = 4 × 3 = 12."
+              },
+              {
+                "id": "s3",
+                "text": "Outside the parentheses, P has no subscript, so P = 1. O has the subscript 4, so O = 4."
+              },
+              {
+                "id": "s4",
+                "text": "Add the counts: 3 + 12 + 1 + 4 = 20 atoms."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "fill_blank",
+              "prompt": "Your turn: how many H atoms are in (NH₄)₂SO₄? Type a number.",
+              "answer": ["8", "eight"],
+              "explanation": "There are 4 H inside the parentheses, and the outside 2 doubles them: 4 × 2 = 8.",
+              "afterStepId": "s2"
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "How many total atoms are in Mg(OH)₂?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "3"
+                },
+                {
+                  "id": "b",
+                  "text": "4"
+                },
+                {
+                  "id": "c",
+                  "text": "5"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Mg = 1. The outside 2 doubles O and H: O = 2 and H = 2. Total = 1 + 2 + 2 = 5.",
+              "afterStepId": "s4"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "target": "U3.LT1",
+      "mode": "watch",
+      "title": "U3.LT1 Watch: counting atoms in formulas",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Counting atoms in chemical formulas",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "Ud869Fnx0uQ"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "How many oxygen atoms are in Al₂(SO₄)₃?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "3"
+                },
+                {
+                  "id": "b",
+                  "text": "4"
+                },
+                {
+                  "id": "c",
+                  "text": "7"
+                },
+                {
+                  "id": "d",
+                  "text": "12"
+                }
+              ],
+              "answer": "d",
+              "explanation": "The 3 outside the parentheses multiplies everything inside, like (burger + 2 fries) × 3: O = 4 × 3 = 12. Adding (4 + 3 = 7) is the common mistake."
+            },
+            {
+              "id": "w2",
+              "kind": "fill_blank",
+              "prompt": "How many total atoms are in one formula unit of CaCO₃? Type a number.",
+              "answer": ["5", "five"],
+              "explanation": "Ca has no subscript, so Ca = 1. C = 1. The 3 counts only the O right before it, so O = 3. Total = 1 + 1 + 3 = 5."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Counting atoms with coefficients and subscripts",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "IRSW8WI1Qjg"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "How many hydrogen atoms are in 4NH₃?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "3"
+                },
+                {
+                  "id": "b",
+                  "text": "4"
+                },
+                {
+                  "id": "c",
+                  "text": "7"
+                },
+                {
+                  "id": "d",
+                  "text": "12"
+                }
+              ],
+              "answer": "d",
+              "explanation": "One NH₃ has 3 H. The coefficient 4 multiplies the whole formula: H = 3 × 4 = 12. Always multiply, never add (3 + 4 = 7)."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "How many oxygen atoms are in 2Mg(OH)₂?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "2"
+                },
+                {
+                  "id": "b",
+                  "text": "4"
+                },
+                {
+                  "id": "c",
+                  "text": "5"
+                }
+              ],
+              "answer": "b",
+              "explanation": "One Mg(OH)₂ has 1 × 2 = 2 O. The coefficient 2 doubles the whole formula: O = 2 × 2 = 4."
+            }
+          ],
+          "shortAnswer": "In 3Ca(NO₃)₂, explain what the 3 in front does and what the 2 outside the parentheses does."
+        }
+      ]
+    },
+    {
+      "target": "U3.LT2",
+      "mode": "read",
+      "title": "Read: ionic or covalent?",
+      "description": "A short reading with the lunch-money analogy, worked examples and quick checks.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "The three rules",
+          "minutes": 4,
+          "body": {
+            "type": "text",
+            "text": "**I can look at a compound and tell whether it's ionic or covalent.**\n\n**Think of lunch money vs. a shared pizza.** If a friend hands you a dollar, the dollar moves from them to you: one gives, the other takes. That is an **ionic** bond. If you and a friend split a pizza, nobody gives it away; you both eat from it. That is a **covalent** bond. Metals are the \"givers\" and nonmetals are the \"takers.\" When two takers meet, neither will give, so they share.\n\n**Rule 1.** Metal + nonmetal makes an **ionic** compound: the metal **transfers** electrons to the nonmetal. Metals sit **left of the staircase** on the periodic table. Transition metals like iron and copper are metals too.\n\n**Rule 2.** Two nonmetals make a **covalent** compound: the electrons are **shared**, and one unit is a **molecule**. Hydrogen is a nonmetal, even though it sits on the left.\n\n**Rule 3.** A compound with a **polyatomic ion** is **ionic**. That includes **ammonium, NH₄⁺**, even though ammonium compounds have no metal. Ammonium plays the part of the metal.\n\n**Worked example:** CaBr₂. Calcium is left of the staircase, so it is a metal. Bromine is right of the staircase, so it is a nonmetal. Metal + nonmetal, so CaBr₂ is **ionic**: calcium transfers electrons to bromine."
+          },
+          "checks": [
+            {
+              "id": "c1",
+              "kind": "multiple_choice",
+              "prompt": "Which compound is ionic?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "CH₄"
+                },
+                {
+                  "id": "b",
+                  "text": "KCl"
+                },
+                {
+                  "id": "c",
+                  "text": "SO₂"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Potassium is a metal (left of the staircase) and chlorine is a nonmetal, so KCl is ionic. CH₄ and SO₂ are only nonmetals, so they are covalent. Calling CH₄ ionic because hydrogen sits on the left is the common mistake: hydrogen is a nonmetal."
+            },
+            {
+              "id": "c2",
+              "kind": "fill_blank",
+              "prompt": "Ammonium chloride, NH₄Cl, has no metal, but it has the polyatomic ion NH₄⁺. Is it ionic or covalent? Type one word.",
+              "answer": [
+                "ionic",
+                "ionic compound",
+                "an ionic compound",
+                "it is ionic",
+                "it's ionic",
+                "ionic bond"
+              ],
+              "explanation": "A compound with a polyatomic ion is ionic, even with no metal. Ammonium plays the part of the metal. Calling it covalent because every atom is a nonmetal is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Hard cases and lab evidence",
+          "minutes": 6,
+          "body": {
+            "type": "text",
+            "text": "**Why atoms bond.** Atoms bond **to be stable**. The **octet rule** says most atoms are stable with **8** outer electrons (hydrogen and helium are the exceptions). Noble gases already have a full outer shell, so they don't bond. A **single bond** shares 2 electrons, a **double bond** shares 4 and a **triple bond** shares 6.\n\n**Worked example 2:** (NH₄)₃PO₄ (ammonium is NH₄⁺, phosphate is PO₄³⁻). Every atom is a nonmetal, so the nonmetal rule says covalent... but wait. It has polyatomic ions, and a compound with a polyatomic ion is ionic. Answer: **ionic**.\n\n**Properties are your evidence.** Ionic compounds have **high melting points** (generally above 300 °C), form **crystals** and **conduct electricity when dissolved in water**, because they break into free-moving ions. Covalent compounds have **low melting points**, can be solid, liquid or gas, and **do not conduct** when dissolved, because they stay as whole molecules. Color, mass and where a bottle was stored are **irrelevant evidence**.\n\n**Worked example 3:** An unknown melts at 80 °C and its solution does not light the bulb. 80 °C is far below 300 °C, which points to covalent. No conductivity means no free ions, which also points to covalent. Answer: **covalent**.\n\n**Watch out for:** calling an ammonium compound covalent just because it has no metal, calling hydrogen a metal, calling two metals (like Ca and Mg) ionic, forgetting that transition metals are metals, and using color, mass or \"it dissolves\" as evidence. Use melting point and conductivity instead."
+          },
+          "checks": [
+            {
+              "id": "e1",
+              "kind": "multiple_choice",
+              "prompt": "An unknown white solid melts at 750 °C, and its solution lights the bulb. Which conclusion is best?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Ionic: the high melting point and the conductivity both point to ionic"
+                },
+                {
+                  "id": "b",
+                  "text": "Covalent: it is a white solid"
+                },
+                {
+                  "id": "c",
+                  "text": "Covalent: it dissolves in water"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Melting above 300 °C and conducting when dissolved both point to ionic. Color and dissolving are irrelevant evidence, and using them is the common mistake."
+            },
+            {
+              "id": "e2",
+              "kind": "fill_blank",
+              "prompt": "Water, H₂O, is made of hydrogen and oxygen. Is it ionic or covalent? Type one word.",
+              "answer": [
+                "covalent",
+                "covalent compound",
+                "a covalent compound",
+                "it is covalent",
+                "it's covalent",
+                "covalent bond"
+              ],
+              "explanation": "Hydrogen is a nonmetal even though it sits on the left of the periodic table, so H₂O is two nonmetals: covalent. Calling hydrogen a metal is the common mistake."
+            }
+          ],
+          "shortAnswer": "Explain why NaCl is ionic but Cl₂ is covalent. Say what the electrons do in each."
+        }
+      ]
+    },
+    {
+      "target": "U3.LT2",
+      "mode": "do",
+      "title": "Do: flip the rules, then sort the compounds",
+      "description": "Flashcards with a 3-question self-quiz, then a guess-and-flip deck of compounds and lab clues.",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Flashcards: ionic or covalent?",
+          "minutes": 4,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "k1",
+                "front": "Ionic bond",
+                "back": "A metal transfers electrons to a nonmetal. One gives and one takes, like handing a friend a dollar."
+              },
+              {
+                "id": "k2",
+                "front": "Covalent bond",
+                "back": "Two nonmetals share electrons, like splitting a pizza. One unit is a molecule."
+              },
+              {
+                "id": "k3",
+                "front": "Metals",
+                "back": "Left of the staircase on the periodic table. Transition metals like iron and copper count too."
+              },
+              {
+                "id": "k4",
+                "front": "Hydrogen",
+                "back": "A nonmetal, even though it sits on the left. H₂O is two nonmetals, so it is covalent."
+              },
+              {
+                "id": "k5",
+                "front": "Polyatomic ion rule",
+                "back": "A compound with a polyatomic ion, like ammonium (NH₄⁺), is ionic, even with no metal."
+              },
+              {
+                "id": "k6",
+                "front": "Octet rule",
+                "back": "Atoms bond to be stable. Most are stable with 8 outer electrons. Noble gases are already full, so they don't bond."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "d1",
+              "kind": "multiple_choice",
+              "prompt": "Which compound is ionic?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "CO₂"
+                },
+                {
+                  "id": "b",
+                  "text": "NaF"
+                },
+                {
+                  "id": "c",
+                  "text": "PCl₃"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Sodium is a metal (left of the staircase) and fluorine is a nonmetal, so NaF is ionic. CO₂ and PCl₃ have only nonmetals, so they are covalent. Skipping the metal check is the common mistake."
+            },
+            {
+              "id": "d2",
+              "kind": "multiple_choice",
+              "prompt": "Two chlorine atoms bond to make Cl₂. What happens to their electrons?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "One chlorine transfers electrons to the other"
+                },
+                {
+                  "id": "b",
+                  "text": "The two atoms share electrons"
+                },
+                {
+                  "id": "c",
+                  "text": "Each atom keeps its electrons, and no bond forms"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Chlorine is a nonmetal, and two nonmetals share electrons: a covalent bond. Transfer happens from a metal to a nonmetal, so picking transfer is the common mistake."
+            },
+            {
+              "id": "d3",
+              "kind": "multiple_choice",
+              "prompt": "NH₄NO₃ has no metal (ammonium is NH₄⁺ and nitrate is NO₃⁻). How should it be classified?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Covalent, because every atom is a nonmetal"
+                },
+                {
+                  "id": "b",
+                  "text": "Ionic, because it is made of polyatomic ions"
+                },
+                {
+                  "id": "c",
+                  "text": "Covalent, because it has three elements"
+                }
+              ],
+              "answer": "b",
+              "explanation": "A compound with a polyatomic ion is ionic, and NH₄NO₃ is made of two of them. Using only the nonmetal rule is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Guess, then flip: sort the compounds",
+          "minutes": 6,
+          "body": {
+            "type": "flashcards",
+            "cards": [
+              {
+                "id": "x1",
+                "front": "Potassium + iodine",
+                "back": "Ionic. Potassium is a metal and iodine is a nonmetal, so KI is ionic."
+              },
+              {
+                "id": "x2",
+                "front": "Sulfur + oxygen",
+                "back": "Covalent. Both are nonmetals, so SO₂ and SO₃ are covalent: the atoms share electrons."
+              },
+              {
+                "id": "x3",
+                "front": "Copper + chlorine",
+                "back": "Ionic. Copper is a transition metal, and transition metals are still metals. CuCl₂ is ionic."
+              },
+              {
+                "id": "x4",
+                "front": "Hydrogen + oxygen",
+                "back": "Covalent. Hydrogen is a nonmetal, even though it sits on the left. H₂O is covalent."
+              },
+              {
+                "id": "x5",
+                "front": "Ammonium sulfate (NH₄⁺ and SO₄²⁻)",
+                "back": "Ionic. It is made of polyatomic ions, so (NH₄)₂SO₄ is ionic even with no metal."
+              },
+              {
+                "id": "x6",
+                "front": "Unknown A: melts at 801 °C, and its solution lights the bulb",
+                "back": "Ionic. A melting point above 300 °C and conducting when dissolved both point to ionic."
+              },
+              {
+                "id": "x7",
+                "front": "Unknown B: melts at 45 °C, and its solution does not light the bulb",
+                "back": "Covalent. A low melting point and no free ions both point to covalent."
+              }
+            ]
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Which list has ONLY covalent compounds?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "CO₂, N₂O, CCl₄"
+                },
+                {
+                  "id": "b",
+                  "text": "CO₂, CaO, NH₃"
+                },
+                {
+                  "id": "c",
+                  "text": "NaCl, KBr, CuO"
+                }
+              ],
+              "answer": "a",
+              "explanation": "CO₂, N₂O and CCl₄ are only nonmetals with no polyatomic ion, so all three are covalent. CaO has calcium, a metal, and every compound in the last list starts with a metal. Missing one hidden metal in a list is the common mistake."
+            },
+            {
+              "id": "w2",
+              "kind": "fill_blank",
+              "prompt": "Ionic compounds conduct electricity when dissolved because they break into free-moving ___. Type one word.",
+              "answer": [
+                "ions",
+                "ion",
+                "charged ions",
+                "free ions",
+                "free-moving ions",
+                "free moving ions",
+                "charged particles"
+              ],
+              "explanation": "Dissolved ionic compounds break into free-moving ions that carry the current. Covalent compounds stay as whole molecules, so they don't conduct. Saying \"electrons\" is the common mistake."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "target": "U3.LT2",
+      "mode": "watch",
+      "title": "U3.LT2 Watch: ionic or covalent?",
+      "sections": [
+        {
+          "part": "core",
+          "title": "What are ionic bonds?",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "zpaHPXVR8WU"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "In an ionic bond, what happens to the electrons?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "A metal transfers electrons to a nonmetal"
+                },
+                {
+                  "id": "b",
+                  "text": "Two nonmetals share electrons"
+                },
+                {
+                  "id": "c",
+                  "text": "Two metals share electrons"
+                }
+              ],
+              "answer": "a",
+              "explanation": "An ionic bond is like handing a friend a dollar: one gives and the other takes. The metal (the giver) transfers electrons to the nonmetal (the taker). Sharing is a covalent bond."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Which pair of elements would form an ionic compound?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Magnesium and oxygen"
+                },
+                {
+                  "id": "b",
+                  "text": "Carbon and oxygen"
+                },
+                {
+                  "id": "c",
+                  "text": "Nitrogen and hydrogen"
+                },
+                {
+                  "id": "d",
+                  "text": "Calcium and magnesium"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Magnesium is a metal (left of the staircase) and oxygen is a nonmetal, so they form an ionic compound. Carbon + oxygen and nitrogen + hydrogen are two nonmetals (covalent). Calcium and magnesium are both metals, so they are not ionic."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Ionic or covalent? Deciding from the elements",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "G4skg7gQhJw"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "Which compound is covalent?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "LiF"
+                },
+                {
+                  "id": "b",
+                  "text": "FeCl₃"
+                },
+                {
+                  "id": "c",
+                  "text": "NO₂"
+                },
+                {
+                  "id": "d",
+                  "text": "NH₄Br"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Nitrogen and oxygen are both nonmetals, so NO₂ is covalent: the atoms share electrons. LiF and FeCl₃ have a metal (iron is a transition metal, still a metal), and NH₄Br has the polyatomic ion ammonium, so all three are ionic."
+            },
+            {
+              "id": "w4",
+              "kind": "fill_blank",
+              "prompt": "HCl is made of hydrogen and chlorine. Is it ionic or covalent? Type one word.",
+              "answer": [
+                "covalent",
+                "covalent compound",
+                "a covalent compound",
+                "it is covalent",
+                "it's covalent",
+                "covalent bond"
+              ],
+              "explanation": "Hydrogen is a nonmetal even though it sits on the left of the periodic table, so HCl is two nonmetals: covalent. Calling hydrogen a metal is the common mistake."
+            }
+          ],
+          "shortAnswer": "Explain why KBr is ionic but CO₂ is covalent. Use the periodic table, and say what the electrons do in each."
+        }
+      ]
+    }
+  ]
+}

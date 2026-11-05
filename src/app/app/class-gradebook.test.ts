@@ -803,6 +803,39 @@ describe("getClassGradebook", () => {
     expect(await getClassGradebook("00000000-0000-0000-0000-000000000000")).toBeNull();
   });
 
+  it("names each column's unit for the grid's unit band (Nov 5 2026)", async () => {
+    const before = (await getClassGradebook(ids.cls))!;
+    const quiz = before.columns.find((c) => c.assignmentId === ids.asg.quiz)!;
+    expect(before.columns.every((c) => c.unit === null)).toBe(true);
+    const [course] = await db
+      .select({ id: schema.assessments.courseId })
+      .from(schema.assessments)
+      .where(eq(schema.assessments.id, quiz.assessmentId));
+    const [unit] = await db
+      .insert(schema.units)
+      .values({ courseId: course.id!, name: "Unit 3 · Cells", sortOrder: 2 })
+      .returning();
+    await db
+      .update(schema.assessments)
+      .set({ unitId: unit.id })
+      .where(eq(schema.assessments.id, quiz.assessmentId));
+    try {
+      const gb = (await getClassGradebook(ids.cls))!;
+      expect(gb.columns.find((c) => c.assignmentId === ids.asg.quiz)!.unit).toEqual({
+        id: unit.id,
+        name: "Unit 3 · Cells",
+        sortOrder: 2,
+      });
+      expect(gb.columns.filter((c) => c.unit).length).toBe(1);
+    } finally {
+      await db
+        .update(schema.assessments)
+        .set({ unitId: null })
+        .where(eq(schema.assessments.id, quiz.assessmentId));
+      await db.delete(schema.units).where(eq(schema.units.id, unit.id));
+    }
+  });
+
   it("reads in a handful of queries whatever the class size, and writes nothing", async () => {
     const client = (dbModule as unknown as { testClient: PGlite }).testClient;
     const spy = vi.spyOn(client, "query");
