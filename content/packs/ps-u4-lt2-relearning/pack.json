@@ -1,6 +1,6 @@
 {
   "name": "ps-u4-lt2-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science B",
   "relearning": [
@@ -215,6 +215,89 @@
               "afterStepId": "s4"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U4.LT2",
+      "mode": "watch",
+      "title": "U4.LT2 Watch: momentum and velocity",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Momentum",
+          "minutes": 5,
+          "body": { "type": "video", "youtubeId": "DxKelGugDa8" },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "A 0.5 kg ball and a 5 kg bowling ball roll at the same velocity. Which has more momentum?",
+              "options": [
+                { "id": "a", "text": "The bowling ball" },
+                { "id": "b", "text": "The 0.5 kg ball" },
+                { "id": "c", "text": "They have the same momentum" }
+              ],
+              "answer": "a",
+              "explanation": "p = m × v. The velocities are the same, so the one with more mass has more momentum. That's why a bowling ball is harder to stop than a tennis ball."
+            },
+            {
+              "id": "w2",
+              "kind": "fill_blank",
+              "prompt": "A 60 kg skater glides at 5 m/s. What is her momentum, in kg·m/s? Type a number.",
+              "answer": [
+                "300",
+                "300 kg·m/s",
+                "300kg·m/s",
+                "300 kg m/s",
+                "300kg m/s",
+                "300 kgm/s",
+                "300kgm/s",
+                "300 kg*m/s",
+                "300kg*m/s",
+                "300 kg-m/s",
+                "300kg-m/s"
+              ],
+              "explanation": "Formula: p = m × v. Set Up: p = 60 kg × 5 m/s. Answer: 300 kg·m/s."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Speed vs. velocity: direction matters",
+          "minutes": 5,
+          "body": { "type": "video", "youtubeId": "7KkLEaeX0W0" },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "Which of these is a velocity?",
+              "options": [
+                { "id": "a", "text": "40 m/s" },
+                { "id": "b", "text": "40 m/s west" },
+                { "id": "c", "text": "40 m west" },
+                { "id": "d", "text": "40 s" }
+              ],
+              "answer": "b",
+              "explanation": "Velocity is speed and direction, like 40 m/s west. 40 m/s is only a speed, 40 m west is a distance with a direction (a displacement), and 40 s is a time."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "A car goes around a curve at a steady 35 mi/h. What happens to its speed and its velocity?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Speed stays the same; velocity changes because the direction changes"
+                },
+                { "id": "b", "text": "Speed and velocity both stay the same" },
+                { "id": "c", "text": "Speed changes; velocity stays the same" }
+              ],
+              "answer": "a",
+              "explanation": "The speedometer stays on 35, so the speed is constant. Velocity includes direction, and the direction changes around the curve, so the velocity changes."
+            }
+          ],
+          "shortAnswer": "Two cars both drive 50 mi/h on Highway 29, one going north and one going south. Explain whether they have the same speed and whether they have the same velocity."
         }
       ]
     }

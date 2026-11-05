@@ -1,6 +1,6 @@
 {
   "name": "ps-u3-lt2-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science A",
   "relearning": [
@@ -247,6 +247,82 @@
               "explanation": "Dissolved ionic compounds break into free-moving ions that carry the current. Covalent compounds stay as whole molecules, so they don't conduct. Saying \"electrons\" is the common mistake."
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U3.LT2",
+      "mode": "watch",
+      "title": "U3.LT2 Watch: ionic or covalent?",
+      "sections": [
+        {
+          "part": "core",
+          "title": "What are ionic bonds?",
+          "minutes": 5,
+          "body": { "type": "video", "youtubeId": "zpaHPXVR8WU" },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "In an ionic bond, what happens to the electrons?",
+              "options": [
+                { "id": "a", "text": "A metal transfers electrons to a nonmetal" },
+                { "id": "b", "text": "Two nonmetals share electrons" },
+                { "id": "c", "text": "Two metals share electrons" }
+              ],
+              "answer": "a",
+              "explanation": "An ionic bond is like handing a friend a dollar: one gives and the other takes. The metal (the giver) transfers electrons to the nonmetal (the taker). Sharing is a covalent bond."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Which pair of elements would form an ionic compound?",
+              "options": [
+                { "id": "a", "text": "Magnesium and oxygen" },
+                { "id": "b", "text": "Carbon and oxygen" },
+                { "id": "c", "text": "Nitrogen and hydrogen" },
+                { "id": "d", "text": "Calcium and magnesium" }
+              ],
+              "answer": "a",
+              "explanation": "Magnesium is a metal (left of the staircase) and oxygen is a nonmetal, so they form an ionic compound. Carbon + oxygen and nitrogen + hydrogen are two nonmetals (covalent). Calcium and magnesium are both metals, so they are not ionic."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Ionic or covalent? Deciding from the elements",
+          "minutes": 5,
+          "body": { "type": "video", "youtubeId": "G4skg7gQhJw" },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "Which compound is covalent?",
+              "options": [
+                { "id": "a", "text": "LiF" },
+                { "id": "b", "text": "FeCl₃" },
+                { "id": "c", "text": "NO₂" },
+                { "id": "d", "text": "NH₄Br" }
+              ],
+              "answer": "c",
+              "explanation": "Nitrogen and oxygen are both nonmetals, so NO₂ is covalent: the atoms share electrons. LiF and FeCl₃ have a metal (iron is a transition metal, still a metal), and NH₄Br has the polyatomic ion ammonium, so all three are ionic."
+            },
+            {
+              "id": "w4",
+              "kind": "fill_blank",
+              "prompt": "HCl is made of hydrogen and chlorine. Is it ionic or covalent? Type one word.",
+              "answer": [
+                "covalent",
+                "covalent compound",
+                "a covalent compound",
+                "it is covalent",
+                "it's covalent",
+                "covalent bond"
+              ],
+              "explanation": "Hydrogen is a nonmetal even though it sits on the left of the periodic table, so HCl is two nonmetals: covalent. Calling hydrogen a metal is the common mistake."
+            }
+          ],
+          "shortAnswer": "Explain why KBr is ionic but CO₂ is covalent. Use the periodic table, and say what the electrons do in each."
         }
       ]
     }

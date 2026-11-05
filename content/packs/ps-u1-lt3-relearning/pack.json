@@ -1,6 +1,6 @@
 {
   "name": "ps-u1-lt3-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science A",
   "relearning": [
@@ -181,6 +181,82 @@
               "afterStepId": "s4"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U1.LT3",
+      "mode": "watch",
+      "title": "U1.LT3 Watch: conversion factors and scientific notation",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Converting Units with Conversion Factors",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "7N0lRJLwpPI"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Why doesn't multiplying by the conversion factor 100 cm / 1 m change the amount you have?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The top and bottom are the same amount, so the factor is equal to one"
+                },
+                { "id": "b", "text": "100 is a big number, so it makes the amount bigger" },
+                { "id": "c", "text": "Conversion factors only change the number, not the unit" }
+              ],
+              "answer": "a",
+              "explanation": "100 cm and 1 m are the same length, so the factor is equal to one. Multiplying by one changes the units, not the amount, like trading 4 quarters for 1 dollar."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Which setup converts 36 in to ft? (1 ft = 12 in)",
+              "options": [
+                { "id": "a", "text": "36 in × (12 in / 1 ft)" },
+                { "id": "b", "text": "36 in × (1 ft / 12 in)" },
+                { "id": "c", "text": "36 in × (12 ft / 1 in)" }
+              ],
+              "answer": "b",
+              "explanation": "The unit you have (in) goes on the bottom of the factor so it cancels with the in on top: 36 ÷ 12 = 3 ft. Putting in on top of the factor, so it won't cancel, is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Scientific Notation: Explained",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "WwmJ5nMmigQ"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "Which shows 45,000,000 in scientific notation?",
+              "options": [
+                { "id": "a", "text": "45 × 10^{6}" },
+                { "id": "b", "text": "4.5 × 10^{7}" },
+                { "id": "c", "text": "4.5 × 10^{-7}" }
+              ],
+              "answer": "b",
+              "explanation": "Move the decimal 7 places left to get 4.5. The starting number is big (bigger than 1), so the exponent is positive: 4.5 × 10^{7}. 45 × 10^{6} has two digits before the decimal, the common mistake."
+            },
+            {
+              "id": "w4",
+              "kind": "fill_blank",
+              "prompt": "Write 3.2 × 10^{-3} as a regular number. Type a number.",
+              "answer": ["0.0032", ".0032"],
+              "explanation": "The exponent is negative, so the number is small: move the decimal 3 places left to get 0.0032. Moving it right (3,200) is the common mistake."
+            }
+          ],
+          "shortAnswer": "Write 0.00061 and 52,000 in scientific notation. For each one, explain how you knew whether the exponent is positive or negative."
         }
       ]
     }

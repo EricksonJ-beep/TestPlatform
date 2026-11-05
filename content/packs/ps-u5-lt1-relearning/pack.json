@@ -1,6 +1,6 @@
 {
   "name": "ps-u5-lt1-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science B",
   "relearning": [
@@ -216,6 +216,80 @@
               "afterStepId": "s4"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U5.LT1",
+      "mode": "watch",
+      "title": "U5.LT1 Watch: identifying forces",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Intro to forces and free-body diagrams",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "Xp0qEJrTpos"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "A soccer ball flies through the air after you kick it. Which forces act on the ball?",
+              "options": [
+                { "id": "a", "text": "Gravity and air resistance" },
+                { "id": "b", "text": "Gravity, air resistance, and the force of the kick" },
+                { "id": "c", "text": "Only the force of the kick" }
+              ],
+              "answer": "a",
+              "explanation": "The kick stopped the moment the ball left your foot, so only gravity (down) and air resistance (opposite the motion) act on it. Keeping a force from the kick after contact ends is the common mistake."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "A crate hangs still from a crane's cable. What is the upward force on the crate called?",
+              "options": [
+                { "id": "a", "text": "Normal force (FN)" },
+                { "id": "b", "text": "Tension (T)" },
+                { "id": "c", "text": "Friction (Ff)" },
+                { "id": "d", "text": "Applied force (Fapp)" }
+              ],
+              "answer": "b",
+              "explanation": "The pull of a rope, string, or cable is tension, and it points up on something hanging from it. The crate isn't resting on a surface, so there is no normal force. Calling the cable's pull a normal force is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Types of forces and free-body diagrams",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "IgycQzEypWM"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "A chair sits still on a level floor. Which way does the normal force on the chair point?",
+              "options": [
+                { "id": "a", "text": "Down, toward the floor" },
+                { "id": "b", "text": "Up, away from the floor" },
+                { "id": "c", "text": "Sideways, along the floor" }
+              ],
+              "answer": "b",
+              "explanation": "The normal force is the support from a surface, perpendicular to it: up from a level floor. Down is gravity's direction. Mixing up the normal force and gravity is the common mistake."
+            },
+            {
+              "id": "w4",
+              "kind": "fill_blank",
+              "prompt": "What is the weight of a 20 kg bike on Earth? Use g = 9.8 m/s². Type a number (in N).",
+              "answer": ["196", "196 N", "196N", "196 newtons", "196.0", "196.0 N"],
+              "explanation": "W = m × g = 20 kg × 9.8 m/s² = 196 N. Dividing (20 ÷ 9.8 ≈ 2.0) is the common mistake; on Earth the weight in newtons is always a bigger number than the mass in kg."
+            }
+          ],
+          "shortAnswer": "A student pushes a box to the right across the classroom floor. List every force acting on the box and the direction each one points."
         }
       ]
     }

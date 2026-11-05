@@ -1,6 +1,6 @@
 {
   "name": "ps-u5-lt4-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science B",
   "relearning": [
@@ -253,6 +253,85 @@
               "afterStepId": "s4"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U5.LT4",
+      "mode": "watch",
+      "title": "U5.LT4 Watch: Newton's 3rd law",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Newton's 3rd law",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "eU3ULRgS8Vk"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "A student on roller skates pushes a wall with 40 N. What does the wall do?",
+              "options": [
+                { "id": "a", "text": "Pushes the student with 40 N in the opposite direction" },
+                { "id": "b", "text": "Nothing, because the wall doesn't move" },
+                { "id": "c", "text": "Pushes the student with less than 40 N" }
+              ],
+              "answer": "a",
+              "explanation": "Switch the two objects and flip the direction: the wall pushes the student with an equal 40 N the opposite way. That's why the student rolls back. Thinking the wall can't push because it doesn't move is the common mistake."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "A swimmer pushes the water backward. What is the reaction force?",
+              "options": [
+                { "id": "a", "text": "The swimmer pushes the water forward" },
+                { "id": "b", "text": "The water pushes the swimmer forward" },
+                { "id": "c", "text": "Gravity pulls the swimmer down" }
+              ],
+              "answer": "b",
+              "explanation": "Switch the objects (swimmer pushes water → water pushes swimmer) and flip the direction (backward → forward). Gravity is a different force, not the reaction. Forgetting to switch the objects is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Newton's Laws: Crash Course Physics #5",
+          "minutes": 10,
+          "body": {
+            "type": "video",
+            "youtubeId": "kKKM8Y-u7ds"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "A 100 kg football player and a 50 kg player run into each other. What is true about the forces and accelerations?",
+              "options": [
+                { "id": "a", "text": "The 100 kg player pushes harder" },
+                {
+                  "id": "b",
+                  "text": "The forces are equal, and the 50 kg player gets the bigger acceleration"
+                },
+                {
+                  "id": "c",
+                  "text": "The forces are equal, and both players get the same acceleration"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Action and reaction are always equal, even in a collision. Use a = F ÷ m: the player with less mass gets the bigger acceleration. Saying the heavier player pushes harder is the common mistake."
+            },
+            {
+              "id": "w4",
+              "kind": "fill_blank",
+              "prompt": "Two students, 40 kg and 80 kg, sit on scooter boards and push apart with 160 N each. What is the 40 kg student's acceleration? Type a number (in m/s²).",
+              "answer": ["4", "4 m/s²", "4 m/s2", "4 m/s^2", "4.0", "4.0 m/s²", "4.0 m/s2"],
+              "explanation": "a = F ÷ m = 160 N ÷ 40 kg = 4 m/s². The 80 kg student gets only 2 m/s² from the same force. Using the wrong student's mass is the common mistake."
+            }
+          ],
+          "shortAnswer": "A small car and a big truck collide head-on. Explain which one pushes harder on the other, and which one has the bigger change in motion."
         }
       ]
     }

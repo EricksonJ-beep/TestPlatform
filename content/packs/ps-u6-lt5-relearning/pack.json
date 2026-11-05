@@ -1,6 +1,6 @@
 {
   "name": "ps-u6-lt5-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science B",
   "relearning": [
@@ -232,6 +232,85 @@
               "afterStepId": "s4"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U6.LT5",
+      "mode": "watch",
+      "title": "U6.LT5 Watch: energy in a Rube Goldberg machine",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Rube Goldberg showing energy transformations",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "VNN_Qtpl31E"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "A marble is let go at the top of a ramp and rolls down. What energy change happens?",
+              "options": [
+                { "id": "a", "text": "Kinetic → gravitational potential" },
+                { "id": "b", "text": "Gravitational potential → kinetic" },
+                { "id": "c", "text": "Sound → kinetic" },
+                { "id": "d", "text": "Chemical → sound" }
+              ],
+              "answer": "b",
+              "explanation": "Held high, the marble stores gravitational potential energy. As it rolls down, that changes to kinetic energy, the energy of motion. Getting the order backward is the common mistake."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Each step of a Rube Goldberg machine passes on a little less useful energy. Where does the rest go?",
+              "options": [
+                { "id": "a", "text": "It is destroyed" },
+                { "id": "b", "text": "It is used up by the simple machines" },
+                { "id": "c", "text": "It changes into thermal energy (heat) and sound" }
+              ],
+              "answer": "c",
+              "explanation": "Energy can never be created or destroyed; it only changes form. Friction turns some into heat, and some leaves as sound. It spreads out and can't push the next step. Saying energy is used up or destroyed is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Simple machines and the Rube Goldberg challenge",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "nf094faga5w"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "Which of these parts of a Rube Goldberg machine is a simple machine?",
+              "options": [
+                { "id": "a", "text": "A ramp the marble rolls down" },
+                { "id": "b", "text": "A row of falling dominoes" },
+                { "id": "c", "text": "A falling cup" }
+              ],
+              "answer": "a",
+              "explanation": "A ramp is an inclined plane, a simple machine with an IMA (length ÷ height). Dominoes and a falling cup pass energy along, but they have no IMA. Counting them as simple machines is the common mistake."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "A toy car rolls down a ramp but doesn't have enough energy to tip the next domino. What is the best fix?",
+              "options": [
+                { "id": "a", "text": "Start the car higher up the ramp" },
+                { "id": "b", "text": "Add a lever with a big IMA to make extra energy" },
+                { "id": "c", "text": "Take away the push that starts the machine" }
+              ],
+              "answer": "a",
+              "explanation": "More height means more gravitational potential energy to change into kinetic energy. A lever trades force for distance; it never makes extra energy. And every machine needs a start."
+            }
+          ],
+          "shortAnswer": "Describe a 3-step Rube Goldberg chain you could build. Name one simple machine in it and write the energy change for each step."
         }
       ]
     }

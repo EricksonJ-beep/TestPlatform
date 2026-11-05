@@ -1,6 +1,6 @@
 {
   "name": "ps-u6-lt3-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science B",
   "relearning": [
@@ -181,6 +181,79 @@
               "afterStepId": "t4"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U6.LT3",
+      "mode": "watch",
+      "title": "U6.LT3 Watch: inclined planes",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Inclined plane explained: IMA, AMA and efficiency",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "14XNF0FXMl0"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "fill_blank",
+              "prompt": "A ramp is 5 m long and 1 m high. What is its IMA? Type a number.",
+              "answer": ["5", "5.0"],
+              "explanation": "IMA = length ÷ height = 5 m ÷ 1 m = 5 (no units). Dividing height ÷ length (0.2) is the common mistake; a ramp's IMA is always more than 1."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "A student pushes a 400 N box up a ramp with an IMA of 5 using a 100 N push. What is the ramp's efficiency?",
+              "options": [
+                { "id": "a", "text": "80%" },
+                { "id": "b", "text": "125%" },
+                { "id": "c", "text": "25%" }
+              ],
+              "answer": "a",
+              "explanation": "AMA = Fr ÷ Fe = 400 N ÷ 100 N = 4. Efficiency = AMA ÷ IMA × 100 = 4 ÷ 5 × 100 = 80%. Flipping it (125%) is the common mistake; a real ramp is always below 100%."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Mechanical advantage of an inclined plane",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "eMrcDXaqxH0"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "Compared with lifting a box straight up onto a stage, pushing it up an ideal ramp takes...",
+              "options": [
+                { "id": "a", "text": "less force over a longer distance, and the same work" },
+                { "id": "b", "text": "less force over a longer distance, and less work" },
+                { "id": "c", "text": "more force over a shorter distance" }
+              ],
+              "answer": "a",
+              "explanation": "A ramp trades a longer distance for a smaller force. It does not reduce the work: on an ideal ramp, Fe × De = Fr × Dr. Thinking a ramp saves work is the common mistake."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "A loading ramp must reach a truck bed 1 m high. Which change makes the ramp's IMA bigger?",
+              "options": [
+                { "id": "a", "text": "Make the ramp longer" },
+                { "id": "b", "text": "Make the ramp shorter and steeper" },
+                { "id": "c", "text": "Push the box faster" }
+              ],
+              "answer": "a",
+              "explanation": "IMA = length ÷ height. The height stays 1 m, so a longer ramp gives a bigger IMA and an easier push. A shorter, steeper ramp lowers the IMA."
+            }
+          ],
+          "shortAnswer": "A wheelchair ramp is being built up to a door 0.5 m off the ground. Explain why a longer ramp is easier to push a chair up, using IMA = length ÷ height."
         }
       ]
     }

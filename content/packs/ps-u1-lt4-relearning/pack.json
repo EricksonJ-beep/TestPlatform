@@ -1,6 +1,6 @@
 {
   "name": "ps-u1-lt4-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science A",
   "relearning": [
@@ -239,6 +239,89 @@
               "afterStepId": "s4"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U1.LT4",
+      "mode": "watch",
+      "title": "U1.LT4 Watch: elements, compounds, mixtures and chemical changes",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Element, Mixture or Compound (FuseSchool)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "MaZ7lsc5ub8"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Carbon dioxide (CO_{2}) is made of carbon and oxygen chemically bonded together. What is it?",
+              "options": [
+                { "id": "a", "text": "An element" },
+                { "id": "b", "text": "A compound" },
+                { "id": "c", "text": "A mixture" }
+              ],
+              "answer": "b",
+              "explanation": "Two or more different elements chemically bonded make a compound, like the cake: the parts changed into something new. An element has only one type of atom, and the parts of a mixture are not bonded. Calling a compound a mixture is the common mistake."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Salt dissolved in water looks the same all the way through, and you can get the salt back by boiling off the water. What is salt water?",
+              "options": [
+                { "id": "a", "text": "An element" },
+                { "id": "b", "text": "A compound" },
+                { "id": "c", "text": "A homogeneous mixture (a solution)" },
+                { "id": "d", "text": "A heterogeneous mixture" }
+              ],
+              "answer": "c",
+              "explanation": "The salt and water are physically mixed, not bonded, so it is a mixture. It is the same all the way through, so it is homogeneous: a solution. A heterogeneous mixture is uneven, like vegetable soup."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Chemical Changes (Crash Course Kids #19.2)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "37pir0ej_SE"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "Which of these is a chemical change?",
+              "options": [
+                { "id": "a", "text": "Ice melting" },
+                { "id": "b", "text": "Paper burning" },
+                { "id": "c", "text": "Sugar dissolving in tea" },
+                { "id": "d", "text": "Wood being cut" }
+              ],
+              "answer": "b",
+              "explanation": "Burning makes new substances (ash and smoke), so it is a chemical change. Melting, dissolving and cutting don't change what the substance is, so they are physical changes."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "Water boiling in a pot makes lots of bubbles. Is this a chemical change?",
+              "options": [
+                { "id": "a", "text": "Yes, because gas production is a sign of a chemical change" },
+                {
+                  "id": "b",
+                  "text": "No, because no new substance forms; the bubbles are still water"
+                },
+                { "id": "c", "text": "Yes, because the water gets hot" }
+              ],
+              "answer": "b",
+              "explanation": "The bubbles are water as a gas, so no new substance forms and it is a physical change. The signs only count when they are unpredicted. Calling every bubble chemical is the common mistake."
+            }
+          ],
+          "shortAnswer": "An iron nail left outside turns orange-brown with rust. Is this a physical or a chemical change? Use the words \"new substance\" in your answer."
         }
       ]
     }

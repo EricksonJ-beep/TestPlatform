@@ -1,6 +1,6 @@
 {
   "name": "ps-u2-lt1-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science A",
   "relearning": [
@@ -227,6 +227,88 @@
               "afterStepId": "s6"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U2.LT1",
+      "mode": "watch",
+      "title": "U2.LT1 Watch: the history of the atomic model",
+      "sections": [
+        {
+          "part": "core",
+          "title": "A Brief History of the Atomic Models",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "3iBES3k0dPg"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Which model came right after Thomson's Plum Pudding Model (1904)?",
+              "options": [
+                { "id": "a", "text": "Dalton's Solid Sphere Model" },
+                { "id": "b", "text": "Rutherford's Nuclear Model" },
+                { "id": "c", "text": "Bohr's Model" },
+                { "id": "d", "text": "The Electron Cloud Model" }
+              ],
+              "answer": "b",
+              "explanation": "Rutherford's gold foil experiment found a small, dense nucleus, so the Nuclear Model (1911) replaced Plum Pudding. The order is Solid Sphere (1803), Plum Pudding (1904), Nuclear (1911), Bohr (1913), Electron Cloud (1926)."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "What is the difference between the Bohr Model and the Electron Cloud Model?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Bohr has electrons in fixed orbits; the Electron Cloud has no fixed orbits"
+                },
+                { "id": "b", "text": "Bohr has no nucleus; the Electron Cloud has a nucleus" },
+                { "id": "c", "text": "Bohr has fixed orbits; the Electron Cloud has no electrons" }
+              ],
+              "answer": "a",
+              "explanation": "Bohr (1913) put electrons in fixed orbits around the nucleus. The Electron Cloud Model (1926) keeps the shells but removes the fixed orbits. Mixing up fixed orbits and no fixed orbits is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Atomic Theory (FuseSchool)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "fwhjCw-IUu0"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "In the gold foil experiment, most particles passed straight through the foil. What did that show?",
+              "options": [
+                { "id": "a", "text": "The atom is mostly empty space" },
+                { "id": "b", "text": "The atom is a solid sphere" },
+                { "id": "c", "text": "Electrons travel in fixed orbits" }
+              ],
+              "answer": "a",
+              "explanation": "If most particles pass straight through, there is nothing in their way, so the atom is mostly empty space. The few that bounced back showed the small, dense nucleus."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "Which scientist's model was a solid sphere that can't get any smaller?",
+              "options": [
+                { "id": "a", "text": "John Dalton (1803)" },
+                { "id": "b", "text": "JJ Thomson (1904)" },
+                { "id": "c", "text": "Ernest Rutherford (1911)" }
+              ],
+              "answer": "a",
+              "explanation": "Dalton's Solid Sphere Model (1803) came first. Thomson's cathode ray tube then showed the atom is divisible and has negative particles."
+            }
+          ],
+          "shortAnswer": "Explain how Thomson's cathode ray tube changed Dalton's Solid Sphere Model. Use the words divisible and negative particles."
         }
       ]
     }

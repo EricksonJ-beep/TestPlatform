@@ -1,6 +1,6 @@
 {
   "name": "ps-u3-lt3-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science A",
   "relearning": [
@@ -217,6 +217,75 @@
               "afterStepId": "s5"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U3.LT3",
+      "mode": "watch",
+      "title": "U3.LT3 Watch: writing ionic formulas",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Writing ionic formulas: introduction",
+          "minutes": 5,
+          "body": { "type": "video", "youtubeId": "URc75hoKGLY" },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Aluminum forms Al³⁺ and oxygen forms O²⁻. What is the formula for aluminum oxide?",
+              "options": [
+                { "id": "a", "text": "AlO" },
+                { "id": "b", "text": "Al₂O₃" },
+                { "id": "c", "text": "Al₃O₂" },
+                { "id": "d", "text": "AlO₃" }
+              ],
+              "answer": "b",
+              "explanation": "Criss-cross: the 3 from Al³⁺ goes to O and the 2 from O²⁻ goes to Al → Al₂O₃. Check: 2(+3) + 3(−2) = +6 − 6 = 0. Al₃O₂ puts each charge on its own ion instead of the opposite one."
+            },
+            {
+              "id": "w2",
+              "kind": "fill_blank",
+              "prompt": "Like paying with exact change, the positive and negative charges in an ionic formula must add up to ___. Type a number.",
+              "answer": ["0", "zero"],
+              "explanation": "The charges have to come out even, so the total is zero. The subscripts tell you how many of each ion it takes to get there."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Writing formulas with polyatomic ions",
+          "minutes": 5,
+          "body": { "type": "video", "youtubeId": "p9iQ5Qn42DM" },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "Hydroxide is OH⁻ and calcium forms Ca²⁺. What is the formula for calcium hydroxide?",
+              "options": [
+                { "id": "a", "text": "CaOH₂" },
+                { "id": "b", "text": "Ca(OH)₂" },
+                { "id": "c", "text": "Ca₂OH" },
+                { "id": "d", "text": "CaOH" }
+              ],
+              "answer": "b",
+              "explanation": "Criss-cross: the 2 goes to hydroxide, so you need 2 OH. Put parentheses around the polyatomic ion when you need 2 or more: Ca(OH)₂. Check: +2 + 2(−1) = 0. CaOH₂ would double only the H."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "Sulfate is SO₄²⁻ and sodium forms Na⁺. What is the formula for sodium sulfate?",
+              "options": [
+                { "id": "a", "text": "Na₂SO₄" },
+                { "id": "b", "text": "Na(SO₄)₂" },
+                { "id": "c", "text": "NaSO₄" }
+              ],
+              "answer": "a",
+              "explanation": "Two Na⁺ cancel one SO₄²⁻: 2(+1) + (−2) = 0. You need only one sulfate, so no parentheses, and never change the subscripts inside the ion. Answer: Na₂SO₄."
+            }
+          ],
+          "shortAnswer": "Phosphate is PO₄³⁻. Write the formula for magnesium phosphate and explain why the parentheses are needed."
         }
       ]
     }

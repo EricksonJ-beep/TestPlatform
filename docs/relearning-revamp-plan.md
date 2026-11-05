@@ -620,8 +620,15 @@ the student-account test.
 - *Sources: Jon's reteach readings and practice banks.*
 - *Checks: `scripts/check-pack.ts` is clean on all 25. About 50 quick checks re-solved by hand
   were all right.*
-- *Watch: Jon picks the videos and tests them on a student account (decision 37). They're added
-  to these packs as `watch` options.*
+- *Watch added Nov 5 (Jon approved the list in `docs/watch-videos/physical-science.md`):*
+  - *Each target's core video is the list's first choice, and its extension is the backup.*
+  - *Each video has 2 quick checks after it, on the target's core idea in Jon's wording (none
+    on details only that video would have). The extension also has a short answer.*
+  - *Lengths are 5 minutes unless the list gives one. The videos aren't trimmed and the checks
+    don't pause the video, because nobody has timed them yet.*
+  - *All 25 pass `scripts/check-pack.ts`. I re-solved 20 of the 100 checks, and all were right.*
+  - *If a video won't play on a student device, the student's flag reaches Jon's Needs you
+    list, and the student is offered Read or Do instead.*
 
 ### C3 · Biology Practice banks (33 targets × about 100)
 - Biology has Retake banks but no Practice banks, so this is about 3,300 new questions from

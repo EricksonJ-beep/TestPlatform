@@ -1,6 +1,6 @@
 {
   "name": "ps-u6-lt1-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science B",
   "relearning": [
@@ -172,6 +172,75 @@
               "afterStepId": "t4"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U6.LT1",
+      "mode": "watch",
+      "title": "U6.LT1 Watch: calculating work",
+      "sections": [
+        {
+          "part": "core",
+          "title": "What is work?",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "TRNS9FfUCu0"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "fill_blank",
+              "prompt": "A student pushes a cart with a force of 40 N for 6 m. How much work does she do? Type a number (in J).",
+              "answer": ["240", "240 J", "240J", "240 joules", "240.0", "240.0 J"],
+              "explanation": "W = F × d = 40 N × 6 m = 240 J. Adding (46) or dividing (6.7) is the common mistake, and the unit is J, not N."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Which of these is work?",
+              "options": [
+                { "id": "a", "text": "Holding a heavy backpack still" },
+                { "id": "b", "text": "Pushing on a wall that doesn't move" },
+                { "id": "c", "text": "Lifting a box from the floor onto a shelf" },
+                { "id": "d", "text": "Carrying a tray across the room at the same height" }
+              ],
+              "answer": "c",
+              "explanation": "Work needs both conditions: the object moves, and the force is in the direction of the motion. Lifting moves the box up, the same way you push. The wall and the backpack don't move, and the tray moves sideways while your holding force points up."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Intro to work",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "ewfMcg3wRaQ"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "fill_blank",
+              "prompt": "A student lifts a 10 kg box onto a shelf 1.5 m high. How much work does she do? Use g = 9.8 m/s². Type a number (in J).",
+              "answer": ["147", "147 J", "147J", "147 joules", "147.0", "147.0 J"],
+              "explanation": "Step 1: weight = 10 kg × 9.8 m/s² = 98 N. Step 2: W = F × d = 98 N × 1.5 m = 147 J. Using kg as if it were a force (10 × 1.5 = 15) is the common mistake."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "A student pushes a box across the floor with 50 N for 3 m. The box weighs 200 N. How much work does the push do?",
+              "options": [
+                { "id": "a", "text": "150 J" },
+                { "id": "b", "text": "600 J" },
+                { "id": "c", "text": "750 J" }
+              ],
+              "answer": "a",
+              "explanation": "Use the force in the direction of the motion: the 50 N push. W = 50 N × 3 m = 150 J. Using the box's weight when someone pushes it sideways (600 J) is the common mistake."
+            }
+          ],
+          "shortAnswer": "A student pushes on a stuck car for 10 minutes and gets tired, but the car never moves. Explain why she did no work on the car. Use both conditions for work."
         }
       ]
     }
