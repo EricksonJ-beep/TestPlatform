@@ -1056,7 +1056,8 @@ describe("content packs", () => {
     expect(
       await db.select().from(schema.questions).where(eq(schema.questions.bankId, bank.id))
     ).toHaveLength(10);
-  });
+    // Every shipped pack applies here (about 200, 7,000+ questions since C3): give it room on CI.
+  }, 120_000);
   it("renames a bank or assessment still carrying a former name from the pack file", async () => {
     const bank = (await db.query.questionBanks.findFirst({
       where: eq(schema.questionBanks.name, "PS · Unit 1 · Retake"),
