@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BarChart3, ClipboardCheck, MessageSquareText } from "lucide-react";
+import { BarChart3, ClipboardCheck, MessageSquareText, RefreshCw } from "lucide-react";
 import { requireTeacher } from "@/lib/authz";
 import { splitByCourse } from "@/lib/course-focus";
 import { getCurrentCourse } from "@/lib/current-course";
@@ -11,6 +11,7 @@ import {
 } from "@/lib/queries/corrections";
 import { listPausedAttempts } from "@/lib/queries/dashboard";
 import { countPendingByAssignment, getResultsOverview } from "@/lib/queries/results";
+import { countSkywardUpdates } from "@/lib/queries/skyward-updates";
 import type { ResultsRow } from "@/lib/results-table";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
@@ -26,16 +27,25 @@ export const metadata: Metadata = { title: "Results" };
 export default async function ResultsPage() {
   const session = await requireTeacher();
   const now = new Date();
-  const [allAssignments, pending, correctionsTotal, awaitingBy, overview, paused, { current }] =
-    await Promise.all([
-      listTeacherAssignments(session.userId, now),
-      countPendingByAssignment(session.userId),
-      countCorrectionsAwaiting(session.userId),
-      countCorrectionsAwaitingByAssignment(session.userId),
-      getResultsOverview(session.userId),
-      listPausedAttempts(session.userId, now),
-      getCurrentCourse(session.userId),
-    ]);
+  const [
+    allAssignments,
+    pending,
+    correctionsTotal,
+    awaitingBy,
+    overview,
+    paused,
+    { current },
+    skyward,
+  ] = await Promise.all([
+    listTeacherAssignments(session.userId, now),
+    countPendingByAssignment(session.userId),
+    countCorrectionsAwaiting(session.userId),
+    countCorrectionsAwaitingByAssignment(session.userId),
+    getResultsOverview(session.userId),
+    listPausedAttempts(session.userId, now),
+    getCurrentCourse(session.userId),
+    countSkywardUpdates(session.userId),
+  ]);
   // Course focus (docs/course-focus-plan.md): this course's assignments (plus any whose
   // assessment has no course); the queue counts follow, with what waits elsewhere noted.
   const split = splitByCourse(allAssignments, current);
@@ -98,6 +108,14 @@ export default async function ResultsPage() {
         >
           <ClipboardCheck data-icon="inline-start" aria-hidden />
           Grading queue{totalPending > 0 ? ` · ${totalPending}` : ""}
+        </Button>
+        <Button
+          variant={skyward > 0 ? "default" : "outline"}
+          nativeButton={false}
+          render={<Link href="/app/skyward" />}
+        >
+          <RefreshCw data-icon="inline-start" aria-hidden />
+          Skyward updates{skyward > 0 ? ` · ${skyward}` : ""}
         </Button>
       </div>
       {pendingElsewhere > 0 || correctionsElsewhere > 0 ? (
