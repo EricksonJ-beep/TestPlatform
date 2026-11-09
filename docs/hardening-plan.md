@@ -123,15 +123,21 @@ Status: `[ ]` to do · `[x]` done · `[J]` waits on Jon (a choice only he can ma
 
 ## H5 — Fast with a full class
 
-- [ ] **H5.1 Tier board.** The poll pauses on a hidden tab and never overlaps itself; the route
-      checks the board's version first and answers "unchanged" without loading the board; the
-      load itself is batched (no per-student query loops).
-      _Done when:_ a test asserts the same board as before from the batched loader.
-- [ ] **H5.2 Student home.** Corrections and retake status load in batches for all of a student's
-      assignments, and each tab loads only what it shows.
-      _Done when:_ existing `student-home` tests still pass and a query-count test holds the line.
-- [ ] **H5.3 Indexes.** `activity_log(assignment_id)`, and a partial index for answers waiting on
-      a manual grade.
+- [x] **H5.1 Tier board.** The page sends the version it holds; an unchanged board is answered
+      from five small reads instead of the per-student load. Polling stops on a hidden tab and
+      never overlaps itself. When the board does load, students are read six at a time rather
+      than one after another, and the version is read before the data so a change during the
+      load isn't missed.
+      _Done when:_ tested that the cheap version always equals the board's own, and moves on a retake.
+- [x] **H5.2 Student home, part 1.** Each tab loads only what it shows (the results list and
+      the practice shelves were read on every tab).
+      _Done when:_ every tab checked in a browser; `student-home` tests pass.
+- [ ] **H5.2 Student home, part 2.** Corrections and retake status still load per assignment
+      (in parallel, so the wait is short, but 7–12 reads each). Batching them for all of a
+      student's assignments is a rewrite of `listStudentAssignments`, the rule every student
+      card follows; it deserves its own change with a query-count test, before spring.
+- [x] **H5.3 Indexes.** `activity_log(assignment_id)`, and a partial index on answers waiting
+      for a manual grade (migration 0037).
 
 ## H6 — Accessibility and polish
 

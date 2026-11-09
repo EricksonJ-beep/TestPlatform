@@ -26,10 +26,11 @@ import { listStudentAssignments } from "@/lib/queries/assignments";
 import { listFinalScores } from "@/lib/queries/attempts";
 import { getRetakeStatus } from "@/lib/queries/retakes";
 import { getGradebook } from "@/lib/queries/results";
-import { getRelearningMonitor, getTierBoard } from "@/lib/queries/tiers";
+import { getRelearningMonitor, getTierBoard, getTierBoardVersion } from "@/lib/queries/tiers";
 import { saveAnswer, setRetakeOptIn, startAttempt, submitAttempt } from "./actions";
 import { saveCorrection, submitCorrections } from "./corrections/actions";
 
+let versionBefore = "";
 const ids = {
   teacher: "",
   student: "",
@@ -216,6 +217,13 @@ describe("PLAN.md §4 worked example", () => {
     asUser(ids.teacher, "teacher");
     const board = (await getTierBoard(ids.assignment))!;
     expect(board.counts).toEqual({ 1: 0, 2: 1, 3: 0 });
+    // The cheap version the poll asks for is the board's own (H5.1), one period or all.
+    expect(await getTierBoardVersion(ids.assignment)).toBe(board.version);
+    const allPeriods = (await getTierBoard(ids.assignment, { allPeriods: true }))!;
+    expect(await getTierBoardVersion(ids.assignment, { allPeriods: true })).toBe(
+      allPeriods.version
+    );
+    versionBefore = board.version;
     expect(board.cards[0]).toMatchObject({
       tier: 2,
       stage: "corrections_not_started",
@@ -346,6 +354,9 @@ describe("PLAN.md §4 worked example", () => {
     asUser(ids.teacher, "teacher");
     const board = (await getTierBoard(ids.assignment))!;
     expect(board.counts).toEqual({ 1: 1, 2: 0, 3: 0 });
+    // The retake moved the version, so the poll loads the board again.
+    expect(board.version).not.toBe(versionBefore);
+    expect(await getTierBoardVersion(ids.assignment)).toBe(board.version);
     expect(board.cards[0]).toMatchObject({
       tier: 1,
       movedUpToday: true,

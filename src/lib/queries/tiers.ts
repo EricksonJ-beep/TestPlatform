@@ -6,6 +6,7 @@
  * attempts, activity completions. Callers pass the guards first.
  */
 import { and, asc, eq, inArray, isNotNull, sql } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import { db, schema } from "@/db";
 import { assignmentStatus, type AssignmentStatus } from "@/lib/assignments";
 import { pathNeeds } from "@/lib/class-gradebook";
@@ -109,24 +110,64 @@ async function assessmentTargets(assessmentId: string): Promise<BoardTarget[]> {
 /** The newest change across attempts, corrections, and finals on these assignments. */
 async function boardVersion(assignmentIds: string[]): Promise<string> {
   if (assignmentIds.length === 0) return "0";
-  const [a] = await db
-    .select({ m: sql<string | null>`max(${schema.attempts.updatedAt})` })
-    .from(schema.attempts)
-    .where(inArray(schema.attempts.assignmentId, assignmentIds));
-  const [c] = await db
-    .select({ m: sql<string | null>`max(${schema.corrections.updatedAt})` })
-    .from(schema.corrections)
-    .innerJoin(schema.attempts, eq(schema.corrections.attemptId, schema.attempts.id))
-    .where(inArray(schema.attempts.assignmentId, assignmentIds));
-  const [f] = await db
-    .select({ m: sql<string | null>`max(${schema.assignmentFinalScores.updatedAt})` })
-    .from(schema.assignmentFinalScores)
-    .where(inArray(schema.assignmentFinalScores.assignmentId, assignmentIds));
-  const [g] = await db
-    .select({ m: sql<string | null>`max(${schema.retakeGates.updatedAt})` })
-    .from(schema.retakeGates)
-    .where(inArray(schema.retakeGates.assignmentId, assignmentIds));
+  const [[a], [c], [f], [g]] = await Promise.all([
+    db
+      .select({ m: sql<string | null>`max(${schema.attempts.updatedAt})` })
+      .from(schema.attempts)
+      .where(inArray(schema.attempts.assignmentId, assignmentIds)),
+    db
+      .select({ m: sql<string | null>`max(${schema.corrections.updatedAt})` })
+      .from(schema.corrections)
+      .innerJoin(schema.attempts, eq(schema.corrections.attemptId, schema.attempts.id))
+      .where(inArray(schema.attempts.assignmentId, assignmentIds)),
+    db
+      .select({ m: sql<string | null>`max(${schema.assignmentFinalScores.updatedAt})` })
+      .from(schema.assignmentFinalScores)
+      .where(inArray(schema.assignmentFinalScores.assignmentId, assignmentIds)),
+    db
+      .select({ m: sql<string | null>`max(${schema.retakeGates.updatedAt})` })
+      .from(schema.retakeGates)
+      .where(inArray(schema.retakeGates.assignmentId, assignmentIds)),
+  ]);
   return versionStamp([a?.m, c?.m, f?.m, g?.m]);
+}
+
+/** Run `fn` over `items` a few at a time, keeping their order. */
+async function inChunks<T, R>(items: T[], size: number, fn: (item: T) => Promise<R>): Promise<R[]> {
+  const out: R[] = [];
+  for (let i = 0; i < items.length; i += size)
+    out.push(...(await Promise.all(items.slice(i, i + size).map(fn))));
+  return out;
+}
+
+/** The assignments a board covers: this one, or every period of the same test (same teacher). */
+async function boardAssignmentIds(assignmentId: string, allPeriods: boolean): Promise<string[]> {
+  if (!allPeriods) return [assignmentId];
+  const mine = alias(schema.assignments, "mine");
+  const rows = await db
+    .select({ id: schema.assignments.id })
+    .from(schema.assignments)
+    .innerJoin(
+      mine,
+      and(
+        eq(mine.assessmentId, schema.assignments.assessmentId),
+        eq(mine.ownerId, schema.assignments.ownerId)
+      )
+    )
+    .where(eq(mine.id, assignmentId));
+  return rows.map((r) => r.id);
+}
+
+/**
+ * The board's version without loading the board (hardening plan H5.1, Nov 9 2026). The page
+ * polls every few seconds; when nothing has changed since the version it holds, the answer is
+ * these five small reads, never the per-student load.
+ */
+export async function getTierBoardVersion(
+  assignmentId: string,
+  opts: { allPeriods?: boolean } = {}
+): Promise<string> {
+  return boardVersion(await boardAssignmentIds(assignmentId, !!opts.allPeriods));
 }
 
 /**
@@ -177,6 +218,9 @@ export async function getTierBoard(
     ? periods
     : periods.filter((p) => p.assignmentId === assignmentId);
   const includedIds = included.map((p) => p.assignmentId);
+  // Read before the data (as the Dashboard's stamp is): a change that lands during the load is
+  // then caught by the next poll instead of being missed.
+  const version = await boardVersion(includedIds);
   const targets = await assessmentTargets(asg.assessmentId);
   const targetBy = new Map(targets.map((t) => [t.id, t]));
 
@@ -191,29 +235,31 @@ export async function getTierBoard(
       .select({ classId: schema.assignments.classId })
       .from(schema.assignments)
       .where(eq(schema.assignments.id, period.assignmentId));
-    const roster = await db
-      .select({
-        studentId: schema.users.id,
-        firstName: schema.users.firstName,
-        lastName: schema.users.lastName,
-      })
-      .from(schema.enrollments)
-      .innerJoin(schema.users, eq(schema.enrollments.studentId, schema.users.id))
-      .where(eq(schema.enrollments.classId, classRow.classId))
-      .orderBy(asc(schema.users.lastName), asc(schema.users.firstName));
-    const finals = await db
-      .select()
-      .from(schema.assignmentFinalScores)
-      .where(eq(schema.assignmentFinalScores.assignmentId, period.assignmentId));
+    const [roster, finals, attempts] = await Promise.all([
+      db
+        .select({
+          studentId: schema.users.id,
+          firstName: schema.users.firstName,
+          lastName: schema.users.lastName,
+        })
+        .from(schema.enrollments)
+        .innerJoin(schema.users, eq(schema.enrollments.studentId, schema.users.id))
+        .where(eq(schema.enrollments.classId, classRow.classId))
+        .orderBy(asc(schema.users.lastName), asc(schema.users.firstName)),
+      db
+        .select()
+        .from(schema.assignmentFinalScores)
+        .where(eq(schema.assignmentFinalScores.assignmentId, period.assignmentId)),
+      db
+        .select({
+          studentId: schema.attempts.studentId,
+          status: schema.attempts.status,
+          number: schema.attempts.number,
+        })
+        .from(schema.attempts)
+        .where(eq(schema.attempts.assignmentId, period.assignmentId)),
+    ]);
     const finalBy = new Map(finals.map((f) => [f.studentId, f]));
-    const attempts = await db
-      .select({
-        studentId: schema.attempts.studentId,
-        status: schema.attempts.status,
-        number: schema.attempts.number,
-      })
-      .from(schema.attempts)
-      .where(eq(schema.attempts.assignmentId, period.assignmentId));
     // The relearning path, where the course is switched on (one small query when it isn't).
     const paths = await loadPathStates(
       roster
@@ -221,6 +267,29 @@ export async function getTierBoard(
           attempts.some((a) => a.studentId === s.studentId && a.status !== "in_progress")
         )
         .map((s) => ({ assignmentId: period.assignmentId, studentId: s.studentId }))
+    );
+
+    // Each scored student's retake status and corrections, six students at a time rather than
+    // one after another (H5.1): the same reads, a fraction of the wait.
+    const scoredIds = roster
+      .filter((s) => {
+        const f = finalBy.get(s.studentId);
+        return (
+          f &&
+          f.tier !== null &&
+          attempts.some((a) => a.studentId === s.studentId && a.status !== "in_progress")
+        );
+      })
+      .map((s) => s.studentId);
+    const detailBy = new Map(
+      await inChunks(scoredIds, 6, async (studentId) => {
+        const [retake, latest] = await Promise.all([
+          getRetakeStatus(period.assignmentId, studentId),
+          latestFinishedAttemptId(period.assignmentId, studentId),
+        ]);
+        const corrections = latest ? await getCorrectionsSummary(latest) : null;
+        return [studentId, { retake, corrections }] as const;
+      })
     );
 
     for (const s of roster) {
@@ -234,9 +303,7 @@ export async function getTierBoard(
       }
       finalsForMissed.push(f.perTarget);
       const path = paths.get(pathKey(period.assignmentId, s.studentId))?.state ?? null;
-      const retake = await getRetakeStatus(period.assignmentId, s.studentId);
-      const latest = await latestFinishedAttemptId(period.assignmentId, s.studentId);
-      const corrections = latest ? await getCorrectionsSummary(latest) : null;
+      const { retake, corrections } = detailBy.get(s.studentId)!;
       const stage = relearningStage({
         tier: f.tier as 1 | 2 | 3,
         attemptsFinished: finished,
@@ -311,7 +378,7 @@ export async function getTierBoard(
     },
     movedUpThisWeek: cards.filter((c) => c.movedUpThisWeek).length,
     mostMissed,
-    version: await boardVersion(includedIds),
+    version,
     generatedAt: now,
   };
 }

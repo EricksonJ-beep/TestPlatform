@@ -866,6 +866,8 @@ export const activityLog = pgTable(
   (t) => [
     index("activity_log_user_time_idx").on(t.userId, t.createdAt),
     index("activity_log_time_idx").on(t.createdAt),
+    /** The per-test activity log reads by assignment (hardening plan H5.3). */
+    index("activity_log_assignment_idx").on(t.assignmentId),
   ]
 );
 
@@ -906,6 +908,10 @@ export const responses = pgTable(
   (t) => [
     uniqueIndex("responses_attempt_question_unique").on(t.attemptId, t.questionId),
     index("responses_question_idx").on(t.questionId),
+    /** Answers still waiting for a teacher's score: the Dashboard and grading queue read these (H5.3). */
+    index("responses_ungraded_idx")
+      .on(t.attemptId)
+      .where(sql`${t.autoScore} is null and ${t.manualScore} is null`),
   ]
 );
 
