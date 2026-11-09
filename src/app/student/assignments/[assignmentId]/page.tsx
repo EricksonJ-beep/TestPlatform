@@ -74,11 +74,16 @@ export default async function StudentAssignmentPage({
   // A target only a teacher's set covers: its sets are listed here, open or closed (review, Oct 14
   // 2026: the Practice tab lists open tests only).
   const setOnly = owedPractice.filter((t) => !buildable.has(t.targetId)).map((t) => t.targetId);
-  const practiceSets = setOnly.length
-    ? (await getStudentPractice(access.userId, [a])).sets.filter((s) =>
-        s.targets.some((x) => setOnly.includes(x.id))
-      )
+  // A test's checklist links each open step to what finishes it (Jon, Nov 9 2026), closed or not.
+  const checklist = (a.cycle === "relearning" || retaking) && !a.path;
+  const practice =
+    setOnly.length || (checklist && a.retake)
+      ? await getStudentPractice(access.userId, [a], { closedToo: true })
+      : null;
+  const practiceSets = practice
+    ? practice.sets.filter((s) => s.targets.some((x) => setOnly.includes(x.id)))
     : [];
+  const steps = practice?.needed.find((g) => g.assignmentId === a.id)?.targets ?? [];
   const practiceHref = practiceTarget
     ? `/student/practice/build?target=${practiceTarget.targetId}`
     : "#practice-sets";
@@ -199,7 +204,8 @@ export default async function StudentAssignmentPage({
             assignmentId={a.id}
             retake={a.retake}
             // On the path the step path below shows each target's steps (R5).
-            checklist={(a.cycle === "relearning" || retaking) && !a.path}
+            checklist={checklist}
+            steps={steps}
             onPath={!!a.path}
           />
         </section>
