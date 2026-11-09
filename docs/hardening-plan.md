@@ -46,13 +46,20 @@ Status: `[ ]` to do · `[x]` done · `[J]` waits on Jon (a choice only he can ma
 
 ## H2 — Builds can't change the live database by accident
 
-- [ ] **H2.1 Migrate on production builds only.** `scripts/migrate-on-build.mjs` runs migrations,
-      the walkthrough and packs only when `VERCEL_ENV` is `production` (or unset with
-      `MIGRATE_ON_BUILD=1`, for a manual build). A preview build prints why it skipped.
-      Every step's exit code is checked; a failed step fails the build.
-      _Done when:_ a test of the decision function covers production, preview, development and
-      the override. **Note for Jon:** a preview whose code needs a new table will then error on
-      that page until it is merged. The safe fix is a Neon branch for previews (H7.4).
+- [x] **H2.1 The build says what it is changing, and a preview can be told not to.**
+      `scripts/migrate-on-build.mjs` logs the kind of build and the database host, warns when
+      a non-production build is about to migrate, and lists any data step (walkthrough, packs,
+      CVTC, score history) that failed instead of passing silently. `MIGRATE_ON_PREVIEW=0`
+      makes preview builds leave the database alone.
+      _Done when:_ the decision function (`scripts/migrate-decision.mjs`) is tested for
+      production, preview, a manual build and the switch. Done.
+- [J] **H2.2 Turn previews off, or give them their own database.** Left as it was by default,
+      because Jon reviews pull requests on their previews, and a preview that doesn't migrate
+      breaks on any page that needs a new column (this plan adds some). Two ways to close it:
+      (a) in Vercel's Neon integration, turn on a database branch per preview: each preview
+      then migrates its own copy and the live data is never touched (best); or
+      (b) set `MIGRATE_ON_PREVIEW=0` for the Preview environment and accept that a preview
+      with schema changes errors until it is merged.
 
 ## H3 — No dead ends on the relearning path
 
