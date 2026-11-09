@@ -85,6 +85,9 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
   const [unsaved, setUnsaved] = useState<SaveQueueState>({ pending: 0, failing: false });
   const [refused, setRefused] = useState(false);
   const onRefused = useRef<(r: { status: number; error: string }) => void>(() => undefined);
+  // Typed answers wait 500 ms for the next keystroke before they're queued.
+  const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const typed = useRef<Record<string, Answer>>({});
   const queueRef = useRef<SaveQueue<Answer> | null>(null);
   // Made on first use (an answer, a submit), never during render.
   const getQueue = useCallback(
@@ -99,7 +102,9 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
         },
         onChange: (s) => {
           setUnsaved(s);
-          if (s.pending === 0) setSaveState("saved");
+          // "Saved" only when nothing is waiting: not in the queue, and not a typed answer
+          // still inside its half-second pause.
+          if (s.pending === 0 && Object.keys(timers.current).length === 0) setSaveState("saved");
         },
       })),
     [attempt.id]
@@ -109,9 +114,6 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
     window.addEventListener("online", back);
     return () => window.removeEventListener("online", back);
   }, []);
-  // Typed answers wait 500 ms for the next keystroke before they're queued.
-  const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
-  const typed = useRef<Record<string, Answer>>({});
   const flushTyping = useCallback(() => {
     for (const [questionId, t] of Object.entries(timers.current)) {
       clearTimeout(t);
@@ -318,6 +320,10 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
     }
     if (!review) headingRef.current?.focus();
   }, [idx, review]);
+  // Leaving a question sends what was typed there at once, without waiting out the pause.
+  useEffect(() => {
+    flushTyping();
+  }, [idx, review, flushTyping]);
   // With backtracking off, Next on a blank answer asks once before it is left for good.
   const [skipAsked, setSkipAsked] = useState<string | null>(null);
   const goNext = () => {

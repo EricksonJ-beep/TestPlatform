@@ -376,6 +376,14 @@ Repo, Next.js + Tailwind + shadcn scaffold, Neon project + Drizzle schema/migrat
 
 *Outcome:* students earn a retake through one short, guided path: about 10 min of relearning on a quiz (10–15 per target on a test) plus a 5-question check.
 
+**Hardening (Nov 9, 2026)** — `docs/hardening-plan.md`. A review of the whole app, built as tickets H1–H7: no features, and no rule changed except these, which follow from it.
+- A student's answers are kept in a queue until the server confirms them, and Submit waits for it.
+- A timed test left open past its time limit is submitted at its deadline when its teacher's dashboard or results, or the student's home, next loads.
+- The best attempt of an uncapped quiz or practice is the best **percent**.
+- A practice check is never dealt with fewer questions than its pass mark.
+- A temporary password must be changed before anything else, a reset signs out earlier sessions, and guessing a password or a code is throttled.
+- A question's image carries a description for screen readers.
+
 **Phase 2 — Bigger and better**
 - Guided-notes activity type; teacher-verified link completions; activity sequencing
 - **Sync worksheets from the Worksheet Index** (Google OAuth)

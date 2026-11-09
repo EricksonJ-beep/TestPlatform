@@ -167,14 +167,37 @@ Status: `[ ]` to do · `[x]` done · `[J]` waits on Jon (a choice only he can ma
 
 ## H7 — Safety net
 
-- [ ] **H7.1 CI builds.** CI also runs `next build` and applies the migrations to a scratch database.
-- [ ] **H7.2 Server errors are recorded.** `instrumentation.ts` logs every server error with its
-      route to Vercel's logs in one searchable line.
+- [x] **H7.1 CI builds.** CI now also checks that `schema.ts` has its migration (a schema edit
+      without one fails), and a second job builds for production and starts the app.
+- [x] **H7.2 Server errors are recorded.** `src/instrumentation.ts` writes every server error
+      as one line starting `[bloom-error]`, with the same reference number the error page
+      shows, the route and the kind of request (no names, answers or query strings). Search
+      Vercel's logs for the reference a student reads out.
 - [J] **H7.3 An error service and backups.** Sentry (or similar) and a nightly database dump both
-      need an account or a secret Jon creates.
-- [J] **H7.4 A Neon branch for preview builds,** so previews can migrate safely (set in Vercel).
+      need an account or a secret Jon creates. Until then: errors are in Vercel's logs (H7.2),
+      and recovery leans on Neon's own history, which is short on the free plan.
+- [J] **H7.4 A Neon branch for preview builds,** so previews can migrate safely (set in Vercel;
+      see H2.2).
+- [x] **H7.5 One end-to-end student run** (`npm run e2e`, in CI): log in, take a quiz with the
+      connection cut partway, leave an ordering question as shown, submit with the connection
+      cut and then for real, see the score, open corrections and save a draft. Writing it found
+      one more gap, now fixed: a typed answer wasn't sent until half a second after leaving the
+      question. Not covered yet: relearning and the practice check (they need seeded Read ·
+      Watch · Do content).
 - [ ] **H7.6 A script Content-Security-Policy,** tested against YouTube embeds and R2 uploads.
-- [ ] **H7.5 One end-to-end student run** in CI: take a test, do corrections, pass a check.
+
+## Still to do, in order
+
+1. **Jon's choices:** H2.2 / H7.4 (previews and the live database), H4.8 (adding a student who
+   already has an account), H4.9 (temp password length), H7.3 (error service, backups).
+2. **H5.2 part 2:** batch the student home's corrections and retake reads.
+3. **A shared runner shell** for the four student screens (test, practice, check, corrections):
+   one header, one navigator, one focus rule. `QuestionMedia` and the save queue are the first
+   two shared pieces; the rest is a change with no behaviour difference, best done on its own.
+   It also removes the second `<main>` the test screen nests inside the layout's.
+4. **H7.6** and the rest of the review's smaller notes: numeric answers typed as mixed numbers
+   ("1 1/2") or with a comma decimal; a replay guard on the worksheet webhook; a log of who
+   used "View as student"; retention for the activity log.
 
 ## Not in this plan
 
