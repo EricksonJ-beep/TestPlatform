@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useState, useTransition } from "react";
 import type { ActionResult } from "@/lib/authz";
+import { safe } from "@/lib/safe-action";
 
 /**
  * Runs a `withAuthz` server action from a client component: tracks pending state,
@@ -20,7 +21,8 @@ export function useAction({ refresh = true }: { refresh?: boolean } = {}) {
   const run = useCallback(
     <T,>(promise: Promise<ActionResult<T>>, onSuccess?: (data: T) => void) => {
       start(async () => {
-        const r = await promise;
+        // A request that never arrived shows as an error on the form, not a blank error page.
+        const r = await safe(promise);
         if (r.ok) {
           setError(null);
           setFieldErrors({});

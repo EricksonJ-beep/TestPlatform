@@ -1,5 +1,6 @@
 "use client";
 
+import { safe } from "@/lib/safe-action";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -61,8 +62,8 @@ export function PracticeRunner({ payload }: { payload: PracticeRunnerPayload }) 
     setError(null);
     const r =
       kind === "check"
-        ? await answerPractice(attempt.id, q.id, current)
-        : await revealPractice(attempt.id, q.id);
+        ? await safe(answerPractice(attempt.id, q.id, current))
+        : await safe(revealPractice(attempt.id, q.id));
     setChecking(false);
     if (!r.ok) {
       setError(r.error);
@@ -83,8 +84,8 @@ export function PracticeRunner({ payload }: { payload: PracticeRunnerPayload }) 
     setRestarting(true);
     // A built practice deals a fresh hand on the same targets; a set starts a new attempt.
     const r = payload.custom
-      ? await startBuiltPractice(payload.custom)
-      : await startPractice(set.id);
+      ? await safe(startBuiltPractice(payload.custom))
+      : await safe(startPractice(set.id));
     if (r.ok) router.push(`/student/practice/${r.data.attemptId}`);
     else {
       setRestarting(false);

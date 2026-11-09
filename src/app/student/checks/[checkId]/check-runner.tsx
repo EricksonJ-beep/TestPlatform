@@ -1,5 +1,6 @@
 "use client";
 
+import { safe } from "@/lib/safe-action";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -57,7 +58,7 @@ export function CheckRunner({ payload }: { payload: CheckRunnerPayload }) {
     if (!q || entry || !status) return;
     setBusy(true);
     setError(null);
-    const r = await answerPracticeCheck(status.id, q.id, current);
+    const r = await safe(answerPracticeCheck(status.id, q.id, current));
     setBusy(false);
     if (!r.ok) {
       setError(r.error);
@@ -80,7 +81,7 @@ export function CheckRunner({ payload }: { payload: CheckRunnerPayload }) {
   async function tryAgain() {
     setBusy(true);
     setError(null);
-    const r = await nextPracticeCheckRound(check.id);
+    const r = await safe(nextPracticeCheckRound(check.id));
     if (!r.ok) {
       setBusy(false);
       setError(r.error);

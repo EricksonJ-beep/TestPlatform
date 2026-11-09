@@ -6,7 +6,14 @@ import { z } from "zod";
 import { db, schema } from "@/db";
 import { logActivity } from "@/lib/activity-log";
 import { canStartAttempt, startReasonText } from "@/lib/assignments";
-import { createAttempt, finalizeAttempt, recomputeFinalScore } from "@/lib/attempts";
+import {
+  claimAttempt,
+  createAttempt,
+  finalizeAttempt,
+  finishIfClaimed,
+  isUniqueViolation,
+  recomputeFinalScore,
+} from "@/lib/attempts";
 import { AWAITING_GRADE_TEXT } from "@/lib/card-state";
 import {
   pauseAttempt,
@@ -156,13 +163,20 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
   const now = new Date();
 
   const open = await db.query.attempts.findFirst({
-    columns: { id: true, dueAt: true },
+    columns: { id: true, dueAt: true, submittedAt: true },
     where: and(
       eq(schema.attempts.assignmentId, assignmentId),
       eq(schema.attempts.studentId, access.userId),
       eq(schema.attempts.status, "in_progress")
     ),
   });
+  if (open?.submittedAt) {
+    // Submitted, but its grading never finished (H1.4): finish it; the test page then sends
+    // the student to their result instead of starting another try on the same click.
+    await finishIfClaimed(open.id, now);
+    revalidate(assignmentId);
+    return { attemptId: open.id, resumed: true };
+  }
   if (open) {
     // Finish later (Oct 13 2026): an idle or window-closed attempt pauses rather than ending;
     // a paused one opens on its paused screen, where the resume code reopens it.
@@ -286,6 +300,18 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
   } catch (err) {
     if (err instanceof Error && err.message === "empty")
       throw new ActionError("This test has no questions yet. Tell your teacher.", 409);
+    // Two starts at once (a double-click, two tabs): the other one made the attempt. Open it.
+    if (isUniqueViolation(err)) {
+      const other = await db.query.attempts.findFirst({
+        columns: { id: true },
+        where: and(
+          eq(schema.attempts.assignmentId, assignmentId),
+          eq(schema.attempts.studentId, access.userId),
+          eq(schema.attempts.status, "in_progress")
+        ),
+      });
+      if (other) return { attemptId: other.id, resumed: true };
+    }
     throw err;
   }
   await logActivity({
@@ -535,6 +561,7 @@ async function writableAttempt(access: AttemptAccess) {
       id: true,
       status: true,
       dueAt: true,
+      submittedAt: true,
       questionSet: true,
       assignmentId: true,
       lockedQuestionIds: true,
@@ -542,7 +569,8 @@ async function writableAttempt(access: AttemptAccess) {
     where: eq(schema.attempts.id, attemptId),
   });
   if (!attempt) throw new ActionError("Not found.", 404);
-  if (attempt.status !== "in_progress")
+  // `submittedAt` on an open attempt is the grading claim (H1.4): no more answers after it.
+  if (attempt.status !== "in_progress" || attempt.submittedAt)
     throw new ActionError("This attempt is already submitted.", 409);
   if (paused) throw new ActionError(PAUSED, 423);
   if (attempt.dueAt && attempt.dueAt.getTime() + GRACE_MS < now.getTime())
@@ -622,6 +650,12 @@ export const submitAttempt = withAuthz(async (attemptId: string, auto = false) =
   if (attempt.pausedAt) throw new ActionError(PAUSED, 423);
   const now = new Date();
   const submittedAt = attempt.dueAt && attempt.dueAt < now ? attempt.dueAt : now;
+  // Claimed once (H1.4): of two submits at the same moment, one grades and the other is told
+  // it's already in. A claim left unfinished by a failure is picked up again after 20 seconds.
+  const claim = await claimAttempt(attemptId, submittedAt, now);
+  if (claim === "paused") throw new ActionError(PAUSED, 423);
+  if (claim === "missing") throw new ActionError("Not found.", 404);
+  if (claim !== "claimed") throw new ActionError("Already submitted.", 409);
   const score = await finalizeAttempt(attemptId, submittedAt);
   await logActivity({
     userId: access.userId,

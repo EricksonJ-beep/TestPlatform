@@ -1,5 +1,6 @@
 "use client";
 
+import { isRetryable, safe } from "@/lib/safe-action";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { Check, CheckCircle2, Circle, Play, RotateCcw, TriangleAlert } from "lucide-react";
@@ -101,7 +102,7 @@ export function RelearningActivity({
     (to: RelearningMode) =>
       startSwitch(async () => {
         if (preview) return;
-        const r = await startRelearning(assignmentId, to, { targetId });
+        const r = await safe(startRelearning(assignmentId, to, { targetId }));
         if (r.ok) {
           setSwitchError(null);
           router.refresh();
@@ -180,7 +181,7 @@ function RowSections({
     answer: async (sectionId, checkId, answer) => {
       const r = preview
         ? previewAnswer(preview[checkId], answer)
-        : await answerRelearningCheck(row.id, sectionId, checkId, answer);
+        : await safe(answerRelearningCheck(row.id, sectionId, checkId, answer));
       if (!r.ok) return null;
       setProgress((p) => {
         const prior = p.checks?.[checkId];
@@ -220,14 +221,19 @@ function RowSections({
         };
       });
       if (preview) return;
-      void markRelearningSection(row.id, sectionId, patch).then((r) => {
-        if (r.ok) done(r.data);
-      });
+      // Reading to the end or watching a segment: sent again a few times if it doesn't arrive,
+      // so a section never shows done here and undone after a refresh (H1.5).
+      const send = (triesLeft: number) =>
+        void safe(markRelearningSection(row.id, sectionId, patch)).then((r) => {
+          if (r.ok) done(r.data);
+          else if (isRetryable(r) && triesLeft > 0) setTimeout(() => send(triesLeft - 1), 4000);
+        });
+      send(5);
     },
     saveShort: async (sectionId, text) => {
       const r = preview
         ? ({ ok: true, data: { rowFinished: false } } as const)
-        : await saveRelearningShortAnswer(row.id, sectionId, text);
+        : await safe(saveRelearningShortAnswer(row.id, sectionId, text));
       if (!r.ok) return false;
       setProgress((p) => ({ ...p, shortAnswers: { ...p.shortAnswers, [sectionId]: text } }));
       done(r.data);
@@ -875,7 +881,7 @@ function QuickCheckCard({
     setBusy(true);
     const r = await ops.answer(section.id, check.id, answer);
     setBusy(false);
-    if (r === null) return setError("That didn't save. Try again.");
+    if (r === null) return setError("That didn't go through. Check your wifi and try again.");
     setError(null);
     setWrong(!r);
     if (r) onRight?.();
@@ -997,7 +1003,7 @@ function ShortAnswer({ section, ops }: { section: ActivitySection; ops: Ops }) {
             setBusy(true);
             const okay = await ops.saveShort(section.id, text);
             setBusy(false);
-            setStatus(okay ? "Saved." : "That didn't save. Try again.");
+            setStatus(okay ? "Saved." : "That didn't save. Check your wifi and try again.");
           }}
           data-save-short-answer
         >

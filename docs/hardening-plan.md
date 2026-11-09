@@ -13,22 +13,24 @@ Status: `[ ]` to do · `[x]` done · `[J]` waits on Jon (a choice only he can ma
 
 ## H1 — A student's work is never lost in a test
 
-- [ ] **H1.1 Autosave retries.** `test-runner.tsx`: a save that fails (the request itself, or a
+- [x] **H1.1 Autosave retries.** `test-runner.tsx`: a save that fails (the request itself, or a
       server error) stays in a per-question "unsaved" list and is retried with backoff and when
       the browser comes back online. The header says "Not saved. Trying again…" while the list
       is non-empty. Submit waits for the list to empty, and says so if it can't.
       _Done when:_ a pure retry queue (`src/lib/save-queue.ts`) has tests for fail → retry →
       saved, newest answer wins, and "flush before submit"; the runner uses it.
-- [ ] **H1.2 Submit never hangs.** A submit whose request fails resets the button, shows "Couldn't
+- [x] **H1.2 Submit never hangs.** A submit whose request fails resets the button, shows "Couldn't
       reach Bloom. Check your wifi and try again," and at time-up retries by itself.
       Typed answers still inside the 500 ms debounce are flushed before submit.
       _Done when:_ covered by the save-queue tests plus the runner change; no path leaves
       `submitting` true after a rejection.
-- [ ] **H1.3 Ordering questions.** The order a student sees is saved when the question is first
+- [x] **H1.3 Ordering questions.** The order a student sees is saved when the question is first
       shown answerable, so "it's already right" is an answer, not a blank. The review screen
       counts it as answered only after the student has seen it.
-      _Done when:_ a test shows an untouched ordering question in the right order grades correct.
-- [ ] **H1.4 Submit is claimed once and can be finished later.** `submitAttempt` claims the
+      _Done when:_ checked in a browser (Nov 9): an untouched ordering question reaches the
+      review screen as answered and is graded on the order shown. (It lives in the shared answer
+      input, so practice and practice checks get it too. No UI test harness yet: H7.5.)
+- [x] **H1.4 Submit is claimed once and can be finished later.** `submitAttempt` claims the
       attempt with one conditional UPDATE (`submitted_at` set where still in progress), so two
       tabs can't both grade. `finalizeAttempt` writes every response score in one statement,
       then the target scores, then flips the status last, so a failure midway leaves an attempt
@@ -36,9 +38,11 @@ Status: `[ ]` to do · `[x]` done · `[J]` waits on Jon (a choice only he can ma
       A racing Start returns the attempt that won instead of a 500.
       _Done when:_ tests for double submit (one grades, one gets 409), a claimed-but-ungraded
       attempt finishing on the next submit, a save after the claim refused, and a double start.
-- [ ] **H1.5 The other runners.** Practice, practice check, corrections and relearning quick
+- [x] **H1.5 The other runners.** Practice, practice check, corrections and relearning quick
       checks get the same "couldn't reach Bloom" recovery instead of a stuck "Checking…".
-      _Done when:_ one shared helper (`safeAction`) wraps those calls; each runner resets on failure.
+      _Done when:_ one shared helper (`safe`, `src/lib/safe-action.ts`) wraps those calls and
+      `useAction` (every teacher form); each runner resets on failure. Corrections drafts use
+      the H1.1 queue, and Submit corrections waits for it.
 
 ## H2 — Builds can't change the live database by accident
 

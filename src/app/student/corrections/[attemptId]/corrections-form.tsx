@@ -1,5 +1,7 @@
 "use client";
 
+import { createSaveQueue, type SaveQueue } from "@/lib/save-queue";
+import { isRetryable, safe } from "@/lib/safe-action";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, ChevronLeft, ChevronRight, Lightbulb, Lock, X } from "lucide-react";
@@ -43,6 +45,7 @@ export function CorrectionsForm({ form }: { form: FormPayload }) {
   );
   const [serverIssues, setServerIssues] = useState<Record<string, string[]>>({});
   const [saveState, setSaveState] = useState<SaveState>("idle");
+  const [retrying, setRetrying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirm, setConfirm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -55,26 +58,47 @@ export function CorrectionsForm({ form }: { form: FormPayload }) {
   const allDone = doneCount === total;
 
   // --- Autosave -------------------------------------------------------------
+  // A draft that doesn't reach the server is sent again until it does (H1.5, the same queue
+  // as the test screen), and Submit waits for it.
   const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const queueRef = useRef<SaveQueue<Draft> | null>(null);
+  const getQueue = useCallback(
+    () =>
+      (queueRef.current ??= createSaveQueue<Draft>({
+        save: async (questionId, d) => {
+          const r = await safe(saveCorrection(form.attempt.id, questionId, d));
+          if (r.ok) {
+            setError(null);
+            setServerIssues((prev) => ({
+              ...prev,
+              [questionId]: r.data.issues.map((i) => ISSUE_TEXT[i]),
+            }));
+            return "saved";
+          }
+          if (isRetryable(r)) return "retry";
+          setSaveState("error");
+          setError(r.error);
+          return "fatal";
+        },
+        onChange: (s) => {
+          setRetrying(s.failing);
+          if (s.pending === 0) setSaveState((cur) => (cur === "error" ? cur : "saved"));
+        },
+      })),
+    [form.attempt.id]
+  );
   const persist = useCallback(
     (questionId: string, d: Draft) => {
       setSaveState("saving");
-      void saveCorrection(form.attempt.id, questionId, d).then((r) => {
-        if (r.ok) {
-          setSaveState("saved");
-          setError(null);
-          setServerIssues((prev) => ({
-            ...prev,
-            [questionId]: r.data.issues.map((i) => ISSUE_TEXT[i]),
-          }));
-        } else {
-          setSaveState("error");
-          setError(r.error);
-        }
-      });
+      getQueue().set(questionId, d);
     },
-    [form.attempt.id]
+    [getQueue]
   );
+  useEffect(() => {
+    const back = () => queueRef.current?.retryNow();
+    window.addEventListener("online", back);
+    return () => window.removeEventListener("online", back);
+  }, []);
   const onChange = (field: keyof Draft, value: string) => {
     const next = { ...draft, [field]: value };
     setDrafts((prev) => ({ ...prev, [item.questionId]: next }));
@@ -96,7 +120,16 @@ export function CorrectionsForm({ form }: { form: FormPayload }) {
 
   const submit = async () => {
     setSubmitting(true);
-    const r = await submitCorrections(form.attempt.id);
+    flush();
+    if (!(await getQueue().flush(8000))) {
+      setSubmitting(false);
+      setConfirm(false);
+      setError(
+        "Some of your corrections haven't saved yet. Check your wifi, then submit again. Your writing is still on this screen."
+      );
+      return;
+    }
+    const r = await safe(submitCorrections(form.attempt.id));
     setSubmitting(false);
     if (r.ok) {
       router.push(`/student/assignments/${form.assignment.id}`);
@@ -130,18 +163,22 @@ export function CorrectionsForm({ form }: { form: FormPayload }) {
         <span
           className={cn(
             "text-xs",
-            saveState === "error" ? "text-error-foreground" : "text-muted-foreground"
+            saveState === "error" || retrying
+              ? "font-medium text-error-foreground"
+              : "text-muted-foreground"
           )}
           aria-live="polite"
-          data-save-state={saveState}
+          data-save-state={retrying ? "error" : saveState}
         >
-          {saveState === "saving"
-            ? "Saving…"
-            : saveState === "saved"
-              ? "Saved"
-              : saveState === "error"
-                ? "Not saved"
-                : ""}
+          {retrying
+            ? "Not saved. Trying again…"
+            : saveState === "saving"
+              ? "Saving…"
+              : saveState === "saved"
+                ? "Saved"
+                : saveState === "error"
+                  ? "Not saved"
+                  : ""}
         </span>
       </div>
 

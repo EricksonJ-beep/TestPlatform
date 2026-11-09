@@ -14,6 +14,7 @@ import {
 import { cn } from "cn";
 import type { Answer } from "@/lib/grading";
 import type { RunnerPayload } from "@/lib/queries/attempts";
+import { createSaveQueue, type SaveQueue, type SaveQueueState } from "@/lib/save-queue";
 import { RichText } from "@/components/rich-text";
 import { StimulusPanel } from "@/components/stimulus/stimulus-panel";
 import { TargetChip } from "@/components/targets/target-chip";
@@ -29,6 +30,9 @@ import {
 import { AnswerInput, isAnswered } from "./answer-input";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
+
+const NO_CONNECTION =
+  "Couldn't reach Bloom. Check your wifi and try again. Your answers are still on this screen.";
 
 function fmtRemaining(ms: number): string {
   const s = Math.max(0, Math.ceil(ms / 1000));
@@ -72,14 +76,103 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
   const answeredCount = questions.filter((x) => isAnswered(answers[x.id] ?? null)).length;
   const unanswered = questions.filter((x) => !isAnswered(answers[x.id] ?? null));
 
+  // --- Autosave (H1.1, Nov 9 2026) ---------------------------------------------------
+  // Every answer waits in a queue until the server confirms it. A save that doesn't arrive (a
+  // wifi drop) is sent again, and Submit waits for the queue to empty, so an answer on the
+  // screen is never graded as blank.
+  const [unsaved, setUnsaved] = useState<SaveQueueState>({ pending: 0, failing: false });
+  const [refused, setRefused] = useState(false);
+  const onRefused = useRef<(r: { status: number; error: string }) => void>(() => undefined);
+  const queueRef = useRef<SaveQueue<Answer> | null>(null);
+  // Made on first use (an answer, a submit), never during render.
+  const getQueue = useCallback(
+    () =>
+      (queueRef.current ??= createSaveQueue<Answer>({
+        save: async (questionId, answer) => {
+          const r = await saveAnswer(attempt.id, questionId, answer);
+          if (r.ok) return "saved";
+          if (r.status >= 500 || r.status === 429) return "retry";
+          onRefused.current(r);
+          return "fatal";
+        },
+        onChange: (s) => {
+          setUnsaved(s);
+          if (s.pending === 0) setSaveState("saved");
+        },
+      })),
+    [attempt.id]
+  );
+  useEffect(() => {
+    const back = () => queueRef.current?.retryNow();
+    window.addEventListener("online", back);
+    return () => window.removeEventListener("online", back);
+  }, []);
+  // Typed answers wait 500 ms for the next keystroke before they're queued.
+  const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const typed = useRef<Record<string, Answer>>({});
+  const flushTyping = useCallback(() => {
+    for (const [questionId, t] of Object.entries(timers.current)) {
+      clearTimeout(t);
+      if (questionId in typed.current) getQueue().set(questionId, typed.current[questionId]);
+    }
+    timers.current = {};
+    typed.current = {};
+  }, [getQueue]);
+  const onChange = (questionId: string, answer: Answer, debounce: boolean) => {
+    setAnswers((prev) => ({ ...prev, [questionId]: answer }));
+    setRefused(false);
+    setSaveState("saving");
+    clearTimeout(timers.current[questionId]);
+    delete timers.current[questionId];
+    delete typed.current[questionId];
+    if (debounce) {
+      typed.current[questionId] = answer;
+      timers.current[questionId] = setTimeout(() => {
+        delete timers.current[questionId];
+        delete typed.current[questionId];
+        getQueue().set(questionId, answer);
+      }, 500);
+    } else getQueue().set(questionId, answer);
+  };
+
   // --- Submit (manual or automatic) -------------------------------------------------
   const submittedRef = useRef(false);
+  const [submitRetrying, setSubmitRetrying] = useState(false);
   const doSubmit = useCallback(
     async (auto = false) => {
       if (submittedRef.current) return;
       submittedRef.current = true;
       setSubmitting(true);
-      const r = await submitAttempt(attempt.id, auto);
+      const giveUp = (message: string) => {
+        submittedRef.current = false;
+        setSubmitting(false);
+        setSaveError(message);
+      };
+      // Everything on the screen reaches the server before it grades (H1.2). At time-up the
+      // wait is short: the server stops taking answers a few seconds after the deadline.
+      flushTyping();
+      const allSaved = await getQueue().flush(auto ? 3000 : 8000);
+      if (!allSaved && !auto) {
+        giveUp(
+          "Some answers haven't saved yet. Check your wifi, then press Submit again. Your answers are still on this screen."
+        );
+        return;
+      }
+      let r: Awaited<ReturnType<typeof submitAttempt>>;
+      try {
+        r = await submitAttempt(attempt.id, auto);
+      } catch {
+        // The request itself failed. A time-up submit tries again by itself (the countdown
+        // calls back in); a pressed Submit gives the button back.
+        if (auto) {
+          setSubmitRetrying(true);
+          setTimeout(() => {
+            submittedRef.current = false;
+          }, 3000);
+        } else giveUp(NO_CONNECTION);
+        return;
+      }
+      setSubmitRetrying(false);
       // 423: the window closed, so the test paused instead (Finish later); show the paused screen.
       if (!r.ok && r.status === 423) {
         router.refresh();
@@ -88,14 +181,22 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
       // 404: the teacher deleted this attempt underneath us; the assignment page explains the state.
       if (r.ok || r.status === 409 || r.status === 404)
         router.push(`/student/assignments/${assignment.id}`);
-      else {
-        submittedRef.current = false;
-        setSubmitting(false);
-        setSaveError(r.error);
-      }
+      else giveUp(r.error);
     },
-    [attempt.id, assignment.id, router]
+    [attempt.id, assignment.id, router, getQueue, flushTyping]
   );
+  useEffect(() => {
+    onRefused.current = (r) => {
+      setRefused(true);
+      setSaveError(r.error);
+      if (r.status === 404) router.push(`/student/assignments/${assignment.id}`);
+      if (r.status === 423) router.refresh(); // paused (idle or window closed)
+      if (r.status === 409 && /Time is up/.test(r.error)) {
+        setTimeUp(true);
+        void doSubmit(true);
+      }
+    };
+  }, [assignment.id, doSubmit, router]);
 
   useEffect(() => {
     if (!dueAtMs) return;
@@ -113,37 +214,6 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
     return () => clearInterval(t);
   }, [dueAtMs, serverNowMs, doSubmit]);
 
-  // --- Autosave ---------------------------------------------------------------------
-  const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
-  const persist = useCallback(
-    (questionId: string, answer: Answer) => {
-      setSaveState("saving");
-      void saveAnswer(attempt.id, questionId, answer).then((r) => {
-        if (r.ok) {
-          setSaveState("saved");
-          setSaveError(null);
-        } else {
-          setSaveState("error");
-          setSaveError(r.error);
-          if (r.status === 404) router.push(`/student/assignments/${assignment.id}`);
-          if (r.status === 423) router.refresh(); // paused (idle or window closed)
-          if (r.status === 409 && /Time is up/.test(r.error)) {
-            setTimeUp(true);
-            void doSubmit(true);
-          }
-        }
-      });
-    },
-    [attempt.id, assignment.id, doSubmit, router]
-  );
-  const onChange = (questionId: string, answer: Answer, debounce: boolean) => {
-    setAnswers((prev) => ({ ...prev, [questionId]: answer }));
-    clearTimeout(timers.current[questionId]);
-    if (debounce) {
-      setSaveState("saving");
-      timers.current[questionId] = setTimeout(() => persist(questionId, answer), 500);
-    } else persist(questionId, answer);
-  };
   const toggleFlag = (questionId: string) => {
     const next = !flags.has(questionId);
     setFlags((prev) => {
@@ -152,7 +222,7 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
       else s.delete(questionId);
       return s;
     });
-    void setFlag(attempt.id, questionId, next);
+    void setFlag(attempt.id, questionId, next).catch(() => undefined); // a flag is a note to self
   };
 
   // --- Finish later (Oct 13 2026) ---------------------------------------------------
@@ -169,9 +239,11 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
     const t = setInterval(() => {
       if (document.visibilityState !== "visible") return;
       if (Date.now() - lastInteraction.current > 120_000) return;
-      void attemptHeartbeat(attempt.id).then((r) => {
-        if (r.ok && r.data.paused) router.refresh();
-      });
+      void attemptHeartbeat(attempt.id)
+        .then((r) => {
+          if (r.ok && r.data.paused) router.refresh();
+        })
+        .catch(() => undefined); // offline: the save queue is what tells the student
     }, 60_000);
     return () => {
       for (const ev of events) window.removeEventListener(ev, mark);
@@ -181,11 +253,18 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
   const [pausing, setPausing] = useState<"idle" | "confirm" | "working">("idle");
   const pauseNow = async () => {
     setPausing("working");
-    const r = await finishLater(attempt.id);
-    if (r.ok || r.status === 423) router.refresh();
-    else {
+    flushTyping();
+    await getQueue().flush(5000); // what's on the screen is saved before it locks
+    try {
+      const r = await finishLater(attempt.id);
+      if (r.ok || r.status === 423) router.refresh();
+      else {
+        setPausing("idle");
+        setSaveError(r.error);
+      }
+    } catch {
       setPausing("idle");
-      setSaveError(r.error);
+      setSaveError(NO_CONNECTION);
     }
   };
   const locked = new Set(attempt.lockedQuestionIds);
@@ -194,9 +273,11 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
   useEffect(() => {
     const onVis = () => {
       if (document.visibilityState === "hidden") {
-        void recordTabSwitch(attempt.id).then((r) => {
-          if (r.ok) setTabSwitches(r.data.tabSwitches);
-        });
+        void recordTabSwitch(attempt.id)
+          .then((r) => {
+            if (r.ok) setTabSwitches(r.data.tabSwitches);
+          })
+          .catch(() => undefined);
       }
     };
     document.addEventListener("visibilitychange", onVis);
@@ -222,6 +303,7 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
     q.type === "numeric";
   const canGoBack = assignment.allowBacktrack && idx > 0;
   const lowTime = remaining !== null && remaining < 60_000;
+  const shownSave: SaveState = unsaved.failing || refused ? "error" : saveState;
 
   return (
     <div
@@ -234,17 +316,19 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
         <span
           className={cn(
             "ml-auto text-xs",
-            saveState === "error" ? "text-error-foreground" : "text-muted-foreground"
+            shownSave === "error" ? "font-medium text-error-foreground" : "text-muted-foreground"
           )}
           aria-live="polite"
-          data-save-state={saveState}
+          data-save-state={shownSave}
         >
-          {saveState === "saving"
+          {shownSave === "saving"
             ? "Saving…"
-            : saveState === "saved"
+            : shownSave === "saved"
               ? "Saved"
-              : saveState === "error"
-                ? "Not saved"
+              : shownSave === "error"
+                ? unsaved.failing
+                  ? "Not saved. Trying again…"
+                  : "Not saved"
                 : ""}
         </span>
         {remaining !== null ? (
@@ -317,7 +401,24 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
             role="alert"
             className="rounded-lg bg-coral-soft px-4 py-3 text-sm font-medium text-[#B93E27]"
           >
-            Time is up. Submitting your answers…
+            {submitRetrying
+              ? "Time is up. Couldn't reach Bloom, so it's trying again. Keep this tab open."
+              : "Time is up. Submitting your answers…"}
+          </p>
+        ) : null}
+        {unsaved.failing && !timeUp ? (
+          <p
+            role="alert"
+            className="rounded-lg bg-error-soft px-4 py-2 text-sm text-error-foreground"
+            data-unsaved={unsaved.pending}
+          >
+            <strong>
+              {unsaved.pending === 1
+                ? "1 answer hasn't saved yet."
+                : `${unsaved.pending} answers haven't saved yet.`}
+            </strong>{" "}
+            Check your wifi. Bloom keeps trying, and your answers stay on this screen. Don&apos;t
+            close this tab.
           </p>
         ) : null}
         {saveError && !timeUp ? (

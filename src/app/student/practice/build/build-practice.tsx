@@ -1,5 +1,6 @@
 "use client";
 
+import { safe } from "@/lib/safe-action";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "cn";
@@ -94,11 +95,13 @@ export function BuildPractice({
     if (chosen.length === 0) return;
     setPending(true);
     setError(null);
-    const r = await startBuiltPractice({
-      courseId: course.id,
-      targetIds: chosen.map((t) => t.id),
-      count,
-    });
+    const r = await safe(
+      startBuiltPractice({
+        courseId: course.id,
+        targetIds: chosen.map((t) => t.id),
+        count,
+      })
+    );
     if (r.ok) router.push(`/student/practice/${r.data.attemptId}`);
     else {
       setPending(false);
