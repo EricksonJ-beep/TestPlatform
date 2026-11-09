@@ -1,4 +1,5 @@
 import { requireOwner, requireTeacher } from "@/lib/authz";
+import { closeExpiredAttempts } from "@/lib/attempt-sweep";
 import { feedGroups, feedQuery, parseFeedFilter } from "@/lib/activity-filter";
 import { listClassActivity, listRecentActivity } from "@/lib/activity-log";
 import { currentResumeCode } from "@/lib/attempt-pause";
@@ -44,6 +45,8 @@ export default async function DashboardPage({ searchParams }: PageProps<"/app">)
   if (cls) await requireOwner({ type: "class", id: cls.id });
   // The live stamp is read before the page's data, so a change landing in between is caught by
   // the next poll instead of being missed.
+  // Tests left open past their time limit are submitted before the page reads them (H3.2).
+  await closeExpiredAttempts({ ownerId: session.userId });
   const filter = parseFeedFilter(await searchParams, !!cls);
   const version = await getDashboardVersion(session.userId, cls?.id ?? null, new Date(), filter);
   const feed = {

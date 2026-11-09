@@ -90,7 +90,7 @@ export function tierFor(belowCount: number, tier2Max = 2): 1 | 2 | 3 {
 /**
  * Highest counts, always.
  *   summative → per target: max across attempts, then summed; tiers from targets below threshold
- *   formative / practice → the single best attempt by total
+ *   formative / practice → the single best attempt by percent
  *   formative under the corrections cap (Jon, Oct 8 2026) → see `cappedFormative`
  */
 export function computeFinalScore(
@@ -114,11 +114,13 @@ export function computeFinalScore(
     return cappedFormative(attempts, opts.threshold, empty);
   }
   if (type !== "summative") {
-    const best = attempts.reduce((a, b) =>
-      b.totalEarned > a.totalEarned || (b.totalEarned === a.totalEarned && b.number > a.number)
-        ? b
-        : a
-    );
+    // By percent, not raw points (H3.3, Nov 9 2026): attempts drawn from a pool can have
+    // different totals, and 7/7 is a better score than 8/10. A tie goes to the later attempt.
+    const best = attempts.reduce((a, b) => {
+      const pa = pct(a.totalEarned, a.totalPossible);
+      const pb = pct(b.totalEarned, b.totalPossible);
+      return pb > pa || (pb === pa && b.number > a.number) ? b : a;
+    });
     return {
       ...empty,
       totalEarned: best.totalEarned,

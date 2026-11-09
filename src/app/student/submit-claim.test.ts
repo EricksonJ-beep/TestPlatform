@@ -21,6 +21,7 @@ vi.mock("@/db", async () => {
 import { eq } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { settleAttempt } from "@/lib/attempt-pause";
+import { closeExpiredAttempts } from "@/lib/attempt-sweep";
 import { claimAttempt, finishIfClaimed } from "@/lib/attempts";
 import { saveAnswer, startAttempt, submitAttempt } from "./actions";
 
@@ -60,7 +61,7 @@ beforeAll(async () => {
   const students = await db
     .insert(schema.users)
     .values(
-      [0, 1, 2, 3, 4, 5].map((i) => ({
+      [0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => ({
         email: `s${i}@s`,
         passwordHash: "x",
         role: "student" as const,
@@ -250,5 +251,65 @@ describe("two starts at once", () => {
       (r) => r.studentId === ids.students[5]
     );
     expect(rows).toHaveLength(1);
+  });
+});
+
+describe("abandoned attempts close (H3.2)", () => {
+  const minutesAgo = (m: number) => new Date(Date.now() - m * 60_000);
+  const open = async (i: number, set: { dueAt: Date; lastActiveAt: Date }) => {
+    asStudent(i);
+    const { attemptId } = await ok(startAttempt(ids.assignment, null));
+    await ok(saveAnswer(attemptId, ids.mc[0].id, { kind: "choice", optionId: ids.mc[0].right }));
+    await db.update(schema.attempts).set(set).where(eq(schema.attempts.id, attemptId));
+    return attemptId;
+  };
+
+  it("a test whose time ran out while the student was working is submitted at its deadline", async () => {
+    // Working until a minute before time ran out, then walked away.
+    const due = minutesAgo(5);
+    const attemptId = await open(6, { dueAt: due, lastActiveAt: minutesAgo(6) });
+    expect(await closeExpiredAttempts({ assignmentId: ids.assignment })).toBe(1);
+    const a = await attemptRow(attemptId);
+    expect(a.status).toBe("graded");
+    expect(a.submittedAt?.getTime()).toBe(due.getTime());
+    expect(a.score).toBe(1); // the one saved answer counts; blanks are wrong
+    // Running it again finds nothing.
+    expect(await closeExpiredAttempts({ studentId: ids.students[6] })).toBe(0);
+  });
+
+  it("a test that went idle before its time ran out pauses instead (Finish later)", async () => {
+    const attemptId = await open(7, { dueAt: minutesAgo(5), lastActiveAt: minutesAgo(60) });
+    expect(await closeExpiredAttempts({ studentId: ids.students[7] })).toBe(0);
+    const a = await attemptRow(attemptId);
+    expect(a.status).toBe("in_progress");
+    expect(a.pausedAt).not.toBeNull();
+  });
+
+  it("a test still inside its time is left alone, and so is another teacher's", async () => {
+    const attemptId = await open(8, {
+      dueAt: new Date(Date.now() + 10 * 60_000),
+      lastActiveAt: new Date(),
+    });
+    expect(await closeExpiredAttempts({ assignmentId: ids.assignment })).toBe(0);
+    expect((await attemptRow(attemptId)).status).toBe("in_progress");
+    await db
+      .update(schema.attempts)
+      .set({ dueAt: minutesAgo(5) })
+      .where(eq(schema.attempts.id, attemptId));
+    expect(await closeExpiredAttempts({ ownerId: ids.students[0] })).toBe(0); // not the owner
+    expect((await attemptRow(attemptId)).status).toBe("in_progress");
+  });
+
+  it("a submit that was claimed and never graded is finished by the sweep", async () => {
+    const open8 = (
+      await db.select().from(schema.attempts).where(eq(schema.attempts.status, "in_progress"))
+    ).find((a) => a.studentId === ids.students[8])!;
+    const at = minutesAgo(2);
+    await db
+      .update(schema.attempts)
+      .set({ dueAt: null, submittedAt: at, lastActiveAt: at })
+      .where(eq(schema.attempts.id, open8.id));
+    expect(await closeExpiredAttempts({ studentId: ids.students[8] })).toBe(1);
+    expect((await attemptRow(open8.id)).status).toBe("graded");
   });
 });

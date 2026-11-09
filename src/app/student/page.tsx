@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { closeExpiredAttempts } from "@/lib/attempt-sweep";
 import { eq } from "drizzle-orm";
 import { KeyRound, Plus } from "lucide-react";
 import { db, schema } from "@/db";
@@ -30,6 +31,9 @@ const TAB_TITLE = {
 export default async function StudentHome({ searchParams }: PageProps<"/student">) {
   const tab = homeTab((await searchParams).tab);
   const session = await requireStudent();
+  // A test of theirs that ran out of time is submitted before the list is read (H3.2). Not
+  // under "View as student": that view only reads.
+  if (!session.viewingAs) await closeExpiredAttempts({ studentId: session.userId });
   const [classes, assignments] = await Promise.all([
     listStudentClasses(session.userId),
     listStudentAssignments(session.userId),

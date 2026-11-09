@@ -67,13 +67,29 @@ export function gradeMultiSelect(q: GradableQuestion, a: Answer): GradeResult {
 const plainDigits = (s: string) =>
   s.replace(/[\u2080-\u2089]/g, (d) => String(d.charCodeAt(0) - 0x2080));
 
+/**
+ * Typing marks that aren't part of the answer (H3.4, Nov 9 2026): a phone's curly quotes and
+ * apostrophes read as straight ones, odd spaces as spaces, and a full stop or comma after the
+ * answer is dropped. Applied to the accepted answers too, so "U.S." still matches "U.S.".
+ */
+const typed = (s: string) =>
+  s
+    .replace(/[\u2018\u2019\u02BC\u2032]/g, "'")
+    .replace(/[\u201C\u201D\u2033]/g, '"')
+    .replace(/[\u00A0\u2007\u202F]/g, " ")
+    .replace(/[\u200B-\u200D\uFEFF]/g, "")
+    .trim()
+    .replace(/[.,;:!]+$/, "");
+
 export function gradeFillBlank(q: GradableQuestion, a: Answer): GradeResult {
   const cfg = (q.gradingConfig ?? {}) as { acceptedAnswers?: string[]; caseSensitive?: boolean };
   const text = a && a.kind === "text" ? a.text : "";
   if (!text.trim()) return wrong(q, "No answer.");
   const accepted = cfg.acceptedAnswers ?? [];
   const clean = (s: string) =>
-    cfg.caseSensitive ? plainDigits(s).trim().replace(/\s+/g, " ") : norm(plainDigits(s));
+    cfg.caseSensitive
+      ? typed(plainDigits(s)).trim().replace(/\s+/g, " ")
+      : norm(typed(plainDigits(s)));
   const given = clean(text);
   const ok = accepted.some((x) => clean(x) === given);
   return ok ? right(q) : wrong(q, "Not one of the accepted answers.");

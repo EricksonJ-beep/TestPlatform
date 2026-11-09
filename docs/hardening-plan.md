@@ -63,19 +63,19 @@ Status: `[ ]` to do · `[x]` done · `[J]` waits on Jon (a choice only he can ma
 
 ## H3 — No dead ends on the relearning path
 
-- [ ] **H3.1 A practice check that can't be passed isn't dealt.** If the bank can deal fewer
+- [x] **H3.1 A practice check that can't be passed isn't dealt.** If the bank can deal fewer
       questions than the pass mark, the student sees "There aren't enough practice questions for
-      this target yet. Tell your teacher," and the short deal shows in Needs you / Bank health.
+      this target yet. Tell your teacher." Bank health already flags the short band for Jon.
       _Done when:_ tested with a 3-question bank.
-- [ ] **H3.2 Abandoned timed tests close.** An attempt past its deadline (or claimed and never
-      graded, H1.4) is finished when the teacher's results, gradebook or dashboard loads, and
-      when the student's home loads, not only when that student reopens it. Paused attempts are
+- [x] **H3.2 Abandoned timed tests close.** An attempt past its deadline (or claimed and never
+      graded, H1.4) is finished when the teacher's dashboard or a test's results page loads, and
+      when the student's home loads (`src/lib/attempt-sweep.ts`), not only when that student reopens it. Paused attempts are
       left alone (Finish later).
       _Done when:_ tested: an out-of-time attempt is graded at its `dueAt` by the sweep.
-- [ ] **H3.3 Best attempt by percent.** Uncapped quizzes and practice pick the best attempt by
+- [x] **H3.3 Best attempt by percent.** Uncapped quizzes and practice pick the best attempt by
       percent, not raw points (8/10 no longer beats 7/7).
       _Done when:_ a test in `grading.test.ts`.
-- [ ] **H3.4 Fill-in-the-blank forgives typing marks.** Curly apostrophes, a trailing period and
+- [x] **H3.4 Fill-in-the-blank forgives typing marks.** Curly apostrophes, a trailing period and
       doubled spaces no longer make a right answer wrong. Case-sensitive mode still respects capitals.
       _Done when:_ tests in `grading.test.ts`.
 
