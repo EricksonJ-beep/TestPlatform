@@ -588,7 +588,9 @@ export type StudentPractice = {
  */
 export async function getStudentPractice(
   studentId: string,
-  assignments: StudentAssignment[]
+  assignments: StudentAssignment[],
+  /** `closedToo`: a closed test's own page lists its steps too (Jon, Nov 9 2026). */
+  opts: { closedToo?: boolean } = {}
 ): Promise<StudentPractice> {
   const courseIds = await studentCourseIds(studentId);
   if (courseIds.length === 0) return { needed: [], quizNeeded: [], sets: [], activities: [] };
@@ -684,7 +686,7 @@ export async function getStudentPractice(
   const needed: NeededGroup[] = [];
   const pending = assignments.filter(
     (a) =>
-      a.status === "open" &&
+      (a.status === "open" || opts.closedToo) &&
       a.retake &&
       a.retake.plan.selected.length > 0 &&
       a.retake.plan.locked.length > 0

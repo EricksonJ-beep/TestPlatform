@@ -312,6 +312,17 @@ describe("Ticket 1.13: practice sets and relearning activities as retake gates",
     expect(target.sets.map((s) => s.title)).toEqual(["LT4 practice"]);
   });
 
+  it("a closed test's own page still gets its steps; the Practice tab does not", async () => {
+    asUser(ids.student, "student");
+    const closed = (await listStudentAssignments(ids.student)).map((a) => ({
+      ...a,
+      status: "closed" as const,
+    }));
+    expect((await getStudentPractice(ids.student, closed)).needed).toEqual([]);
+    const { needed } = await getStudentPractice(ids.student, closed, { closedToo: true });
+    expect(needed[0].targets[0].activities.map((a) => a.title)).toEqual(["Osmosis"]);
+  });
+
   it("only enrolled students use published content; only the owner edits it", async () => {
     asUser(ids.outsider, "student");
     await fails(startPractice(ids.set), 403);
