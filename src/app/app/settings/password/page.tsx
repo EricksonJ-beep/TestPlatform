@@ -8,7 +8,7 @@ import { ChangePasswordForm } from "@/components/app/change-password-form";
 export const metadata: Metadata = { title: "Change password" };
 
 export default async function TeacherPasswordPage() {
-  await requireTeacher();
+  await requireTeacher({ tempPasswordOk: true });
   return (
     <div className="mx-auto flex max-w-md flex-col gap-4">
       <Link

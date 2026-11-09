@@ -18,6 +18,7 @@ export const authConfig = {
         token.firstName = user.firstName;
         token.lastName = user.lastName;
         token.username = user.username ?? null;
+        token.issuedAt = Date.now();
       }
       return token;
     },
@@ -27,6 +28,7 @@ export const authConfig = {
       session.user.firstName = token.firstName;
       session.user.lastName = token.lastName;
       session.user.username = token.username ?? null;
+      session.user.issuedAt = token.issuedAt ?? 0;
       return session;
     },
   },

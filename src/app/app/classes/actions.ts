@@ -262,7 +262,12 @@ export const resetStudentPassword = withAuthz(async (classId: string, studentId:
   const tempPassword = generateTempPassword();
   await db
     .update(schema.users)
-    .set({ passwordHash: await hashPassword(tempPassword), mustChangePassword: true })
+    .set({
+      passwordHash: await hashPassword(tempPassword),
+      mustChangePassword: true,
+      // Anyone still signed in as this student is signed out (H4.2).
+      passwordChangedAt: new Date(),
+    })
     .where(and(eq(schema.users.id, studentId), eq(schema.users.role, "student")));
   revalidatePath(`/app/classes/${classId}`);
   return { tempPassword };

@@ -7,6 +7,14 @@ import { db, schema } from "@/db";
 import { logActivity } from "@/lib/activity-log";
 import { findUserByIdentifier } from "@/lib/join";
 import { verifyPassword } from "@/lib/password";
+import {
+  clearFailures,
+  clientAddress,
+  isThrottled,
+  recordFailure,
+  THROTTLE,
+  throttleKey,
+} from "@/lib/throttle";
 
 // `email` carries either an email address or a username (students who joined with a class code).
 const credentialsSchema = z.object({
@@ -24,11 +32,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!parsed.success) return null;
         const { email, password } = parsed.data;
 
+        // Guessing is slowed here, so it holds however the sign-in is reached (H4.1): ten
+        // misses on one account, or far more from one address, and the next tries are refused.
+        const accountKey = throttleKey("login", email);
+        const address = await clientAddress();
+        const addressKey = throttleKey("login-from", address);
+        if (await isThrottled(accountKey, THROTTLE.loginAccount)) return null;
+        if (address !== "unknown" && (await isThrottled(addressKey, THROTTLE.loginAddress)))
+          return null;
+        const miss = async () => {
+          await recordFailure(accountKey, THROTTLE.loginAccount);
+          if (address !== "unknown") await recordFailure(addressKey, THROTTLE.loginAddress);
+          return null;
+        };
+
         const user = await findUserByIdentifier(email);
-        if (!user) return null;
+        if (!user) return miss();
 
         const ok = await verifyPassword(password, user.passwordHash);
-        if (!ok) return null;
+        if (!ok) return miss();
+        await clearFailures(accountKey);
 
         await db
           .update(schema.users)

@@ -13,6 +13,7 @@
  * code — no guard hands a client the ability to set them.
  */
 import { and, eq, inArray, sql } from "drizzle-orm";
+import { redirect } from "next/navigation";
 import { db, schema } from "@/db";
 import type { SharePermission } from "@/db/types";
 import { getCurrentSession, type Session } from "@/lib/session";
@@ -52,16 +53,24 @@ const notFound = (msg?: string) => new AuthzError("not_found", msg);
 // Session + role guards
 // ---------------------------------------------------------------------------
 
+/** Pages and actions that must work while a temporary password is still in use. */
+export type GuardOptions = { tempPasswordOk?: boolean };
+
 // Rule: every data request must carry a valid session; anonymous requests get 401.
-export async function requireSession(): Promise<Session> {
+// Rule (H4.2, Nov 9 2026): an account on a temporary password goes to change it before anything
+// else; only the layouts, the password page and its action pass `tempPasswordOk`. A teacher
+// viewing as the student is never sent there.
+export async function requireSession(opts?: GuardOptions): Promise<Session> {
   const session = await getCurrentSession();
   if (!session) throw new AuthzError("unauthenticated");
+  if (session.mustChangePassword && !session.viewingAs && !opts?.tempPasswordOk)
+    redirect(session.role === "student" ? "/student/password" : "/app/settings/password");
   return session;
 }
 
 // Rule: teacher surfaces (banks, assessments, classes, assignments, results) need role=teacher (admin counts).
-export async function requireTeacher(): Promise<Session> {
-  const session = await requireSession();
+export async function requireTeacher(opts?: GuardOptions): Promise<Session> {
+  const session = await requireSession(opts);
   if (session.role !== "teacher" && session.role !== "admin") {
     throw forbidden("Teachers only.");
   }
@@ -69,8 +78,8 @@ export async function requireTeacher(): Promise<Session> {
 }
 
 // Rule: student surfaces need role=student; a teacher cannot act as a student.
-export async function requireStudent(): Promise<Session> {
-  const session = await requireSession();
+export async function requireStudent(opts?: GuardOptions): Promise<Session> {
+  const session = await requireSession(opts);
   if (session.role !== "student") throw forbidden("Students only.");
   return session;
 }
@@ -226,6 +235,21 @@ export async function requireAssignmentAccess(assignmentId: string): Promise<Ass
   return { ...session, as: "student", classId: assignment.classId };
 }
 
+// Rule (H4.4, Nov 9 2026): a student's own attempt, practice check or relearning row is theirs to
+// open only while they are still in the class it was assigned to. A student the teacher removed
+// can no longer save, submit or read it; the teacher still sees everything.
+async function assertStillEnrolled(studentId: string, assignmentId: string): Promise<void> {
+  const [row] = await db
+    .select({ id: schema.enrollments.id })
+    .from(schema.assignments)
+    .innerJoin(schema.enrollments, eq(schema.enrollments.classId, schema.assignments.classId))
+    .where(
+      and(eq(schema.assignments.id, assignmentId), eq(schema.enrollments.studentId, studentId))
+    )
+    .limit(1);
+  if (!row) throw forbidden("You're not in this class any more.");
+}
+
 export type AttemptAccess = Session & {
   as: "teacher" | "student";
   attempt: { id: string; studentId: string; assignmentId: string };
@@ -243,6 +267,7 @@ export async function requireAttemptAccess(attemptId: string): Promise<AttemptAc
 
   if (session.role === "student") {
     if (attempt.studentId !== session.userId) throw forbidden();
+    await assertStillEnrolled(session.userId, attempt.assignmentId);
     return { ...session, as: "student", attempt };
   }
   const assignment = await db.query.assignments.findFirst({
@@ -451,6 +476,7 @@ export async function requirePracticeCheckAccess(checkId: string): Promise<Pract
   const { ownerId, ...check } = row;
   if (session.role === "student") {
     if (check.studentId !== session.userId) throw notFound();
+    await assertStillEnrolled(session.userId, check.assignmentId);
     return { ...session, as: "student", check };
   }
   if (ownerId !== session.userId) throw forbidden();
@@ -482,6 +508,7 @@ export async function requireRelearningRowAccess(rowId: string): Promise<Relearn
   const { ownerId, ...row } = found;
   if (session.role === "student") {
     if (row.studentId !== session.userId) throw notFound();
+    await assertStillEnrolled(session.userId, row.assignmentId);
     return { ...session, as: "student", row };
   }
   if (ownerId !== session.userId) throw forbidden();

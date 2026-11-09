@@ -126,6 +126,11 @@ export const users = pgTable(
     /** Set when a teacher issues a temp password; the student is nudged to change it. */
     mustChangePassword: boolean("must_change_password").default(false).notNull(),
     lastLoginAt: timestamp("last_login_at", { withTimezone: true }),
+    /**
+     * When the password last changed (a teacher's reset, or the user's own change). A session
+     * that began before it is signed out (hardening plan H4.2, Nov 9 2026). Null: never changed.
+     */
+    passwordChangedAt: timestamp("password_changed_at", { withTimezone: true }),
     ...timestamps,
   },
   (t) => [
@@ -1626,6 +1631,18 @@ export const relearningVideoFlags = pgTable(
 // ---------------------------------------------------------------------------
 // AI usage (Ticket 1.17): one row per model call, so spend is visible
 // ---------------------------------------------------------------------------
+
+/**
+ * Failed tries at something guessable (hardening plan H4.1, Nov 9 2026): a login, a class join
+ * code, a test's access code, a resume code, the teacher invite code. One row per key (what was
+ * tried, and by whom or from where), counting failures inside the current window. No foreign
+ * keys: a key can name an account that doesn't exist.
+ */
+export const authThrottle = pgTable("auth_throttle", {
+  key: text("key").primaryKey(),
+  failures: integer("failures").default(0).notNull(),
+  windowStartedAt: timestamp("window_started_at", { withTimezone: true }).defaultNow().notNull(),
+});
 
 export const aiUsage = pgTable(
   "ai_usage",

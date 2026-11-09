@@ -6,10 +6,13 @@ import { randomInt } from "node:crypto";
 import { sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 
+/** A fraction in [0, 1) from the system's secure source, not Math.random (H4.3, Nov 9 2026). */
+const secureRandom = () => randomInt(0, 2 ** 31) / 2 ** 31;
+
 const CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // no 0/O, 1/I/L
 
 /** e.g. "BIO3-K7QX": a readable prefix from the class name plus four random characters. */
-export function generateJoinCode(className: string, random: () => number = Math.random): string {
+export function generateJoinCode(className: string, random: () => number = secureRandom): string {
   const letters = className
     .normalize("NFKD")
     .replace(/[^A-Za-z0-9 ]/g, " ")

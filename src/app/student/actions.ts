@@ -26,6 +26,14 @@ import { correctionsClear } from "@/lib/corrections";
 import { setOptIn, setOptIns } from "@/lib/gates";
 import { correctionsCapOn } from "@/lib/grading";
 import { practiceOwed, practiceOwedText, quizPracticeNeeds } from "@/lib/quiz-practice";
+import {
+  clearFailures,
+  isThrottled,
+  recordFailure,
+  THROTTLE,
+  throttleKey,
+  TOO_MANY_TRIES,
+} from "@/lib/throttle";
 import { getCorrectionsSummary, latestFinishedAttemptId } from "@/lib/queries/corrections";
 import { getQuizPracticeData } from "@/lib/queries/quiz-practice";
 import { getPathState } from "@/lib/queries/relearning-path";
@@ -242,6 +250,10 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
       eq(schema.attempts.studentId, access.userId)
     )
   );
+  // A test's access code can't be guessed at speed (H4.1): ten misses, then a wait.
+  const codeKey = throttleKey("access-code", access.userId, assignmentId);
+  if (assignment.accessCode && (await isThrottled(codeKey, THROTTLE.code)))
+    throw new ActionError(TOO_MANY_TRIES, 429, { accessCode: [TOO_MANY_TRIES] });
   const check = canStartAttempt({
     assignment: {
       ...assignment,
@@ -258,6 +270,7 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
     now,
   });
   if (!check.ok) {
+    if (check.reason === "code_wrong") await recordFailure(codeKey, THROTTLE.code);
     throw new ActionError(
       startReasonText(check),
       check.reason === "code_required" || check.reason === "code_wrong" ? 400 : 403,
@@ -714,10 +727,16 @@ export const resumeWithCode = withAuthz(async (attemptId: string, code: string) 
     where: eq(schema.assignments.id, access.attempt.assignmentId),
   });
   if (!asg) throw new ActionError("Not found.", 404);
-  if (!(await resumeCodeValid(asg.ownerId, String(code ?? ""))))
+  const codeKey = throttleKey("resume-code", access.userId);
+  if (await isThrottled(codeKey, THROTTLE.code))
+    throw new ActionError(TOO_MANY_TRIES, 429, { code: [TOO_MANY_TRIES] });
+  if (!(await resumeCodeValid(asg.ownerId, String(code ?? "")))) {
+    await recordFailure(codeKey, THROTTLE.code);
     throw new ActionError("That code isn't right, or it has run out. Ask your teacher.", 400, {
       code: ["That code isn't right, or it has run out. Ask your teacher."],
     });
+  }
+  await clearFailures(codeKey);
   if (!(await resumeAttempt(attemptId, "code")))
     throw new ActionError("This test isn't paused.", 409);
   revalidate(access.attempt.assignmentId);

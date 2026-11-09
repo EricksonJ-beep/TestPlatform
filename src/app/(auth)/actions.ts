@@ -1,5 +1,6 @@
 "use server";
 
+import { createHash, timingSafeEqual } from "node:crypto";
 import { AuthError } from "next-auth";
 import { unstable_rethrow } from "next/navigation";
 import { sql } from "drizzle-orm";
@@ -10,6 +11,14 @@ import { publicAction } from "@/lib/authz";
 import { findUserByIdentifier } from "@/lib/join";
 import { hashPassword, passwordPolicy } from "@/lib/password";
 import { safeNext } from "@/lib/routes";
+import {
+  clientAddress,
+  isThrottled,
+  recordFailure,
+  THROTTLE,
+  throttleKey,
+  TOO_MANY_TRIES,
+} from "@/lib/throttle";
 
 export type AuthFormState = { error?: string; fieldErrors?: Record<string, string> } | null;
 
@@ -28,8 +37,21 @@ export const loginAction = publicAction(
     }
     const { email, password, next } = parsed.data;
 
+    // Too many misses on this account, or from this address (H4.1): say so, and try nothing.
+    const accountKey = throttleKey("login", email);
+    const address = await clientAddress();
+    const addressKey = throttleKey("login-from", address);
+    if (
+      (await isThrottled(accountKey, THROTTLE.loginAccount)) ||
+      (address !== "unknown" && (await isThrottled(addressKey, THROTTLE.loginAddress)))
+    )
+      return { error: TOO_MANY_TRIES };
+
     const user = await findUserByIdentifier(email);
     if (!user) {
+      // Counted like a wrong password, so usernames can't be tried at speed either.
+      await recordFailure(accountKey, THROTTLE.loginAccount);
+      if (address !== "unknown") await recordFailure(addressKey, THROTTLE.loginAddress);
       return {
         error: email.includes("@")
           ? "We don't have an account for that email. Students: log in with your username instead, which is your first name, a dot, then your last name, all lowercase (like jane.smith). If you never joined, use your class code. Teachers: create an account below."
@@ -67,8 +89,12 @@ export const signupAction = publicAction(
     }
     const { firstName, lastName, email, password, inviteCode } = parsed.data;
 
+    const inviteKey = throttleKey("invite", await clientAddress());
+    if (await isThrottled(inviteKey, THROTTLE.invite))
+      return { fieldErrors: { inviteCode: TOO_MANY_TRIES } };
     const expected = process.env.TEACHER_INVITE_CODE;
-    if (!expected || inviteCode !== expected) {
+    if (!expected || !sameSecret(inviteCode, expected)) {
+      await recordFailure(inviteKey, THROTTLE.invite);
       return { fieldErrors: { inviteCode: "That invite code isn't right." } };
     }
 
@@ -104,6 +130,13 @@ export const signupAction = publicAction(
 export const logoutAction = publicAction(async () => {
   await signOut({ redirectTo: "/login" });
 });
+
+/** Compare without leaking, by timing, how much of the code was right. */
+function sameSecret(given: string, expected: string): boolean {
+  const a = createHash("sha256").update(given).digest();
+  const b = createHash("sha256").update(expected).digest();
+  return timingSafeEqual(a, b);
+}
 
 function firstErrors(error: z.ZodError): Record<string, string> {
   const out: Record<string, string> = {};

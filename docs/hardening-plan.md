@@ -81,28 +81,39 @@ Status: `[ ]` to do · `[x]` done · `[J]` waits on Jon (a choice only he can ma
 
 ## H4 — Accounts (students are minors)
 
-- [ ] **H4.1 Throttle guessing.** Login, join code lookup, claiming a name, access codes, resume
-      codes and the teacher invite code: a small table of failed tries per key (identifier and
-      IP), 10 tries per 10 minutes, then "Too many tries. Wait a few minutes."
-      _Done when:_ migration + tests for the limiter and for login.
-- [ ] **H4.2 A reset ends old sessions.** `users.password_changed_at`; a session older than it is
-      signed out. "Must change password" becomes a redirect to the password page, not a banner.
-      _Done when:_ tested in the session guard.
-- [ ] **H4.3 Join codes.** New codes come from a secure random source and are longer; claiming a
-      name is one conditional UPDATE so two students can't claim the same row.
-      _Done when:_ tested with a racing claim.
-- [ ] **H4.4 A removed student is out.** Attempt, practice-check and relearning guards also require
-      current enrollment in the assignment's class.
+- [x] **H4.1 Throttle guessing.** Failed tries are counted per key in `auth_throttle`
+      (`src/lib/throttle.ts`, migration 0036): one account's password (10 in 10 minutes), a
+      test's access code and a resume code (10 per student), a class join code (60 per network
+      address), the teacher invite code (10 per address). Past the limit: "Too many tries. Wait
+      a few minutes, then try again." Limits by address are roomy on purpose, because the whole
+      school shares one. The login still tells a student whether the username exists (Jon's
+      wording for 9th graders); it just can't be tried at speed now.
+      _Done when:_ limiter tests; checked in a browser (the 11th try is refused, right password or not).
+- [x] **H4.2 A reset ends old sessions.** `users.password_changed_at`; a session that began
+      before it is signed out at `/api/session/ended` and told why on the login page. Changing
+      your own password signs out your other devices and keeps this one. A temporary password is
+      now a must: every page sends the student to "First, pick your own password" until they do.
+      _Done when:_ rule tests (`session-rules`, `authz`); both checked in a browser.
+- [x] **H4.3 Join codes.** New codes come from the system's secure random source. Claiming a
+      name is one conditional UPDATE, and two joins that pick the same username at once no
+      longer crash (the test for this found that bug). Code length is unchanged: with the
+      throttle, four characters is enough, and students type it by hand.
+      _Done when:_ tested with two students claiming one name at the same moment.
+- [x] **H4.4 A removed student is out.** Attempt, practice-check and relearning guards also
+      require current enrollment in the assignment's class.
       _Done when:_ tested in `authz.test.ts`.
-- [ ] **H4.5 Security headers.** `next.config.ts` sends `X-Frame-Options: DENY`,
-      `Referrer-Policy`, `X-Content-Type-Options`, HSTS and a `Permissions-Policy`.
-      (A full Content-Security-Policy needs testing against YouTube and R2; parked to H7.)
-- [ ] **H4.6 Server-side fetches.** The paper export only fetches images from Bloom's own storage
-      or public hosts (no private addresses), with a timeout and a size cap. The media route
-      serves only image/video/audio/PDF types.
-      _Done when:_ tested for a private address and an oversized response.
-- [ ] **H4.7 Dependencies.** `npm audit fix` (non-breaking); move dev-only packages to
-      devDependencies.
+- [x] **H4.5 Security headers.** `next.config.ts` sends `X-Frame-Options: SAMEORIGIN` and
+      `frame-ancestors 'self'` (Bloom frames its own hosted activities), `Referrer-Policy`,
+      `X-Content-Type-Options`, HSTS and a `Permissions-Policy`. A full Content-Security-Policy
+      for scripts needs testing against YouTube and R2 first (H7.6).
+- [x] **H4.6 Server-side fetches.** The paper export fetches a typed image address only from
+      the public internet (no private or loopback addresses, each redirect re-checked), within
+      8 seconds and 10 MB (`src/lib/safe-fetch.ts`). The media route shows only pictures, video
+      and audio in the page; anything else downloads as a plain file.
+      _Done when:_ tested for a private address, an inward redirect and an oversized response.
+- [x] **H4.7 Dependencies.** `npm audit fix`, and Next.js 16.3.5 → 16.4.6 for its critical
+      advisory. 18 advisories (1 critical, 8 high) → 6 low or moderate, all inside the `shadcn`
+      command-line tool, which never runs in production. Build, lint and tests pass on it.
 - [J] **H4.8 Adding a student who already has an account.** Today a teacher who types an existing
       student's email enrolls that account and can then reset its password. Fine for Jon and one
       colleague; before more teachers join, choose: (a) leave it, (b) only within the same
@@ -143,6 +154,7 @@ Status: `[ ]` to do · `[x]` done · `[J]` waits on Jon (a choice only he can ma
 - [J] **H7.3 An error service and backups.** Sentry (or similar) and a nightly database dump both
       need an account or a secret Jon creates.
 - [J] **H7.4 A Neon branch for preview builds,** so previews can migrate safely (set in Vercel).
+- [ ] **H7.6 A script Content-Security-Policy,** tested against YouTube embeds and R2 uploads.
 - [ ] **H7.5 One end-to-end student run** in CI: take a test, do corrections, pass a check.
 
 ## Not in this plan

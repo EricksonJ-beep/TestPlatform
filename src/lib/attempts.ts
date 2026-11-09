@@ -21,7 +21,10 @@ import {
   type FinalScore,
   type ResponseRecord,
 } from "@/lib/grading";
+import { isUniqueViolation } from "@/lib/db-errors";
 import { recomputeGates } from "@/lib/gates";
+
+export { isUniqueViolation };
 import { loadBuilderSections } from "@/lib/queries/assessments";
 import { loadGradableQuestions } from "@/lib/queries/attempts";
 import { getCorrectionsSummary } from "@/lib/queries/corrections";
@@ -217,16 +220,6 @@ export async function finishIfClaimed(
     return "finished";
   }
   return outcome === "done" ? "finished" : "grading";
-}
-
-/** True for Postgres's unique-violation error, whichever driver raised it. */
-export function isUniqueViolation(err: unknown): boolean {
-  for (let e: unknown = err, i = 0; e && i < 4; i++) {
-    const o = e as { code?: unknown; cause?: unknown };
-    if (o.code === "23505") return true;
-    e = o.cause;
-  }
-  return false;
 }
 
 /**
