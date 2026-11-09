@@ -8,6 +8,7 @@ import { Check, ChevronLeft, ChevronRight, Lightbulb, Lock, X } from "lucide-rea
 import { cn } from "cn";
 import { correctionIssues, ISSUE_TEXT, type CorrectionIssue } from "@/lib/corrections";
 import type { CorrectionItem, CorrectionsForm as FormPayload } from "@/lib/queries/corrections";
+import { QuestionMedia } from "@/components/questions/question-media";
 import { RichText } from "@/components/rich-text";
 import { StimulusPanel } from "@/components/stimulus/stimulus-panel";
 import { TargetChip } from "@/components/targets/target-chip";
@@ -236,12 +237,7 @@ export function CorrectionsForm({ form }: { form: FormPayload }) {
       {item.stimulus ? <StimulusPanel stimulus={item.stimulus} /> : null}
       <article className="rounded-lg border border-border bg-card px-5 py-4">
         <RichText text={item.stem} as="p" className="text-[15px] leading-relaxed" />
-        {item.mediaUrl ? (
-          <div className="mt-3 rounded-lg bg-brand-soft p-3">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={item.mediaUrl} alt="" className="max-h-96 max-w-full rounded-md bg-white" />
-          </div>
-        ) : null}
+        <QuestionMedia mediaUrl={item.mediaUrl} mediaAlt={item.mediaAlt} videoUrl={item.videoUrl} />
 
         {isChoice(item.type) ? (
           <ul className="mt-4 grid gap-2" aria-label="Answer choices">

@@ -289,7 +289,7 @@ Layout: **teal left sidebar** (Dashboard · Question banks · Assessments · Pra
 9. **Practice check** — "Question k of 5," one answer each, then right/wrong plus the explanation. The result screen reads, e.g., "4 of 5. Your retake is unlocked" (or "Your 80% is in"). Below 4/5, **Look back** shows the missed questions with explanations and "Reopen my relearning," then **Try a new 5**.
 
 ### Color & type
-- Brand teal `#0E7C7B` · Action coral `#FF6B5C` (buttons use a slightly deeper `#E2553A` for contrast)
+- Brand teal `#0E7C7B` · Action coral `#FF6B5C` (buttons use a deeper `#CC4429`: white text on it passes AA contrast at 4.7:1; `#E2553A` was 3.75:1, changed Nov 9 2026)
 - Success `#2E9E5B` · Warning `#F4A300` · Error `#E5484D`
 - Text `#1A1A1A`, muted `#5C6670`, page bg `#F7F8F9`, white cards, 8px radius
 - Fonts: Inter (UI) + Lexend (headings; designed for reading proficiency)

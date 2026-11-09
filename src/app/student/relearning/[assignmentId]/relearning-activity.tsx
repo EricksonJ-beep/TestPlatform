@@ -941,7 +941,11 @@ function QuickCheckCard({
         />
       )}
       {right ? (
-        <p className="flex items-start gap-1.5 text-success-foreground" data-check-feedback="right">
+        <p
+          className="flex items-start gap-1.5 text-success-foreground"
+          data-check-feedback="right"
+          role="status"
+        >
           <Check className="mt-0.5 size-4 shrink-0" aria-hidden />
           <span>
             Right!
@@ -962,11 +966,16 @@ function QuickCheckCard({
             <span
               className="inline-flex items-center gap-1 text-warning-foreground"
               data-check-feedback="wrong"
+              role="status"
             >
               <RotateCcw className="size-4" aria-hidden /> Not quite. Look back and try again.
             </span>
           ) : null}
-          {error ? <span className="text-error-foreground">{error}</span> : null}
+          {error ? (
+            <span className="text-error-foreground" role="alert">
+              {error}
+            </span>
+          ) : null}
         </div>
       )}
     </div>

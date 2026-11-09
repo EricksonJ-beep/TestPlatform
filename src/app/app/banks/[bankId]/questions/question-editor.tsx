@@ -182,6 +182,7 @@ export function QuestionEditor({
       standardCodes: list("standardCodes", /,/),
       stimulusId: (fd.get("stimulusId") as string) || null,
       mediaUrl: String(fd.get("mediaUrl") ?? ""),
+      mediaAlt: String(fd.get("mediaAlt") ?? ""),
       videoUrl: String(fd.get("videoUrl") ?? ""),
       options: hasOptions
         ? options.map((o, i) => ({
@@ -756,6 +757,21 @@ export function QuestionEditor({
             storageConfigured={storageConfigured}
           />
           <FieldError errors={fieldErrors} name="mediaUrl" />
+          <Label htmlFor="qe-media-alt" className="mt-1">
+            Describe this image
+          </Label>
+          <Input
+            id="qe-media-alt"
+            name="mediaAlt"
+            maxLength={300}
+            defaultValue={question?.mediaAlt ?? ""}
+            placeholder="e.g. A plant cell with five parts numbered 1 to 5"
+          />
+          <p className="text-xs text-muted-foreground">
+            Read aloud to students who use a screen reader. Say what the picture shows without
+            giving away the answer.
+          </p>
+          <FieldError errors={fieldErrors} name="mediaAlt" />
         </div>
         <div className="grid gap-1.5">
           <MediaField

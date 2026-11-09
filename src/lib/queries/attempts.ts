@@ -50,6 +50,8 @@ export type StudentQuestion = {
   stem: string;
   points: number;
   mediaUrl: string | null;
+  /** The teacher's description of the picture, for screen readers (H6.1). */
+  mediaAlt: string | null;
   videoUrl: string | null;
   stimulus: StimulusInfo | null;
   target: { code: string; title: string } | null;
@@ -192,6 +194,7 @@ export async function sanitizedQuestions(
       type: schema.questions.type,
       stem: schema.questions.stem,
       mediaUrl: schema.questions.mediaUrl,
+      mediaAlt: schema.questions.mediaAlt,
       videoUrl: schema.questions.videoUrl,
       gradingConfig: schema.questions.gradingConfig,
       stimulusId: schema.stimuli.id,
@@ -254,6 +257,7 @@ export async function sanitizedQuestions(
       stem: r.stem,
       points: s.points,
       mediaUrl: r.mediaUrl,
+      mediaAlt: r.mediaAlt,
       videoUrl: r.videoUrl,
       stimulus:
         r.stimulusId && r.stimulusKind

@@ -302,6 +302,8 @@ export type CorrectionItem = {
   type: QuestionType;
   stem: string;
   mediaUrl: string | null;
+  /** The teacher's description of the picture, for screen readers (H6.1). */
+  mediaAlt: string | null;
   videoUrl: string | null;
   stimulus: StimulusInfo | null;
   target: { code: string; title: string; percent: number | null } | null;
@@ -349,6 +351,7 @@ export async function getCorrectionsForm(attemptId: string): Promise<Corrections
           type: schema.questions.type,
           stem: schema.questions.stem,
           mediaUrl: schema.questions.mediaUrl,
+          mediaAlt: schema.questions.mediaAlt,
           videoUrl: schema.questions.videoUrl,
           stimulusId: schema.stimuli.id,
           stimulusKind: schema.stimuli.kind,
@@ -424,6 +427,7 @@ export async function getCorrectionsForm(attemptId: string): Promise<Corrections
       type: q.type,
       stem: q.stem,
       mediaUrl: q.mediaUrl,
+      mediaAlt: q.mediaAlt,
       videoUrl: q.videoUrl,
       stimulus:
         q.stimulusId && q.stimulusKind

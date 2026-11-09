@@ -444,6 +444,8 @@ export const questions = pgTable(
       onDelete: "set null",
     }),
     mediaUrl: text("media_url"),
+    /** What the picture shows, for students who can't see it (hardening plan H6.1). */
+    mediaAlt: text("media_alt"),
     videoUrl: text("video_url"),
     stimulusId: uuid("stimulus_id").references(() => stimuli.id, { onDelete: "set null" }),
     templateId: uuid("template_id").references(() => questionTemplates.id, {
@@ -1038,9 +1040,7 @@ export const skywardMarks = pgTable(
     recordedAt: timestamp("recorded_at", { withTimezone: true }).defaultNow().notNull(),
     ...timestamps,
   },
-  (t) => [
-    uniqueIndex("skyward_marks_cell_unique").on(t.assignmentId, t.columnKey, t.studentId),
-  ]
+  (t) => [uniqueIndex("skyward_marks_cell_unique").on(t.assignmentId, t.columnKey, t.studentId)]
 );
 
 // ---------------------------------------------------------------------------

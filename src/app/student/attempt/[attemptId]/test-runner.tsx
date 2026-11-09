@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AlertTriangle,
+  Check,
   ChevronLeft,
   ChevronRight,
   Flag,
@@ -15,6 +16,7 @@ import { cn } from "cn";
 import type { Answer } from "@/lib/grading";
 import type { RunnerPayload } from "@/lib/queries/attempts";
 import { createSaveQueue, type SaveQueue, type SaveQueueState } from "@/lib/save-queue";
+import { QuestionMedia } from "@/components/questions/question-media";
 import { RichText } from "@/components/rich-text";
 import { StimulusPanel } from "@/components/stimulus/stimulus-panel";
 import { TargetChip } from "@/components/targets/target-chip";
@@ -303,6 +305,30 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
     q.type === "numeric";
   const canGoBack = assignment.allowBacktrack && idx > 0;
   const lowTime = remaining !== null && remaining < 60_000;
+
+  // --- Moving between questions (H6.3–H6.4, Nov 9 2026) ------------------------------
+  // Focus follows the question, so a keyboard or screen-reader user hears "Question 4 of 12"
+  // instead of staying on the Next button with no sign that anything changed.
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const firstQuestion = useRef(true);
+  useEffect(() => {
+    if (firstQuestion.current) {
+      firstQuestion.current = false;
+      return;
+    }
+    if (!review) headingRef.current?.focus();
+  }, [idx, review]);
+  // With backtracking off, Next on a blank answer asks once before it is left for good.
+  const [skipAsked, setSkipAsked] = useState<string | null>(null);
+  const goNext = () => {
+    const blank = !isAnswered(answers[q.id] ?? null);
+    if (!assignment.allowBacktrack && blank && skipAsked !== q.id) {
+      setSkipAsked(q.id);
+      return;
+    }
+    setSkipAsked(null);
+    setIdx((i) => Math.min(total - 1, i + 1));
+  };
   const shownSave: SaveState = unsaved.failing || refused ? "error" : saveState;
 
   return (
@@ -360,6 +386,9 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
         >
           <Maximize2 className="size-4" aria-hidden />
         </button>
+        <span className="sr-only" role="status">
+          {lowTime && !timeUp ? "One minute left." : ""}
+        </span>
       </header>
 
       {/* Progress */}
@@ -436,6 +465,7 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
             answered={answeredCount}
             flagged={flags.size}
             unanswered={unanswered.map((u) => ({ id: u.id, n: questions.indexOf(u) + 1 }))}
+            canJump={assignment.allowBacktrack}
             confirm={confirm}
             submitting={submitting}
             onJump={(i) => {
@@ -453,9 +483,14 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
         ) : (
           <>
             <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground">
-              <span className="tabular">
+              <h2
+                ref={headingRef}
+                tabIndex={-1}
+                className="text-xs font-medium tabular outline-none"
+                data-question-heading
+              >
                 Question {idx + 1} of {total}
-              </span>
+              </h2>
               {q.target ? <TargetChip code={q.target.code} title={q.target.title} /> : null}
               <span className="ml-auto tabular">
                 {q.points} {q.points === 1 ? "point" : "points"}
@@ -464,36 +499,7 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
             {q.stimulus ? <StimulusPanel stimulus={q.stimulus} pinned /> : null}
             <article className="rounded-lg border border-border bg-card px-5 py-4">
               <RichText text={q.stem} as="p" className="text-[15px] leading-relaxed" />
-              {q.mediaUrl ? (
-                <div className="mt-3 rounded-lg bg-brand-soft p-3">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={q.mediaUrl}
-                    alt=""
-                    className="max-h-96 max-w-full rounded-md bg-white"
-                  />
-                </div>
-              ) : null}
-              {q.videoUrl ? (
-                <div className="mt-3 rounded-lg bg-brand-soft p-3">
-                  {/youtube\.com|youtu\.be/.test(q.videoUrl) ? (
-                    <a
-                      href={q.videoUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-sm font-medium text-brand-deep hover:underline"
-                    >
-                      Watch the video
-                    </a>
-                  ) : (
-                    <video
-                      src={q.videoUrl}
-                      controls
-                      className="w-full max-w-xl rounded-md bg-black"
-                    />
-                  )}
-                </div>
-              ) : null}
+              <QuestionMedia mediaUrl={q.mediaUrl} mediaAlt={q.mediaAlt} videoUrl={q.videoUrl} />
               <div className="mt-4">
                 {locked.has(q.id) ? (
                   <p className="mb-2 inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
@@ -512,6 +518,17 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
               </div>
             </article>
 
+            {skipAsked === q.id ? (
+              <p
+                role="alert"
+                className="rounded-lg border border-warning/50 bg-warning-soft px-4 py-3 text-sm text-warning-foreground"
+                data-skip-warning
+              >
+                <strong>You haven&apos;t answered this one.</strong> On this test you can&apos;t
+                come back to a question. Answer it now, or press <strong>Skip it</strong> to leave
+                it blank (blank answers count as wrong).
+              </p>
+            ) : null}
             <div className="flex flex-wrap items-center gap-2">
               <Button
                 type="button"
@@ -540,12 +557,8 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
                   </Button>
                 ) : null}
                 {idx < total - 1 ? (
-                  <Button
-                    type="button"
-                    size="lg"
-                    onClick={() => setIdx((i) => Math.min(total - 1, i + 1))}
-                  >
-                    Next
+                  <Button type="button" size="lg" onClick={goNext}>
+                    {skipAsked === q.id ? "Skip it" : "Next"}
                     <ChevronRight data-icon="inline-end" aria-hidden />
                   </Button>
                 ) : (
@@ -573,7 +586,7 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
                           aria-current={i === idx ? "step" : undefined}
                           onClick={() => setIdx(i)}
                           className={cn(
-                            "size-9 rounded-md border text-sm font-medium tabular transition-colors",
+                            "relative size-11 rounded-md border text-sm font-medium tabular transition-colors",
                             i === idx ? "border-brand ring-2 ring-brand/40" : "border-border",
                             flagged
                               ? "bg-warning-soft text-warning-foreground"
@@ -583,6 +596,15 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
                           )}
                         >
                           {i + 1}
+                          {/* A mark as well as a colour, so the states read without colour. */}
+                          {flagged ? (
+                            <Flag
+                              className="absolute top-0.5 right-0.5 size-3 fill-current"
+                              aria-hidden
+                            />
+                          ) : done ? (
+                            <Check className="absolute top-0.5 right-0.5 size-3" aria-hidden />
+                          ) : null}
                         </button>
                       </li>
                     );
@@ -624,6 +646,7 @@ function ReviewScreen({
   confirm,
   submitting,
   onJump,
+  canJump,
   onKeepWorking,
   onConfirm,
   onSubmit,
@@ -635,6 +658,8 @@ function ReviewScreen({
   confirm: boolean;
   submitting: boolean;
   onJump: (index: number) => void;
+  /** False with backtracking off: the blank questions are listed, not linked. */
+  canJump: boolean;
   onKeepWorking: () => void;
   onConfirm: () => void;
   onSubmit: () => void;
@@ -696,13 +721,17 @@ function ReviewScreen({
               {unanswered.map((u, i) => (
                 <span key={u.id}>
                   {i > 0 ? ", " : ""}
-                  <button
-                    type="button"
-                    className="font-medium text-brand-deep hover:underline"
-                    onClick={() => onJump(u.n - 1)}
-                  >
-                    Question {u.n}
-                  </button>
+                  {canJump ? (
+                    <button
+                      type="button"
+                      className="font-medium text-brand-deep hover:underline"
+                      onClick={() => onJump(u.n - 1)}
+                    >
+                      Question {u.n}
+                    </button>
+                  ) : (
+                    <span className="font-medium">Question {u.n}</span>
+                  )}
                 </span>
               ))}
             </p>

@@ -141,16 +141,29 @@ Status: `[ ]` to do · `[x]` done · `[J]` waits on Jon (a choice only he can ma
 
 ## H6 — Accessibility and polish
 
-- [ ] **H6.1 Alt text.** The question editor gets a "Describe this image" field; every runner
-      passes it to the image.
-- [ ] **H6.2 Contrast and touch size.** Primary buttons darken to pass 4.5:1; runner buttons are 44px.
-- [ ] **H6.3 Moving between questions.** Focus goes to the "Question n of N" heading; right/wrong
-      feedback and "1 minute left" are announced; navigator squares carry a mark, not just a colour.
-- [ ] **H6.4 No backtracking is said out loud.** A warning before Next on a blank answer; the
-      review screen's jump links hide when backtracking is off.
-- [ ] **H6.5 Loading and errors.** `loading.tsx` for the student and teacher areas; a section-level
-      `error.tsx`; the dead search box in the top bar is removed.
-- [ ] **H6.6 Videos in corrections and checks.** A question's video shows wherever its image does.
+- [x] **H6.1 Alt text.** The question editor has "Describe this image" (`questions.media_alt`,
+      migration 0038). The test, practice, practice check and corrections screens read it out;
+      a picture with no description is announced as "Image for this question" instead of being
+      skipped. Not yet: a column for it in the CSV import, and descriptions for the pictures
+      already in the banks (those are Jon's to write).
+      _Done when:_ a save test; checked in a browser.
+- [x] **H6.2 Contrast and touch size.** Buttons are `#CC4429` (white text 4.7:1, was 3.75:1 on
+      `#E2553A`; PLAN.md §5 updated). Large buttons, which the student and sign-in screens use,
+      are 44px, and so are the navigator squares.
+- [x] **H6.3 Moving between questions.** On the test screen, focus goes to "Question n of N"
+      when the question changes, "One minute left" is announced once, and navigator squares
+      carry a check or a flag as well as a colour (practice: a check or an x). Relearning quick
+      checks announce "Right!" and "Not quite". Not yet: the focus move on the practice, check
+      and corrections screens (it comes with the shared runner shell, see below).
+- [x] **H6.4 No backtracking is said out loud.** Next on a blank answer asks once ("You haven't
+      answered this one… press Skip it"), and the review screen lists blank questions without
+      linking back to them.
+- [x] **H6.5 Loading and errors.** A loading skeleton for the student and teacher areas; an
+      error page inside each area, so the menu stays; a failed request on any teacher form
+      shows on the form. The top bar's search box, which did nothing, is gone. The error pages
+      no longer say "nothing is lost"; they say saved answers are safe.
+- [x] **H6.6 Videos in corrections and checks.** One component (`QuestionMedia`) shows a
+      question's picture and video on all four student screens.
 
 ## H7 — Safety net
 
