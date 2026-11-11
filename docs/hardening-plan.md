@@ -185,9 +185,17 @@ Status: `[ ]` to do · `[x]` done · `[J]` waits on Jon (a choice only he can ma
       as one line starting `[bloom-error]`, with the same reference number the error page
       shows, the route and the kind of request (no names, answers or query strings). Search
       Vercel's logs for the reference a student reads out.
-- [J] **H7.3 An error service and backups.** Sentry (or similar) and a nightly database dump both
-      need an account or a secret Jon creates. Until then: errors are in Vercel's logs (H7.2),
-      and recovery leans on Neon's own history, which is short on the free plan.
+- [x] **H7.3a Weekly backup to Google Drive** (Jon, Nov 11 2026; `docs/backup.md`). Bloom
+      hands out a full copy, table by table, to a caller holding `BLOOM_BACKUP_SECRET`
+      (`/api/backup`); a Google Apps Script running as Jon files it in a dated Drive folder
+      every Sunday, keeps the newest 8 and emails on failure. A restore command loads a backup
+      into an empty database. Proven by restoring: a test compares two databases row for row,
+      and a real run pulled 54 tables over HTTP and restored them with every count matching.
+      Uploaded images and videos (R2) are not in it.
+- [J] **H7.3b Jon pastes the script into Google** (five steps in `docs/backup.md`), after this
+      branch is merged and deployed. The secret is already in Vercel.
+- [J] **H7.3c An error service** (Sentry or similar) is still a choice; errors are in Vercel's
+      logs by reference number meanwhile (H7.2).
 - [x] **H7.4 A Neon branch for preview builds:** on since Nov 11 (H2.2, H2.3).
 - [x] **H7.5 One end-to-end student run** (`npm run e2e`, in CI): log in, take a quiz with the
       connection cut partway, leave an ordering question as shown, submit with the connection
@@ -199,7 +207,7 @@ Status: `[ ]` to do · `[x]` done · `[J]` waits on Jon (a choice only he can ma
 
 ## Still to do, in order
 
-1. **Jon's choice:** H7.3 (error service, backups).
+1. **Jon's to do:** H7.3b (paste the backup script into Google). **Jon's choice:** H7.3c (an error service).
 2. **H5.2 part 2:** batch the student home's corrections and retake reads.
 3. **A shared runner shell** for the four student screens (test, practice, check, corrections):
    one header, one navigator, one focus rule. `QuestionMedia` and the save queue are the first

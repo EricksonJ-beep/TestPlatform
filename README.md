@@ -85,6 +85,7 @@ importer keeps file names as warnings.
 | `npm run db:studio`   | Drizzle Studio                                                       |
 | `npm test`            | Vitest: every rule and server action (in-memory Postgres)             |
 | `npm run e2e`         | One student end to end in a real browser (needs the app running)     |
+| `npm run db:restore`  | Load a Drive backup into an empty database ([docs/backup.md](docs/backup.md)) |
 | `npm run lint`        | ESLint, including the `bloom/require-authz` rule                     |
 | `npm run typecheck`   | `next typegen` + `tsc --noEmit`                                      |
 | `npm run format`      | Prettier (Markdown is excluded on purpose)                           |

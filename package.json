@@ -20,7 +20,8 @@
     "test:watch": "vitest",
     "db:local": "tsx scripts/db-local.ts",
     "smoke": "node scripts/smoke.mjs",
-    "e2e": "node scripts/e2e-student.mjs"
+    "e2e": "node scripts/e2e-student.mjs",
+    "db:restore": "tsx --env-file-if-exists=.env.local scripts/restore-backup.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.129.0",
