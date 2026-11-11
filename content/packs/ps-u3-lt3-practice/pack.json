@@ -1,26 +1,37 @@
 {
   "name": "ps-u3-lt3-practice",
-  "revision": 2,
+  "revision": 3,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science A",
   "unit": "Unit 3 · Bonding",
   "bank": "PS · U3.LT3 · Practice",
+  "replaceBank": true,
   "openPractice": true,
+  "targets": [
+    {
+      "unit": "Unit 3 · Bonding",
+      "code": "U3.LT3",
+      "title": "Covalent bonds and naming",
+      "description": "I can explain how covalent bonds form and name covalent compounds."
+    }
+  ],
   "practiceSet": {
-    "title": "U3.LT3 Practice: Writing Formulas from Names",
-    "description": "Practice writing chemical formulas from names: ion charges, criss-cross and reducing, polyatomic ions, transition metals, and covalent prefixes.",
+    "title": "U3.LT3 Practice: Covalent Bonds and Naming",
+    "formerTitles": ["U3.LT3 Practice: Writing Formulas from Names"],
+    "description": "Practice explaining how covalent bonds form (shared pairs; single, double and triple bonds) and naming covalent compounds with prefixes.",
     "drawCount": 10,
     "targets": ["U3.LT3"]
   },
   "activity": {
     "kind": "guided_notes",
-    "title": "U3.LT3 Relearning: Writing Formulas from Names",
-    "content": "**What you need to be able to do:** I can take the name of a compound and write its chemical formula — ionic or covalent, including polyatomic ions and transition metals.\n\n**Think about paying with exact change.** If something costs $2 and you only have $1 coins, you need two of them. An ionic formula works the same way: the positive charges and the negative charges have to come out even, so the total is **zero**. The subscripts tell you how many \"coins\" of each ion it takes.\n\n**Step 1 — Ionic or covalent?** Metal + nonmetal = **ionic** (use charges). Two nonmetals = **covalent** (use prefixes). A compound with a polyatomic ion is ionic.\n\n**Ionic: crisscross applesauce.** 1) Write each ion with its charge. Main-group charges come from the **group number**: Group 1 = +1, Group 2 = +2, Group 13 = +3, Group 15 = −3, Group 16 = −2, Group 17 = −1. 2) The little charge drops to the bottom as a **subscript on the opposite ion**, with no sign. 3) **Reduce** if the subscripts share a factor (Fe₂O₂ → FeO). 4) **Check** that the charges cancel to zero. The metal always goes first.\n\n**Transition metals:** the **Roman numeral is the charge**, not a count of atoms. Iron(III) means Fe³⁺. **Polyatomic ions** (the formula and charge will be given to you, like nitrate NO₃⁻) stay together: never change anything inside, and put **parentheses** around the ion only when you need 2 or more of it (Ca(NO₃)₂, but BaSO₄).\n\n**Covalent:** the **prefixes are the subscripts** (mono 1, di 2, tri 3, tetra 4, penta 5, hexa 6). No prefix on the first element means 1. NO CRISS CROSSES OR SIMPLIFYING IN COVALENT!\n\n**Worked example 1:** magnesium nitride. Step 1: Metal + nonmetal, so ionic. Mg is Group 2 → Mg²⁺; N is Group 15 → N³⁻. Step 2: Criss-cross: the 3 goes to Mg and the 2 goes to N → Mg₃N₂. Step 3: 3 and 2 cannot be reduced. Step 4: Check: 3(+2) + 2(−3) = +6 − 6 = 0. Answer: Mg₃N₂.\n\n**Worked example 2:** copper(II) hydroxide (hydroxide is OH⁻). Step 1: Copper(II) → Cu²⁺. Step 2: Criss-cross: the 2 goes to hydroxide, and the 1 goes to copper. Step 3: You need 2 hydroxides, so protect OH with parentheses → Cu(OH)₂. Step 4: Check: +2 + 2(−1) = 0. Answer: Cu(OH)₂.\n\n**Worked example 3:** diphosphorus trioxide. Step 1: Phosphorus and oxygen are both nonmetals, so covalent. Step 2: di = 2 phosphorus, tri = 3 oxygen. Step 3: Do not criss-cross or reduce. Answer: P₂O₃.\n\n**Watch out for:** using the Roman numeral as a subscript (iron(III) oxide is NOT FeO₃); using the number of metal atoms as its charge; forgetting to reduce (Fe₂O₂); charges that do not cancel (NaCl₂); dropping the parentheses or changing the subscripts inside a polyatomic ion; and criss-crossing a covalent compound.",
+    "title": "U3.LT3 Relearning: Covalent Bonds and Naming",
+    "formerTitles": ["U3.LT3 Relearning: Writing Formulas from Names"],
+    "content": "**What you need to be able to do:** I can explain how covalent bonds form and name covalent compounds.\n\n**Think of splitting a pizza.** Nobody gives the pizza away; you both eat from it. A **covalent bond** works the same way. Two **nonmetal** atoms both need more electrons, and neither will give any up, so they **share**.\n\n**How the bond forms.** Each atom puts in one electron to make a **shared pair**. The shared pair counts toward the outer level of **both** atoms, so both can reach a full outer level (8 for most atoms, 2 for hydrogen). No electrons are given away, so **no ions form**. A group of atoms joined by covalent bonds is a **molecule**.\n\n**How many bonds?** An atom shares as many electrons as it needs to fill its outer level (8, or 2 for hydrogen). Hydrogen needs 1 (1 bond). Group 17 needs 1 (1 bond). Group 16 needs 2 (2 bonds). Group 15 needs 3 (3 bonds). Group 14 needs 4 (4 bonds).\n\n**Single, double, triple.** A **single bond** is 1 shared pair (2 electrons). A **double bond** is 2 shared pairs (4 electrons). A **triple bond** is 3 shared pairs (6 electrons).\n\n**Naming covalent compounds.** Use **prefixes** to count the atoms: mono 1, di 2, tri 3, tetra 4, penta 5, hexa 6, hepta 7, octa 8, nona 9, deca 10. The **first element skips mono**. The **second element always gets a prefix** and an **-ide** ending. Drop the extra o or a before oxide (monoxide, tetroxide, pentoxide). No criss-cross and no reducing: the prefixes are the subscripts.\n\n**Worked example 1:** How does water form? Oxygen has 6 valence electrons and needs 2 more. Each hydrogen needs 1 more. So oxygen shares one pair with each of two hydrogens: H₂O, with two single bonds.\n\n**Worked example 2:** Why does N₂ have a triple bond? Each nitrogen has 5 valence electrons and needs 3 more, so the two atoms share 3 pairs.\n\n**Worked example 3:** Name N₂O₅. Both are nonmetals, so use prefixes. 2 nitrogens → dinitrogen; 5 oxygens → pentoxide. Answer: **dinitrogen pentoxide**. And sulfur trioxide is 1 sulfur and 3 oxygens: **SO₃**.\n\n**Watch out for:** saying electrons are transferred (that is ionic), saying the atoms become ions, counting a single bond as 1 electron instead of 2, putting mono on the first element, leaving the prefixes out (\"phosphorus chloride\"), reducing a covalent formula (N₂O₄ is not NO₂), and using Roman numerals on nonmetals.",
     "prompts": [
-      "Write the formula for calcium phosphide. Show each ion's charge, the criss-cross, and the check that the charges cancel to zero.",
-      "Sulfate is SO₄²⁻. Write the formula for chromium(III) sulfate and explain why the parentheses are needed.",
-      "A classmate says tin(IV) oxide is SnO₄ \"because it says four.\" Explain the mistake and write the correct formula.",
-      "Write the formula for sulfur hexafluoride and explain why you do not criss-cross charges for this compound."
+      "Explain how two chlorine atoms form a covalent bond in Cl₂. Say what the electrons do and how each atom ends up with 8.",
+      "Oxygen gas is O₂ and nitrogen gas is N₂. Explain why O₂ has a double bond but N₂ has a triple bond.",
+      "Name these compounds and explain your thinking for each: CO, PCl₃, and N₂O₄.",
+      "Write the formulas for sulfur hexafluoride and dinitrogen trioxide. Explain how the prefixes gave you the subscripts."
     ],
     "targets": ["U3.LT3"]
   }
