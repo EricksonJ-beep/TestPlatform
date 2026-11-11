@@ -129,8 +129,9 @@ Status: `[ ]` to do · `[x]` done · `[J]` waits on Jon (a choice only he can ma
       than one), and a teacher who signs up with the invite code joins it. With one school this
       changes nothing Jon or his colleague will notice; it closes the door for anyone outside.
       _Done when:_ tested for no school, own student, same school, another school, and the CSV import.
-- [J] **H4.9 Temp password format.** One word + 4 digits is easy to say aloud and easy to guess.
-      With H4.1 and H4.2 in place it is much safer; lengthening it (two words) is Jon's call.
+- [x] **H4.9 Temp password format: kept** (Jon, Nov 11 2026: "keep that temp password
+      structure"). One word and four digits, easy to say aloud in class. Guessing it is
+      throttled (H4.1) and it must be changed at first login (H4.2).
 
 ## H5 — Fast with a full class
 
@@ -198,8 +199,7 @@ Status: `[ ]` to do · `[x]` done · `[J]` waits on Jon (a choice only he can ma
 
 ## Still to do, in order
 
-1. **Jon's choices:** H4.9 (temp password
-   length), H7.3 (error service, backups).
+1. **Jon's choice:** H7.3 (error service, backups).
 2. **H5.2 part 2:** batch the student home's corrections and retake reads.
 3. **A shared runner shell** for the four student screens (test, practice, check, corrections):
    one header, one navigator, one focus rule. `QuestionMedia` and the save queue are the first
