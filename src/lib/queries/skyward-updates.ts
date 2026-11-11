@@ -269,7 +269,9 @@ export async function startSkywardTracking(
           ...m,
           assignmentId: ex.assignment.id,
           source: "marked" as const,
-          recordedAt: now,
+          // The mark stands for that day, not for today: a score change between the date and now
+          // (a retake last week) comes after it, so the page lists it.
+          recordedAt: asOf.getTime() < now.getTime() ? asOf : now,
         }))
       );
     }
