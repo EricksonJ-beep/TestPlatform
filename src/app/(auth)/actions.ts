@@ -11,6 +11,7 @@ import { publicAction } from "@/lib/authz";
 import { findUserByIdentifier } from "@/lib/join";
 import { hashPassword, passwordPolicy } from "@/lib/password";
 import { safeNext } from "@/lib/routes";
+import { defaultOrganizationId } from "@/lib/school";
 import {
   clientAddress,
   isThrottled,
@@ -114,6 +115,8 @@ export const signupAction = publicAction(
       role: "teacher",
       firstName,
       lastName,
+      // The invite code is the school's key, so a new teacher joins the school (H4.8).
+      organizationId: await defaultOrganizationId(),
     });
 
     try {

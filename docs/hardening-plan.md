@@ -123,10 +123,15 @@ Status: `[ ]` to do · `[x]` done · `[J]` waits on Jon (a choice only he can ma
 - [x] **H4.7 Dependencies.** `npm audit fix`, and Next.js 16.3.5 → 16.4.6 for its critical
       advisory. 18 advisories (1 critical, 8 high) → 6 low or moderate, all inside the `shadcn`
       command-line tool, which never runs in production. Build, lint and tests pass on it.
-- [J] **H4.8 Adding a student who already has an account.** Today a teacher who types an existing
-      student's email enrolls that account and can then reset its password. Fine for Jon and one
-      colleague; before more teachers join, choose: (a) leave it, (b) only within the same
-      school organization, (c) the student confirms on next login.
+- [x] **H4.8 Adding a student who already has an account: same school only** (Jon, Nov 11
+      2026). A teacher can enroll an existing account by email only when the student is already
+      in one of that teacher's classes, or both are recorded at the same school. Otherwise:
+      "…isn't at your school. Have the student join with your class code instead," which is
+      the student's own act. Accounts made before schools were recorded get the one school at
+      the next deploy (`scripts/school-backfill.ts`; it guesses nothing if there is ever more
+      than one), and a teacher who signs up with the invite code joins it. With one school this
+      changes nothing Jon or his colleague will notice; it closes the door for anyone outside.
+      _Done when:_ tested for no school, own student, same school, another school, and the CSV import.
 - [J] **H4.9 Temp password format.** One word + 4 digits is easy to say aloud and easy to guess.
       With H4.1 and H4.2 in place it is much safer; lengthening it (two words) is Jon's call.
 
@@ -196,8 +201,8 @@ Status: `[ ]` to do · `[x]` done · `[J]` waits on Jon (a choice only he can ma
 
 ## Still to do, in order
 
-1. **Jon's to do:** H2.3 (the Preview branch switch in Vercel). **Jon's choices:** H4.8 (adding a student who
-   already has an account), H4.9 (temp password length), H7.3 (error service, backups).
+1. **Jon's to do:** H2.3 (the Preview branch switch in Vercel). **Jon's choices:** H4.9 (temp password
+   length), H7.3 (error service, backups).
 2. **H5.2 part 2:** batch the student home's corrections and retake reads.
 3. **A shared runner shell** for the four student screens (test, practice, check, corrections):
    one header, one navigator, one focus rule. `QuestionMedia` and the save queue are the first

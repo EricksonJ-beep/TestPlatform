@@ -364,3 +364,104 @@ describe("class order", () => {
     await expect(reorderClasses([])).resolves.toMatchObject({ ok: false, status: 400 });
   });
 });
+
+describe("adding a student who already has an account (H4.8: same school only)", () => {
+  const add = (classId: string, email: string) =>
+    addStudent(classId, fd({ firstName: "Maya", lastName: "Rivera", email }));
+  const maya = "maya.rivera@cadott.k12.wi.us";
+  const own = { a2: "", b: "" };
+
+  it("a teacher at no recorded school can't pull in another teacher's student by email", async () => {
+    const [a2, b] = await db
+      .insert(schema.classes)
+      .values([
+        { ownerId: ids.teacherA, name: "Bio P7" },
+        { ownerId: ids.teacherB, name: "Phys Sci P1" },
+      ])
+      .returning();
+    Object.assign(own, { a2: a2.id, b: b.id });
+    asUser(ids.teacherB, "teacher");
+    const r = await add(own.b, maya);
+    expect(r).toMatchObject({ ok: false, status: 409 });
+    if (!r.ok) expect(r.error).toMatch(/class code/);
+    const enrolled = await db
+      .select()
+      .from(schema.enrollments)
+      .where(eq(schema.enrollments.classId, own.b));
+    expect(enrolled).toHaveLength(0);
+  });
+
+  it("a teacher can always add their own student to another of their classes", async () => {
+    asUser(ids.teacherA, "teacher");
+    const [a3] = await db
+      .insert(schema.classes)
+      .values({ ownerId: ids.teacherA, name: "Bio P8" })
+      .returning();
+    const nora = "nora.quinn@cadott.k12.wi.us";
+    await expect(add(own.a2, nora)).resolves.toMatchObject({
+      ok: true,
+      data: { status: "created" },
+    });
+    await expect(add(a3.id, nora)).resolves.toMatchObject({
+      ok: true,
+      data: { status: "enrolled_existing", tempPassword: null },
+    });
+    // Maya left this teacher's classes earlier, so she is nobody's student here: refused too.
+    await expect(add(own.a2, maya)).resolves.toMatchObject({ ok: false, status: 409 });
+  });
+
+  it("once the school is recorded, two teachers of that school share students", async () => {
+    const { ensureSingleSchool, defaultOrganizationId } = await import("@/lib/school");
+    const first = await ensureSingleSchool();
+    expect(first.created).toBe(true);
+    expect(first.filled).toBeGreaterThan(2);
+    expect(await defaultOrganizationId()).toBe(first.organizationId);
+    // Running it again changes nothing.
+    expect(await ensureSingleSchool()).toMatchObject({ created: false, filled: 0 });
+    asUser(ids.teacherB, "teacher");
+    await expect(add(own.b, maya)).resolves.toMatchObject({
+      ok: true,
+      data: { status: "enrolled_existing" },
+    });
+    // And the teacher she left can add her back.
+    asUser(ids.teacherA, "teacher");
+    await expect(add(own.a2, maya)).resolves.toMatchObject({
+      ok: true,
+      data: { status: "enrolled_existing" },
+    });
+  });
+
+  it("a teacher at a different school is refused, in the CSV import too, and nothing is guessed", async () => {
+    const [other] = await db.insert(schema.organizations).values({ name: "Other HS" }).returning();
+    await db
+      .update(schema.users)
+      .set({ organizationId: other.id })
+      .where(eq(schema.users.id, ids.teacherB));
+    asUser(ids.teacherB, "teacher");
+    const dylan = "dylan.kowalski@cadott.k12.wi.us";
+    await expect(add(own.b, dylan)).resolves.toMatchObject({ ok: false, status: 409 });
+    const csv = [
+      "First Name,Last Name,Email",
+      `Dylan,Kowalski,${dylan}`,
+      "New,Kid,new.kid@other.test",
+    ];
+    const r = await importStudentsCsv(
+      own.b,
+      fd({ file: new File([csv.join("\r\n")], "r.csv", { type: "text/csv" }) })
+    );
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    const byLine = Object.fromEntries(r.data.results.map((x) => [x.line, x]));
+    expect(byLine[2]).toMatchObject({ ok: false });
+    // A brand-new account is still created, at the teacher's own school.
+    expect(byLine[3]).toMatchObject({ ok: true, student: { status: "created" } });
+    const kid = await db.query.users.findFirst({
+      where: eq(schema.users.email, "new.kid@other.test"),
+    });
+    expect(kid?.organizationId).toBe(other.id);
+    // With two schools on record, the backfill and the signup default guess nothing.
+    const { ensureSingleSchool, defaultOrganizationId } = await import("@/lib/school");
+    expect(await ensureSingleSchool()).toMatchObject({ organizationId: null, filled: 0 });
+    expect(await defaultOrganizationId()).toBeNull();
+  });
+});

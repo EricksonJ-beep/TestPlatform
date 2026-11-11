@@ -67,6 +67,10 @@ step("splitting pack summatives by target", "scripts/summative-targets.ts");
 // Score history (Nov 4 2026, R7): the scores from before it get their starting point. Production only.
 step("seeding score history", "scripts/score-history-seed.ts");
 
+// Schools (Nov 11 2026, H4.8): accounts from before schools were recorded get the one school.
+// Only fills blanks, so it also runs on a preview's own branch.
+step("recording the school on older accounts", "scripts/school-backfill.ts");
+
 if (failed.length) {
   console.error(
     `\nmigrate-on-build: WARNING ${failed.length} step(s) failed and were skipped:\n  ` +
