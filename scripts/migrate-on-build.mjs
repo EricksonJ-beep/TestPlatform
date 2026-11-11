@@ -4,14 +4,26 @@
  * went down when a merge shipped code for a table that had not been created).
  * With no DATABASE_URL (a plain local build, CI) it does nothing.
  *
- * Hardening plan H2.1 (Nov 9 2026): the build log says which database is being changed and by
- * what kind of build, a preview can be told to leave it alone (MIGRATE_ON_PREVIEW=0, see
- * migrate-decision.mjs), and a step that fails is reported at the end instead of passing silently.
+ * Hardening plan H2 (Nov 9–11 2026): the build log says which database is being changed and by
+ * what kind of build; a preview migrates only its own Neon branch, never the live database
+ * (migrate-decision.mjs); and a step that fails is reported at the end instead of passing silently.
  */
 import { spawnSync } from "node:child_process";
 import { databaseHost, migrateDecision } from "./migrate-decision.mjs";
 
 const decision = migrateDecision(process.env);
+if (decision.blocked) {
+  // Jon, Nov 11 2026: previews get their own Neon branch. This one didn't, so it must not
+  // change the live database. The build goes on; pages that need a new column will error
+  // until the branch setting is on and the preview is redeployed.
+  console.error(
+    `\nmigrate-on-build: NOT migrating. ${decision.reason}.\n` +
+      "  Fix: Vercel > Storage > the Neon database (bloom) > Projects > bloom > edit the connection,\n" +
+      "  and under the deployments configuration turn on a database branch for Preview. Then redeploy.\n" +
+      "  (docs/hardening-plan.md, H2.2)\n"
+  );
+  process.exit(0);
+}
 if (!decision.run) {
   console.log(`migrate-on-build: skipping migrations and packs (${decision.reason}).`);
   process.exit(0);
@@ -20,8 +32,9 @@ const host = databaseHost(process.env.DATABASE_URL);
 console.log(`migrate-on-build: ${decision.reason}, database ${host}.`);
 if (decision.sharedPreview)
   console.log(
-    "migrate-on-build: NOTE this is not a production build. If this database is the live one, " +
-      "its schema changes now, before the pull request is merged. Set MIGRATE_ON_PREVIEW=0 to stop that."
+    "migrate-on-build: NOTE this is not a production build, and LIVE_DATABASE_HOST is not set, so " +
+      "the build can't tell whether this is the live database. If it is, its schema changes now, " +
+      "before the pull request is merged."
   );
 
 console.log("migrate-on-build: applying drizzle/ migrations…");

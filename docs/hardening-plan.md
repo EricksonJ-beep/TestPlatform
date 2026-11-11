@@ -53,13 +53,22 @@ Status: `[ ]` to do · `[x]` done · `[J]` waits on Jon (a choice only he can ma
       makes preview builds leave the database alone.
       _Done when:_ the decision function (`scripts/migrate-decision.mjs`) is tested for
       production, preview, a manual build and the switch. Done.
-- [J] **H2.2 Turn previews off, or give them their own database.** Left as it was by default,
-      because Jon reviews pull requests on their previews, and a preview that doesn't migrate
-      breaks on any page that needs a new column (this plan adds some). Two ways to close it:
-      (a) in Vercel's Neon integration, turn on a database branch per preview: each preview
-      then migrates its own copy and the live data is never touched (best); or
-      (b) set `MIGRATE_ON_PREVIEW=0` for the Preview environment and accept that a preview
-      with schema changes errors until it is merged.
+- [x] **H2.2 Previews get their own database** (Jon, Nov 11 2026: "Go with the Neon branch per
+      preview"). The code side is done: `LIVE_DATABASE_HOST` is set in Vercel (the live
+      database's host, not a secret), and a preview build compares its own database to it. On
+      its own branch it migrates that branch; on the live host it migrates nothing and prints
+      how to fix it. Checked Nov 11: Neon is connected to production, preview and development
+      with one connection, so until the switch below is on, previews are still on the live
+      database (and from this change on, they no longer migrate it).
+- [J] **H2.3 Jon turns the branch on in Vercel** (a dashboard switch; it can't be set from here).
+      Vercel → **Storage** → the Neon database **bloom** → **Projects** → **bloom** → edit the
+      connection → under the deployments configuration, turn on a database branch for
+      **Preview** (leave Production off). If it offers to delete a preview's branch when the
+      pull request closes, turn that on too: Neon's free plan allows only a handful of branches.
+      Then redeploy an open preview and read its build log: it should say "preview build on its
+      own database branch". Each preview then starts as a copy of the live data at that moment,
+      so real student records are in it, the same as today; what changes is that nothing a
+      preview does reaches the live database. Files (R2) are still shared.
 
 ## H3 — No dead ends on the relearning path
 
@@ -176,8 +185,7 @@ Status: `[ ]` to do · `[x]` done · `[J]` waits on Jon (a choice only he can ma
 - [J] **H7.3 An error service and backups.** Sentry (or similar) and a nightly database dump both
       need an account or a secret Jon creates. Until then: errors are in Vercel's logs (H7.2),
       and recovery leans on Neon's own history, which is short on the free plan.
-- [J] **H7.4 A Neon branch for preview builds,** so previews can migrate safely (set in Vercel;
-      see H2.2).
+- [J] **H7.4 A Neon branch for preview builds:** chosen Nov 11; one switch left for Jon (H2.3).
 - [x] **H7.5 One end-to-end student run** (`npm run e2e`, in CI): log in, take a quiz with the
       connection cut partway, leave an ordering question as shown, submit with the connection
       cut and then for real, see the score, open corrections and save a draft. Writing it found
@@ -188,7 +196,7 @@ Status: `[ ]` to do · `[x]` done · `[J]` waits on Jon (a choice only he can ma
 
 ## Still to do, in order
 
-1. **Jon's choices:** H2.2 / H7.4 (previews and the live database), H4.8 (adding a student who
+1. **Jon's to do:** H2.3 (the Preview branch switch in Vercel). **Jon's choices:** H4.8 (adding a student who
    already has an account), H4.9 (temp password length), H7.3 (error service, backups).
 2. **H5.2 part 2:** batch the student home's corrections and retake reads.
 3. **A shared runner shell** for the four student screens (test, practice, check, corrections):
