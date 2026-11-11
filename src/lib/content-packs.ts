@@ -20,7 +20,7 @@
  */
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import { and, eq, isNull, or, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, isNull, or, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { parseCsvRecords } from "@/lib/csv";
 import { parseQuestionRecords } from "@/lib/import/question-csv";
@@ -51,6 +51,12 @@ export type PackDefinition = {
   bank?: string;
   /** Earlier names this pack's bank went by; a bank still using one is renamed to `bank` on deploy. */
   formerBankNames?: string[];
+  /**
+   * The CSV is the whole bank (Jon, Nov 11 2026: new Unit 3 learning targets). After the import,
+   * a live question in the bank that came from a CSV (it has an external_id) and is not in this
+   * one is archived, the way an old version is. Questions the teacher wrote by hand are left alone.
+   */
+  replaceBank?: boolean;
   assessment?: {
     title: string;
     /** Earlier titles; an assessment still using one is renamed to `title` on deploy. */
@@ -88,6 +94,8 @@ export type PackDefinition = {
   /** A practice set that deals a fresh hand from the pack's bank each attempt. */
   practiceSet?: {
     title: string;
+    /** Earlier titles; a set still using one is found and renamed instead of a second set made. */
+    formerTitles?: string[];
     description?: string;
     /** Questions per attempt; the deal balances easy, medium, and hard. */
     drawCount: number;
@@ -104,6 +112,8 @@ export type PackDefinition = {
      */
     kind?: "interactive" | "video" | "link" | "reading" | "guided_notes";
     title: string;
+    /** Earlier titles; an activity still using one is found and renamed instead of a second one made. */
+    formerTitles?: string[];
     /** Required for interactive, video, and link. */
     url?: string;
     /** Shown to students before they start (the editor's "Instructions for students"). */
@@ -346,10 +356,10 @@ async function upsertTargets(
       title: t.title,
       description: t.description ?? null,
       unitId: unit.id,
-      sortOrder: 100 + i,
     };
     const found = existing.find((e) => key(e.code) === key(t.code));
     if (found) {
+      // A target that already exists keeps its place in the course's list; only its wording changes.
       await db
         .update(schema.learningTargets)
         .set(values)
@@ -358,7 +368,7 @@ async function upsertTargets(
     } else {
       const [row] = await db
         .insert(schema.learningTargets)
-        .values({ courseId, code: t.code.trim(), ...values })
+        .values({ courseId, code: t.code.trim(), ...values, sortOrder: 100 + i })
         .returning({ id: schema.learningTargets.id, code: schema.learningTargets.code });
       existing.push(row);
       created++;
@@ -401,6 +411,30 @@ async function applyQuiz(
   const result = await commitImport(bank.id, rows);
   const questionIds = result.rows.flatMap((r) => (r.questionId ? [r.questionId] : []));
   errors.push(...result.rows.filter((r) => r.error).map((r) => `line ${r.line}: ${r.error}`));
+
+  // The CSV is the whole bank: retire what it no longer lists. Skipped when a row failed, so a
+  // bad import never empties a bank.
+  let retired = 0;
+  if (def.replaceBank && questionIds.length && !result.rows.some((r) => r.error)) {
+    const keep = new Set(rows.flatMap((r) => (r.externalId ? [key(r.externalId)] : [])));
+    const live = await db
+      .select({ id: schema.questions.id, externalId: schema.questions.externalId })
+      .from(schema.questions)
+      .where(
+        and(
+          eq(schema.questions.bankId, bank.id),
+          eq(schema.questions.isArchived, false),
+          isNotNull(schema.questions.externalId)
+        )
+      );
+    const gone = live.filter((q) => !keep.has(key(q.externalId!))).map((q) => q.id);
+    if (gone.length)
+      await db
+        .update(schema.questions)
+        .set({ isArchived: true, externalId: null })
+        .where(inArray(schema.questions.id, gone));
+    retired = gone.length;
+  }
 
   // The shelf: resolved after the import so a unit the CSV just created counts.
   let unitId: string | null = null;
@@ -507,10 +541,16 @@ async function applyQuiz(
     unitId,
     imported: result.counts,
     questions: questionIds.length,
+    ...(def.replaceBank ? { retired } : {}),
     assessmentId,
     assignedTo: assignments,
   };
 }
+
+/** A set's or an activity's title and its former ones, for finding the row a pack made earlier. */
+const titlesOf = (x: { title: string; formerTitles?: string[] }) => [
+  ...new Set([x.title, ...(x.formerTitles ?? [])].map(key)),
+];
 
 /** Course targets matching the listed codes; unknown codes are reported. */
 async function resolveTargets(
@@ -552,8 +592,10 @@ async function applyPracticeSet(
     where: and(
       eq(schema.practiceSets.ownerId, teacherId),
       eq(schema.practiceSets.courseId, courseId),
-      sql`lower(${schema.practiceSets.title}) = ${key(ps.title)}`
+      sql`lower(${schema.practiceSets.title}) in ${titlesOf(ps)}`
     ),
+    // The current title wins over a former one when the teacher has both.
+    orderBy: sql`(lower(${schema.practiceSets.title}) = ${key(ps.title)}) desc`,
   });
   const values = {
     title: ps.title,
@@ -619,14 +661,15 @@ async function applyActivity(
       eq(schema.relearningActivities.courseId, courseId),
       url
         ? or(
-            sql`lower(${schema.relearningActivities.title}) = ${key(act.title)}`,
+            sql`lower(${schema.relearningActivities.title}) in ${titlesOf(act)}`,
             and(
               eq(schema.relearningActivities.kind, kind),
               eq(schema.relearningActivities.url, url)
             )
           )
-        : sql`lower(${schema.relearningActivities.title}) = ${key(act.title)}`
+        : sql`lower(${schema.relearningActivities.title}) in ${titlesOf(act)}`
     ),
+    orderBy: sql`(lower(${schema.relearningActivities.title}) = ${key(act.title)}) desc`,
   });
   let activityId: string;
   if (existing) {

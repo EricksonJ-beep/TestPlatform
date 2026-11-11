@@ -1,104 +1,119 @@
 {
   "name": "ps-u3-lt2-relearning",
-  "revision": 2,
+  "revision": 3,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science A",
   "relearning": [
     {
       "target": "U3.LT2",
       "mode": "read",
-      "title": "Read: ionic or covalent?",
+      "title": "Read: ionic bonds and naming",
       "description": "A short reading with the lunch-money analogy, worked examples and quick checks.",
       "sections": [
         {
           "part": "core",
-          "title": "The three rules",
+          "title": "How an ionic bond forms",
           "minutes": 4,
           "body": {
             "type": "text",
-            "text": "**I can look at a compound and tell whether it's ionic or covalent.**\n\n**Think of lunch money vs. a shared pizza.** If a friend hands you a dollar, the dollar moves from them to you: one gives, the other takes. That is an **ionic** bond. If you and a friend split a pizza, nobody gives it away; you both eat from it. That is a **covalent** bond. Metals are the \"givers\" and nonmetals are the \"takers.\" When two takers meet, neither will give, so they share.\n\n**Rule 1.** Metal + nonmetal makes an **ionic** compound: the metal **transfers** electrons to the nonmetal. Metals sit **left of the staircase** on the periodic table. Transition metals like iron and copper are metals too.\n\n**Rule 2.** Two nonmetals make a **covalent** compound: the electrons are **shared**, and one unit is a **molecule**. Hydrogen is a nonmetal, even though it sits on the left.\n\n**Rule 3.** A compound with a **polyatomic ion** is **ionic**. That includes **ammonium, NH₄⁺**, even though ammonium compounds have no metal. Ammonium plays the part of the metal.\n\n**Worked example:** CaBr₂. Calcium is left of the staircase, so it is a metal. Bromine is right of the staircase, so it is a nonmetal. Metal + nonmetal, so CaBr₂ is **ionic**: calcium transfers electrons to bromine."
+            "text": "**I can explain how ionic bonds form and name ionic compounds.**\n\n**Think of lunch money.** If a friend hands you a dollar, the dollar moves from them to you: one gives and one takes. An **ionic bond** works the same way. A **metal** atom (the giver) **transfers** its valence electrons to a **nonmetal** atom (the taker).\n\n**Step 1.** The metal **loses** its valence electrons and becomes a **positive ion**. Sodium (Group 1) loses 1 electron and becomes Na⁺.\n\n**Step 2.** The nonmetal **gains** those electrons and becomes a **negative ion**. Chlorine has 7 valence electrons, gains 1 to reach 8, and becomes Cl⁻.\n\n**Step 3.** **Opposite charges attract.** That attraction between Na⁺ and Cl⁻ is the ionic bond.\n\nOnly electrons move. The protons never change. Both atoms end up with a full outer level, which makes them stable.\n\n**The charges must cancel to zero.** Magnesium (Group 2) gives away 2 electrons, but each chlorine can take only 1. So one magnesium needs two chlorines: Mg²⁺ and two Cl⁻ make **MgCl₂**.\n\n**Worked example:** calcium and fluorine. Calcium has 2 valence electrons to give. Each fluorine takes 1. Calcium gives one electron to each of two fluorines: Ca²⁺ and two F⁻ make CaF₂."
           },
           "checks": [
             {
               "id": "c1",
               "kind": "multiple_choice",
-              "prompt": "Which compound is ionic?",
+              "prompt": "What happens to the electrons when sodium and chlorine form an ionic bond?",
               "options": [
-                { "id": "a", "text": "CH₄" },
-                { "id": "b", "text": "KCl" },
-                { "id": "c", "text": "SO₂" }
+                {
+                  "id": "a",
+                  "text": "Sodium and chlorine share a pair of electrons"
+                },
+                {
+                  "id": "b",
+                  "text": "Sodium transfers an electron to chlorine"
+                },
+                {
+                  "id": "c",
+                  "text": "Chlorine transfers an electron to sodium"
+                }
               ],
               "answer": "b",
-              "explanation": "Potassium is a metal (left of the staircase) and chlorine is a nonmetal, so KCl is ionic. CH₄ and SO₂ are only nonmetals, so they are covalent. Calling CH₄ ionic because hydrogen sits on the left is the common mistake: hydrogen is a nonmetal."
+              "explanation": "Sodium is a metal, so it is the giver: it transfers its 1 valence electron to chlorine. That makes Na⁺ and Cl⁻, which attract. Saying the atoms share is the common mistake; sharing is a covalent bond."
             },
             {
               "id": "c2",
               "kind": "fill_blank",
-              "prompt": "Ammonium chloride, NH₄Cl, has no metal, but it has the polyatomic ion NH₄⁺. Is it ionic or covalent? Type one word.",
-              "answer": [
-                "ionic",
-                "ionic compound",
-                "an ionic compound",
-                "it is ionic",
-                "it's ionic",
-                "ionic bond"
-              ],
-              "explanation": "A compound with a polyatomic ion is ionic, even with no metal. Ammonium plays the part of the metal. Calling it covalent because every atom is a nonmetal is the common mistake."
+              "prompt": "Oxygen needs 2 more electrons. Each potassium atom gives 1. How many potassium atoms does one oxygen atom need? Type a number.",
+              "answer": ["2", "two"],
+              "explanation": "Each potassium gives only 1 electron, so it takes 2 potassium atoms to give oxygen the 2 it needs: K₂O. Using one of each (KO) is the common mistake."
             }
           ]
         },
         {
           "part": "extension",
-          "title": "Hard cases and lab evidence",
+          "title": "Formulas and names",
           "minutes": 6,
           "body": {
             "type": "text",
-            "text": "**Why atoms bond.** Atoms bond **to be stable**. The **octet rule** says most atoms are stable with **8** outer electrons (hydrogen and helium are the exceptions). Noble gases already have a full outer shell, so they don't bond. A **single bond** shares 2 electrons, a **double bond** shares 4 and a **triple bond** shares 6.\n\n**Worked example 2:** (NH₄)₃PO₄ (ammonium is NH₄⁺, phosphate is PO₄³⁻). Every atom is a nonmetal, so the nonmetal rule says covalent... but wait. It has polyatomic ions, and a compound with a polyatomic ion is ionic. Answer: **ionic**.\n\n**Properties are your evidence.** Ionic compounds have **high melting points** (generally above 300 °C), form **crystals** and **conduct electricity when dissolved in water**, because they break into free-moving ions. Covalent compounds have **low melting points**, can be solid, liquid or gas, and **do not conduct** when dissolved, because they stay as whole molecules. Color, mass and where a bottle was stored are **irrelevant evidence**.\n\n**Worked example 3:** An unknown melts at 80 °C and its solution does not light the bulb. 80 °C is far below 300 °C, which points to covalent. No conductivity means no free ions, which also points to covalent. Answer: **covalent**.\n\n**Watch out for:** calling an ammonium compound covalent just because it has no metal, calling hydrogen a metal, calling two metals (like Ca and Mg) ionic, forgetting that transition metals are metals, and using color, mass or \"it dissolves\" as evidence. Use melting point and conductivity instead."
+            "text": "**Charges from the group number:** Group 1 = +1, Group 2 = +2, Group 13 = +3, Group 15 = −3, Group 16 = −2, Group 17 = −1.\n\n**Writing the formula: crisscross applesauce.** Write each ion with its charge. Each charge drops to the bottom as the subscript on the **other** ion, with no sign. **Reduce** if you can, then **check** that the charges add to zero. The metal always goes first. Aluminum oxide: Al³⁺ and O²⁻ → Al₂O₃. Check: 2(+3) + 3(−2) = 0.\n\n**Naming.** Metal first, then the nonmetal with an **-ide** ending (chlorine → chloride, oxygen → oxide, sulfur → sulfide). **No prefixes, ever.** MgCl₂ is magnesium chloride, not magnesium dichloride.\n\n**Polyatomic ions** keep their own name: NaNO₃ is sodium nitrate. In a formula they get parentheses only when you need 2 or more: Ca(NO₃)₂.\n\n**Roman numerals.** Metals that can have more than one charge (transition metals like Fe and Cu, plus Pb and Sn) need a Roman numeral. It is the **charge**, not the number of atoms. Group 1, 2 and 13 metals never get one.\n\n**Worked example:** Fe₂O₃. Three oxides are 3 × (−2) = −6. Two irons must total +6, so each iron is +3. Name: **iron(III) oxide**.\n\n**Watch out for:** saying the atoms share electrons, prefixes on ionic names, using a subscript as the Roman numeral (Fe₂O₃ is not iron(II)), numerals on Group 1 or 2 metals, and putting -ide on a polyatomic ion (Na₂SO₄ is sodium sulfate, not sodium sulfide)."
           },
           "checks": [
             {
               "id": "e1",
               "kind": "multiple_choice",
-              "prompt": "An unknown white solid melts at 750 °C, and its solution lights the bulb. Which conclusion is best?",
+              "prompt": "What is the correct name of CaCl₂?",
               "options": [
                 {
                   "id": "a",
-                  "text": "Ionic: the high melting point and the conductivity both point to ionic"
+                  "text": "calcium dichloride"
                 },
-                { "id": "b", "text": "Covalent: it is a white solid" },
-                { "id": "c", "text": "Covalent: it dissolves in water" }
+                {
+                  "id": "b",
+                  "text": "calcium chloride"
+                },
+                {
+                  "id": "c",
+                  "text": "calcium(II) chloride"
+                }
               ],
-              "answer": "a",
-              "explanation": "Melting above 300 °C and conducting when dissolved both point to ionic. Color and dissolving are irrelevant evidence, and using them is the common mistake."
+              "answer": "b",
+              "explanation": "Ionic names never use prefixes, and calcium (Group 2) has only one charge, so it gets no Roman numeral: calcium chloride. Adding di- because of the subscript 2 is the common mistake."
             },
             {
               "id": "e2",
-              "kind": "fill_blank",
-              "prompt": "Water, H₂O, is made of hydrogen and oxygen. Is it ionic or covalent? Type one word.",
-              "answer": [
-                "covalent",
-                "covalent compound",
-                "a covalent compound",
-                "it is covalent",
-                "it's covalent",
-                "covalent bond"
+              "kind": "multiple_choice",
+              "prompt": "Chloride is Cl⁻. What is the correct name of CuCl₂?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "copper(II) chloride"
+                },
+                {
+                  "id": "b",
+                  "text": "copper(I) chloride"
+                },
+                {
+                  "id": "c",
+                  "text": "copper dichloride"
+                }
               ],
-              "explanation": "Hydrogen is a nonmetal even though it sits on the left of the periodic table, so H₂O is two nonmetals: covalent. Calling hydrogen a metal is the common mistake."
+              "answer": "a",
+              "explanation": "Two chlorides are −2, so the one copper must be +2: copper(II) chloride. Copper has more than one charge, so it needs the numeral. Using prefixes on an ionic compound is the common mistake."
             }
           ],
-          "shortAnswer": "Explain why NaCl is ionic but Cl₂ is covalent. Say what the electrons do in each."
+          "shortAnswer": "Explain why the formula for magnesium chloride is MgCl₂ and not MgCl. Say what the electrons do."
         }
       ]
     },
     {
       "target": "U3.LT2",
       "mode": "do",
-      "title": "Do: flip the rules, then sort the compounds",
-      "description": "Flashcards with a 3-question self-quiz, then a guess-and-flip deck of compounds and lab clues.",
+      "title": "Do: flip the ionic rules, then build a bond step by step",
+      "description": "Flashcards with a 3-question self-quiz, then one compound worked from bond to formula to name.",
       "sections": [
         {
           "part": "core",
-          "title": "Flashcards: ionic or covalent?",
+          "title": "Flashcards: ionic bonds",
           "minutes": 4,
           "body": {
             "type": "flashcards",
@@ -106,32 +121,32 @@
               {
                 "id": "k1",
                 "front": "Ionic bond",
-                "back": "A metal transfers electrons to a nonmetal. One gives and one takes, like handing a friend a dollar."
+                "back": "A metal transfers valence electrons to a nonmetal. The ions that form attract each other."
               },
               {
                 "id": "k2",
-                "front": "Covalent bond",
-                "back": "Two nonmetals share electrons, like splitting a pizza. One unit is a molecule."
+                "front": "What the metal does",
+                "back": "It loses electrons and becomes a positive ion. Na loses 1 and becomes Na⁺."
               },
               {
                 "id": "k3",
-                "front": "Metals",
-                "back": "Left of the staircase on the periodic table. Transition metals like iron and copper count too."
+                "front": "What the nonmetal does",
+                "back": "It gains electrons to reach 8 and becomes a negative ion. Cl gains 1 and becomes Cl⁻."
               },
               {
                 "id": "k4",
-                "front": "Hydrogen",
-                "back": "A nonmetal, even though it sits on the left. H₂O is two nonmetals, so it is covalent."
+                "front": "Why the ions stick together",
+                "back": "Opposite charges attract. The total charge of the compound is zero."
               },
               {
                 "id": "k5",
-                "front": "Polyatomic ion rule",
-                "back": "A compound with a polyatomic ion, like ammonium (NH₄⁺), is ionic, even with no metal."
+                "front": "Charges from the group",
+                "back": "Group 1 = +1, Group 2 = +2, Group 13 = +3, Group 15 = −3, Group 16 = −2, Group 17 = −1."
               },
               {
                 "id": "k6",
-                "front": "Octet rule",
-                "back": "Atoms bond to be stable. Most are stable with 8 outer electrons. Noble gases are already full, so they don't bond."
+                "front": "Naming an ionic compound",
+                "back": "Metal first, then the nonmetal ending in -ide. No prefixes. A Roman numeral only if the metal has more than one charge."
               }
             ]
           },
@@ -139,82 +154,95 @@
             {
               "id": "d1",
               "kind": "multiple_choice",
-              "prompt": "Which compound is ionic?",
+              "prompt": "In an ionic bond, what does the metal atom do?",
               "options": [
-                { "id": "a", "text": "CO₂" },
-                { "id": "b", "text": "NaF" },
-                { "id": "c", "text": "PCl₃" }
+                {
+                  "id": "a",
+                  "text": "It gains electrons and becomes a negative ion"
+                },
+                {
+                  "id": "b",
+                  "text": "It loses electrons and becomes a positive ion"
+                },
+                {
+                  "id": "c",
+                  "text": "It shares electrons with the nonmetal"
+                }
               ],
               "answer": "b",
-              "explanation": "Sodium is a metal (left of the staircase) and fluorine is a nonmetal, so NaF is ionic. CO₂ and PCl₃ have only nonmetals, so they are covalent. Skipping the metal check is the common mistake."
+              "explanation": "Metals are the givers: they lose their valence electrons and become positive ions. Saying the metal gains electrons is the common mistake."
             },
             {
               "id": "d2",
               "kind": "multiple_choice",
-              "prompt": "Two chlorine atoms bond to make Cl₂. What happens to their electrons?",
+              "prompt": "Magnesium is in Group 2. Which ion does it form?",
               "options": [
-                { "id": "a", "text": "One chlorine transfers electrons to the other" },
-                { "id": "b", "text": "The two atoms share electrons" },
-                { "id": "c", "text": "Each atom keeps its electrons, and no bond forms" }
+                {
+                  "id": "a",
+                  "text": "Mg²⁺"
+                },
+                {
+                  "id": "b",
+                  "text": "Mg²⁻"
+                },
+                {
+                  "id": "c",
+                  "text": "Mg⁺"
+                }
               ],
-              "answer": "b",
-              "explanation": "Chlorine is a nonmetal, and two nonmetals share electrons: a covalent bond. Transfer happens from a metal to a nonmetal, so picking transfer is the common mistake."
+              "answer": "a",
+              "explanation": "Group 2 metals lose 2 electrons, so magnesium forms Mg²⁺. Metals make positive ions, so Mg²⁻ is the common mistake."
             },
             {
               "id": "d3",
               "kind": "multiple_choice",
-              "prompt": "NH₄NO₃ has no metal (ammonium is NH₄⁺ and nitrate is NO₃⁻). How should it be classified?",
+              "prompt": "What is the correct name of Na₂O?",
               "options": [
-                { "id": "a", "text": "Covalent, because every atom is a nonmetal" },
-                { "id": "b", "text": "Ionic, because it is made of polyatomic ions" },
-                { "id": "c", "text": "Covalent, because it has three elements" }
+                {
+                  "id": "a",
+                  "text": "disodium oxide"
+                },
+                {
+                  "id": "b",
+                  "text": "sodium oxide"
+                },
+                {
+                  "id": "c",
+                  "text": "sodium(I) oxide"
+                }
               ],
               "answer": "b",
-              "explanation": "A compound with a polyatomic ion is ionic, and NH₄NO₃ is made of two of them. Using only the nonmetal rule is the common mistake."
+              "explanation": "Ionic names have no prefixes, and sodium (Group 1) never needs a Roman numeral: sodium oxide. Adding di- for the subscript 2 is the common mistake."
             }
           ]
         },
         {
           "part": "extension",
-          "title": "Guess, then flip: sort the compounds",
+          "title": "Worked problem: aluminum and sulfur",
           "minutes": 6,
           "body": {
-            "type": "flashcards",
-            "cards": [
+            "type": "worked_steps",
+            "problem": "Aluminum bonds with sulfur. Explain how the bond forms, then write the formula and the name.",
+            "steps": [
               {
-                "id": "x1",
-                "front": "Potassium + iodine",
-                "back": "Ionic. Potassium is a metal and iodine is a nonmetal, so KI is ionic."
+                "id": "s1",
+                "text": "Who gives and who takes? Aluminum is a metal, so it gives. Sulfur is a nonmetal, so it takes. This is an ionic bond."
               },
               {
-                "id": "x2",
-                "front": "Sulfur + oxygen",
-                "back": "Covalent. Both are nonmetals, so SO₂ and SO₃ are covalent: the atoms share electrons."
+                "id": "s2",
+                "text": "Find the ions. Aluminum (Group 13) loses 3 electrons: Al³⁺. Sulfur (Group 16) gains 2 electrons: S²⁻."
               },
               {
-                "id": "x3",
-                "front": "Copper + chlorine",
-                "back": "Ionic. Copper is a transition metal, and transition metals are still metals. CuCl₂ is ionic."
+                "id": "s3",
+                "text": "Make the charges cancel. Criss-cross: the 3 drops onto S and the 2 drops onto Al → Al₂S₃. Two aluminums give 6 electrons, and three sulfurs take 6."
               },
               {
-                "id": "x4",
-                "front": "Hydrogen + oxygen",
-                "back": "Covalent. Hydrogen is a nonmetal, even though it sits on the left. H₂O is covalent."
+                "id": "s4",
+                "text": "Check: 2(+3) + 3(−2) = +6 − 6 = 0. The formula is Al₂S₃."
               },
               {
-                "id": "x5",
-                "front": "Ammonium sulfate (NH₄⁺ and SO₄²⁻)",
-                "back": "Ionic. It is made of polyatomic ions, so (NH₄)₂SO₄ is ionic even with no metal."
-              },
-              {
-                "id": "x6",
-                "front": "Unknown A: melts at 801 °C, and its solution lights the bulb",
-                "back": "Ionic. A melting point above 300 °C and conducting when dissolved both point to ionic."
-              },
-              {
-                "id": "x7",
-                "front": "Unknown B: melts at 45 °C, and its solution does not light the bulb",
-                "back": "Covalent. A low melting point and no free ions both point to covalent."
+                "id": "s5",
+                "text": "Name it. Metal first, then the nonmetal with -ide. Aluminum has only one charge, so no Roman numeral: aluminum sulfide."
               }
             ]
           },
@@ -222,29 +250,46 @@
             {
               "id": "w1",
               "kind": "multiple_choice",
-              "prompt": "Which list has ONLY covalent compounds?",
+              "prompt": "Your turn: calcium is in Group 2 and nitrogen is in Group 15. Which ions do they form?",
               "options": [
-                { "id": "a", "text": "CO₂, N₂O, CCl₄" },
-                { "id": "b", "text": "CO₂, CaO, NH₃" },
-                { "id": "c", "text": "NaCl, KBr, CuO" }
+                {
+                  "id": "a",
+                  "text": "Ca²⁺ and N³⁻"
+                },
+                {
+                  "id": "b",
+                  "text": "Ca²⁻ and N³⁺"
+                },
+                {
+                  "id": "c",
+                  "text": "Ca⁺ and N⁻"
+                }
               ],
               "answer": "a",
-              "explanation": "CO₂, N₂O and CCl₄ are only nonmetals with no polyatomic ion, so all three are covalent. CaO has calcium, a metal, and every compound in the last list starts with a metal. Missing one hidden metal in a list is the common mistake."
+              "explanation": "Calcium is a metal and loses 2 electrons (Ca²⁺). Nitrogen is a nonmetal and gains 3 to reach 8 (N³⁻). Swapping the signs is the common mistake.",
+              "afterStepId": "s2"
             },
             {
               "id": "w2",
-              "kind": "fill_blank",
-              "prompt": "Ionic compounds conduct electricity when dissolved because they break into free-moving ___. Type one word.",
-              "answer": [
-                "ions",
-                "ion",
-                "charged ions",
-                "free ions",
-                "free-moving ions",
-                "free moving ions",
-                "charged particles"
+              "kind": "multiple_choice",
+              "prompt": "Your turn: what are the formula and name for the compound of calcium and nitrogen?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "CaN, calcium nitride"
+                },
+                {
+                  "id": "b",
+                  "text": "Ca₂N₃, calcium nitride"
+                },
+                {
+                  "id": "c",
+                  "text": "Ca₃N₂, calcium nitride"
+                }
               ],
-              "explanation": "Dissolved ionic compounds break into free-moving ions that carry the current. Covalent compounds stay as whole molecules, so they don't conduct. Saying \"electrons\" is the common mistake."
+              "answer": "c",
+              "explanation": "Criss-cross Ca²⁺ and N³⁻: the 3 drops onto Ca and the 2 drops onto N → Ca₃N₂. Check: 3(+2) + 2(−3) = 0. Putting each charge on its own ion (Ca₂N₃) is the common mistake.",
+              "afterStepId": "s5"
             }
           ]
         }
@@ -253,22 +298,34 @@
     {
       "target": "U3.LT2",
       "mode": "watch",
-      "title": "U3.LT2 Watch: ionic or covalent?",
+      "title": "U3.LT2 Watch: ionic bonds and naming",
       "sections": [
         {
           "part": "core",
           "title": "What are ionic bonds?",
           "minutes": 5,
-          "body": { "type": "video", "youtubeId": "zpaHPXVR8WU" },
+          "body": {
+            "type": "video",
+            "youtubeId": "zpaHPXVR8WU"
+          },
           "checks": [
             {
               "id": "w1",
               "kind": "multiple_choice",
               "prompt": "In an ionic bond, what happens to the electrons?",
               "options": [
-                { "id": "a", "text": "A metal transfers electrons to a nonmetal" },
-                { "id": "b", "text": "Two nonmetals share electrons" },
-                { "id": "c", "text": "Two metals share electrons" }
+                {
+                  "id": "a",
+                  "text": "A metal transfers electrons to a nonmetal"
+                },
+                {
+                  "id": "b",
+                  "text": "Two nonmetals share electrons"
+                },
+                {
+                  "id": "c",
+                  "text": "Two metals share electrons"
+                }
               ],
               "answer": "a",
               "explanation": "An ionic bond is like handing a friend a dollar: one gives and the other takes. The metal (the giver) transfers electrons to the nonmetal (the taker). Sharing is a covalent bond."
@@ -278,10 +335,22 @@
               "kind": "multiple_choice",
               "prompt": "Which pair of elements would form an ionic compound?",
               "options": [
-                { "id": "a", "text": "Magnesium and oxygen" },
-                { "id": "b", "text": "Carbon and oxygen" },
-                { "id": "c", "text": "Nitrogen and hydrogen" },
-                { "id": "d", "text": "Calcium and magnesium" }
+                {
+                  "id": "a",
+                  "text": "Magnesium and oxygen"
+                },
+                {
+                  "id": "b",
+                  "text": "Carbon and oxygen"
+                },
+                {
+                  "id": "c",
+                  "text": "Nitrogen and hydrogen"
+                },
+                {
+                  "id": "d",
+                  "text": "Calcium and magnesium"
+                }
               ],
               "answer": "a",
               "explanation": "Magnesium is a metal (left of the staircase) and oxygen is a nonmetal, so they form an ionic compound. Carbon + oxygen and nitrogen + hydrogen are two nonmetals (covalent). Calcium and magnesium are both metals, so they are not ionic."
@@ -290,39 +359,61 @@
         },
         {
           "part": "extension",
-          "title": "Ionic or covalent? Deciding from the elements",
+          "title": "Naming ionic compounds with transition metals",
           "minutes": 5,
-          "body": { "type": "video", "youtubeId": "G4skg7gQhJw" },
+          "body": {
+            "type": "video",
+            "youtubeId": "Rq0A-AHdB74"
+          },
           "checks": [
             {
               "id": "w3",
               "kind": "multiple_choice",
-              "prompt": "Which compound is covalent?",
+              "prompt": "In the name iron(III) chloride, what does the Roman numeral III tell you?",
               "options": [
-                { "id": "a", "text": "LiF" },
-                { "id": "b", "text": "FeCl₃" },
-                { "id": "c", "text": "NO₂" },
-                { "id": "d", "text": "NH₄Br" }
+                {
+                  "id": "a",
+                  "text": "Each iron ion has a +3 charge"
+                },
+                {
+                  "id": "b",
+                  "text": "The formula has 3 iron atoms"
+                },
+                {
+                  "id": "c",
+                  "text": "Iron is in Group 3"
+                }
               ],
-              "answer": "c",
-              "explanation": "Nitrogen and oxygen are both nonmetals, so NO₂ is covalent: the atoms share electrons. LiF and FeCl₃ have a metal (iron is a transition metal, still a metal), and NH₄Br has the polyatomic ion ammonium, so all three are ionic."
+              "answer": "a",
+              "explanation": "Like saying which size coffee you want, the Roman numeral is the size of the charge, not a count of atoms. Iron(III) means Fe³⁺. Iron(III) chloride is FeCl₃, with only 1 iron."
             },
             {
               "id": "w4",
-              "kind": "fill_blank",
-              "prompt": "HCl is made of hydrogen and chlorine. Is it ionic or covalent? Type one word.",
-              "answer": [
-                "covalent",
-                "covalent compound",
-                "a covalent compound",
-                "it is covalent",
-                "it's covalent",
-                "covalent bond"
+              "kind": "multiple_choice",
+              "prompt": "Oxide is O²⁻. What is the correct name of Fe₂O₃?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "iron(II) oxide"
+                },
+                {
+                  "id": "b",
+                  "text": "iron(III) oxide"
+                },
+                {
+                  "id": "c",
+                  "text": "diiron trioxide"
+                },
+                {
+                  "id": "d",
+                  "text": "iron oxide"
+                }
               ],
-              "explanation": "Hydrogen is a nonmetal even though it sits on the left of the periodic table, so HCl is two nonmetals: covalent. Calling hydrogen a metal is the common mistake."
+              "answer": "b",
+              "explanation": "Total negative: 3 × (−2) = −6. Two irons must total +6, so each is +6 ÷ 2 = +3. Check: 2(+3) + 3(−2) = 0. Iron has more than one charge, so it needs the numeral: iron(III) oxide. Using the subscript 2 as the numeral is the common mistake, and ionic names never use prefixes."
             }
           ],
-          "shortAnswer": "Explain why KBr is ionic but CO₂ is covalent. Use the periodic table, and say what the electrons do in each."
+          "shortAnswer": "Explain how potassium and chlorine form an ionic bond, then give the name of the compound they make."
         }
       ]
     }

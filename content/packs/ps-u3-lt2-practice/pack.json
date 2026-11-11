@@ -1,26 +1,37 @@
 {
   "name": "ps-u3-lt2-practice",
-  "revision": 2,
+  "revision": 3,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science A",
   "unit": "Unit 3 · Bonding",
   "bank": "PS · U3.LT2 · Practice",
+  "replaceBank": true,
   "openPractice": true,
+  "targets": [
+    {
+      "unit": "Unit 3 · Bonding",
+      "code": "U3.LT2",
+      "title": "Ionic bonds and naming",
+      "description": "I can explain how ionic bonds form and name ionic compounds."
+    }
+  ],
   "practiceSet": {
-    "title": "U3.LT2 Practice: Ionic or Covalent?",
-    "description": "Practice classifying compounds as ionic or covalent using the metal/nonmetal rule, polyatomic ions, and property data.",
+    "title": "U3.LT2 Practice: Ionic Bonds and Naming",
+    "formerTitles": ["U3.LT2 Practice: Ionic or Covalent?"],
+    "description": "Practice explaining how ionic bonds form (electron transfer and ions), writing ionic formulas, and naming ionic compounds with polyatomic ions and Roman numerals.",
     "drawCount": 10,
     "targets": ["U3.LT2"]
   },
   "activity": {
     "kind": "guided_notes",
-    "title": "U3.LT2 Relearning: Ionic or Covalent?",
-    "content": "**What you need to be able to do:** I can look at a compound and tell whether it's ionic or covalent.\n\n**Think of lunch money vs. a shared pizza.** If your friend hands you a dollar, the dollar moves from them to you: one person gives, the other takes. That is an **ionic** bond. If you and a friend split a pizza, nobody gives it away; you both eat from it at the same time. That is a **covalent** bond. Metals are the \"givers\" and nonmetals are the \"takers,\" so when a giver meets a taker, electrons get handed over. When two takers meet, neither one will give, so they share.\n\n**The rule.** Metal + nonmetal makes an **ionic compound**: the metal **transfers** electrons to the nonmetal. Two nonmetals make a **covalent compound**: the electrons are **shared**, and the unit is called a **molecule**. **Metals sit left of the staircase** on the periodic table; nonmetals are to the right. Hydrogen is a nonmetal even though it sits on the left. Transition metals like iron and copper, and metals like lead and tin, are still metals. Two metals (like Ca and Mg) do not make an ionic compound.\n\n**Polyatomic ions.** If a compound contains a polyatomic ion, it is **ionic**. That includes **ammonium, NH₄⁺**, even though ammonium compounds have no metal at all. The ammonium ion plays the part of the metal.\n\n**Why atoms bond.** Atoms bond **to be stable**. The **octet rule** says most atoms are stable with **8** outer electrons (hydrogen and helium are the exceptions). Noble gases already have a full outer shell, so they don't bond. In covalent bonds, a **single bond** shares 2 electrons, a **double bond** shares 4, and a **triple bond** shares 6.\n\n**Properties (your evidence).** Ionic compounds have **high melting points** (generally above 300 °C), form **crystals**, and **conduct electricity when dissolved in water** because they break into free-moving ions. Covalent compounds have **low melting points**, can be solid, liquid, or gas, and **do not conduct** when dissolved because they stay as whole molecules. Color, mass, and where a bottle was stored are **irrelevant evidence**.\n\n**Worked example 1:** Classify CaBr₂. Step 1: List the elements: calcium and bromine. Step 2: Calcium is left of the staircase (metal); bromine is right (nonmetal). Step 3: Metal + nonmetal. Answer: **ionic**, calcium transfers electrons to bromine.\n\n**Worked example 2:** Classify (NH₄)₃PO₄ (ammonium is NH₄⁺, phosphate is PO₄³⁻). Step 1: Every atom (N, H, P, O) is a nonmetal, so the nonmetal rule says covalent... but wait. Step 2: Look for polyatomic ions: it has ammonium and phosphate. Step 3: A compound with a polyatomic ion is ionic. Answer: **ionic**.\n\n**Worked example 3:** An unknown melts at 80 °C and its solution does not light the bulb. Step 1: 80 °C is far below 300 °C, which points to covalent. Step 2: No conductivity means no free ions, which also points to covalent. Answer: **covalent**. Bonus: oxygen gas, O₂, has one double bond, so it shares 2 × 2 = 4 electrons.\n\n**Watch out for:** calling an ammonium compound covalent just because it has no metal, calling hydrogen a metal, calling two metals ionic, forgetting that transition metals are metals, and using color, mass, or \"it dissolves\" as evidence. Use melting point and conductivity instead.",
+    "title": "U3.LT2 Relearning: Ionic Bonds and Naming",
+    "formerTitles": ["U3.LT2 Relearning: Ionic or Covalent?"],
+    "content": "**What you need to be able to do:** I can explain how ionic bonds form and name ionic compounds.\n\n**Think of lunch money.** If a friend hands you a dollar, the dollar moves from them to you: one gives and one takes. An **ionic bond** works the same way. A **metal** atom (the giver) **transfers** its valence electrons to a **nonmetal** atom (the taker).\n\n**How the bond forms.** 1) The metal **loses** its valence electrons and becomes a **positive ion**. 2) The nonmetal **gains** those electrons and becomes a **negative ion**. 3) **Opposite charges attract**, and that attraction is the ionic bond. Both atoms end up with a full outer level, which makes them stable. Only electrons move; the protons never change.\n\n**Charges from the group number:** Group 1 = +1, Group 2 = +2, Group 13 = +3, Group 15 = −3, Group 16 = −2, Group 17 = −1.\n\n**The charges must cancel to zero.** Think of paying with exact change. Sodium gives 1 electron and chlorine takes 1, so one of each works: NaCl. Magnesium gives 2, but each chlorine takes only 1, so it takes two chlorines: MgCl₂. **Criss-cross** is the shortcut: each charge drops to the bottom as the subscript on the other ion, then **reduce** and **check** that the charges add to zero. The metal always goes first.\n\n**Naming ionic compounds.** Metal first, then the nonmetal with an **-ide** ending (chlorine → chloride, oxygen → oxide). **No prefixes, ever.** A **polyatomic ion keeps its own name** (sodium nitrate), and it gets parentheses in a formula only when you need 2 or more of it (Ca(NO₃)₂). Metals with more than one charge (transition metals like Fe and Cu, plus Pb and Sn) need a **Roman numeral**, which is the **charge**, not the number of atoms. Group 1, 2 and 13 metals never get one.\n\n**Worked example 1:** How do calcium and fluorine bond? Calcium (Group 2) has 2 valence electrons to give. Each fluorine (Group 17) takes 1. So calcium gives one electron to each of two fluorines: Ca²⁺ and two F⁻ make CaF₂, **calcium fluoride**.\n\n**Worked example 2:** Name Fe₂O₃. Iron needs a numeral. Three oxides are 3 × (−2) = −6, so two irons total +6, and each iron is +3. Answer: **iron(III) oxide**.\n\n**Worked example 3:** Write the formula for magnesium nitrate (nitrate is NO₃⁻). Mg²⁺ and NO₃⁻: criss-cross gives 1 magnesium and 2 nitrates. Answer: **Mg(NO₃)₂**.\n\n**Watch out for:** saying the atoms share electrons (that is covalent), saying the metal gains electrons, changing the number of protons, prefixes on ionic names (\"calcium dichloride\"), using a subscript as the Roman numeral (Fe₂O₃ is not iron(II)), and putting -ide on a polyatomic ion.",
     "prompts": [
-      "Classify KI, SO₃, and NH₄NO₃ (ammonium is NH₄⁺, nitrate is NO₃⁻) as ionic or covalent, and give the reason for each.",
-      "Explain the difference between how electrons behave in an ionic bond and in a covalent bond. Use Na and Cl, and two Cl atoms, as your examples.",
-      "A student says, \"This unknown is ionic because it is white and dissolves in water.\" Explain what is wrong with the evidence and name two tests that would actually decide.",
-      "Why don't noble gases like argon form compounds? Use the word stable in your answer."
+      "Explain how sodium and chlorine form an ionic bond. Say what each atom's valence electrons do and what ions form.",
+      "Magnesium chloride is MgCl₂, not MgCl. Explain why it takes two chlorine atoms for every magnesium atom.",
+      "Name these compounds and explain your thinking for each: K₂S, CuCl₂ (chloride is Cl⁻), and Na₂SO₄ (sulfate is SO₄²⁻).",
+      "Write the formula for aluminum oxide. Show how the charges cancel to zero."
     ],
     "targets": ["U3.LT2"]
   }

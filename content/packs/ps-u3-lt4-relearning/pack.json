@@ -1,120 +1,157 @@
 {
   "name": "ps-u3-lt4-relearning",
-  "revision": 2,
+  "revision": 3,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science A",
   "relearning": [
     {
       "target": "U3.LT4",
       "mode": "read",
-      "title": "Read: naming compounds from formulas",
-      "description": "A short reading with the drink-size analogy, worked examples and quick checks.",
+      "title": "Read: comparing ionic and covalent compounds",
+      "description": "A short reading with the lunch-money and shared-pizza analogy, worked examples and quick checks.",
       "sections": [
         {
           "part": "core",
-          "title": "Two naming systems",
+          "title": "Two kinds of compounds",
           "minutes": 4,
           "body": {
             "type": "text",
-            "text": "**I can take the chemical formula of a compound and write its name, ionic or covalent, including polyatomic ions and transition metals.**\n\n**Think of ordering a drink.** If a shop sells lemonade in only one size, you just say \"a lemonade.\" If it sells coffee in small and large, you have to say which size. Metals work the same way. Calcium only comes in one \"size\" (Ca²⁺), so you just say **calcium**. Iron comes in two (Fe²⁺ and Fe³⁺), so you must say which one: **iron(II)** or **iron(III)**.\n\n**Step 1 is always: ionic or covalent?** Metal + nonmetal (or any polyatomic ion, like ammonium) = **ionic**. Two nonmetals = **covalent**. The two systems have different rules, so decide first.\n\n**Ionic names:** metal first, then the nonmetal with an **-ide** ending (chlorine → chloride, oxygen → oxide, nitrogen → nitride, phosphorus → phosphide). **No prefixes, ever.** A **polyatomic ion keeps its own name** with no -ide (sodium nitrate, ammonium chloride).\n\n**Covalent names:** use prefixes (mono 1, di 2, tri 3, tetra 4, penta 5, hexa 6). The first element gets a prefix **except mono**. The second element always gets a prefix and an -ide ending.\n\n**Worked example:** Mg₃P₂. Mg is a metal and P is a nonmetal, so it is ionic. Magnesium is in Group 2, so no Roman numeral. Phosphorus → phosphide. No prefixes, even with 3 Mg and 2 P. Answer: **magnesium phosphide**."
+            "text": "**I can compare ionic and covalent compounds.**\n\n**Think of lunch money vs. a shared pizza.** If a friend hands you a dollar, the dollar moves from them to you: one gives and one takes. That is an **ionic** bond. If you and a friend split a pizza, nobody gives it away; you both eat from it. That is a **covalent** bond.\n\n**What they are made of.** Metal + nonmetal makes an **ionic** compound. Two or more nonmetals make a **covalent** compound. Metals sit **left of the staircase** on the periodic table. Transition metals like iron and copper are metals too. Hydrogen is a nonmetal, even though it sits on the left.\n\n**What the electrons do.** Ionic: the metal **transfers** electrons to the nonmetal. That makes positive and negative **ions** that attract. Covalent: the atoms **share** electrons. That makes **molecules**.\n\n**One special case.** A compound with a **polyatomic ion** is **ionic**. That includes **ammonium, NH₄⁺**, even though ammonium compounds have no metal.\n\n**Worked example:** CaBr₂ and PBr₃. Calcium is a metal, so CaBr₂ is ionic: calcium transfers electrons to bromine. Phosphorus is a nonmetal, so PBr₃ is covalent: the atoms share electrons."
           },
           "checks": [
             {
               "id": "c1",
               "kind": "multiple_choice",
-              "prompt": "What is the correct name of BaCl₂?",
+              "prompt": "Which compound is ionic?",
               "options": [
-                { "id": "a", "text": "barium dichloride" },
-                { "id": "b", "text": "barium chloride" },
-                { "id": "c", "text": "barium(II) chloride" }
+                {
+                  "id": "a",
+                  "text": "CH₄"
+                },
+                {
+                  "id": "b",
+                  "text": "KCl"
+                },
+                {
+                  "id": "c",
+                  "text": "SO₂"
+                }
               ],
               "answer": "b",
-              "explanation": "Barium is a metal, so BaCl₂ is ionic: no prefixes. Barium is in Group 2 and is always +2, so it gets no Roman numeral. Adding di- for the 2 chlorines is the common mistake."
+              "explanation": "Potassium is a metal (left of the staircase) and chlorine is a nonmetal, so KCl is ionic. CH₄ and SO₂ are only nonmetals, so they are covalent. Calling CH₄ ionic because hydrogen sits on the left is the common mistake: hydrogen is a nonmetal."
             },
             {
               "id": "c2",
               "kind": "fill_blank",
-              "prompt": "Nitrogen and fluorine are both nonmetals. Complete the name of NF₃: nitrogen ___",
-              "answer": ["trifluoride", "nitrogen trifluoride"],
-              "explanation": "Covalent, so use prefixes: tri- for 3 fluorines, and fluorine becomes fluoride. Nitrogen gets no mono. Leaving out the prefix (nitrogen fluoride) is the common mistake."
+              "prompt": "In an ionic bond, electrons are transferred. In a covalent bond, electrons are ___. Type one word.",
+              "answer": ["shared", "share", "sharing"],
+              "explanation": "Covalent bonds share electrons, like splitting a pizza. Ionic bonds transfer them, like handing over a dollar. Mixing the two up is the common mistake."
             }
           ]
         },
         {
           "part": "extension",
-          "title": "Roman numerals and harder names",
+          "title": "Properties and names",
           "minutes": 6,
           "body": {
             "type": "text",
-            "text": "**Which metals get a Roman numeral?** Group 1, 2 and 13 metals have only one charge, so they **never** get one. Metals that can have more than one charge (Fe, Cu, Pb, Sn and other transition metals) **always** get one. The numeral is the size of the charge, not the number of atoms.\n\n**Finding the Roman numeral (reverse criss-cross):** find the total negative charge from the anions, make the metals cancel it, then divide by the number of metal atoms. ALWAYS double check that the charges add to zero. If a formula like FeO has no subscripts, it may have been reduced, so do the math instead of guessing.\n\n**Worked example 2:** Fe₂(CO₃)₃ (carbonate is CO₃²⁻). Iron needs a numeral. Total negative: 3 × (−2) = −6. Two irons must total +6, so each iron is +6 ÷ 2 = +3. Check: 2(+3) + 3(−2) = 0. Carbonate keeps its name. Answer: **iron(III) carbonate**.\n\n**Worked example 3:** N₂O₅. Both are nonmetals, so it is covalent: use prefixes. 2 nitrogens → dinitrogen; 5 oxygens → pentoxide. Answer: **dinitrogen pentoxide**.\n\n**Watch out for:** prefixes on ionic compounds (\"calcium dichloride\"), numerals on Group 1, 2 or 13 metals (\"magnesium(II) oxide\"), using the metal's subscript as its numeral (Fe₂O₃ is not iron(II)), putting -ide on a polyatomic ion (\"sodium sulfide\" for Na₂SO₄), leaving out covalent prefixes (\"phosphorus chloride\") and putting mono on the first element."
+            "text": "**Properties are your evidence.** Ionic compounds have **high melting points** (generally above 300 °C), form hard **crystals** and **conduct electricity when dissolved in water**, because they break into free-moving ions. Covalent compounds have **low melting points**, can be solid, liquid or gas, and **do not conduct** when dissolved, because they stay as whole molecules. Color, mass and where a bottle was stored are **irrelevant evidence**.\n\n**They are named differently too.** Ionic: the metal, then the nonmetal with -ide, with **no prefixes**, and a **Roman numeral** when the metal has more than one charge. Covalent: **prefixes** count the atoms.\n\n**Worked example 2:** CaCl₂ and SCl₂ both have two chlorines. CaCl₂ is ionic, so it is **calcium chloride**. SCl₂ is covalent, so it is **sulfur dichloride**.\n\n**Worked example 3:** An unknown melts at 80 °C and its solution does not light the bulb. 80 °C is far below 300 °C, which points to covalent. No conductivity means no free ions, which also points to covalent. Answer: **covalent**.\n\n**Worked example 4:** (NH₄)₃PO₄ (ammonium is NH₄⁺, phosphate is PO₄³⁻). Every atom is a nonmetal, but it is made of polyatomic ions, so it is **ionic**.\n\n**Watch out for:** calling an ammonium compound covalent just because it has no metal, calling hydrogen a metal, calling two metals (like Ca and Mg) ionic, putting prefixes on an ionic name, and using color, mass or \"it dissolves\" as evidence. Use melting point and conductivity instead."
           },
           "checks": [
             {
               "id": "e1",
               "kind": "multiple_choice",
-              "prompt": "Chloride is Cl⁻. What is the correct name of CuCl₂?",
+              "prompt": "An unknown white solid melts at 750 °C, and its solution lights the bulb. Which conclusion is best?",
               "options": [
-                { "id": "a", "text": "copper(I) chloride" },
-                { "id": "b", "text": "copper(II) chloride" },
-                { "id": "c", "text": "copper dichloride" }
+                {
+                  "id": "a",
+                  "text": "Ionic: the high melting point and the conductivity both point to ionic"
+                },
+                {
+                  "id": "b",
+                  "text": "Covalent: it is a white solid"
+                },
+                {
+                  "id": "c",
+                  "text": "Covalent: it dissolves in water"
+                }
               ],
-              "answer": "b",
-              "explanation": "Two Cl⁻ give −2, so the one copper is +2: copper(II) chloride. Check: +2 + 2(−1) = 0. Choosing copper(I) because there is 1 copper atom is the common mistake, and ionic names never use prefixes like di-."
+              "answer": "a",
+              "explanation": "Melting above 300 °C and conducting when dissolved both point to ionic. Color and dissolving are irrelevant evidence, and using them is the common mistake."
             },
             {
               "id": "e2",
-              "kind": "fill_blank",
-              "prompt": "Sulfate is SO₄²⁻. What is the charge on the lead ion in Pb(SO₄)₂? Type the number only (for +3, type 3).",
-              "answer": ["4", "+4", "4+", "four", "plus 4", "positive 4"],
-              "explanation": "Two SO₄²⁻ give 2(−2) = −4, so the one lead is +4: lead(IV) sulfate. Check: +4 + 2(−2) = 0. Using the 2 outside the parentheses as lead's charge is the common mistake."
+              "kind": "multiple_choice",
+              "prompt": "MgO and CO each have one oxygen atom. Which names are correct?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "magnesium monoxide and carbon monoxide"
+                },
+                {
+                  "id": "b",
+                  "text": "magnesium oxide and carbon monoxide"
+                },
+                {
+                  "id": "c",
+                  "text": "magnesium oxide and carbon oxide"
+                }
+              ],
+              "answer": "b",
+              "explanation": "MgO is ionic, so no prefixes: magnesium oxide. CO is covalent, so the second element gets a prefix: carbon monoxide. Using one naming system for both is the common mistake."
             }
           ],
-          "shortAnswer": "Explain why BaO is named barium oxide and not barium(II) oxide or barium monoxide."
+          "shortAnswer": "Compare NaCl and Cl₂. Say what kind of bond each has and what the electrons do in each."
         }
       ]
     },
     {
       "target": "U3.LT4",
       "mode": "do",
-      "title": "Do: flip the naming rules, then name one step by step",
-      "description": "Flashcards with a 3-question self-quiz, then a name worked out one step at a time.",
+      "title": "Do: flip the comparison, then sort the compounds",
+      "description": "Flashcards with a 3-question self-quiz, then a guess-and-flip deck of compounds and lab clues.",
       "sections": [
         {
           "part": "core",
-          "title": "Flashcards: the naming rules",
+          "title": "Flashcards: ionic vs. covalent",
           "minutes": 4,
           "body": {
             "type": "flashcards",
             "cards": [
               {
                 "id": "k1",
-                "front": "Step 1",
-                "back": "Ionic or covalent? Metal + nonmetal (or a polyatomic ion) is ionic. Two nonmetals is covalent."
+                "front": "Made of",
+                "back": "Ionic: a metal and a nonmetal. Covalent: two or more nonmetals."
               },
               {
                 "id": "k2",
-                "front": "-ide ending",
-                "back": "The nonmetal in an ionic name ends in -ide: chlorine → chloride, oxygen → oxide, nitrogen → nitride."
+                "front": "Electrons",
+                "back": "Ionic: transferred, like handing a friend a dollar. Covalent: shared, like splitting a pizza."
               },
               {
                 "id": "k3",
-                "front": "Prefixes in an ionic name?",
-                "back": "Never. Na₂O is sodium oxide, not disodium oxide."
+                "front": "Particles",
+                "back": "Ionic: positive and negative ions. Covalent: molecules."
               },
               {
                 "id": "k4",
-                "front": "Polyatomic ion",
-                "back": "Keeps its own name, with no -ide: NaNO₃ is sodium nitrate."
+                "front": "Melting point",
+                "back": "Ionic: high (generally above 300 °C), hard crystals. Covalent: low; can be a solid, liquid or gas."
               },
               {
                 "id": "k5",
-                "front": "Roman numeral",
-                "back": "The metal's charge. Only for metals with more than one charge (Fe, Cu, Pb, Sn). Never for Groups 1, 2 and 13."
+                "front": "Dissolved in water",
+                "back": "Ionic: conducts electricity, because the ions move freely. Covalent: does not conduct."
               },
               {
                 "id": "k6",
-                "front": "Covalent prefixes",
-                "back": "mono 1, di 2, tri 3, tetra 4, penta 5, hexa 6. The second element always gets one; the first never gets mono."
+                "front": "Names",
+                "back": "Ionic: no prefixes; a Roman numeral for a metal with more than one charge. Covalent: prefixes count the atoms."
+              },
+              {
+                "id": "k7",
+                "front": "Polyatomic ion rule",
+                "back": "A compound with a polyatomic ion, like ammonium (NH₄⁺), is ionic, even with no metal."
               }
             ]
           },
@@ -122,64 +159,109 @@
             {
               "id": "d1",
               "kind": "multiple_choice",
-              "prompt": "What is the correct name of K₂S?",
+              "prompt": "Which compound is ionic?",
               "options": [
-                { "id": "a", "text": "dipotassium sulfide" },
-                { "id": "b", "text": "potassium sulfide" },
-                { "id": "c", "text": "potassium(I) sulfide" }
+                {
+                  "id": "a",
+                  "text": "CO₂"
+                },
+                {
+                  "id": "b",
+                  "text": "NaF"
+                },
+                {
+                  "id": "c",
+                  "text": "PCl₃"
+                }
               ],
               "answer": "b",
-              "explanation": "K₂S is ionic (metal + nonmetal), so no prefixes, and potassium is in Group 1, so no numeral. Sulfur becomes sulfide. Adding di- for the 2 potassiums is the common mistake."
+              "explanation": "Sodium is a metal (left of the staircase) and fluorine is a nonmetal, so NaF is ionic. CO₂ and PCl₃ have only nonmetals, so they are covalent. Skipping the metal check is the common mistake."
             },
             {
               "id": "d2",
               "kind": "multiple_choice",
-              "prompt": "Which compound's name needs a Roman numeral?",
+              "prompt": "Which kind of compound conducts electricity when it is dissolved in water?",
               "options": [
-                { "id": "a", "text": "MgCl₂" },
-                { "id": "b", "text": "AlCl₃" },
-                { "id": "c", "text": "PbCl₂" }
+                {
+                  "id": "a",
+                  "text": "Ionic"
+                },
+                {
+                  "id": "b",
+                  "text": "Covalent"
+                },
+                {
+                  "id": "c",
+                  "text": "Both"
+                }
               ],
-              "answer": "c",
-              "explanation": "Lead can have more than one charge, so its name needs a numeral: PbCl₂ is lead(II) chloride. Mg (Group 2) and Al (Group 13) have only one charge, so they never get one. Putting a numeral on every metal is the common mistake."
+              "answer": "a",
+              "explanation": "Dissolved ionic compounds break into free-moving ions that carry the current. Covalent compounds stay as whole molecules, so they don't conduct."
             },
             {
               "id": "d3",
               "kind": "multiple_choice",
-              "prompt": "What is the correct name of SO₂?",
+              "prompt": "NH₄NO₃ has no metal (ammonium is NH₄⁺ and nitrate is NO₃⁻). How should it be classified?",
               "options": [
-                { "id": "a", "text": "sulfur dioxide" },
-                { "id": "b", "text": "monosulfur dioxide" },
-                { "id": "c", "text": "sulfur(II) oxide" }
+                {
+                  "id": "a",
+                  "text": "Covalent, because every atom is a nonmetal"
+                },
+                {
+                  "id": "b",
+                  "text": "Ionic, because it is made of polyatomic ions"
+                },
+                {
+                  "id": "c",
+                  "text": "Covalent, because it has three elements"
+                }
               ],
-              "answer": "a",
-              "explanation": "S and O are both nonmetals, so use prefixes: no mono on sulfur, and di- for 2 oxygens. Roman numerals are only for ionic compounds with metals like Fe or Cu, so sulfur(II) oxide is the common mistake."
+              "answer": "b",
+              "explanation": "A compound with a polyatomic ion is ionic, and NH₄NO₃ is made of two of them. Using only the nonmetal rule is the common mistake."
             }
           ]
         },
         {
           "part": "extension",
-          "title": "Worked problem: Ni₃(PO₄)₂",
+          "title": "Guess, then flip: sort the compounds",
           "minutes": 6,
           "body": {
-            "type": "worked_steps",
-            "problem": "Name Ni₃(PO₄)₂. Phosphate is PO₄³⁻.",
-            "steps": [
+            "type": "flashcards",
+            "cards": [
               {
-                "id": "s1",
-                "text": "Ionic or covalent? Nickel is a metal and phosphate is a polyatomic ion, so it is ionic: no prefixes. Nickel is a transition metal, so its name needs a Roman numeral."
+                "id": "x1",
+                "front": "Potassium + iodine",
+                "back": "Ionic. Potassium is a metal and iodine is a nonmetal. KI: potassium iodide."
               },
               {
-                "id": "s2",
-                "text": "Find the total negative charge. There are 2 phosphates, each −3: 2 × (−3) = −6."
+                "id": "x2",
+                "front": "Sulfur + oxygen",
+                "back": "Covalent. Both are nonmetals, so the atoms share electrons. SO₂ is sulfur dioxide."
               },
               {
-                "id": "s3",
-                "text": "The nickels must cancel it, so the 3 nickels total +6. Divide by the number of nickel atoms: +6 ÷ 3 = +2 each."
+                "id": "x3",
+                "front": "Copper + chlorine",
+                "back": "Ionic. Copper is a transition metal, and transition metals are still metals. CuCl₂ is copper(II) chloride."
               },
               {
-                "id": "s4",
-                "text": "Check: 3(+2) + 2(−3) = +6 − 6 = 0. Phosphate keeps its name. Answer: **nickel(II) phosphate**, not nickel(III). The 3 tells how many nickels, not the charge."
+                "id": "x4",
+                "front": "Hydrogen + oxygen",
+                "back": "Covalent. Hydrogen is a nonmetal, even though it sits on the left. H₂O is covalent."
+              },
+              {
+                "id": "x5",
+                "front": "Ammonium sulfate (NH₄⁺ and SO₄²⁻)",
+                "back": "Ionic. It is made of polyatomic ions, so (NH₄)₂SO₄ is ionic even with no metal."
+              },
+              {
+                "id": "x6",
+                "front": "Unknown A: melts at 801 °C, and its solution lights the bulb",
+                "back": "Ionic. A melting point above 300 °C and conducting when dissolved both point to ionic."
+              },
+              {
+                "id": "x7",
+                "front": "Unknown B: melts at 45 °C, and its solution does not light the bulb",
+                "back": "Covalent. A low melting point and no free ions both point to covalent."
               }
             ]
           },
@@ -187,28 +269,38 @@
             {
               "id": "w1",
               "kind": "multiple_choice",
-              "prompt": "Your turn: sulfate is SO₄²⁻. What is the total negative charge in Cr₂(SO₄)₃?",
+              "prompt": "Which list has ONLY covalent compounds?",
               "options": [
-                { "id": "a", "text": "−2" },
-                { "id": "b", "text": "−6" },
-                { "id": "c", "text": "+6" }
+                {
+                  "id": "a",
+                  "text": "CO₂, N₂O, CCl₄"
+                },
+                {
+                  "id": "b",
+                  "text": "CO₂, CaO, NH₃"
+                },
+                {
+                  "id": "c",
+                  "text": "NaCl, KBr, CuO"
+                }
               ],
-              "answer": "b",
-              "explanation": "There are 3 sulfates, each −2: 3 × (−2) = −6. Counting only one sulfate (−2) is the common mistake. +6 is the total positive charge the 2 chromiums must have.",
-              "afterStepId": "s2"
+              "answer": "a",
+              "explanation": "CO₂, N₂O and CCl₄ are only nonmetals with no polyatomic ion, so all three are covalent. CaO has calcium, a metal, and NaCl, KBr and CuO each start with a metal. Missing one hidden metal in a list is the common mistake."
             },
             {
               "id": "w2",
-              "kind": "multiple_choice",
-              "prompt": "Your turn: oxide is O²⁻. What is the correct name of Mn₂O₃?",
-              "options": [
-                { "id": "a", "text": "manganese(II) oxide" },
-                { "id": "b", "text": "manganese(III) oxide" },
-                { "id": "c", "text": "dimanganese trioxide" }
+              "kind": "fill_blank",
+              "prompt": "Ionic compounds conduct electricity when dissolved because they break into free-moving ___. Type one word.",
+              "answer": [
+                "ions",
+                "ion",
+                "charged ions",
+                "free ions",
+                "free-moving ions",
+                "free moving ions",
+                "charged particles"
               ],
-              "answer": "b",
-              "explanation": "Three O²⁻ give −6. Two manganese atoms share +6, so each is +3: manganese(III) oxide. Copying the subscript 2 as the numeral is the common mistake, and ionic names never use prefixes.",
-              "afterStepId": "s4"
+              "explanation": "Dissolved ionic compounds break into free-moving ions that carry the current. Covalent compounds stay as whole molecules, so they don't conduct. Saying \"electrons\" is the common mistake."
             }
           ]
         }
@@ -217,69 +309,57 @@
     {
       "target": "U3.LT4",
       "mode": "watch",
-      "title": "U3.LT4 Watch: naming compounds",
+      "title": "U3.LT4 Watch: ionic or covalent?",
       "sections": [
         {
           "part": "core",
-          "title": "Naming ionic compounds with transition metals",
+          "title": "Ionic or covalent? Deciding from the elements",
           "minutes": 5,
-          "body": { "type": "video", "youtubeId": "Rq0A-AHdB74" },
+          "body": {
+            "type": "video",
+            "youtubeId": "G4skg7gQhJw"
+          },
           "checks": [
             {
               "id": "w1",
               "kind": "multiple_choice",
-              "prompt": "In the name iron(III) chloride, what does the Roman numeral III tell you?",
+              "prompt": "Which compound is covalent?",
               "options": [
-                { "id": "a", "text": "Each iron ion has a +3 charge" },
-                { "id": "b", "text": "The formula has 3 iron atoms" },
-                { "id": "c", "text": "Iron is in Group 3" }
+                {
+                  "id": "a",
+                  "text": "LiF"
+                },
+                {
+                  "id": "b",
+                  "text": "FeCl₃"
+                },
+                {
+                  "id": "c",
+                  "text": "NO₂"
+                },
+                {
+                  "id": "d",
+                  "text": "NH₄Br"
+                }
               ],
-              "answer": "a",
-              "explanation": "Like saying which size coffee you want, the Roman numeral is the size of the charge, not a count of atoms. Iron(III) means Fe³⁺. Iron(III) chloride is FeCl₃, with only 1 iron."
+              "answer": "c",
+              "explanation": "Nitrogen and oxygen are both nonmetals, so NO₂ is covalent: the atoms share electrons. LiF and FeCl₃ have a metal (iron is a transition metal, still a metal), and NH₄Br has the polyatomic ion ammonium, so all three are ionic."
             },
             {
               "id": "w2",
-              "kind": "multiple_choice",
-              "prompt": "Oxide is O²⁻. What is the correct name of Fe₂O₃?",
-              "options": [
-                { "id": "a", "text": "iron(II) oxide" },
-                { "id": "b", "text": "iron(III) oxide" },
-                { "id": "c", "text": "diiron trioxide" },
-                { "id": "d", "text": "iron oxide" }
+              "kind": "fill_blank",
+              "prompt": "HCl is made of hydrogen and chlorine. Is it ionic or covalent? Type one word.",
+              "answer": [
+                "covalent",
+                "covalent compound",
+                "a covalent compound",
+                "it is covalent",
+                "it's covalent",
+                "covalent bond"
               ],
-              "answer": "b",
-              "explanation": "Total negative: 3 × (−2) = −6. Two irons must total +6, so each is +6 ÷ 2 = +3. Check: 2(+3) + 3(−2) = 0. Iron has more than one charge, so it needs the numeral: iron(III) oxide. Using the subscript 2 as the numeral is the common mistake, and ionic names never use prefixes."
+              "explanation": "Hydrogen is a nonmetal even though it sits on the left of the periodic table, so HCl is two nonmetals: covalent. Calling hydrogen a metal is the common mistake."
             }
           ]
-        },
-        {
-          "part": "extension",
-          "title": "Naming covalent molecular compounds",
-          "minutes": 5,
-          "body": { "type": "video", "youtubeId": "DejkvR4pvRw" },
-          "checks": [
-            {
-              "id": "w3",
-              "kind": "multiple_choice",
-              "prompt": "Carbon and oxygen are both nonmetals. What is the correct name of CO?",
-              "options": [
-                { "id": "a", "text": "carbon oxide" },
-                { "id": "b", "text": "monocarbon monoxide" },
-                { "id": "c", "text": "carbon monoxide" },
-                { "id": "d", "text": "carbon(II) oxide" }
-              ],
-              "answer": "c",
-              "explanation": "Covalent, so use prefixes. The first element gets a prefix except mono, so just carbon. The second element always gets a prefix and -ide: monoxide. Answer: carbon monoxide."
-            },
-            {
-              "id": "w4",
-              "kind": "fill_blank",
-              "prompt": "Sulfur and oxygen are both nonmetals. Complete the name of SO₃: sulfur ___",
-              "answer": ["trioxide", "sulfur trioxide"],
-              "explanation": "Covalent, so use prefixes. One sulfur gets no prefix (no mono on the first element). Three oxygens → tri + oxide = trioxide. Answer: sulfur trioxide."
-            }
-          ],
-          "shortAnswer": "Explain why CaCl₂ is named calcium chloride but SCl₂ is named sulfur dichloride."
         }
       ]
     }
