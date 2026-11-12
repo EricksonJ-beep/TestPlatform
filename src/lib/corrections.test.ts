@@ -82,6 +82,21 @@ describe("sentenceCount", () => {
     expect(sentenceCount("")).toBe(0);
     expect(sentenceCount("ok")).toBe(0);
   });
+
+  it("counts sentences the way students type them", () => {
+    // No space after the period.
+    expect(sentenceCount("mitosis makes two cells.meiosis makes four")).toBe(2);
+    expect(sentenceCount("The answer is B.It is because water moves out")).toBe(2);
+    // A new line instead of a period.
+    expect(sentenceCount("The answer is mitosis\nIt makes two identical cells")).toBe(2);
+    // A closing bracket or quote after the period.
+    expect(sentenceCount("Water leaves the cell (osmosis.) Then the cell shrinks")).toBe(2);
+    expect(sentenceCount('The book calls it "diffusion." It needs no energy')).toBe(2);
+    expect(sentenceCount("The mitochondria makes ATP… It is the powerhouse")).toBe(2);
+    // Still one sentence: a run-on, and a formula with a dot in it.
+    expect(sentenceCount("I picked A but it was C because the membrane lets water through")).toBe(1);
+    expect(sentenceCount("H2O.CO2 is not a thing")).toBe(1);
+  });
 });
 
 describe("isVerbatimCopy", () => {
