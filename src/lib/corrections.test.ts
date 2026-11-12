@@ -94,7 +94,7 @@ describe("sentenceCount", () => {
     expect(sentenceCount('The book calls it "diffusion." It needs no energy')).toBe(2);
     expect(sentenceCount("The mitochondria makes ATP… It is the powerhouse")).toBe(2);
     // Still one sentence: a run-on, and a formula with a dot in it.
-    expect(sentenceCount("I picked A but it was C because the membrane lets water through")).toBe(1);
+    expect(sentenceCount("I picked A but it was C because the membrane lets water in")).toBe(1);
     expect(sentenceCount("H2O.CO2 is not a thing")).toBe(1);
   });
 });
