@@ -487,6 +487,48 @@ describe("content packs", () => {
         ),
       })
     ).toMatchObject({ type: "formative", isPublished: true });
+    // Biology Unit 3 LT4 quiz (Nov 12 2026, from Jon's cell transport key): 22 multiple choice and
+    // one four-pair vocabulary matching (26 points), all on U3.LT4, with the membrane, bilayer,
+    // beakers, and osmosis graph shared as stimuli and three single-question pictures.
+    const lt4 = first.find((o) => o.name === "bio-u3-quiz-transport-lt4")!;
+    expect(lt4.status).toBe("applied");
+    if (lt4.status === "applied")
+      expect(lt4.summary).toMatchObject({ questions: 23, assignedTo: [], errors: [] });
+    const lt4Bank = (await db.query.questionBanks.findFirst({
+      where: eq(schema.questionBanks.name, "Bio · Unit 3 Quiz: LT4"),
+    }))!;
+    const lt4Qs = await db
+      .select()
+      .from(schema.questions)
+      .where(eq(schema.questions.bankId, lt4Bank.id));
+    expect(lt4Qs).toHaveLength(23);
+    expect(lt4Qs.filter((q) => q.type === "matching")).toHaveLength(1);
+    expect(lt4Qs.reduce((sum, q) => sum + q.points, 0)).toBe(26);
+    expect(
+      lt4Qs.filter(
+        (q) =>
+          q.mediaUrl?.startsWith("/quiz-images/bio-u3-quiz-transport-lt4/") &&
+          existsSync(join(process.cwd(), "public", q.mediaUrl))
+      )
+    ).toHaveLength(3);
+    for (const [ref, n] of [
+      ["bio-u3-quiz-lt4-membrane", 2],
+      ["bio-u3-quiz-lt4-bilayer", 2],
+      ["bio-u3-quiz-lt4-beakers", 2],
+      ["bio-u3-quiz-lt4-osmosis-graph", 4],
+    ] as const) {
+      const [stim] = await db
+        .select()
+        .from(schema.stimuli)
+        .where(and(eq(schema.stimuli.courseId, bio.id), eq(schema.stimuli.ref, ref)));
+      expect(existsSync(join(process.cwd(), "public", stim.mediaUrl!))).toBe(true);
+      expect(lt4Qs.filter((q) => q.stimulusId === stim.id)).toHaveLength(n);
+    }
+    expect(
+      await db.query.assessments.findFirst({
+        where: eq(schema.assessments.title, "Unit 3 Quiz LT4: Cellular Transport"),
+      })
+    ).toMatchObject({ type: "formative", isPublished: true });
     // Anatomy Unit 2 (Oct 20 2026): the skeletal quiz (20 one-point questions on U2.LT7–LT13) and
     // the practice lab practical (20 picture fill-ins: bones, osteon, skin, and three mitosis slides).
     for (const [name, title, type, n] of [

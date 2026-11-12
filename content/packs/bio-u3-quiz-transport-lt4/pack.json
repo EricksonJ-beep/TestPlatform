@@ -1,0 +1,13 @@
+{
+  "name": "bio-u3-quiz-transport-lt4",
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "unit": "Unit 3 · Cell Structure and Function",
+  "bank": "Bio · Unit 3 Quiz: LT4",
+  "assessment": {
+    "title": "Unit 3 Quiz LT4: Cellular Transport",
+    "type": "formative",
+    "instructions": "26 points on the cell membrane and cellular transport (LT4): the parts of the membrane, diffusion, osmosis, active and passive transport, and hypertonic, hypotonic, and isotonic solutions. The vocabulary matching question counts one point per pair. Several questions use a picture or graph. Your best attempt counts."
+  },
+  "assign": []
+}
