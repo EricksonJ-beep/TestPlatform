@@ -1,6 +1,6 @@
 {
   "name": "bio-u8-lt1-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology B",
   "relearning": [
@@ -279,6 +279,120 @@
               "afterStepId": "s4"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U8.LT1",
+      "mode": "watch",
+      "title": "U8.LT1 Watch: taxonomy",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Classification (Amoeba Sisters)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "DVouQRAKxYo"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Use King Philip Came Over For Good Soup. Which level comes right after Class?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Phylum"
+                },
+                {
+                  "id": "b",
+                  "text": "Order"
+                },
+                {
+                  "id": "c",
+                  "text": "Family"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Kingdom, Phylum, Class, Order, Family, Genus, Species: Order comes after Class. Phylum comes before it."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Many biologists add a level called domain. Where does it fit with the seven levels you learned?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Above kingdom: the kingdoms are grouped into three larger domains"
+                },
+                {
+                  "id": "b",
+                  "text": "Between genus and species"
+                },
+                {
+                  "id": "c",
+                  "text": "Below species: it is the smallest level"
+                }
+              ],
+              "answer": "a",
+              "explanation": "The three domains (Bacteria, Archaea and Eukarya) are larger groups that hold the kingdoms. The seven levels from kingdom down to species stay the same."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Taxonomy: Life's Filing System - Crash Course Biology #19",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "F38BmgPcZ_I"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "In the scientific name *Ursus americanus*, what does the word *Ursus* tell you?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The species"
+                },
+                {
+                  "id": "b",
+                  "text": "The kingdom"
+                },
+                {
+                  "id": "c",
+                  "text": "The genus"
+                }
+              ],
+              "answer": "c",
+              "explanation": "In binomial nomenclature the genus comes first and is capitalized. The second, lowercase word is the species."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "Cougar, puma and mountain lion are all *Puma concolor*. What does this show?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The three animals are in different species"
+                },
+                {
+                  "id": "b",
+                  "text": "One organism can have many common names but only one scientific name"
+                },
+                {
+                  "id": "c",
+                  "text": "Common names are the same in every language"
+                }
+              ],
+              "answer": "b",
+              "explanation": "All three common names mean the same animal. The scientific name is the same everywhere, so scientists know exactly which organism is meant."
+            }
+          ],
+          "shortAnswer": "The black bear is *Ursus americanus* and the brown bear is *Ursus arctos*. Explain what their names tell you about how closely related they are."
         }
       ]
     }

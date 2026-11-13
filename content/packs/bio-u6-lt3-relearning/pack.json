@@ -1,6 +1,6 @@
 {
   "name": "bio-u6-lt3-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology B",
   "relearning": [
@@ -297,6 +297,120 @@
               "afterStepId": "t4"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U6.LT3",
+      "mode": "watch",
+      "title": "U6.LT3 Watch: pedigrees",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Pedigrees (Amoeba Sisters)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "Gd09V2AkZv4"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "In a pedigree, what does an unshaded circle stand for?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "An unaffected male"
+                },
+                {
+                  "id": "b",
+                  "text": "An affected female"
+                },
+                {
+                  "id": "c",
+                  "text": "An unaffected female"
+                }
+              ],
+              "answer": "c",
+              "explanation": "A circle is a female, and unshaded means she doesn't have the trait. She could still be a carrier."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "A trait shows up in a grandparent, in none of the children, and then in a grandchild. What does skipping a generation tell you?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The trait is recessive"
+                },
+                {
+                  "id": "b",
+                  "text": "The trait is dominant"
+                },
+                {
+                  "id": "c",
+                  "text": "The trait isn't inherited"
+                }
+              ],
+              "answer": "a",
+              "explanation": "A trait that skips a generation is recessive: the unaffected parent in between was a carrier. A dominant trait doesn't skip."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Pedigrees (Khan Academy)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "11s5Biyi9q4"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "A father has an X-linked recessive trait. Can he pass it to his son?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Yes, to every son"
+                },
+                {
+                  "id": "b",
+                  "text": "Yes, to half of his sons"
+                },
+                {
+                  "id": "c",
+                  "text": "No, because his sons get his Y"
+                }
+              ],
+              "answer": "c",
+              "explanation": "A son gets his father's Y, not his X. The father's X goes to every daughter, so his daughters are at least carriers."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "In a pedigree, the trait shows up in every generation, and every affected person has at least one affected parent. Which pattern fits best?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Recessive"
+                },
+                {
+                  "id": "b",
+                  "text": "Dominant"
+                },
+                {
+                  "id": "c",
+                  "text": "X-linked recessive"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Dominant traits don't skip: every affected person has an affected parent. Calling a trait dominant just because many people have it is the common mistake; look at parents and children."
+            }
+          ],
+          "shortAnswer": "Two unaffected parents have an affected child. Explain how you know the trait is recessive, give the parents' genotypes, and find the chance that their next child is affected."
         }
       ]
     }

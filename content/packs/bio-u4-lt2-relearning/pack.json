@@ -1,6 +1,6 @@
 {
   "name": "bio-u4-lt2-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology A",
   "relearning": [
@@ -257,6 +257,120 @@
               "explanation": "36 ÷ 2 = 18. Subtracting (36 − 2 = 34) is the common mistake: \"how many times\" means divide."
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U4.LT2",
+      "mode": "watch",
+      "title": "U4.LT2 Watch: aerobic vs. anaerobic respiration",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Fermentation (Amoeba Sisters)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "YbdkbCU20_M"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "What decides whether a cell uses aerobic or anaerobic respiration?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Whether oxygen is available"
+                },
+                {
+                  "id": "b",
+                  "text": "Whether glucose is available"
+                },
+                {
+                  "id": "c",
+                  "text": "Whether the cell is in the light"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Aerobic respiration needs oxygen, and anaerobic respiration happens without it. Both need glucose, so glucose doesn't decide it."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "In this class, what is another name for anaerobic respiration?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Glycolysis"
+                },
+                {
+                  "id": "b",
+                  "text": "Fermentation"
+                },
+                {
+                  "id": "c",
+                  "text": "The Krebs cycle"
+                }
+              ],
+              "answer": "b",
+              "explanation": "In class we treat anaerobic respiration and fermentation as the same thing: breaking down glucose without oxygen for 2 ATP. Some videos treat them as two different things, so use the class meaning on class work."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "What Is Anaerobic Respiration (FuseSchool)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "HZtXLhm7ISA"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "Where in the cell does anaerobic respiration (fermentation) happen?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "In the cytoplasm"
+                },
+                {
+                  "id": "b",
+                  "text": "In the mitochondria"
+                },
+                {
+                  "id": "c",
+                  "text": "In the nucleus"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Only glycolysis runs, and the pyruvate stays in the cytoplasm to be fermented. The mitochondria are where aerobic respiration finishes."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "Bacteria turn milk into yogurt without using oxygen. Which process are they using?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Aerobic respiration"
+                },
+                {
+                  "id": "b",
+                  "text": "Alcoholic fermentation"
+                },
+                {
+                  "id": "c",
+                  "text": "Lactic acid fermentation"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Bacteria make yogurt and cheese by lactic acid fermentation. Alcoholic fermentation is what yeast do, and it makes alcohol and CO₂."
+            }
+          ],
+          "shortAnswer": "Compare aerobic and anaerobic respiration. Give one way they are alike and two ways they are different."
         }
       ]
     }

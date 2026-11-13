@@ -1,6 +1,6 @@
 {
   "name": "bio-u3-lt2-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology A",
   "relearning": [
@@ -307,6 +307,120 @@
               "afterStepId": "s4"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U3.LT2",
+      "mode": "watch",
+      "title": "U3.LT2 Watch: prokaryotic vs. eukaryotic cells",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Prokaryotic vs. Eukaryotic Cells (Updated) (Amoeba Sisters)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "Pxujitlv8wc"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Where is the DNA in a prokaryotic cell?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Inside a nucleus"
+                },
+                {
+                  "id": "b",
+                  "text": "Nowhere, because prokaryotic cells have no DNA"
+                },
+                {
+                  "id": "c",
+                  "text": "In a region of the cytoplasm called the nucleoid"
+                }
+              ],
+              "answer": "c",
+              "explanation": "A prokaryote's DNA is one circular loop that sits in the nucleoid, a region of the cytoplasm with no membrane around it. Thinking prokaryotes have no DNA is the common mistake: they have DNA, just no nucleus."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "A yeast cell is a single cell with a nucleus and mitochondria. What kind of cell is it?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Prokaryotic, because it is only one cell"
+                },
+                {
+                  "id": "b",
+                  "text": "Eukaryotic, because it has a nucleus"
+                },
+                {
+                  "id": "c",
+                  "text": "Neither, because yeast is a fungus"
+                }
+              ],
+              "answer": "b",
+              "explanation": "A nucleus means eukaryotic, and fungi like yeast are eukaryotes. Thinking single-celled always means prokaryote is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Prokaryotic vs Eukaryotic: The Differences (FuseSchool)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "kGd-5HSDo6g"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "Which four things do ALL cells have, prokaryotic and eukaryotic?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "A cell membrane, cytoplasm, ribosomes and DNA"
+                },
+                {
+                  "id": "b",
+                  "text": "A nucleus, mitochondria, ER and a Golgi apparatus"
+                },
+                {
+                  "id": "c",
+                  "text": "A cell wall, a flagellum, ribosomes and DNA"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Every cell has a cell membrane, cytoplasm, ribosomes and DNA. A nucleus and mitochondria are only in eukaryotes, and not every cell has a cell wall or a flagellum."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "How does the size of a typical eukaryotic cell compare with a prokaryotic cell?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "They are about the same size"
+                },
+                {
+                  "id": "b",
+                  "text": "The eukaryotic cell is about 10 times bigger"
+                },
+                {
+                  "id": "c",
+                  "text": "The eukaryotic cell is about 10 times smaller"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Prokaryotes are about 1 to 10 micrometers, and eukaryotic cells are about 10 to 100 micrometers, usually about 10 times bigger."
+            }
+          ],
+          "shortAnswer": "Explain the studio apartment and house comparison. Which kind of cell is the studio, which is the house, and why? Use the words nucleus and membrane-bound organelles."
         }
       ]
     }

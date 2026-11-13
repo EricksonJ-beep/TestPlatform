@@ -1,6 +1,6 @@
 {
   "name": "bio-u7-lt1-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology B",
   "relearning": [
@@ -273,6 +273,110 @@
               "afterStepId": "s4"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U7.LT1",
+      "mode": "watch",
+      "title": "U7.LT1 Watch: the structure of DNA",
+      "sections": [
+        {
+          "part": "core",
+          "title": "DNA, Chromosomes, Genes, and Traits: An Intro to Heredity",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "8m6hHRlKwxY"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "In the twisted-ladder model of DNA, what holds the two bases of each rung together?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Strong sugar-phosphate bonds"
+                },
+                {
+                  "id": "b",
+                  "text": "Weak hydrogen bonds"
+                },
+                {
+                  "id": "c",
+                  "text": "Amino acids"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Weak hydrogen bonds hold each base pair together. Sugar and phosphate make the sides of the ladder, not the rungs."
+            },
+            {
+              "id": "w2",
+              "kind": "fill_blank",
+              "prompt": "One DNA strand reads CATG. Type the bases on the matching strand.",
+              "answer": ["GTAC", "G T A C", "G-T-A-C"],
+              "explanation": "Use the base pairing rule: C→G, A→T, T→A, G→C, so the matching strand is GTAC. Pairing A with G or C with T is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "DNA Structure & Replication: Our Instruction Manual for Existing: Crash Course Biology #33",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "4YNDB_zSzfE"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "A DNA sample is 10% cytosine. What percentage is thymine?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "10%"
+                },
+                {
+                  "id": "b",
+                  "text": "20%"
+                },
+                {
+                  "id": "c",
+                  "text": "80%"
+                },
+                {
+                  "id": "d",
+                  "text": "40%"
+                }
+              ],
+              "answer": "d",
+              "explanation": "G = C = 10%, so C + G = 20%. That leaves 80% for A and T, split evenly: T = 40%. Forgetting to split the leftover in half (80%) is the common mistake."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "Which base is found in RNA but never in DNA?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Thymine (T)"
+                },
+                {
+                  "id": "b",
+                  "text": "Uracil (U)"
+                },
+                {
+                  "id": "c",
+                  "text": "Guanine (G)"
+                }
+              ],
+              "answer": "b",
+              "explanation": "DNA's four bases are A, T, C and G. Uracil (U) is only in RNA, so it never belongs in a DNA strand."
+            }
+          ],
+          "shortAnswer": "Describe the DNA ladder: tell what makes up the sides and what makes up the rungs. Use the words sugar, phosphate and base pairs."
         }
       ]
     }

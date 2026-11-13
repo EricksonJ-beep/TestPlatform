@@ -1,6 +1,6 @@
 {
   "name": "bio-u8-lt3-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology B",
   "relearning": [
@@ -293,6 +293,124 @@
               "afterStepId": "s4"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U8.LT3",
+      "mode": "watch",
+      "title": "U8.LT3 Watch: the protists",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Protists and Fungi (protists half)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "zK7Ckmxxqds"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Why is Kingdom Protista called biology's junk drawer?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "It holds every one-celled organism, including bacteria"
+                },
+                {
+                  "id": "b",
+                  "text": "It holds only organisms that cause disease"
+                },
+                {
+                  "id": "c",
+                  "text": "It holds the eukaryotes that are not plants, animals or fungi"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Protists are the eukaryotes that don't fit in the other kingdoms. Bacteria are prokaryotes, so they are not protists."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Slime molds and water molds feed on dead or decaying material. Which type of protist are they?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Plant-like"
+                },
+                {
+                  "id": "b",
+                  "text": "Fungus-like"
+                },
+                {
+                  "id": "c",
+                  "text": "Animal-like"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Slime molds and water molds are the fungus-like protists. Calling them fungi is the common mistake: they are protists."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Old & Odd: Archaea, Bacteria & Protists - CrashCourse Biology #35 (protist section)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "vAR47-g6tlA"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "Why do phytoplankton matter to other living things?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "They cause malaria"
+                },
+                {
+                  "id": "b",
+                  "text": "They make a large share of Earth's oxygen and are the base of ocean food chains"
+                },
+                {
+                  "id": "c",
+                  "text": "They break down dead logs on the forest floor"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Phytoplankton are tiny floating algae that do photosynthesis. Malaria is caused by *Plasmodium*, an animal-like protist."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "An animal-like protist swims with one long, whip-like tail. Which group is it in?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Sarcodines"
+                },
+                {
+                  "id": "b",
+                  "text": "Ciliates"
+                },
+                {
+                  "id": "c",
+                  "text": "Sporozoans"
+                },
+                {
+                  "id": "d",
+                  "text": "Flagellates"
+                }
+              ],
+              "answer": "d",
+              "explanation": "A long, whip-like tail is a flagellum, so it is a flagellate. Mixing up flagella (long tails) with cilia (short hairs) is the common mistake."
+            }
+          ],
+          "shortAnswer": "Name the three main types of protists and tell how each one gets its food."
         }
       ]
     }

@@ -1,6 +1,6 @@
 {
   "name": "bio-u4-lt4-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology A",
   "relearning": [
@@ -264,6 +264,120 @@
               "afterStepId": "t5"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U4.LT4",
+      "mode": "watch",
+      "title": "U4.LT4 Watch: investigating photosynthesis",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Effect of Light Intensity on Rate of Photosynthesis in Pondweed: Count the Bubbles Yourself!",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "VsH8ubAzHlk"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "A student puts a lamp 10, 20 and 30 cm from an Elodea plant and counts the O₂ bubbles per minute. What is the independent variable?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The O₂ bubbles per minute"
+                },
+                {
+                  "id": "b",
+                  "text": "The water temperature"
+                },
+                {
+                  "id": "c",
+                  "text": "The lamp distance"
+                }
+              ],
+              "answer": "c",
+              "explanation": "The IV is the one factor changed on purpose: the lamp distance. The bubbles are the DV, what is measured. Mixing up the IV and the DV is the common mistake."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Why does counting O₂ bubbles work as a way to measure photosynthesis?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Oxygen is a product of photosynthesis, so more bubbles per minute means a faster rate"
+                },
+                {
+                  "id": "b",
+                  "text": "The bubbles are CO₂ that the plant is taking in"
+                },
+                {
+                  "id": "c",
+                  "text": "The bubbles show that the water is getting hotter"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Photosynthesis releases O₂, so the number of bubbles per minute shows how fast it is going. The CO₂ goes into the plant and comes from the baking soda in the water."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Floating Leaf Disks Lab (Photosynthesis)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "4NM7kGKDk2A"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "In a leaf disk experiment, why do the leaf disks float?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "They soak up water"
+                },
+                {
+                  "id": "b",
+                  "text": "They fill with O₂ made by photosynthesis"
+                },
+                {
+                  "id": "c",
+                  "text": "They lose their chlorophyll"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Leaf disks float as they fill with O₂ from photosynthesis. The faster they float, the faster the rate of photosynthesis."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "A student puts 0 g, 1 g and 2 g of baking soda (the CO₂ source) in three cups and counts the leaf disks floating after 10 minutes. Which cup is the control?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The 2 g cup"
+                },
+                {
+                  "id": "b",
+                  "text": "The 1 g cup"
+                },
+                {
+                  "id": "c",
+                  "text": "The 0 g cup"
+                }
+              ],
+              "answer": "c",
+              "explanation": "The control is the setup you compare the others to. The 0 g cup has no added CO₂ source, so it shows what happens without the factor being tested."
+            }
+          ],
+          "shortAnswer": "Design a leaf disk experiment to test whether the amount of CO₂ affects photosynthesis. Name your IV, your DV, two constants and your control."
         }
       ]
     }

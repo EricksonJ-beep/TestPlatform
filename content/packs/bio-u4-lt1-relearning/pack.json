@@ -1,6 +1,6 @@
 {
   "name": "bio-u4-lt1-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology A",
   "relearning": [
@@ -292,6 +292,106 @@
               "afterStepId": "s4"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U4.LT1",
+      "mode": "watch",
+      "title": "U4.LT1 Watch: cellular respiration",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Cellular Respiration (UPDATED) (Amoeba Sisters)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "eJ9Zjc-jdys"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "What does cellular respiration do for a cell?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "It makes glucose using light energy"
+                },
+                {
+                  "id": "b",
+                  "text": "It breaks down glucose and stores the energy in ATP"
+                },
+                {
+                  "id": "c",
+                  "text": "It moves air in and out of the lungs"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Cellular respiration breaks down glucose and stores its energy in ATP, the cell's energy currency. Saying it is the same as breathing is the common mistake: breathing brings in O₂, and respiration is the chemical process inside cells."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Which is the equation for cellular respiration?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "6CO₂ + 6H₂O + light energy → C₆H₁₂O₆ + 6O₂"
+                },
+                {
+                  "id": "b",
+                  "text": "C₆H₁₂O₆ + 6CO₂ → 6O₂ + 6H₂O + energy (ATP)"
+                },
+                {
+                  "id": "c",
+                  "text": "C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + energy (ATP)"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Glucose and oxygen go in, and carbon dioxide, water and ATP come out. The equation with light energy is photosynthesis, which runs the other way."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "ATP & Respiration: Crash Course Biology #7",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "00jbG_cfGuQ"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "fill_blank",
+              "prompt": "In this class, about how many ATP does a cell get from one glucose by the end of cellular respiration? Type a number.",
+              "answer": ["36", "about 36", "thirty-six", "thirty six", "36 atp"],
+              "explanation": "The total we use in class is about 36 ATP from one glucose. Some videos give a slightly different number, so use 36 on class work."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "What is the correct order of the three stages of cellular respiration?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Glycolysis, Krebs cycle, electron transport chain"
+                },
+                {
+                  "id": "b",
+                  "text": "Krebs cycle, glycolysis, electron transport chain"
+                },
+                {
+                  "id": "c",
+                  "text": "Electron transport chain, Krebs cycle, glycolysis"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Glycolysis comes first, in the cytoplasm. Then the Krebs cycle and the electron transport chain happen in the mitochondria."
+            }
+          ],
+          "shortAnswer": "List the three stages of cellular respiration in order. For each one, say where it happens and one thing it makes."
         }
       ]
     }

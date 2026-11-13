@@ -1,6 +1,6 @@
 {
   "name": "bio-u2-lt4-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology A",
   "relearning": [
@@ -302,6 +302,120 @@
               "afterStepId": "s4"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U2.LT4",
+      "mode": "watch",
+      "title": "U2.LT4 Watch: the four macromolecules",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Biomolecules, Updated 2023 (Amoeba Sisters)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "1Dx7LDwINLU"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "What is the monomer of a protein?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Monosaccharides"
+                },
+                {
+                  "id": "b",
+                  "text": "Nucleotides"
+                },
+                {
+                  "id": "c",
+                  "text": "Amino acids"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Proteins are long chains of amino acids. Nucleotides go with nucleic acids, and monosaccharides go with carbohydrates. Mixing up the monomers is the common mistake."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Which macromolecule stores energy for the long term and makes up cell membranes?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Lipids"
+                },
+                {
+                  "id": "b",
+                  "text": "Carbohydrates"
+                },
+                {
+                  "id": "c",
+                  "text": "Nucleic acids"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Lipids (fats, oils and waxes) store energy for the long term, insulate and make cell membranes. Carbohydrates are for quick energy."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Biological Molecules (Bozeman Science)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "PYH63o10iTE"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "DNA and RNA belong to which group of macromolecules, and what is the job of that group?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Proteins. They speed up reactions."
+                },
+                {
+                  "id": "b",
+                  "text": "Nucleic acids. They store and pass on genetic information."
+                },
+                {
+                  "id": "c",
+                  "text": "Carbohydrates. They give quick energy."
+                }
+              ],
+              "answer": "b",
+              "explanation": "DNA and RNA are nucleic acids, built from nucleotides. Their job is to store and pass on genetic information."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "Which two macromolecules are made of only the elements C, H and O?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Proteins and nucleic acids"
+                },
+                {
+                  "id": "b",
+                  "text": "Carbohydrates and proteins"
+                },
+                {
+                  "id": "c",
+                  "text": "Carbohydrates and lipids"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Carbohydrates and lipids have only C, H and O. Proteins add N (and some have S), and nucleic acids have N and P."
+            }
+          ],
+          "shortAnswer": "Use the train analogy to explain what a monomer and a polymer are. Then name the monomer of carbohydrates, of proteins and of nucleic acids."
         }
       ]
     }

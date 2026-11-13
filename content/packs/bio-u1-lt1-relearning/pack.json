@@ -1,6 +1,6 @@
 {
   "name": "bio-u1-lt1-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology A",
   "relearning": [
@@ -282,6 +282,124 @@
               "afterStepId": "s5"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U1.LT1",
+      "mode": "watch",
+      "title": "U1.LT1 Watch: designing a controlled experiment",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Nature of Science (Amoeba Sisters)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "3nAETHZTObk"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "A student tests whether the brand of paper towel affects how much water it soaks up. Every towel is cut to the same size and dipped for 10 seconds. In this experiment, what is the size of the towel?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The independent variable"
+                },
+                {
+                  "id": "b",
+                  "text": "The dependent variable"
+                },
+                {
+                  "id": "c",
+                  "text": "A constant"
+                },
+                {
+                  "id": "d",
+                  "text": "The control group"
+                }
+              ],
+              "answer": "c",
+              "explanation": "The size is kept the same for every towel, so it is a constant. Calling a constant the control is the common mistake: the control is a whole group, while a constant is one thing kept the same."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "What is the job of the control group in a controlled experiment?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "It gets the most of the treatment being tested"
+                },
+                {
+                  "id": "b",
+                  "text": "It is the baseline that the experimental groups are compared to"
+                },
+                {
+                  "id": "c",
+                  "text": "It is what the scientist measures"
+                }
+              ],
+              "answer": "b",
+              "explanation": "The control group does not get the treatment, so it is the baseline you compare to. What the scientist measures is the dependent variable."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "The Scientific Method: Crash Course Biology #2",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "xOLcZMw0hd4"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "Read this hypothesis: If plants get more fertilizer, then they will grow taller. Which part names the dependent variable?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The If part (more fertilizer)"
+                },
+                {
+                  "id": "b",
+                  "text": "The then part (grow taller)"
+                },
+                {
+                  "id": "c",
+                  "text": "Neither part"
+                }
+              ],
+              "answer": "b",
+              "explanation": "A hypothesis is a testable If…then prediction. The If part names the IV (what is changed) and the then part names the DV (what is measured). Mixing up the IV and the DV is the common mistake."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "A student grows one plant with fertilizer and one plant without. Which change would make the results more reliable?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Give the fertilizer plant extra sunlight too"
+                },
+                {
+                  "id": "b",
+                  "text": "Take out the plant with no fertilizer"
+                },
+                {
+                  "id": "c",
+                  "text": "Use 10 plants in each group and repeat the trial"
+                }
+              ],
+              "answer": "c",
+              "explanation": "A large sample size and repeated trials give a result you can trust, because one plant could be sick by chance. Adding sunlight would change two things at once, and taking out the plant with no fertilizer removes the control group."
+            }
+          ],
+          "shortAnswer": "A student wants to know if the temperature of water affects how fast sugar dissolves. Write a hypothesis as an If…then statement. Then name the IV, the DV and two constants."
         }
       ]
     }

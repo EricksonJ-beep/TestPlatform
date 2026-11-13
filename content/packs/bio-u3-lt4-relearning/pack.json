@@ -1,6 +1,6 @@
 {
   "name": "bio-u3-lt4-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology A",
   "relearning": [
@@ -260,6 +260,124 @@
               "afterStepId": "s4"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U3.LT4",
+      "mode": "watch",
+      "title": "U3.LT4 Watch: passive and active transport",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Cell Transport (Amoeba Sisters)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "Ptmlvtei8hw"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Which of these needs energy (ATP) from the cell?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Simple diffusion"
+                },
+                {
+                  "id": "b",
+                  "text": "Osmosis"
+                },
+                {
+                  "id": "c",
+                  "text": "Facilitated diffusion"
+                },
+                {
+                  "id": "d",
+                  "text": "A protein pump moving molecules from low to high concentration"
+                }
+              ],
+              "answer": "d",
+              "explanation": "Moving from low to high concentration is active transport, and the cell pays with ATP. The other three are passive: they go from high to low with no energy."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Glucose moves into a cell through a carrier protein, from high concentration to low. No energy is used. What type of transport is this?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Facilitated diffusion"
+                },
+                {
+                  "id": "b",
+                  "text": "Active transport"
+                },
+                {
+                  "id": "c",
+                  "text": "Simple diffusion"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Passing through a protein from high to low with no energy is facilitated diffusion. Thinking a protein always means energy is the common mistake: it is still passive."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Osmosis and Water Potential (Updated) (Amoeba Sisters)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "L-osEc07vMs"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "What is osmosis?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The movement of salt across a membrane toward water"
+                },
+                {
+                  "id": "b",
+                  "text": "The diffusion of water across a selectively permeable membrane"
+                },
+                {
+                  "id": "c",
+                  "text": "The pumping of water into a cell using ATP"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Osmosis is the diffusion of water across a selectively permeable membrane, and it uses no energy. Saying the salt moves is the common mistake: the water moves."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "A cell is placed in an isotonic solution. What happens?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Water stops moving completely"
+                },
+                {
+                  "id": "b",
+                  "text": "Water moves out, and the cell shrinks"
+                },
+                {
+                  "id": "c",
+                  "text": "Water moves in and out equally, so the cell stays the same size"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Isotonic means the same amount of solute inside and out, so water moves in and out at the same rate. Thinking water stops moving is the common mistake."
+            }
+          ],
+          "shortAnswer": "A red blood cell is placed in distilled water. Say whether the water is hypertonic, hypotonic or isotonic compared to the cell, which way the water moves, and what happens to the cell."
         }
       ]
     }

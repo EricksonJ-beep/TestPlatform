@@ -1,6 +1,6 @@
 {
   "name": "bio-u2-lt2-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology A",
   "relearning": [
@@ -311,6 +311,120 @@
               "afterStepId": "s4"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U2.LT2",
+      "mode": "watch",
+      "title": "U2.LT2 Watch: water's structure and properties",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Properties of Water (Amoeba Sisters)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "3jwAGWky98c"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Which end of a water molecule is slightly negative?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The oxygen end"
+                },
+                {
+                  "id": "b",
+                  "text": "The hydrogen ends"
+                },
+                {
+                  "id": "c",
+                  "text": "Neither end, because water has no charge at all"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Oxygen pulls the shared electrons closer to itself, so the oxygen end is slightly negative and the hydrogen ends are slightly positive. That is what makes water polar."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "What kind of bond holds the oxygen atom and the hydrogen atoms together inside one water molecule?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Hydrogen bond"
+                },
+                {
+                  "id": "b",
+                  "text": "Ionic bond"
+                },
+                {
+                  "id": "c",
+                  "text": "Covalent bond"
+                }
+              ],
+              "answer": "c",
+              "explanation": "The atoms inside one water molecule share electrons, so those bonds are covalent. Hydrogen bonds are the weak attractions between different water molecules. Mixing the two up is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Water: A Polar Molecule (Bozeman Science)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "iOOvX0jmhJ4"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "After it rains, drops of water cling to a glass window. Which property of water is this?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Cohesion"
+                },
+                {
+                  "id": "b",
+                  "text": "Adhesion"
+                },
+                {
+                  "id": "c",
+                  "text": "High specific heat"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Adhesion is water sticking to a different substance, like glass. Cohesion is water sticking to water. Mixing them up is the common mistake."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "Water is called the universal solvent. Which of these does water NOT dissolve?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Salt"
+                },
+                {
+                  "id": "b",
+                  "text": "Sugar"
+                },
+                {
+                  "id": "c",
+                  "text": "Oil"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Water's charged ends pull apart many substances, like salt and sugar, but not nonpolar things like oil. Thinking water dissolves everything is the common mistake."
+            }
+          ],
+          "shortAnswer": "Explain how water being polar leads to hydrogen bonds, and how hydrogen bonds cause cohesion."
         }
       ]
     }

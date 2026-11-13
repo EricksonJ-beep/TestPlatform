@@ -1,6 +1,6 @@
 {
   "name": "bio-u1-lt4-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology A",
   "relearning": [
@@ -262,6 +262,111 @@
               "explanation": "88 beats per minute is a number with a unit, so it is quantitative. A color or a feeling described in words is qualitative."
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U1.LT4",
+      "mode": "watch",
+      "title": "U1.LT4 Watch: data tables, graphs and conclusions",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Setting up Data Tables and Graphs",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "vuYVrdl91rQ"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "A student tests how the amount of water a plant gets each day (10 mL, 20 mL or 30 mL) affects its height in cm. What goes in the first (left) column of the data table?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Plant height (cm)"
+                },
+                {
+                  "id": "b",
+                  "text": "Amount of water (mL)"
+                },
+                {
+                  "id": "c",
+                  "text": "The average"
+                }
+              ],
+              "answer": "b",
+              "explanation": "The amount of water is what she changed, so it is the IV. The IV goes in the first column of the table and on the x-axis of the graph. Swapping the IV and the DV is the common mistake."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "A student counts how many birds visit each of 4 different kinds of bird feeder. Which graph fits best?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Line graph"
+                },
+                {
+                  "id": "b",
+                  "text": "Pie chart"
+                },
+                {
+                  "id": "c",
+                  "text": "Bar graph"
+                }
+              ],
+              "answer": "c",
+              "explanation": "A bar graph compares separate groups, like kinds of feeder. Using a line graph for separate groups is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "A Beginner's Guide to Graphing Data (Bozeman Science)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "9BkbYeTC6Mo"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "fill_blank",
+              "prompt": "Three plants grew 4 cm, 7 cm and 10 cm. What is the average height in cm? Type a number.",
+              "answer": [
+                "7",
+                "7 cm",
+                "7cm",
+                "seven"
+              ],
+              "explanation": "Add the trials and divide by how many there are: (4 + 7 + 10) ÷ 3 = 21 ÷ 3 = 7 cm."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "Which sentence should NOT be in a conclusion?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The data prove the hypothesis."
+                },
+                {
+                  "id": "b",
+                  "text": "The data support the hypothesis."
+                },
+                {
+                  "id": "c",
+                  "text": "Plants with 12 hours of light grew an average of 14 leaves."
+                }
+              ],
+              "answer": "a",
+              "explanation": "Never say the data prove a hypothesis. Data support it or do not support it, and a good conclusion gives the numbers."
+            }
+          ],
+          "shortAnswer": "A student tests how the amount of salt in the water affects how many seeds sprout. Describe how to set up the data table and the graph: where each variable goes, what to label and how to write the title."
         }
       ]
     }

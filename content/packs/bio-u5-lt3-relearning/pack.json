@@ -1,6 +1,6 @@
 {
   "name": "bio-u5-lt3-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology B",
   "relearning": [
@@ -236,6 +236,106 @@
               "afterStepId": "t4"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U5.LT3",
+      "mode": "watch",
+      "title": "U5.LT3 Watch: chromosomes and karyotypes",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Chromosomes and Karyotypes (UPDATED)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "c57rjL-30rs"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "fill_blank",
+              "prompt": "A typical human karyotype has 23 pairs of chromosomes. How many chromosomes is that in all? Type a number.",
+              "answer": ["46", "forty-six", "forty six"],
+              "explanation": "23 pairs × 2 = 46 chromosomes. Counting pairs instead of chromosomes (answering 23) is the common mistake."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "When you build a karyotype, how do you find each chromosome's partner?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Pair up any two chromosomes that are next to each other"
+                },
+                {
+                  "id": "b",
+                  "text": "Pair each autosome with a sex chromosome"
+                },
+                {
+                  "id": "c",
+                  "text": "Match them by size, centromere position and banding pattern"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Homologs match in size, centromere position and banding pattern (the stripes). Then the pairs are lined up from largest (1) to smallest (22), with the sex chromosomes last."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Reading Karyotypes",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "MP3mm04OrQg"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "A karyotype has 45 chromosomes because one chromosome has only one copy instead of two. What is this called?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Trisomy"
+                },
+                {
+                  "id": "b",
+                  "text": "Monosomy"
+                },
+                {
+                  "id": "c",
+                  "text": "Crossing over"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Monosomy means only one copy, for 45 total. Trisomy is three copies of one chromosome, for 47 total."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "A karyotype shows three copies of chromosome 21, and pair 23 is XX. What does it show?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "A female with Down syndrome (trisomy 21)"
+                },
+                {
+                  "id": "b",
+                  "text": "A male with Down syndrome (trisomy 21)"
+                },
+                {
+                  "id": "c",
+                  "text": "A female with Turner syndrome"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Three copies of chromosome 21 is trisomy 21 (Down syndrome), and XX means female. Forgetting to check pair 23 for the sex is the common mistake."
+            }
+          ],
+          "shortAnswer": "Explain the difference between trisomy and monosomy. Give the total number of chromosomes for each and one example."
         }
       ]
     }

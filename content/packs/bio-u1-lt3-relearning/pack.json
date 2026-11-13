@@ -1,6 +1,6 @@
 {
   "name": "bio-u1-lt3-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology A",
   "relearning": [
@@ -283,6 +283,113 @@
               "afterStepId": "s4"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U1.LT3",
+      "mode": "watch",
+      "title": "U1.LT3 Watch: using a microscope",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Microscopes and How to Use a Light Microscope (Amoeba Sisters)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "tVcEEw6qbBQ"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "fill_blank",
+              "prompt": "A microscope has a 10× ocular lens, and the 40× objective is in place. What is the total magnification? Type a number.",
+              "answer": [
+                "400",
+                "400x",
+                "400×",
+                "400 x",
+                "400 ×",
+                "four hundred"
+              ],
+              "explanation": "Total magnification = ocular lens × objective lens = 10 × 40 = 400×. Adding the lenses (50×) is the common mistake."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Which objective should be in place when you first start to focus on a slide?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The 40× objective"
+                },
+                {
+                  "id": "b",
+                  "text": "The 10× objective"
+                },
+                {
+                  "id": "c",
+                  "text": "The 4× objective"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Start on the lowest power (4×), where the specimen is easiest to find. Starting on high power is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Microscope Parts, Function, and Care",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "pujis3QsA_I"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "What is the correct way to carry a microscope?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "With one hand around the ocular lens"
+                },
+                {
+                  "id": "b",
+                  "text": "With one hand on the arm and the other hand under the base"
+                },
+                {
+                  "id": "c",
+                  "text": "With both hands on the stage"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Always use two hands: one on the arm and one under the base. The lenses and the stage are not made to hold the microscope's weight."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "You are looking through the ocular lens and push the slide to the left. Which way does the image move?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "To the right"
+                },
+                {
+                  "id": "b",
+                  "text": "To the left"
+                },
+                {
+                  "id": "c",
+                  "text": "It does not move"
+                }
+              ],
+              "answer": "a",
+              "explanation": "The image is upside down and backward, so it moves the opposite way you move the slide."
+            }
+          ],
+          "shortAnswer": "List the steps for getting a specimen in focus on high power (40×), starting on the 4× objective. Say which knob you use at each step."
         }
       ]
     }

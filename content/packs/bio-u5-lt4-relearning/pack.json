@@ -1,6 +1,6 @@
 {
   "name": "bio-u5-lt4-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology B",
   "relearning": [
@@ -311,6 +311,120 @@
               "afterStepId": "t5"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U5.LT4",
+      "mode": "watch",
+      "title": "U5.LT4 Watch: cancer and the cell cycle",
+      "sections": [
+        {
+          "part": "core",
+          "title": "The Cell Cycle (and cancer) [Updated]",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "QVCjdNxJreE"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "In the car analogy, what is a cancer cell like?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "A car that has run out of gas"
+                },
+                {
+                  "id": "b",
+                  "text": "A car with a stuck gas pedal or failed brakes"
+                },
+                {
+                  "id": "c",
+                  "text": "A car parked in the garage"
+                }
+              ],
+              "answer": "b",
+              "explanation": "A cancer cell keeps dividing out of control, like a car that can't stop. Saying cancer cells divide more slowly is the common mistake."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "What makes a cell lose control of the cell cycle?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Mutations in the genes that control the cell cycle"
+                },
+                {
+                  "id": "b",
+                  "text": "Too much apoptosis"
+                },
+                {
+                  "id": "c",
+                  "text": "Stopping at every checkpoint"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Mutations (changes in the DNA) can damage the genes that control the cell cycle, so the cell skips its checkpoints. Apoptosis and checkpoints are what protect against cancer."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "How do cancer cells behave differently from healthy ones? - George Zaidan (TED-Ed)",
+          "minutes": 4,
+          "body": {
+            "type": "video",
+            "youtubeId": "BmFEoCFDi-w"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "Why do chemotherapy and radiation hit cancer cells hard?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Cancer cells are the largest cells in the body"
+                },
+                {
+                  "id": "b",
+                  "text": "The treatments only affect cells inside a tumor"
+                },
+                {
+                  "id": "c",
+                  "text": "The treatments target cells that divide quickly, and cancer cells divide out of control"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Chemotherapy and radiation target cells that divide quickly. They can't tell a cancer cell from a normal fast-dividing cell, which is why there are side effects."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "Besides cancer cells, which cells does chemotherapy also hit?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Cells that have stopped dividing"
+                },
+                {
+                  "id": "b",
+                  "text": "Hair follicle and stomach lining cells"
+                },
+                {
+                  "id": "c",
+                  "text": "Only cells that have metastasized"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Hair follicles and the stomach lining divide quickly, so treatment hits them too. That is why it can cause hair loss and nausea."
+            }
+          ],
+          "shortAnswer": "Explain why chemotherapy can cause hair loss and nausea. Use what you know about how fast different cells divide."
         }
       ]
     }

@@ -1,6 +1,6 @@
 {
   "name": "bio-u1-lt2-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology A",
   "relearning": [
@@ -323,6 +323,124 @@
               "explanation": "The population changes over many generations, which is evolution. One rabbit growing its fur during its life would be development. Mixing up a group changing and one organism changing is the common mistake."
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U1.LT2",
+      "mode": "watch",
+      "title": "U1.LT2 Watch: the characteristics of life",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Characteristics of Life (Amoeba Sisters)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "cQPVXrV0GNA"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Which one is NOT one of the 8 characteristics of life?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Is made of cells"
+                },
+                {
+                  "id": "b",
+                  "text": "Moves from place to place"
+                },
+                {
+                  "id": "c",
+                  "text": "Keeps homeostasis"
+                },
+                {
+                  "id": "d",
+                  "text": "Has DNA"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Moving is not on the list. Cars and fire move too, so calling something alive because it moves is the common mistake."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "On a hot day you start to sweat, and your body stays near 37 °C. Which characteristic of life is this?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Reproduces"
+                },
+                {
+                  "id": "b",
+                  "text": "Evolves"
+                },
+                {
+                  "id": "c",
+                  "text": "Keeps homeostasis"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Homeostasis means keeping the inside of the body stable. Sweating cools you so your temperature stays steady."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Characteristics of Living Things: How Do We Know What's Alive?",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "hBzUSUyGHyY"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "A virus has genetic material. Why do most biologists say it is not alive?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "It is not made of cells, and it can only reproduce inside a host cell"
+                },
+                {
+                  "id": "b",
+                  "text": "It is too small to see"
+                },
+                {
+                  "id": "c",
+                  "text": "It never changes over time"
+                }
+              ],
+              "answer": "a",
+              "explanation": "A living thing has to check every box, not just one. A virus has genetic material, but it has no cells and can't reproduce on its own."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "A dead leaf is lying on the forest floor. Is it biotic or abiotic?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Abiotic, because it is no longer alive"
+                },
+                {
+                  "id": "b",
+                  "text": "Biotic, because it came from a living thing"
+                },
+                {
+                  "id": "c",
+                  "text": "Abiotic, because it does not move"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Biotic factors are living things or things that came from living things. Calling a dead leaf abiotic is the common mistake."
+            }
+          ],
+          "shortAnswer": "A campfire grows, uses oxygen and spreads. Use at least two characteristics of life to explain why it is still not alive."
         }
       ]
     }
