@@ -5,12 +5,13 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db, schema } from "@/db";
 import { logActivity } from "@/lib/activity-log";
-import { canStartAttempt, startReasonText } from "@/lib/assignments";
+import { canStartAttempt, codesMatch, startReasonText } from "@/lib/assignments";
 import { createAttempt, finalizeAttempt, recomputeFinalScore } from "@/lib/attempts";
 import { AWAITING_GRADE_TEXT } from "@/lib/card-state";
 import {
   pauseAttempt,
   resumeAttempt,
+  masterStartCode,
   resumeCodeValid,
   settleAttempt,
   touchAttempt,
@@ -178,6 +179,7 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
     .select({
       opensAt: schema.assignments.opensAt,
       closesAt: schema.assignments.closesAt,
+      ownerId: schema.assignments.ownerId,
       accessCode: schema.assignments.accessCode,
       attemptsAllowed: schema.assignments.attemptsAllowed,
       retakeWaitHours: schema.assignments.retakeWaitHours,
@@ -194,6 +196,14 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
     .where(eq(schema.assignments.id, assignmentId))
     .limit(1);
   if (!assignment) throw new ActionError("Not found.", 404);
+  // Jon, Nov 13 2026: with "Also starts tests" on, the resume code on the board stands in for
+  // this assignment's own access code. Only the owning teacher's code, and only the code check.
+  const givenCode = (accessCode ?? "").trim();
+  const masterCode =
+    assignment.accessCode && givenCode && !codesMatch(givenCode, assignment.accessCode)
+      ? await masterStartCode(assignment.ownerId, now)
+      : null;
+  const byResumeCode = !!masterCode && codesMatch(givenCode, masterCode);
   // The cap, and its retake window, never apply in a CVTC course (Jon, Oct 13 2026).
   const capped = correctionsCapOn(assignment);
   const [unlock] = await db
@@ -241,6 +251,7 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
     // A retake the teacher approved after the close (Jon, Oct 14 2026, R5).
     openUntil: used > 0 ? await openUntilFor(assignmentId, access.userId, used + 1) : null,
     accessCode,
+    masterCode,
     now,
   });
   if (!check.ok) {
@@ -292,7 +303,8 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
     userId: access.userId,
     kind: "attempt_started",
     assignmentId,
-    detail: { attemptNumber: created.number },
+    // Which key opened it, when it was the teacher's resume code rather than the test's own.
+    detail: { attemptNumber: created.number, ...(byResumeCode ? { by: "resume_code" } : {}) },
   });
   revalidate(assignmentId);
   return { attemptId: created.attemptId, resumed: false };

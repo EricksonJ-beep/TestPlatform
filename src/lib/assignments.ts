@@ -67,6 +67,12 @@ export function canStartAttempt(input: {
   /** An approved reopen for this attempt (`attempt_unlocks.open_until`); null or absent when none. */
   openUntil?: Date | null;
   accessCode?: string | null;
+  /**
+   * The teacher's live resume code, only while their "Also starts tests" switch is on (Jon,
+   * Nov 13 2026): it is accepted in place of the assignment's own access code. It opens nothing
+   * else: the window, the attempts and every retake rule still apply.
+   */
+  masterCode?: string | null;
   now?: Date;
 }): StartCheck {
   const { assignment, attemptsUsed } = input;
@@ -81,7 +87,9 @@ export function canStartAttempt(input: {
   if (assignment.accessCode) {
     const given = (input.accessCode ?? "").trim();
     if (!given) return { ok: false, reason: "code_required" };
-    if (!codesMatch(given, assignment.accessCode)) return { ok: false, reason: "code_wrong" };
+    const master = !!input.masterCode && codesMatch(given, input.masterCode);
+    if (!master && !codesMatch(given, assignment.accessCode))
+      return { ok: false, reason: "code_wrong" };
   }
   if (assignment.attemptsAllowed !== null && attemptsUsed >= assignment.attemptsAllowed) {
     return { ok: false, reason: "no_attempts_left" };

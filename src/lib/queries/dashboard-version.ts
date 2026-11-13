@@ -12,7 +12,7 @@
  *   relearning gates; check-offs; practice the class students finish (a quiz's relearning reads
  *   it, Oct 14 2026); assignment settings and windows opening or closing; rosters; unmatched
  *   worksheet emails (one per worksheet and email, as the inbox counts them); resume codes
- *   issued (the header shows the live one); and
+ *   issued (the header shows the live one) and their "Also starts tests" switch; and
  *   the time boundaries that change a tag with nothing written: a retake wait ending on a test
  *   that needs the teacher's OK ("Unlocked · after 2:15", "Can start after"), the cap's retake
  *   window closing, and its 48-hour "Retake by" mark (each a count of boundaries already passed);
@@ -63,6 +63,8 @@ export async function getDashboardVersion(
         practice: sql<string>`(select concat_ws(':', count(*), ${newest("p.completed_at")}) from ${schema.practiceAttempts} p where p.completed_at is not null and p.student_id in (select e.student_id from ${schema.enrollments} e join ${schema.classes} k on k.id = e.class_id where k.owner_id = ${teacherId}))`,
         worksheets: sql<string>`(select count(distinct (w.worksheet_id, w.email)) from ${schema.worksheetEvents} w join ${schema.worksheets} ws on ws.id = w.worksheet_id where ws.owner_id = ${teacherId} and w.student_id is null)`,
         resumeCodes: sql<string>`(select concat_ws(':', count(*), ${newest("r.created_at")}) from ${schema.resumeCodes} r where r.teacher_id = ${teacherId})`,
+        // "Also starts tests" (Nov 13 2026): the header's switch follows a change made in another tab.
+        resumeStarts: schema.users.resumeCodeStartsTests,
         // Boundaries already passed, per student × test with a finished attempt: each crossing
         // moves the count, so a tag that changes with the clock alone refreshes the page.
         boundaries: sql<string>`(select concat_ws(':', count(*) filter (where p.need_ok and p.wait_h > 0 and p.last_sub + p.wait_h * interval '1 hour' <= ${at}), count(*) filter (where p.capped and p.first_sub + p.win_d * interval '1 day' <= ${at}), count(*) filter (where p.capped and p.first_sub + p.win_d * interval '1 day' - interval '48 hours' <= ${at})) from (select s.retakes_need_unlock as need_ok, s.retake_wait_hours as wait_h, (s.corrections_cap and m.type = 'formative' and not coalesce(co.cvtc_rules, false)) as capped, s.retake_window_days as win_d, min(a.submitted_at) as first_sub, max(a.submitted_at) as last_sub from ${schema.attempts} a join ${schema.assignments} s on s.id = a.assignment_id join ${schema.assessments} m on m.id = s.assessment_id left join ${schema.courses} co on co.id = m.course_id where s.owner_id = ${teacherId} and a.status <> 'in_progress' and (s.retakes_need_unlock or s.corrections_cap) group by a.assignment_id, a.student_id, s.retakes_need_unlock, s.retake_wait_hours, s.corrections_cap, m.type, co.cvtc_rules, s.retake_window_days) p)`,
@@ -119,6 +121,7 @@ export async function getDashboardVersion(
     log,
     s?.worksheets,
     s?.resumeCodes,
+    s?.resumeStarts ? 1 : 0,
     s?.boundaries,
     // The student's own close: a reopened retake pauses when its reopen ends (R5).
     openTestsPart(

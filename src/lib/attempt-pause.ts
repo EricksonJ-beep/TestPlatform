@@ -196,6 +196,35 @@ export async function currentResumeCode(
   return row ?? null;
 }
 
+/**
+ * Whether the teacher's resume code also starts tests (Jon, Nov 13 2026: "have the resume code on
+ * the board and have it be a master password if I wanted"). Off unless the teacher turns it on.
+ */
+export async function resumeCodeStartsTests(teacherId: string): Promise<boolean> {
+  const row = await db.query.users.findFirst({
+    columns: { resumeCodeStartsTests: true },
+    where: eq(schema.users.id, teacherId),
+  });
+  return row?.resumeCodeStartsTests ?? false;
+}
+
+/** Turn the teacher's "Also starts tests" switch on or off; it stays that way until changed. */
+export async function setResumeCodeStartsTests(teacherId: string, on: boolean): Promise<void> {
+  await db
+    .update(schema.users)
+    .set({ resumeCodeStartsTests: on })
+    .where(eq(schema.users.id, teacherId));
+}
+
+/**
+ * The code that stands in for any access code on this teacher's assignments right now: their live
+ * resume code while "Also starts tests" is on, otherwise null.
+ */
+export async function masterStartCode(teacherId: string, now = new Date()): Promise<string | null> {
+  if (!(await resumeCodeStartsTests(teacherId))) return null;
+  return (await currentResumeCode(teacherId, now))?.code ?? null;
+}
+
 /** A fresh code for one class period; earlier codes stop working. */
 export async function issueResumeCode(
   teacherId: string,

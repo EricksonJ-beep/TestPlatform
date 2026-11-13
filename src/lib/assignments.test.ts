@@ -97,6 +97,31 @@ describe("canStartAttempt", () => {
     ).toEqual({ ok: true });
     expect(codesMatch("ab3k9q", "AB3-K9Q")).toBe(true);
   });
+  it("accepts the teacher's master code in place of the access code, and nothing more (Nov 13 2026)", () => {
+    const coded = { ...open, accessCode: "AB3-K9Q" };
+    const master = { assignment: coded, attemptsUsed: 0, now, masterCode: "RM7X2P" };
+    expect(canStartAttempt({ ...master, accessCode: "rm7 x2p" })).toEqual({ ok: true });
+    expect(canStartAttempt({ ...master, accessCode: "ab3k9q" })).toEqual({ ok: true });
+    expect(canStartAttempt({ ...master, accessCode: "nope" })).toMatchObject({
+      reason: "code_wrong",
+    });
+    expect(canStartAttempt(master)).toMatchObject({ reason: "code_required" });
+    // No master code (the switch is off, or no code is running): only the test's own code.
+    expect(
+      canStartAttempt({ assignment: coded, attemptsUsed: 0, now, accessCode: "RM7X2P" })
+    ).toMatchObject({ reason: "code_wrong" });
+    // It is not a way past the window or the attempt limit.
+    expect(
+      canStartAttempt({
+        ...master,
+        assignment: { ...coded, closesAt: at("2026-09-01T00:00:00Z") },
+        accessCode: "RM7X2P",
+      })
+    ).toMatchObject({ reason: "closed" });
+    expect(canStartAttempt({ ...master, attemptsUsed: 3, accessCode: "RM7X2P" })).toMatchObject({
+      reason: "no_attempts_left",
+    });
+  });
   it("enforces a waiting period after the last submission", () => {
     const waited = { ...open, retakeWaitHours: 24 };
     const submitted = at("2026-09-22T00:00:00Z");

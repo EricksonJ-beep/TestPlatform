@@ -1,7 +1,7 @@
 import { requireOwner, requireTeacher } from "@/lib/authz";
 import { feedGroups, feedQuery, parseFeedFilter } from "@/lib/activity-filter";
 import { listClassActivity, listRecentActivity } from "@/lib/activity-log";
-import { currentResumeCode } from "@/lib/attempt-pause";
+import { currentResumeCode, resumeCodeStartsTests } from "@/lib/attempt-pause";
 import { periodLabel } from "@/lib/class-focus";
 import { getCurrentClass, getCurrentCourse } from "@/lib/current-course";
 import { needsYouCounts } from "@/lib/needs-you";
@@ -51,9 +51,10 @@ export default async function DashboardPage({ searchParams }: PageProps<"/app">)
     groups: feedGroups(filter),
     limit: filter.days === 3 ? 150 : 60,
   };
-  const [inbox, code, activity, gradebook] = await Promise.all([
+  const [inbox, code, startsTests, activity, gradebook] = await Promise.all([
     getNeedsYou(session.userId),
     currentResumeCode(session.userId),
+    resumeCodeStartsTests(session.userId),
     cls && filter.scope === "class"
       ? listClassActivity(cls.id, feed)
       : listRecentActivity(session.userId, feed),
@@ -78,6 +79,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/app">)
         </div>
         <ResumeCodeHeader
           initial={code ? { code: code.code, expiresAt: code.expiresAt.toISOString() } : null}
+          startsTests={startsTests}
         />
       </div>
 

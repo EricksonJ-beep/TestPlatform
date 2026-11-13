@@ -34,7 +34,7 @@ import { settleAttempt } from "@/lib/attempt-pause";
 import { placeLabel } from "@/lib/needs-you";
 import { getDashboardVersion } from "@/lib/queries/dashboard-version";
 import { GET } from "@/app/api/dashboard/version/route";
-import { getResumeCode, letContinue } from "./results/actions";
+import { getResumeCode, letContinue, setResumeCodeStarts } from "./results/actions";
 import {
   askToFinish,
   attemptHeartbeat,
@@ -505,7 +505,11 @@ describe("the stamp", () => {
     // A code issued anywhere (a Results page) reaches the header on the projector.
     as(ids.jon, "teacher");
     await ok(getResumeCode(true));
-    expect(await stamp()).not.toBe(before);
+    const coded = await stamp();
+    expect(coded).not.toBe(before);
+    // So does its "Also starts tests" switch (Nov 13 2026).
+    await ok(setResumeCodeStarts(true));
+    expect(await stamp()).not.toBe(coded);
   });
 
   it("moves when the clock alone changes a tag: a retake wait ends, the cap's window closes", async () => {

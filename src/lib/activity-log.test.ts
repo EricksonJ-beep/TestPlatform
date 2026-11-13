@@ -135,6 +135,14 @@ describe("activity log", () => {
     expect(
       describeActivity({ ...base, kind: "attempt_started", detail: { attemptNumber: 1 } })
     ).toBe("Started attempt 1 on Lab Quiz: Skin");
+    // Nov 13 2026: the resume code stood in for the test's own access code.
+    expect(
+      describeActivity({
+        ...base,
+        kind: "attempt_started",
+        detail: { attemptNumber: 1, by: "resume_code" },
+      })
+    ).toBe("Started attempt 1 on Lab Quiz: Skin with the resume code");
     expect(
       describeActivity({
         ...base,

@@ -36,7 +36,8 @@ export type ActivityDetail = {
   /** test_paused: why it paused. */
   reason?: PauseReason;
   /** resumed: the resume code, or the teacher's OK. */
-  by?: "code" | "teacher";
+  /** `resumed`: code or teacher. `attempt_started`: resume_code when it stood in for the access code. */
+  by?: "code" | "teacher" | "resume_code";
 };
 
 export async function logActivity(entry: {
@@ -107,11 +108,14 @@ export function activityLine(
       return "Logged in";
     case "class_joined":
       return d.className ? `Joined ${d.className}` : "Joined a class";
-    case "attempt_started":
+    case "attempt_started": {
       // Jon, Oct 13 2026 (dashboard plan build step 5): a second or later try reads as a retake.
+      // Nov 13 2026: say so when the resume code, not the test's own access code, opened it.
+      const key = d.by === "resume_code" ? " with the resume code" : "";
       return d.attemptNumber && d.attemptNumber > 1
-        ? `Started retake (try ${d.attemptNumber})${on}`
-        : `Started attempt${n}${on}`;
+        ? `Started retake (try ${d.attemptNumber})${on}${key}`
+        : `Started attempt${n}${on}${key}`;
+    }
     case "attempt_submitted":
       return `Submitted attempt${n}${on}`;
     case "corrections_submitted":

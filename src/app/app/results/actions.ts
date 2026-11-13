@@ -17,6 +17,8 @@ import {
   currentResumeCode,
   issueResumeCode,
   resumeAttempt,
+  resumeCodeStartsTests,
+  setResumeCodeStartsTests,
   settleAttempt,
 } from "@/lib/attempt-pause";
 import {
@@ -420,5 +422,20 @@ export const getResumeCode = withAuthz(async (fresh: boolean) => {
   const session = await requireTeacher();
   const current = fresh ? null : await currentResumeCode(session.userId);
   const code = current ?? (await issueResumeCode(session.userId));
-  return { code: code.code, expiresAt: code.expiresAt.toISOString() };
+  return {
+    code: code.code,
+    expiresAt: code.expiresAt.toISOString(),
+    startsTests: await resumeCodeStartsTests(session.userId),
+  };
+});
+
+/**
+ * "Also starts tests" (Jon, Nov 13 2026): while on, the teacher's resume code is also accepted in
+ * place of the access code on any of their assignments. It stays as set until changed.
+ */
+export const setResumeCodeStarts = withAuthz(async (on: boolean) => {
+  const session = await requireTeacher();
+  await setResumeCodeStartsTests(session.userId, on === true);
+  revalidatePath("/app");
+  return { startsTests: on === true };
 });

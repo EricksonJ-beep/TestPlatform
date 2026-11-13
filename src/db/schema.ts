@@ -125,6 +125,11 @@ export const users = pgTable(
     }),
     /** Set when a teacher issues a temp password; the student is nudged to change it. */
     mustChangePassword: boolean("must_change_password").default(false).notNull(),
+    /**
+     * A teacher's "Also starts tests" switch (Jon, Nov 13 2026): while on, the resume code on the
+     * board is also accepted in place of the access code on any of that teacher's assignments.
+     */
+    resumeCodeStartsTests: boolean("resume_code_starts_tests").default(false).notNull(),
     lastLoginAt: timestamp("last_login_at", { withTimezone: true }),
     ...timestamps,
   },
@@ -1027,9 +1032,7 @@ export const skywardMarks = pgTable(
     recordedAt: timestamp("recorded_at", { withTimezone: true }).defaultNow().notNull(),
     ...timestamps,
   },
-  (t) => [
-    uniqueIndex("skyward_marks_cell_unique").on(t.assignmentId, t.columnKey, t.studentId),
-  ]
+  (t) => [uniqueIndex("skyward_marks_cell_unique").on(t.assignmentId, t.columnKey, t.studentId)]
 );
 
 // ---------------------------------------------------------------------------
