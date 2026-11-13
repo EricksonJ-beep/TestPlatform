@@ -5,7 +5,7 @@
  * a student-facing action directly (PHASE1.md: "every score is written by
  * server code").
  */
-import { and, asc, eq, gt, inArray, ne } from "drizzle-orm";
+import { and, asc, eq, gt, inArray, isNull, lt, ne, or, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import type { ServedQuestion } from "@/db/types";
 import { buildQuestionSet } from "@/lib/assessments/serve";
@@ -21,7 +21,10 @@ import {
   type FinalScore,
   type ResponseRecord,
 } from "@/lib/grading";
+import { isUniqueViolation } from "@/lib/db-errors";
 import { recomputeGates } from "@/lib/gates";
+
+export { isUniqueViolation };
 import { loadBuilderSections } from "@/lib/queries/assessments";
 import { loadGradableQuestions } from "@/lib/queries/attempts";
 import { getCorrectionsSummary } from "@/lib/queries/corrections";
@@ -152,6 +155,73 @@ export async function createAttempt(input: {
   return { attemptId: attempt.id, number, dueAt };
 }
 
+/** How long a claim (below) is left alone before someone else may finish the grading. */
+export const CLAIM_STALE_MS = 20_000;
+
+export type ClaimOutcome = "claimed" | "busy" | "done" | "paused" | "missing";
+
+/**
+ * Claim an open attempt for grading (H1.4, Nov 9 2026). One conditional UPDATE, so of two
+ * submits (two tabs, a double-click, the countdown and the button) exactly one grades.
+ *
+ * The claim is `submitted_at` set while the status is still in progress, with `last_active_at`
+ * as its clock. A claim whose grading never finished (the database dropped midway) goes stale
+ * after 20 seconds and can be claimed again, so the attempt is finished by the student's next
+ * submit, their next visit, or the sweep. A claimed attempt takes no more answers and never pauses.
+ */
+export async function claimAttempt(
+  attemptId: string,
+  submittedAt: Date,
+  now = new Date()
+): Promise<ClaimOutcome> {
+  const stale = new Date(now.getTime() - CLAIM_STALE_MS);
+  const [row] = await db
+    .update(schema.attempts)
+    .set({
+      submittedAt: sql`coalesce(${schema.attempts.submittedAt}, ${submittedAt.toISOString()}::timestamptz)`,
+      lastActiveAt: now,
+    })
+    .where(
+      and(
+        eq(schema.attempts.id, attemptId),
+        eq(schema.attempts.status, "in_progress"),
+        isNull(schema.attempts.pausedAt),
+        or(isNull(schema.attempts.submittedAt), lt(schema.attempts.lastActiveAt, stale))
+      )
+    )
+    .returning({ id: schema.attempts.id });
+  if (row) return "claimed";
+  const cur = await db.query.attempts.findFirst({
+    columns: { status: true, pausedAt: true },
+    where: eq(schema.attempts.id, attemptId),
+  });
+  if (!cur) return "missing";
+  if (cur.status !== "in_progress") return "done";
+  return cur.pausedAt ? "paused" : "busy";
+}
+
+/**
+ * An attempt that was claimed but never graded is finished here. Returns what the attempt is
+ * now: `open` (never claimed: carry on), `finished`, or `grading` (someone is on it right now).
+ */
+export async function finishIfClaimed(
+  attemptId: string,
+  now = new Date()
+): Promise<"open" | "finished" | "grading"> {
+  const cur = await db.query.attempts.findFirst({
+    columns: { status: true, submittedAt: true },
+    where: eq(schema.attempts.id, attemptId),
+  });
+  if (!cur || cur.status !== "in_progress") return "finished";
+  if (!cur.submittedAt) return "open";
+  const outcome = await claimAttempt(attemptId, cur.submittedAt, now);
+  if (outcome === "claimed") {
+    await finalizeAttempt(attemptId, cur.submittedAt);
+    return "finished";
+  }
+  return outcome === "done" ? "finished" : "grading";
+}
+
 /**
  * Grade every served question (blank = wrong), write response scores, the
  * attempt totals, per-target scores, and the assignment's final score.
@@ -168,7 +238,17 @@ export async function finalizeAttempt(attemptId: string, now = new Date()): Prom
     .where(eq(schema.responses.attemptId, attemptId));
   const byQ = new Map(existing.map((r) => [r.questionId, r]));
 
+  // Every response score in one statement, then the target scores, and the status last
+  // (H1.4, Nov 9 2026): a failure partway leaves the attempt still open to be finished by the
+  // next submit or the sweep, never "graded" with scores missing.
   const records = new Map<string, ResponseRecord>();
+  const graded: Array<{
+    attemptId: string;
+    questionId: string;
+    answer: null;
+    autoScore: number | null;
+    isCorrect: boolean | null;
+  }> = [];
   for (const item of items) {
     const q = questions.get(item.questionId);
     if (!q) continue;
@@ -176,20 +256,13 @@ export async function finalizeAttempt(attemptId: string, now = new Date()): Prom
     const answer = (prev?.answer as Answer | null) ?? null;
     const result = gradeResponse({ ...q, points: item.points }, answer);
     const autoScore = result.pointsEarned;
-    if (prev) {
-      await db
-        .update(schema.responses)
-        .set({ autoScore, isCorrect: result.isCorrect })
-        .where(eq(schema.responses.id, prev.id));
-    } else {
-      await db.insert(schema.responses).values({
-        attemptId,
-        questionId: item.questionId,
-        answer: null,
-        autoScore,
-        isCorrect: result.isCorrect,
-      });
-    }
+    graded.push({
+      attemptId,
+      questionId: item.questionId,
+      answer: null,
+      autoScore,
+      isCorrect: result.isCorrect,
+    });
     records.set(item.questionId, {
       questionId: item.questionId,
       answer,
@@ -197,19 +270,18 @@ export async function finalizeAttempt(attemptId: string, now = new Date()): Prom
       manualScore: prev?.manualScore ?? null,
     });
   }
+  // A row that exists keeps its answer; only the scores are written.
+  for (let i = 0; i < graded.length; i += 200) {
+    await db
+      .insert(schema.responses)
+      .values(graded.slice(i, i + 200))
+      .onConflictDoUpdate({
+        target: [schema.responses.attemptId, schema.responses.questionId],
+        set: { autoScore: sql`excluded.auto_score`, isCorrect: sql`excluded.is_correct` },
+      });
+  }
 
   const score = scoreAttempt(items, records);
-  await db
-    .update(schema.attempts)
-    .set({
-      score: score.totalEarned,
-      maxScore: score.totalPossible,
-      percent: score.percent,
-      status: score.pendingManual > 0 ? "submitted" : "graded",
-      submittedAt: attempt.submittedAt ?? now,
-      gradedAt: score.pendingManual > 0 ? null : now,
-    })
-    .where(eq(schema.attempts.id, attemptId));
   await db
     .delete(schema.attemptTargetScores)
     .where(eq(schema.attemptTargetScores.attemptId, attemptId));
@@ -224,6 +296,17 @@ export async function finalizeAttempt(attemptId: string, now = new Date()): Prom
       }))
     );
   }
+  await db
+    .update(schema.attempts)
+    .set({
+      score: score.totalEarned,
+      maxScore: score.totalPossible,
+      percent: score.percent,
+      status: score.pendingManual > 0 ? "submitted" : "graded",
+      submittedAt: attempt.submittedAt ?? now,
+      gradedAt: score.pendingManual > 0 ? null : now,
+    })
+    .where(eq(schema.attempts.id, attemptId));
   await recomputeFinalScore(attempt.assignmentId, attempt.studentId);
   return score;
 }

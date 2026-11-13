@@ -125,6 +125,14 @@ export const questionPayloadSchema = z.object({
   targetIds: z.array(z.string().uuid()).max(10).default([]),
   standardCodes: z.array(z.string().trim().min(1).max(40)).max(10).default([]),
   mediaUrl,
+  /** What the picture shows, read aloud to students who can't see it. */
+  mediaAlt: z
+    .string()
+    .trim()
+    .max(300, "Keep the description under 300 characters.")
+    .optional()
+    .nullable()
+    .transform((v) => v || null),
   videoUrl: mediaUrl,
   stimulusId: z
     .string()
@@ -361,6 +369,7 @@ async function writeQuestionRow(
       tags: Array.from(new Set(p.tags.map((t) => t.trim()).filter(Boolean))),
       notes: p.notes,
       mediaUrl: p.mediaUrl,
+      mediaAlt: p.mediaUrl ? (p.mediaAlt ?? null) : null,
       videoUrl: p.videoUrl,
       stimulusId: p.stimulusId,
       externalId: extra.externalId,
@@ -477,6 +486,7 @@ export async function duplicateQuestionRow(
       notes: q.notes,
       mediaAssetId: q.mediaAssetId,
       mediaUrl: q.mediaUrl,
+      mediaAlt: q.mediaAlt,
       videoUrl: q.videoUrl,
       stimulusId: sameCourse ? q.stimulusId : null,
       templateId: q.templateId,

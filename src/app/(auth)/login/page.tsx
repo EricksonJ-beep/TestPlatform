@@ -15,6 +15,14 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         your last name, all lowercase (like <span className="font-mono">jane.smith</span>).
         Teachers: use your email.
       </p>
+      {params.ended ? (
+        <p
+          role="status"
+          className="mt-3 rounded-md bg-brand-soft px-3 py-2 text-sm text-brand-deep"
+        >
+          Your password was changed, so you were signed out. Log in with the new one.
+        </p>
+      ) : null}
       <LoginForm next={next} />
       <p className="mt-6 text-center text-xs leading-relaxed text-muted-foreground">
         Forgot your password? Ask your teacher to reset it.

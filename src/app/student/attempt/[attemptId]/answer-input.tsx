@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { ArrowDown, ArrowUp, Check } from "lucide-react";
 import { cn } from "cn";
 import type { Answer } from "@/lib/grading";
@@ -214,6 +215,9 @@ export function AnswerInput({
     };
     return (
       <ol className="grid gap-2">
+        {answer?.kind === "order" && answer.optionIds.length === q.options.length ? null : (
+          <AdoptShownOrder order={order} onChange={onChange} />
+        )}
         <p className="text-xs text-muted-foreground">Put these in order, first at the top.</p>
         {order.map((id, i) => (
           <li
@@ -251,4 +255,19 @@ export function AnswerInput({
   return (
     <p className="text-sm text-muted-foreground">This question type isn&apos;t supported yet.</p>
   );
+}
+
+/**
+ * An ordering question starts in the order the student sees (H1.3, Nov 9 2026). Until they moved
+ * an item nothing was saved, so a student who agreed with the order shown was graded as blank.
+ * Showing the question saves the order on screen; moving an item replaces it.
+ */
+function AdoptShownOrder({ order, onChange }: { order: string[]; onChange: (a: Answer) => void }) {
+  const sent = useRef(false);
+  useEffect(() => {
+    if (sent.current || order.length === 0) return;
+    sent.current = true;
+    onChange({ kind: "order", optionIds: order });
+  }, [order, onChange]);
+  return null;
 }

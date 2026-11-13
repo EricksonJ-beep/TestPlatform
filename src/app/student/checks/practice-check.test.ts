@@ -21,7 +21,7 @@ vi.mock("@/db", async () => {
   return { db, schema, dbDriver: "pg" };
 });
 
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { finalizeAttempt, recomputeFinalScore } from "@/lib/attempts";
 import { listStudentAssignments } from "@/lib/queries/assignments";
@@ -294,6 +294,21 @@ describe("the practice check on a 40% quiz", () => {
     expect(payload.check.passed).toBe(false);
     expect((await final()).percent).toBe(40);
     expect((await card()).cycle).toBe("relearning");
+  });
+
+  it("never deals a round too short to pass (H3.1)", async () => {
+    // A thin bank: only 3 practice questions left for the target, against a pass mark of 4.
+    const practice = [...ids.q.values()].filter((q) => q.bank === "practice").map((q) => q.id);
+    const hidden = practice.slice(3);
+    const q = schema.questions;
+    await db.update(q).set({ isArchived: true }).where(inArray(q.id, hidden));
+    await refused(nextPracticeCheckRound(checkId), /aren't enough practice questions/);
+    const rounds = await db
+      .select()
+      .from(schema.practiceCheckRounds)
+      .where(eq(schema.practiceCheckRounds.checkId, checkId));
+    expect(rounds).toHaveLength(1);
+    await db.update(q).set({ isArchived: false }).where(inArray(q.id, hidden));
   });
 
   it("deals a fresh 5 (no repeats), and passing raises the quiz to 80 and unlocks the retake", async () => {

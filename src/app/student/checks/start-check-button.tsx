@@ -1,5 +1,6 @@
 "use client";
 
+import { safe } from "@/lib/safe-action";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ClipboardCheck } from "lucide-react";
@@ -30,7 +31,7 @@ export function StartCheckButton({
   async function go() {
     setBusy(true);
     setError(null);
-    const r = await startPracticeCheck(assignmentId, kind, bundleId);
+    const r = await safe(startPracticeCheck(assignmentId, kind, bundleId));
     if (!r.ok) {
       setBusy(false);
       setError(r.error);

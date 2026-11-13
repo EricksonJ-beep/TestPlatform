@@ -13,7 +13,7 @@ import { StudentMain, StudentNav } from "./student-nav";
  * the sections get their own row under the wordmark.
  */
 export default async function StudentLayout({ children }: LayoutProps<"/student">) {
-  const session = await requireStudent();
+  const session = await requireStudent({ tempPasswordOk: true });
   return (
     <div className="flex min-h-full flex-col">
       {session.viewingAs ? (

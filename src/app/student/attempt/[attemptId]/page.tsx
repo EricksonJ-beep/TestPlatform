@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { settleAttempt } from "@/lib/attempt-pause";
+import { finishIfClaimed } from "@/lib/attempts";
 import { isAuthzError, requireAttemptAccess } from "@/lib/authz";
 import { getPausedView, getRunnerPayload } from "@/lib/queries/attempts";
 import { PausedScreen } from "./paused-screen";
@@ -23,6 +24,9 @@ export default async function AttemptPage({ params }: PageProps<"/student/attemp
     throw err;
   }
   if (access.as !== "student") notFound();
+  // Submitted but never graded (a failure midway, H1.4): finish it, then show the result.
+  if ((await finishIfClaimed(attemptId)) !== "open")
+    redirect(`/student/assignments/${access.attempt.assignmentId}`);
   if (await settleAttempt(attemptId)) {
     const paused = await getPausedView(attemptId);
     if (paused) return <PausedScreen view={paused} />;

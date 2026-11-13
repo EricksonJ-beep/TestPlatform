@@ -1,5 +1,6 @@
 "use client";
 
+import { safe } from "@/lib/safe-action";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -8,6 +9,7 @@ import { cn } from "cn";
 import type { Answer } from "@/lib/grading";
 import type { PracticeFeedback } from "@/lib/practice";
 import type { CheckRunnerPayload } from "@/lib/queries/practice-checks";
+import { QuestionMedia } from "@/components/questions/question-media";
 import { RichText } from "@/components/rich-text";
 import { StimulusPanel } from "@/components/stimulus/stimulus-panel";
 import { TargetChip } from "@/components/targets/target-chip";
@@ -57,7 +59,7 @@ export function CheckRunner({ payload }: { payload: CheckRunnerPayload }) {
     if (!q || entry || !status) return;
     setBusy(true);
     setError(null);
-    const r = await answerPracticeCheck(status.id, q.id, current);
+    const r = await safe(answerPracticeCheck(status.id, q.id, current));
     setBusy(false);
     if (!r.ok) {
       setError(r.error);
@@ -80,7 +82,7 @@ export function CheckRunner({ payload }: { payload: CheckRunnerPayload }) {
   async function tryAgain() {
     setBusy(true);
     setError(null);
-    const r = await nextPracticeCheckRound(check.id);
+    const r = await safe(nextPracticeCheckRound(check.id));
     if (!r.ok) {
       setBusy(false);
       setError(r.error);
@@ -204,16 +206,7 @@ export function CheckRunner({ payload }: { payload: CheckRunnerPayload }) {
             {q.stimulus ? <StimulusPanel stimulus={q.stimulus} pinned /> : null}
             <article className="rounded-lg border border-border bg-card px-5 py-4">
               <RichText text={q.stem} as="p" className="text-[15px] leading-relaxed" />
-              {q.mediaUrl ? (
-                <div className="mt-3 rounded-lg bg-brand-soft p-3">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={q.mediaUrl}
-                    alt=""
-                    className="max-h-96 max-w-full rounded-md bg-white"
-                  />
-                </div>
-              ) : null}
+              <QuestionMedia mediaUrl={q.mediaUrl} mediaAlt={q.mediaAlt} videoUrl={q.videoUrl} />
               <div
                 className={cn("mt-4", entry && "pointer-events-none")}
                 aria-disabled={!!entry}

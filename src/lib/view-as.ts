@@ -77,6 +77,7 @@ export async function setViewAsCookie(studentId: string, classId: string): Promi
   (await cookies()).set(VIEW_AS_COOKIE, `${studentId}|${classId}`, {
     path: "/",
     httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     maxAge: 60 * 60 * 2,
   });

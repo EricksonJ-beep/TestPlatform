@@ -38,7 +38,10 @@ function secretMatches(given: string | null, expected: string): boolean {
 export const POST = publicRoute(async (req: Request) => {
   const expected = process.env.BLOOM_WORKSHEET_SECRET?.trim();
   if (!expected)
-    return Response.json({ ok: false, error: "BLOOM_WORKSHEET_SECRET is not set" }, { status: 503 });
+    return Response.json(
+      { ok: false, error: "BLOOM_WORKSHEET_SECRET is not set" },
+      { status: 503 }
+    );
   if (!secretMatches(req.headers.get("x-bloom-secret"), expected))
     return Response.json({ ok: false, error: "bad secret" }, { status: 401 });
   let body: unknown;

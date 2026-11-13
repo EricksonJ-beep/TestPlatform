@@ -1,5 +1,6 @@
 "use client";
 
+import { safe } from "@/lib/safe-action";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -9,6 +10,7 @@ import type { Answer } from "@/lib/grading";
 import type { PracticeFeedback } from "@/lib/practice";
 import { HINT_AFTER_MISSES, type PracticeProgress } from "@/lib/practice-rules";
 import type { PracticeRunnerPayload } from "@/lib/queries/practice";
+import { QuestionMedia } from "@/components/questions/question-media";
 import { RichText } from "@/components/rich-text";
 import { StimulusPanel } from "@/components/stimulus/stimulus-panel";
 import { TargetChip } from "@/components/targets/target-chip";
@@ -61,8 +63,8 @@ export function PracticeRunner({ payload }: { payload: PracticeRunnerPayload }) 
     setError(null);
     const r =
       kind === "check"
-        ? await answerPractice(attempt.id, q.id, current)
-        : await revealPractice(attempt.id, q.id);
+        ? await safe(answerPractice(attempt.id, q.id, current))
+        : await safe(revealPractice(attempt.id, q.id));
     setChecking(false);
     if (!r.ok) {
       setError(r.error);
@@ -83,8 +85,8 @@ export function PracticeRunner({ payload }: { payload: PracticeRunnerPayload }) 
     setRestarting(true);
     // A built practice deals a fresh hand on the same targets; a set starts a new attempt.
     const r = payload.custom
-      ? await startBuiltPractice(payload.custom)
-      : await startPractice(set.id);
+      ? await safe(startBuiltPractice(payload.custom))
+      : await safe(startPractice(set.id));
     if (r.ok) router.push(`/student/practice/${r.data.attemptId}`);
     else {
       setRestarting(false);
@@ -217,36 +219,7 @@ export function PracticeRunner({ payload }: { payload: PracticeRunnerPayload }) 
             {q.stimulus ? <StimulusPanel stimulus={q.stimulus} pinned /> : null}
             <article className="rounded-lg border border-border bg-card px-5 py-4">
               <RichText text={q.stem} as="p" className="text-[15px] leading-relaxed" />
-              {q.mediaUrl ? (
-                <div className="mt-3 rounded-lg bg-brand-soft p-3">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={q.mediaUrl}
-                    alt=""
-                    className="max-h-96 max-w-full rounded-md bg-white"
-                  />
-                </div>
-              ) : null}
-              {q.videoUrl ? (
-                <div className="mt-3 rounded-lg bg-brand-soft p-3">
-                  {/youtube\.com|youtu\.be/.test(q.videoUrl) ? (
-                    <a
-                      href={q.videoUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-sm font-medium text-brand-deep hover:underline"
-                    >
-                      Watch the video
-                    </a>
-                  ) : (
-                    <video
-                      src={q.videoUrl}
-                      controls
-                      className="w-full max-w-xl rounded-md bg-black"
-                    />
-                  )}
-                </div>
-              ) : null}
+              <QuestionMedia mediaUrl={q.mediaUrl} mediaAlt={q.mediaAlt} videoUrl={q.videoUrl} />
               <div
                 className={cn("mt-4", done && "pointer-events-none")}
                 aria-disabled={!!done}
@@ -327,7 +300,7 @@ export function PracticeRunner({ payload }: { payload: PracticeRunnerPayload }) 
                         aria-current={i === idx ? "step" : undefined}
                         onClick={() => setIdx(i)}
                         className={cn(
-                          "size-9 rounded-md border text-sm font-medium tabular transition-colors",
+                          "relative size-11 rounded-md border text-sm font-medium tabular transition-colors",
                           i === idx ? "border-brand ring-2 ring-brand/40" : "border-border",
                           a
                             ? a.feedback.isCorrect
@@ -341,6 +314,12 @@ export function PracticeRunner({ payload }: { payload: PracticeRunnerPayload }) 
                         )}
                       >
                         {i + 1}
+                        {/* A mark as well as a colour (H6.3): right and wrong read without colour. */}
+                        {a?.feedback.isCorrect ? (
+                          <Check className="absolute top-0.5 right-0.5 size-3" aria-hidden />
+                        ) : a?.feedback.isCorrect === false ? (
+                          <X className="absolute top-0.5 right-0.5 size-3" aria-hidden />
+                        ) : null}
                       </button>
                     </li>
                   );

@@ -96,6 +96,7 @@ export async function settleAttempt(attemptId: string, now = new Date()): Promis
       startedAt: schema.attempts.startedAt,
       dueAt: schema.attempts.dueAt,
       pausedAt: schema.attempts.pausedAt,
+      submittedAt: schema.attempts.submittedAt,
       lastActiveAt: schema.attempts.lastActiveAt,
       assignmentCloses: schema.assignments.closesAt,
       openUntil: attemptOpenUntil,
@@ -115,6 +116,8 @@ export async function settleAttempt(attemptId: string, now = new Date()): Promis
     .limit(1);
   if (!row) return false;
   if (row.pausedAt) return row.status === "in_progress";
+  // Claimed for grading (H1.4): it is being submitted, so it never pauses.
+  if (row.submittedAt) return false;
   const closesAt = effectiveClose(row.assignmentCloses, row.openUntil);
   const point = pausePoint(row, closesAt, now);
   if (!point) return false;

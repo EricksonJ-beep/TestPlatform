@@ -185,6 +185,23 @@ describe("student: joining", () => {
     expect(again?.error).toMatch(/already joined/);
   });
 
+  it("two students picking the same name at the same moment: one gets it (H4.3)", async () => {
+    const r = await ok(lookupJoinCode(ids.code));
+    const brooks = r.names.find((n) => n.lastName === "Brooks")!;
+    const form = () =>
+      fd({ code: ids.code, nameId: brooks.id, password: "sunflower-42", confirm: "sunflower-42" });
+    const results = await Promise.all([joinClass(null, form()), joinClass(null, form())]);
+    expect(results.filter((x) => x?.created && !x.error)).toHaveLength(1);
+    expect(results.find((x) => x?.error)?.error).toMatch(/already joined/);
+    // The loser's account was taken back: one Brooks, and the name points at that one.
+    const all = await db.select().from(schema.users).where(eq(schema.users.lastName, "Brooks"));
+    expect(all).toHaveLength(1);
+    const name = await db.query.rosterNames.findFirst({
+      where: eq(schema.rosterNames.id, brooks.id),
+    });
+    expect(name?.studentId).toBe(all[0].id);
+  });
+
   it("validates the form; a name not on the list is created and flagged; duplicate names get numbered usernames", async () => {
     expect(
       await joinClass(null, fd({ code: ids.code, password: "short", confirm: "short" }))

@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-/** Last-resort error screen. Nothing a student typed is lost: answers autosave as they go. */
+/** Last-resort error screen. Saved answers are safe; it doesn't claim more than that (H6.5). */
 export default function GlobalError({
   error,
   reset,
@@ -22,8 +22,8 @@ export default function GlobalError({
         <AlertTriangle className="size-8 text-[#B93E27]" aria-hidden />
         <h1 className="text-xl">Something went wrong</h1>
         <p className="text-sm text-muted-foreground">
-          Your work is saved as you go, so nothing is lost. Try again; if it keeps happening, tell
-          your teacher what you were doing.
+          Answers you saw marked Saved are safe. Try again; if it keeps happening, tell your teacher
+          what you were doing.
           {error.digest ? (
             <span className="block text-xs text-muted-foreground/80">Reference {error.digest}</span>
           ) : null}

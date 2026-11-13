@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { closeExpiredAttempts } from "@/lib/attempt-sweep";
 import { eq } from "drizzle-orm";
 import { KeyRound, Plus } from "lucide-react";
 import { db, schema } from "@/db";
@@ -30,31 +31,43 @@ const TAB_TITLE = {
 export default async function StudentHome({ searchParams }: PageProps<"/student">) {
   const tab = homeTab((await searchParams).tab);
   const session = await requireStudent();
+  // A test of theirs that ran out of time is submitted before the list is read (H3.2). Not
+  // under "View as student": that view only reads.
+  if (!session.viewingAs) await closeExpiredAttempts({ studentId: session.userId });
   const [classes, assignments] = await Promise.all([
     listStudentClasses(session.userId),
     listStudentAssignments(session.userId),
   ]);
-  const [practice, buildable, results, me] = await Promise.all([
-    getStudentPractice(session.userId, assignments),
-    studentCourseIds(session.userId).then(listCustomPracticeOptions),
-    listStudentResults(session.userId, assignments),
-    db.query.users.findFirst({
-      columns: { mustChangePassword: true },
-      where: eq(schema.users.id, session.userId),
-    }),
-  ]);
-
-  if (tab !== "home")
+  // Each tab loads only what it shows (H5.2, Nov 9 2026): the results list and the practice
+  // shelves are the heavy reads, and neither is on every tab.
+  if (tab === "assessments" || tab === "results")
     return (
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-5">
         <h1 className="text-2xl">{TAB_TITLE[tab]}</h1>
         {tab === "assessments" ? (
           <AssessmentsTab assignments={assignments} />
-        ) : tab === "practice" ? (
-          <PracticeTab practice={practice} buildable={buildable} />
         ) : (
-          <ResultsTab results={results} />
+          <ResultsTab results={await listStudentResults(session.userId, assignments)} />
         )}
+      </div>
+    );
+
+  const [practice, buildable, me] = await Promise.all([
+    getStudentPractice(session.userId, assignments),
+    studentCourseIds(session.userId).then(listCustomPracticeOptions),
+    tab === "home"
+      ? db.query.users.findFirst({
+          columns: { mustChangePassword: true },
+          where: eq(schema.users.id, session.userId),
+        })
+      : null,
+  ]);
+
+  if (tab === "practice")
+    return (
+      <div className="mx-auto flex w-full max-w-4xl flex-col gap-5">
+        <h1 className="text-2xl">{TAB_TITLE[tab]}</h1>
+        <PracticeTab practice={practice} buildable={buildable} />
       </div>
     );
 

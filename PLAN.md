@@ -289,7 +289,7 @@ Layout: **teal left sidebar** (Dashboard · Question banks · Assessments · Pra
 9. **Practice check** — "Question k of 5," one answer each, then right/wrong plus the explanation. The result screen reads, e.g., "4 of 5. Your retake is unlocked" (or "Your 80% is in"). Below 4/5, **Look back** shows the missed questions with explanations and "Reopen my relearning," then **Try a new 5**.
 
 ### Color & type
-- Brand teal `#0E7C7B` · Action coral `#FF6B5C` (buttons use a slightly deeper `#E2553A` for contrast)
+- Brand teal `#0E7C7B` · Action coral `#FF6B5C` (buttons use a deeper `#CC4429`: white text on it passes AA contrast at 4.7:1; `#E2553A` was 3.75:1, changed Nov 9 2026)
 - Success `#2E9E5B` · Warning `#F4A300` · Error `#E5484D`
 - Text `#1A1A1A`, muted `#5C6670`, page bg `#F7F8F9`, white cards, 8px radius
 - Fonts: Inter (UI) + Lexend (headings; designed for reading proficiency)
@@ -375,6 +375,14 @@ Repo, Next.js + Tailwind + shadcn scaffold, Neon project + Drizzle schema/migrat
 - **L1 launch:** Physical Science and Biology switch over together once all of it is done; assignments taken before launch keep the v2 rules.
 
 *Outcome:* students earn a retake through one short, guided path: about 10 min of relearning on a quiz (10–15 per target on a test) plus a 5-question check.
+
+**Hardening (Nov 9, 2026)** — `docs/hardening-plan.md`. A review of the whole app, built as tickets H1–H7: no features, and no rule changed except these, which follow from it.
+- A student's answers are kept in a queue until the server confirms them, and Submit waits for it.
+- A timed test left open past its time limit is submitted at its deadline when its teacher's dashboard or results, or the student's home, next loads.
+- The best attempt of an uncapped quiz or practice is the best **percent**.
+- A practice check is never dealt with fewer questions than its pass mark.
+- A temporary password must be changed before anything else, a reset signs out earlier sessions, and guessing a password or a code is throttled.
+- A question's image carries a description for screen readers.
 
 **Phase 2 — Bigger and better**
 - Guided-notes activity type; teacher-verified link completions; activity sequencing

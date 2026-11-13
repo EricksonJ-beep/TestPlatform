@@ -323,3 +323,67 @@ describe("wrappers", () => {
     await expect(action()).rejects.toThrow("boom");
   });
 });
+
+describe("hardening: accounts (H4.2, H4.4)", () => {
+  const redirectsTo = (path: string) => ({ digest: expect.stringContaining(path) });
+
+  it("a temporary password sends every guard to the change-password page", async () => {
+    state.session = {
+      userId: ids.student1,
+      role: "student",
+      email: "s1@x",
+      firstName: "S",
+      lastName: "One",
+      mustChangePassword: true,
+    };
+    await expect(authz.requireStudent()).rejects.toMatchObject(redirectsTo("/student/password"));
+    await expect(authz.requireAttemptAccess(ids.attemptS1)).rejects.toMatchObject(
+      redirectsTo("/student/password")
+    );
+    // The password page, its action and the layout still load.
+    await expect(authz.requireStudent({ tempPasswordOk: true })).resolves.toMatchObject({
+      userId: ids.student1,
+    });
+    state.session = { ...state.session, userId: ids.teacherA, role: "teacher" };
+    await expect(authz.requireTeacher()).rejects.toMatchObject(
+      redirectsTo("/app/settings/password")
+    );
+  });
+
+  it("a teacher viewing as that student is not sent to change the student's password", async () => {
+    state.session = {
+      userId: ids.student1,
+      role: "student",
+      email: "s1@x",
+      firstName: "S",
+      lastName: "One",
+      mustChangePassword: true,
+      viewingAs: { teacherId: ids.teacherA, teacherName: "T A" },
+    };
+    await expect(authz.requireStudent()).resolves.toMatchObject({ userId: ids.student1 });
+  });
+
+  it("a student removed from the class can no longer open their attempt; the teacher still can", async () => {
+    asUser(ids.student1, "student");
+    await expect(authz.requireAttemptAccess(ids.attemptS1)).resolves.toMatchObject({
+      as: "student",
+    });
+    const { and, eq } = await import("drizzle-orm");
+    const mine = and(
+      eq(schema.enrollments.classId, ids.classA),
+      eq(schema.enrollments.studentId, ids.student1)
+    );
+    const [enrollment] = await db.select().from(schema.enrollments).where(mine);
+    await db.delete(schema.enrollments).where(mine);
+    await rejects(authz.requireAttemptAccess(ids.attemptS1), 403);
+    asUser(ids.teacherA, "teacher");
+    await expect(authz.requireAttemptAccess(ids.attemptS1)).resolves.toMatchObject({
+      as: "teacher",
+    });
+    await db.insert(schema.enrollments).values(enrollment); // back in the class, back in
+    asUser(ids.student1, "student");
+    await expect(authz.requireAttemptAccess(ids.attemptS1)).resolves.toMatchObject({
+      as: "student",
+    });
+  });
+});

@@ -12,6 +12,7 @@ import { rotateJoinCode, uniqueUsername, usernameBase } from "@/lib/join";
 import { parseRosterNames } from "@/lib/roster";
 import { matchLunchCodes, parseLunchCodes } from "@/lib/lunch-codes";
 import { generateTempPassword, hashPassword, passwordPolicy } from "@/lib/password";
+import { isTeachersStudent, mayEnrollExisting } from "@/lib/school";
 
 // ---------------------------------------------------------------------------
 // Classes
@@ -100,11 +101,19 @@ export type CreatedStudent = {
  */
 async function createOrEnrollStudent(
   classId: string,
+  teacherId: string,
   organizationId: string | null,
   input: { firstName: string; lastName: string; email: string; tempPassword?: string }
 ): Promise<CreatedStudent> {
   const existing = await db.query.users.findFirst({
-    columns: { id: true, role: true, firstName: true, lastName: true, email: true },
+    columns: {
+      id: true,
+      role: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      organizationId: true,
+    },
     where: sql`lower(${schema.users.email}) = ${input.email}`,
   });
 
@@ -129,6 +138,20 @@ async function createOrEnrollStudent(
         status: "already_enrolled",
       };
     }
+    // Rule (H4.8; Jon, Nov 11 2026): an account that already exists is enrolled from here only
+    // within the same school, or when the student is already this teacher's. Enrolling gives
+    // the teacher a password reset and "View as student", so an email alone must not be enough.
+    const allowed = mayEnrollExisting({
+      teacherOrganizationId: organizationId,
+      studentOrganizationId: existing.organizationId,
+      alreadyThisTeachersStudent: await isTeachersStudent(teacherId, existing.id),
+    });
+    if (!allowed)
+      throw new ActionError(
+        `${input.email} already has a Bloom account that isn't at your school, so it can't be added from here. Have the student join with your class code instead.`,
+        409,
+        { email: ["This account isn't at your school. Use the class code instead."] }
+      );
     await db.insert(schema.enrollments).values({ classId, studentId: existing.id });
     return {
       studentId: existing.id,
@@ -177,7 +200,7 @@ export const addStudent = withAuthz(async (classId: string, formData: FormData) 
   const parsed = studentSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) throw new ActionError("Check the form.", 400, fieldErrors(parsed.error));
   const orgId = await teacherOrganizationId(session.userId);
-  const result = await createOrEnrollStudent(classId, orgId, {
+  const result = await createOrEnrollStudent(classId, session.userId, orgId, {
     ...parsed.data,
     tempPassword: parsed.data.tempPassword || undefined,
   });
@@ -236,7 +259,7 @@ export const importStudentsCsv = withAuthz(async (classId: string, formData: For
     }
     seen.add(parsed.data.email);
     try {
-      const student = await createOrEnrollStudent(classId, orgId, {
+      const student = await createOrEnrollStudent(classId, session.userId, orgId, {
         ...parsed.data,
         tempPassword: parsed.data.tempPassword || undefined,
       });
@@ -262,7 +285,12 @@ export const resetStudentPassword = withAuthz(async (classId: string, studentId:
   const tempPassword = generateTempPassword();
   await db
     .update(schema.users)
-    .set({ passwordHash: await hashPassword(tempPassword), mustChangePassword: true })
+    .set({
+      passwordHash: await hashPassword(tempPassword),
+      mustChangePassword: true,
+      // Anyone still signed in as this student is signed out (H4.2).
+      passwordChangedAt: new Date(),
+    })
     .where(and(eq(schema.users.id, studentId), eq(schema.users.role, "student")));
   revalidatePath(`/app/classes/${classId}`);
   return { tempPassword };
