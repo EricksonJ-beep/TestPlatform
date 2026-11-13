@@ -269,9 +269,8 @@ export async function startSkywardTracking(
           ...m,
           assignmentId: ex.assignment.id,
           source: "marked" as const,
-          // Stamped with the chosen day, not today (fixed Nov 11 2026): the mark says "this is
-          // what Skyward had then", so a score that moved between that day and now still shows.
-          // Stamped with today, a retake in between counted as already entered.
+          // The mark stands for that day, not for today: a score change between the date and now
+          // (a retake last week) comes after it, so the page lists it.
           recordedAt: asOf.getTime() < now.getTime() ? asOf : now,
         }))
       );

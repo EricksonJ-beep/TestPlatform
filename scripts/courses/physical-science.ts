@@ -72,18 +72,18 @@ export const courses: CourseDefinition[] = [
           ),
           lt(
             "U3.LT2",
-            "Ionic vs. covalent compounds",
-            "I can look at a compound and tell whether it's ionic or covalent."
+            "Ionic bonds and naming",
+            "I can explain how ionic bonds form and name ionic compounds."
           ),
           lt(
             "U3.LT3",
-            "Name to formula",
-            "I can take the name of a compound and write its chemical formula — ionic or covalent, including polyatomic ions and transition metals."
+            "Covalent bonds and naming",
+            "I can explain how covalent bonds form and name covalent compounds."
           ),
           lt(
             "U3.LT4",
-            "Formula to name",
-            "I can take the chemical formula of a compound and write its name — ionic or covalent, including polyatomic ions and transition metals."
+            "Comparing ionic and covalent",
+            "I can compare ionic and covalent compounds."
           ),
         ],
       },

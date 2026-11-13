@@ -166,6 +166,12 @@ describe("content packs", () => {
     // Physical Science Units 1–6 practice packs (Oct 13 2026): a set and notes each; grown to 100
     // questions per target for the relearning path's practice check (Nov 4 2026, ticket C1),
     // U6.LT5 (Rube Goldberg) included.
+    // Unit 3's new learning targets (Jon, Nov 11 2026): LT2–LT4's banks were rebuilt for them.
+    const U3_REBUILT: Record<string, number> = {
+      "ps-u3-lt2-practice": 206,
+      "ps-u3-lt3-practice": 109,
+      "ps-u3-lt4-practice": 102,
+    };
     for (const name of [1, 2, 3, 4, 5, 6]
       .flatMap((u) => [1, 2, 3, 4].map((n) => `ps-u${u}-lt${n}-practice`))
       .concat("ps-u6-lt5-practice")) {
@@ -173,7 +179,7 @@ describe("content packs", () => {
       expect(out.status).toBe("applied");
       if (out.status === "applied")
         expect(out.summary).toMatchObject({
-          questions: 100,
+          questions: U3_REBUILT[name] ?? 100,
           practiceSet: { published: true },
           activity: { published: true },
           errors: [],
@@ -185,9 +191,17 @@ describe("content packs", () => {
     }))!;
     const health = (await loadBankHealth([lt2Bank])).get(lt2Bank.id)!;
     expect(health.targets.map((t) => [t.code, t.bands, t.worst])).toEqual([
-      ["U3.LT2", { easy: 45, medium: 30, hard: 25 }, "ok"],
+      ["U3.LT2", { easy: 94, medium: 60, hard: 52 }, "ok"],
     ]);
-    expect(health).toMatchObject({ usable: 100, notAutoGraded: 0, untagged: 0, worst: "ok" });
+    expect(health).toMatchObject({ usable: 206, notAutoGraded: 0, untagged: 0, worst: "ok" });
+    // The pack carries the target's new wording, and the target keeps its place in the list.
+    const lt2 = (
+      await db.query.learningTargets.findMany({
+        where: eq(schema.learningTargets.code, "U3.LT2"),
+      })
+    ).find((t) => t.description?.includes("ionic bonds"))!;
+    expect(lt2.title).toBe("Ionic bonds and naming");
+    expect(lt2.sortOrder).toBeLessThan(100);
 
     const skin = first.find((o) => o.name === "anatomy-u2-lab-quiz-integumentary")!;
     expect(skin.status).toBe("applied");
@@ -471,6 +485,48 @@ describe("content packs", () => {
           schema.assessments.title,
           "Unit 3 Quiz LT1, LT2, LT3: Cell Theory & Cell Structure"
         ),
+      })
+    ).toMatchObject({ type: "formative", isPublished: true });
+    // Biology Unit 3 LT4 quiz (Nov 12 2026, from Jon's cell transport key): 22 multiple choice and
+    // one four-pair vocabulary matching (26 points), all on U3.LT4, with the membrane, bilayer,
+    // beakers, and osmosis graph shared as stimuli and three single-question pictures.
+    const lt4 = first.find((o) => o.name === "bio-u3-quiz-transport-lt4")!;
+    expect(lt4.status).toBe("applied");
+    if (lt4.status === "applied")
+      expect(lt4.summary).toMatchObject({ questions: 23, assignedTo: [], errors: [] });
+    const lt4Bank = (await db.query.questionBanks.findFirst({
+      where: eq(schema.questionBanks.name, "Bio · Unit 3 Quiz: LT4"),
+    }))!;
+    const lt4Qs = await db
+      .select()
+      .from(schema.questions)
+      .where(eq(schema.questions.bankId, lt4Bank.id));
+    expect(lt4Qs).toHaveLength(23);
+    expect(lt4Qs.filter((q) => q.type === "matching")).toHaveLength(1);
+    expect(lt4Qs.reduce((sum, q) => sum + q.points, 0)).toBe(26);
+    expect(
+      lt4Qs.filter(
+        (q) =>
+          q.mediaUrl?.startsWith("/quiz-images/bio-u3-quiz-transport-lt4/") &&
+          existsSync(join(process.cwd(), "public", q.mediaUrl))
+      )
+    ).toHaveLength(3);
+    for (const [ref, n] of [
+      ["bio-u3-quiz-lt4-membrane", 2],
+      ["bio-u3-quiz-lt4-bilayer", 2],
+      ["bio-u3-quiz-lt4-beakers", 2],
+      ["bio-u3-quiz-lt4-osmosis-graph", 4],
+    ] as const) {
+      const [stim] = await db
+        .select()
+        .from(schema.stimuli)
+        .where(and(eq(schema.stimuli.courseId, bio.id), eq(schema.stimuli.ref, ref)));
+      expect(existsSync(join(process.cwd(), "public", stim.mediaUrl!))).toBe(true);
+      expect(lt4Qs.filter((q) => q.stimulusId === stim.id)).toHaveLength(n);
+    }
+    expect(
+      await db.query.assessments.findFirst({
+        where: eq(schema.assessments.title, "Unit 3 Quiz LT4: Cellular Transport"),
       })
     ).toMatchObject({ type: "formative", isPublished: true });
     // Anatomy Unit 2 (Oct 20 2026): the skeletal quiz (20 one-point questions on U2.LT7–LT13) and
@@ -1335,6 +1391,84 @@ describe("content packs", () => {
       where: eq(schema.relearningActivities.title, "Revision reading"),
     });
     expect(reading.map((a) => a.content)).toEqual(["New text."]);
+  });
+
+  it("replaceBank: a revision's CSV is the whole bank, and a renamed set and notes are found by their former titles", async () => {
+    const root = mkdtempSync(join(tmpdir(), "bloom-packs-"));
+    const name = "test-replace-pack";
+    mkdirSync(join(root, name));
+    const csv = (rows: string[]) =>
+      ["external_id,course,learning_target,type,stem,correct,explanation,hint", ...rows].join("\n");
+    const row = (id: string, target: string, stem: string) =>
+      `${id},Physical Science A,${target},numeric,${stem},5,Because.,Think.`;
+    const def = {
+      name,
+      teacherEmail: "EricksonJ@cadott.k12.wi.us",
+      course: "Physical Science A",
+      bank: "PS · Replace bank",
+      practiceSet: { title: "Old set title", drawCount: 10, targets: ["U1.LT2"] },
+      activity: {
+        kind: "reading" as const,
+        title: "Old notes title",
+        content: "Old text.",
+        targets: ["U1.LT2"],
+      },
+    };
+    writeFileSync(
+      join(root, name, "questions.csv"),
+      csv([row("RP-1", "U1.LT2", "Kept?"), row("RP-2", "U1.LT2", "Dropped?")])
+    );
+    const first = await applyPack(def, root);
+    expect(first.status).toBe("applied");
+    if (first.status !== "applied") throw new Error("unreachable");
+    const bankId = first.summary.bankId as string;
+    // A question the teacher wrote by hand (no external_id) is never retired.
+    await db.insert(schema.questions).values({
+      bankId,
+      ownerId: ids.teacher,
+      type: "true_false",
+      stem: "Written by hand?",
+    });
+
+    writeFileSync(
+      join(root, name, "questions.csv"),
+      csv([row("RP-1", "U1.LT3", "Kept?"), row("RP-3", "U1.LT3", "Added?")])
+    );
+    const r2 = {
+      ...def,
+      revision: 2,
+      replaceBank: true,
+      practiceSet: { ...def.practiceSet, title: "New set title", formerTitles: ["Old set title"] },
+      activity: { ...def.activity, title: "New notes title", formerTitles: ["Old notes title"] },
+    };
+    const out = await applyPack(r2, root);
+    expect(out.status).toBe("applied");
+    if (out.status === "applied")
+      expect(out.summary).toMatchObject({
+        questions: 2,
+        retired: 1,
+        practiceSet: { reused: true },
+        activity: { reused: true },
+        errors: [],
+      });
+    const live = await db.query.questions.findMany({
+      where: and(eq(schema.questions.bankId, bankId), eq(schema.questions.isArchived, false)),
+    });
+    expect(live.map((q) => q.stem).sort()).toEqual(["Added?", "Kept?", "Written by hand?"]);
+    const sets = await db.query.practiceSets.findMany({
+      where: eq(schema.practiceSets.bankId, bankId),
+    });
+    expect(sets.map((x) => x.title)).toEqual(["New set title"]);
+    expect(
+      await db.query.relearningActivities.findMany({
+        where: eq(schema.relearningActivities.title, "Old notes title"),
+      })
+    ).toHaveLength(0);
+    expect(
+      await db.query.relearningActivities.findMany({
+        where: eq(schema.relearningActivities.title, "New notes title"),
+      })
+    ).toHaveLength(1);
   });
 
   it("skips a pack whose teacher is missing and leaves it unapplied for next time", async () => {

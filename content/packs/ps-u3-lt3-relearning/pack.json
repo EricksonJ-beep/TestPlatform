@@ -1,125 +1,152 @@
 {
   "name": "ps-u3-lt3-relearning",
-  "revision": 2,
+  "revision": 3,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science A",
   "relearning": [
     {
       "target": "U3.LT3",
       "mode": "read",
-      "title": "Read: writing formulas from names",
-      "description": "A short reading with the exact-change analogy, worked examples and quick checks.",
+      "title": "Read: covalent bonds and naming",
+      "description": "A short reading with the shared-pizza analogy, worked examples and quick checks.",
       "sections": [
         {
           "part": "core",
-          "title": "Charges, criss-cross and prefixes",
+          "title": "How a covalent bond forms",
           "minutes": 4,
           "body": {
             "type": "text",
-            "text": "**I can take the name of a compound and write its chemical formula, ionic or covalent, including polyatomic ions and transition metals.**\n\n**Think about paying with exact change.** If a snack costs 50 cents and you only have quarters, you need 2 of them. An ionic formula works the same way: the positive and negative charges have to come out even, so the total is **zero**. The subscripts tell you how many of each ion it takes.\n\n**Step 1: ionic or covalent?** Metal + nonmetal = **ionic** (use charges). Two nonmetals = **covalent** (use prefixes). A compound with a polyatomic ion is ionic.\n\n**Ionic: crisscross applesauce.** 1) Write each ion with its charge. Main-group charges come from the **group number**: Group 1 = +1, Group 2 = +2, Group 13 = +3, Group 15 = −3, Group 16 = −2, Group 17 = −1. 2) Each charge drops to the bottom as a **subscript on the opposite ion**, with no sign. 3) **Reduce** if the subscripts share a factor (Fe₂O₂ → FeO). 4) **Check** that the charges cancel to zero. The metal always goes first.\n\n**Covalent:** the **prefixes are the subscripts** (mono 1, di 2, tri 3, tetra 4, penta 5, hexa 6). No prefix on the first element means 1. No criss-cross and no reducing in covalent!\n\n**Worked example:** magnesium nitride. Metal + nonmetal, so ionic. Mg is Group 2 → Mg²⁺. N is Group 15 → N³⁻. Criss-cross: the 3 goes to Mg and the 2 goes to N → Mg₃N₂. 3 and 2 can't be reduced. Check: 3(+2) + 2(−3) = +6 − 6 = 0."
+            "text": "**I can explain how covalent bonds form and name covalent compounds.**\n\n**Think of splitting a pizza.** Nobody gives the pizza away; you both eat from it. A **covalent bond** works the same way. Two **nonmetal** atoms both need more electrons, and neither will give any up, so they **share**.\n\n**How it forms.** Each atom puts in one electron to make a **shared pair**. The shared pair counts toward the outer level of **both** atoms. That is how both can reach a full outer level: 8 for most atoms, 2 for hydrogen. No electrons are given away, so **no ions form**. A group of atoms joined by covalent bonds is a **molecule**.\n\n**How many bonds?** An atom shares as many electrons as it needs to reach 8. Hydrogen needs 1 more, so it makes 1 bond. Oxygen (6 valence electrons) needs 2 more, so it makes 2 bonds. Nitrogen (5) makes 3. Carbon (4) makes 4.\n\n**Worked example:** water. Oxygen needs 2 more electrons. Each hydrogen needs 1 more. Oxygen shares one pair with each of two hydrogens: **H₂O**. Now oxygen counts 8 and each hydrogen counts 2."
           },
           "checks": [
             {
               "id": "c1",
               "kind": "multiple_choice",
-              "prompt": "Calcium forms Ca²⁺ and chlorine forms Cl⁻. What is the formula for calcium chloride?",
+              "prompt": "Two chlorine atoms bond to make Cl₂. What happens to their electrons?",
               "options": [
-                { "id": "a", "text": "CaCl" },
-                { "id": "b", "text": "CaCl₂" },
-                { "id": "c", "text": "Ca₂Cl" }
+                {
+                  "id": "a",
+                  "text": "One chlorine transfers an electron to the other"
+                },
+                {
+                  "id": "b",
+                  "text": "The two atoms share a pair of electrons"
+                },
+                {
+                  "id": "c",
+                  "text": "Each atom loses an electron"
+                }
               ],
               "answer": "b",
-              "explanation": "Criss-cross: calcium's 2 drops onto chlorine, giving CaCl₂. Check: +2 + 2(−1) = 0. CaCl doesn't balance (+2 − 1), and Ca₂Cl puts the subscript on the wrong ion, which is the common mistake."
+              "explanation": "Chlorine is a nonmetal, and two nonmetals share. One shared pair lets both chlorines count 8. Picking transfer is the common mistake; transfer needs a metal."
             },
             {
               "id": "c2",
               "kind": "fill_blank",
-              "prompt": "Dinitrogen tetroxide is covalent. How many oxygen atoms are in its formula? Type a number.",
-              "answer": ["4", "four"],
-              "explanation": "Covalent: the prefix is the subscript. tetra- means 4, so the formula is N₂O₄. Reducing it to NO₂ is the common mistake; there is no reducing in covalent."
+              "prompt": "Nitrogen has 5 valence electrons. How many covalent bonds does it make to reach 8? Type a number.",
+              "answer": ["3", "three"],
+              "explanation": "8 − 5 = 3, so nitrogen shares 3 more electrons and makes 3 bonds, as in NH₃. Answering 5 (the number it already has) is the common mistake."
             }
           ]
         },
         {
           "part": "extension",
-          "title": "Transition metals and polyatomic ions",
+          "title": "Double and triple bonds, and names",
           "minutes": 6,
           "body": {
             "type": "text",
-            "text": "**Transition metals:** the **Roman numeral is the charge**, not a count of atoms. Iron(III) means Fe³⁺, and copper(II) means Cu²⁺.\n\n**Polyatomic ions** stay together. The formula and charge will be given to you (nitrate is NO₃⁻). Never change anything inside, and put **parentheses** around the ion only when you need 2 or more of it: Ca(NO₃)₂, but BaSO₄.\n\n**Worked example 2:** copper(II) hydroxide (hydroxide is OH⁻). Copper(II) → Cu²⁺. Criss-cross: the 2 goes to hydroxide, and the 1 goes to copper. You need 2 hydroxides, so protect OH with parentheses → Cu(OH)₂. Check: +2 + 2(−1) = 0.\n\n**Worked example 3:** diphosphorus trioxide. Phosphorus and oxygen are both nonmetals, so covalent. di = 2 phosphorus, tri = 3 oxygen. Do not criss-cross or reduce. Answer: P₂O₃.\n\n**Watch out for:** using the Roman numeral as a subscript (iron(III) oxide is NOT FeO₃; it is Fe₂O₃), using the number of metal atoms as its charge, forgetting to reduce (Fe₂O₂ should be FeO), charges that don't cancel (NaCl₂), dropping the parentheses or changing the subscripts inside a polyatomic ion, and criss-crossing a covalent compound."
+            "text": "**Single, double, triple.** A **single bond** is 1 shared pair (2 electrons). A **double bond** is 2 shared pairs (4 electrons). A **triple bond** is 3 shared pairs (6 electrons).\n\n**Worked example 2:** O₂. Each oxygen needs 2 more electrons, so the two atoms share 2 pairs: a double bond. In N₂, each nitrogen needs 3 more, so they share 3 pairs: a triple bond.\n\n**Naming covalent compounds.** Use **prefixes** to count the atoms: mono 1, di 2, tri 3, tetra 4, penta 5, hexa 6, hepta 7, octa 8, nona 9, deca 10.\n\n**Rule 1.** The **first element skips mono**. CO₂ is carbon dioxide, not monocarbon dioxide.\n\n**Rule 2.** The **second element always gets a prefix** and an **-ide** ending. CO is carbon monoxide.\n\n**Rule 3.** Drop the extra o or a before oxide: monoxide, tetroxide, pentoxide.\n\n**No criss-cross and no reducing.** The prefixes are the subscripts. N₂O₄ stays N₂O₄: dinitrogen tetroxide.\n\n**Worked example 3:** N₂O₅. Both are nonmetals, so use prefixes. 2 nitrogens → dinitrogen. 5 oxygens → pentoxide. Name: **dinitrogen pentoxide**. Going the other way, sulfur trioxide is 1 sulfur and 3 oxygens: **SO₃**.\n\n**Watch out for:** saying electrons are transferred, saying the atoms become ions, counting a single bond as 1 electron instead of 2, putting mono on the first element, leaving out the prefixes (\"phosphorus chloride\"), reducing a covalent formula, and using Roman numerals on nonmetals."
           },
           "checks": [
             {
               "id": "e1",
               "kind": "multiple_choice",
-              "prompt": "What is the formula for copper(I) oxide?",
+              "prompt": "Nitrogen gas, N₂, has a triple bond. How many electrons are shared in it?",
               "options": [
-                { "id": "a", "text": "CuO" },
-                { "id": "b", "text": "Cu₂O" },
-                { "id": "c", "text": "CuO₂" }
+                {
+                  "id": "a",
+                  "text": "3"
+                },
+                {
+                  "id": "b",
+                  "text": "6"
+                },
+                {
+                  "id": "c",
+                  "text": "2"
+                }
               ],
               "answer": "b",
-              "explanation": "Copper(I) means Cu⁺, and oxide is O²⁻. Oxygen's 2 drops onto copper: Cu₂O. Check: 2(+1) + (−2) = 0. The I is the charge, not the number of copper atoms, so CuO is the common mistake."
+              "explanation": "A triple bond is 3 shared pairs, and each pair is 2 electrons: 3 × 2 = 6. Answering 3 counts pairs instead of electrons, which is the common mistake."
             },
             {
               "id": "e2",
-              "kind": "fill_blank",
-              "prompt": "Nitrate is NO₃⁻. In the formula for aluminum nitrate, what number goes outside the parentheses? Type a number.",
-              "answer": ["3", "three"],
-              "explanation": "Al³⁺ needs three NO₃⁻ to cancel: +3 + 3(−1) = 0. So the formula is Al(NO₃)₃, with the 3 outside the parentheses. Leaving out the parentheses, or changing the 3 inside nitrate, is the common mistake."
+              "kind": "multiple_choice",
+              "prompt": "What is the correct name of PCl₃?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "phosphorus chloride"
+                },
+                {
+                  "id": "b",
+                  "text": "monophosphorus trichloride"
+                },
+                {
+                  "id": "c",
+                  "text": "phosphorus trichloride"
+                }
+              ],
+              "answer": "c",
+              "explanation": "One phosphorus (the first element skips mono) and three chlorines (tri-): phosphorus trichloride. Leaving out the prefix is the common mistake."
             }
           ],
-          "shortAnswer": "Sulfate is SO₄²⁻. Write the formula for chromium(III) sulfate and explain why the parentheses are needed."
+          "shortAnswer": "Explain why O₂ has a double bond but N₂ has a triple bond. Use the number of valence electrons each atom has."
         }
       ]
     },
     {
       "target": "U3.LT3",
       "mode": "do",
-      "title": "Do: flip the toolkit, then build a formula step by step",
-      "description": "Flashcards with a 3-question self-quiz, then a formula built one step at a time.",
+      "title": "Do: flip the covalent rules, then build a molecule step by step",
+      "description": "Flashcards with a 3-question self-quiz, then one molecule worked from bond to formula to name.",
       "sections": [
         {
           "part": "core",
-          "title": "Flashcards: the formula toolkit",
+          "title": "Flashcards: covalent bonds",
           "minutes": 4,
           "body": {
             "type": "flashcards",
             "cards": [
               {
                 "id": "k1",
-                "front": "Ionic or covalent?",
-                "back": "Metal + nonmetal, or any polyatomic ion: ionic, so use charges. Two nonmetals: covalent, so use prefixes."
+                "front": "Covalent bond",
+                "back": "Two nonmetal atoms share valence electrons, like splitting a pizza."
               },
               {
                 "id": "k2",
-                "front": "Charge from the group number",
-                "back": "Group 1 = +1, Group 2 = +2, Group 13 = +3, Group 15 = −3, Group 16 = −2, Group 17 = −1."
+                "front": "Shared pair",
+                "back": "2 electrons that count toward the outer level of both atoms."
               },
               {
                 "id": "k3",
-                "front": "Criss-cross",
-                "back": "Each charge drops down as a subscript on the opposite ion, with no sign. Mg²⁺ and N³⁻ give Mg₃N₂."
+                "front": "Molecule",
+                "back": "A group of atoms joined by covalent bonds, like H₂O. No ions form."
               },
               {
                 "id": "k4",
-                "front": "Reduce, then check",
-                "back": "Divide the subscripts if they share a factor (Ba₂O₂ → BaO). Then check that the charges add to zero."
+                "front": "Single, double, triple",
+                "back": "1, 2 or 3 shared pairs: 2, 4 or 6 electrons."
               },
               {
                 "id": "k5",
-                "front": "Roman numeral",
-                "back": "The metal's charge, not a count of atoms. Iron(III) means Fe³⁺."
+                "front": "How many bonds?",
+                "back": "As many as the atom needs to reach 8. H makes 1, O makes 2, N makes 3, C makes 4."
               },
               {
                 "id": "k6",
-                "front": "Polyatomic ion",
-                "back": "Never change what's inside. Use parentheses only when you need 2 or more: Ca(NO₃)₂, but BaSO₄."
-              },
-              {
-                "id": "k7",
-                "front": "Covalent prefixes",
-                "back": "The prefix is the subscript: mono 1, di 2, tri 3, tetra 4, penta 5, hexa 6. No criss-cross, no reducing."
+                "front": "Naming a covalent compound",
+                "back": "Prefixes count the atoms. The first element skips mono. The second always gets a prefix and ends in -ide."
               }
             ]
           },
@@ -127,93 +154,141 @@
             {
               "id": "d1",
               "kind": "multiple_choice",
-              "prompt": "Sulfur is in Group 16. Which ion does it form?",
+              "prompt": "Which pair of atoms would form a covalent bond?",
               "options": [
-                { "id": "a", "text": "S²⁺" },
-                { "id": "b", "text": "S²⁻" },
-                { "id": "c", "text": "S⁶⁻" }
+                {
+                  "id": "a",
+                  "text": "Sodium and chlorine"
+                },
+                {
+                  "id": "b",
+                  "text": "Carbon and oxygen"
+                },
+                {
+                  "id": "c",
+                  "text": "Calcium and oxygen"
+                }
               ],
               "answer": "b",
-              "explanation": "Group 16 = −2, so sulfur forms S²⁻. Nonmetals make negative ions. Using 6, sulfur's number of outer electrons, as the charge is the common mistake."
+              "explanation": "Carbon and oxygen are both nonmetals, so they share electrons. The other pairs have a metal, which transfers electrons instead. Missing the metal is the common mistake."
             },
             {
               "id": "d2",
               "kind": "multiple_choice",
-              "prompt": "What does the III in iron(III) chloride tell you?",
+              "prompt": "How many electrons are shared in a double bond?",
               "options": [
-                { "id": "a", "text": "There are 3 iron atoms" },
-                { "id": "b", "text": "The iron ion has a 3+ charge" },
-                { "id": "c", "text": "The compound has 3 elements" }
+                {
+                  "id": "a",
+                  "text": "2"
+                },
+                {
+                  "id": "b",
+                  "text": "4"
+                },
+                {
+                  "id": "c",
+                  "text": "6"
+                }
               ],
               "answer": "b",
-              "explanation": "The Roman numeral is the metal's charge: iron(III) is Fe³⁺. Reading it as 3 iron atoms is the common mistake. The formula is FeCl₃: one iron and three chlorides."
+              "explanation": "A double bond is 2 shared pairs, and each pair is 2 electrons: 4. Answering 2 counts the pairs instead of the electrons, which is the common mistake."
             },
             {
               "id": "d3",
               "kind": "multiple_choice",
-              "prompt": "What is the formula for carbon tetrachloride?",
+              "prompt": "What is the correct name of CO?",
               "options": [
-                { "id": "a", "text": "CCl₄" },
-                { "id": "b", "text": "C₄Cl" },
-                { "id": "c", "text": "CCl" }
+                {
+                  "id": "a",
+                  "text": "carbon oxide"
+                },
+                {
+                  "id": "b",
+                  "text": "monocarbon monoxide"
+                },
+                {
+                  "id": "c",
+                  "text": "carbon monoxide"
+                }
               ],
-              "answer": "a",
-              "explanation": "Two nonmetals, so use the prefixes: no prefix on carbon means 1, and tetra- means 4 chlorines: CCl₄. Putting the 4 on carbon is the common mistake; the prefix belongs to the element it is attached to."
+              "answer": "c",
+              "explanation": "The first element skips mono, but the second element always gets a prefix: carbon monoxide. Leaving mono off oxide is the common mistake."
             }
           ]
         },
         {
           "part": "extension",
-          "title": "Worked problem: iron(III) nitrate",
+          "title": "Worked problem: nitrogen and hydrogen",
           "minutes": 6,
           "body": {
             "type": "worked_steps",
-            "problem": "Write the formula for iron(III) nitrate. Nitrate is NO₃⁻.",
+            "problem": "Nitrogen bonds with hydrogen. Explain how the bonds form, then write the formula. Then name N₂O₃.",
             "steps": [
               {
                 "id": "s1",
-                "text": "Ionic or covalent? Iron is a metal and nitrate is a polyatomic ion, so it is ionic. Use charges."
+                "text": "Transfer or share? Nitrogen and hydrogen are both nonmetals, so they share electrons. This is covalent."
               },
               {
                 "id": "s2",
-                "text": "Write each ion with its charge. The Roman numeral is iron's charge, so iron(III) is Fe³⁺. Nitrate is given: NO₃⁻."
+                "text": "What does each atom need? Nitrogen has 5 valence electrons and needs 3 more to reach 8. Hydrogen has 1 and needs 1 more to reach 2."
               },
               {
                 "id": "s3",
-                "text": "Criss-cross. Iron's 3 drops onto nitrate, and nitrate's 1 drops onto iron. You need 3 nitrates, so protect NO₃ with parentheses: Fe(NO₃)₃."
+                "text": "Share. Nitrogen makes one shared pair with each of 3 hydrogens. Formula: NH₃, with three single bonds."
               },
               {
                 "id": "s4",
-                "text": "Reduce? The subscripts are 1 and 3. They share no factor, so the formula stays Fe(NO₃)₃."
+                "text": "Check. Nitrogen counts its 5 plus 3 shared = 8. Each hydrogen counts 2. Shared electrons in all: 3 bonds × 2 = 6."
               },
-              { "id": "s5", "text": "Check: 1(+3) + 3(−1) = +3 − 3 = 0. Answer: Fe(NO₃)₃." }
+              {
+                "id": "s5",
+                "text": "Now a name: N₂O₃. Two nonmetals, so use prefixes. 2 nitrogens → dinitrogen. 3 oxygens → trioxide. Name: dinitrogen trioxide."
+              }
             ]
           },
           "checks": [
             {
               "id": "w1",
               "kind": "multiple_choice",
-              "prompt": "Your turn: which ion is copper(II)?",
+              "prompt": "Your turn: carbon has 4 valence electrons. How many hydrogen atoms does one carbon atom bond with?",
               "options": [
-                { "id": "a", "text": "Cu²⁺" },
-                { "id": "b", "text": "Cu₂" },
-                { "id": "c", "text": "Cu²⁻" }
+                {
+                  "id": "a",
+                  "text": "2"
+                },
+                {
+                  "id": "b",
+                  "text": "4"
+                },
+                {
+                  "id": "c",
+                  "text": "8"
+                }
               ],
-              "answer": "a",
-              "explanation": "The Roman numeral is the charge, and metals make positive ions, so copper(II) is Cu²⁺. Reading II as 2 copper atoms (Cu₂) is the common mistake.",
-              "afterStepId": "s2"
+              "answer": "b",
+              "explanation": "Carbon needs 4 more electrons to reach 8, and each hydrogen shares 1, so it bonds with 4 hydrogens: CH₄. Answering 8 confuses the goal with the number needed.",
+              "afterStepId": "s3"
             },
             {
               "id": "w2",
               "kind": "multiple_choice",
-              "prompt": "Your turn: oxide is O²⁻. What is the formula for tin(IV) oxide?",
+              "prompt": "Your turn: what is the correct name of SF₆?",
               "options": [
-                { "id": "a", "text": "SnO₄" },
-                { "id": "b", "text": "Sn₂O₄" },
-                { "id": "c", "text": "SnO₂" }
+                {
+                  "id": "a",
+                  "text": "sulfur hexafluoride"
+                },
+                {
+                  "id": "b",
+                  "text": "monosulfur hexafluoride"
+                },
+                {
+                  "id": "c",
+                  "text": "sulfur fluoride"
+                }
               ],
-              "answer": "c",
-              "explanation": "Tin(IV) is Sn⁴⁺. Criss-cross gives Sn₂O₄, and both subscripts divide by 2, so reduce to SnO₂. Check: +4 + 2(−2) = 0. Using the Roman numeral as a subscript (SnO₄) or forgetting to reduce (Sn₂O₄) is the common mistake.",
+              "answer": "a",
+              "explanation": "One sulfur (no mono on the first element) and six fluorines (hexa-): sulfur hexafluoride. Leaving out the prefix is the common mistake.",
               "afterStepId": "s5"
             }
           ]
@@ -223,69 +298,50 @@
     {
       "target": "U3.LT3",
       "mode": "watch",
-      "title": "U3.LT3 Watch: writing ionic formulas",
+      "title": "U3.LT3 Watch: naming covalent compounds",
       "sections": [
         {
           "part": "core",
-          "title": "Writing ionic formulas: introduction",
+          "title": "Naming covalent molecular compounds",
           "minutes": 5,
-          "body": { "type": "video", "youtubeId": "URc75hoKGLY" },
+          "body": {
+            "type": "video",
+            "youtubeId": "DejkvR4pvRw"
+          },
           "checks": [
             {
               "id": "w1",
               "kind": "multiple_choice",
-              "prompt": "Aluminum forms Al³⁺ and oxygen forms O²⁻. What is the formula for aluminum oxide?",
+              "prompt": "Carbon and oxygen are both nonmetals. What is the correct name of CO?",
               "options": [
-                { "id": "a", "text": "AlO" },
-                { "id": "b", "text": "Al₂O₃" },
-                { "id": "c", "text": "Al₃O₂" },
-                { "id": "d", "text": "AlO₃" }
+                {
+                  "id": "a",
+                  "text": "carbon oxide"
+                },
+                {
+                  "id": "b",
+                  "text": "monocarbon monoxide"
+                },
+                {
+                  "id": "c",
+                  "text": "carbon monoxide"
+                },
+                {
+                  "id": "d",
+                  "text": "carbon(II) oxide"
+                }
               ],
-              "answer": "b",
-              "explanation": "Criss-cross: the 3 from Al³⁺ goes to O and the 2 from O²⁻ goes to Al → Al₂O₃. Check: 2(+3) + 3(−2) = +6 − 6 = 0. Al₃O₂ puts each charge on its own ion instead of the opposite one."
+              "answer": "c",
+              "explanation": "Covalent, so use prefixes. The first element gets a prefix except mono, so just carbon. The second element always gets a prefix and -ide: monoxide. Answer: carbon monoxide."
             },
             {
               "id": "w2",
               "kind": "fill_blank",
-              "prompt": "Like paying with exact change, the positive and negative charges in an ionic formula must add up to ___. Type a number.",
-              "answer": ["0", "zero"],
-              "explanation": "The charges have to come out even, so the total is zero. The subscripts tell you how many of each ion it takes to get there."
+              "prompt": "Sulfur and oxygen are both nonmetals. Complete the name of SO₃: sulfur ___",
+              "answer": ["trioxide", "sulfur trioxide"],
+              "explanation": "Covalent, so use prefixes. One sulfur gets no prefix (no mono on the first element). Three oxygens → tri + oxide = trioxide. Answer: sulfur trioxide."
             }
           ]
-        },
-        {
-          "part": "extension",
-          "title": "Writing formulas with polyatomic ions",
-          "minutes": 5,
-          "body": { "type": "video", "youtubeId": "p9iQ5Qn42DM" },
-          "checks": [
-            {
-              "id": "w3",
-              "kind": "multiple_choice",
-              "prompt": "Hydroxide is OH⁻ and calcium forms Ca²⁺. What is the formula for calcium hydroxide?",
-              "options": [
-                { "id": "a", "text": "CaOH₂" },
-                { "id": "b", "text": "Ca(OH)₂" },
-                { "id": "c", "text": "Ca₂OH" },
-                { "id": "d", "text": "CaOH" }
-              ],
-              "answer": "b",
-              "explanation": "Criss-cross: the 2 goes to hydroxide, so you need 2 OH. Put parentheses around the polyatomic ion when you need 2 or more: Ca(OH)₂. Check: +2 + 2(−1) = 0. CaOH₂ would double only the H."
-            },
-            {
-              "id": "w4",
-              "kind": "multiple_choice",
-              "prompt": "Sulfate is SO₄²⁻ and sodium forms Na⁺. What is the formula for sodium sulfate?",
-              "options": [
-                { "id": "a", "text": "Na₂SO₄" },
-                { "id": "b", "text": "Na(SO₄)₂" },
-                { "id": "c", "text": "NaSO₄" }
-              ],
-              "answer": "a",
-              "explanation": "Two Na⁺ cancel one SO₄²⁻: 2(+1) + (−2) = 0. You need only one sulfate, so no parentheses, and never change the subscripts inside the ion. Answer: Na₂SO₄."
-            }
-          ],
-          "shortAnswer": "Phosphate is PO₄³⁻. Write the formula for magnesium phosphate and explain why the parentheses are needed."
         }
       ]
     }
