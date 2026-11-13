@@ -1,6 +1,6 @@
 {
   "name": "bio-u5-lt2-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology B",
   "relearning": [
@@ -273,6 +273,106 @@
               "afterStepId": "t6"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U5.LT2",
+      "mode": "watch",
+      "title": "U5.LT2 Watch: meiosis",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Meiosis (UPDATED 2026)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "I-sucvMV0Ng"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "fill_blank",
+              "prompt": "A human sperm with 23 chromosomes fertilizes an egg with 23 chromosomes. How many chromosomes does the zygote have? Type a number.",
+              "answer": ["46", "forty-six", "forty six"],
+              "explanation": "23 + 23 = 46. Meiosis halves the number first, so fertilization brings it back to 46 instead of doubling it every generation."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Your closet has 23 pairs of shoes. In the shoe analogy, what does meiosis pack into each gamete?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Both shoes from every pair"
+                },
+                {
+                  "id": "b",
+                  "text": "Any 23 shoes, even if two come from the same pair"
+                },
+                {
+                  "id": "c",
+                  "text": "Exactly one shoe from every pair"
+                }
+              ],
+              "answer": "c",
+              "explanation": "A gamete gets one chromosome from each homologous pair, so 23 in all. It is not just any 23: every pair has to be represented once."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Meiosis: Why Are All Humans Unique?: Crash Course Biology #30",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "pj1oFx42d48"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "What happens during crossing over?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Homologous chromosomes pair up and swap pieces"
+                },
+                {
+                  "id": "b",
+                  "text": "Sister chromatids are pulled apart"
+                },
+                {
+                  "id": "c",
+                  "text": "The DNA is copied a second time"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Homologous chromosomes swap pieces, so each one ends up with a new mix of mom's and dad's genes. The DNA is only copied once in meiosis."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "In metaphase I, each homologous pair lines up in a random direction, so each gamete gets a random mix of mom's and dad's chromosomes. What is this called?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Crossing over"
+                },
+                {
+                  "id": "b",
+                  "text": "Independent assortment"
+                },
+                {
+                  "id": "c",
+                  "text": "Fertilization"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Random lining up of the pairs is independent assortment. Crossing over is the swapping of pieces in prophase I, which is the common mix-up."
+            }
+          ],
+          "shortAnswer": "Explain why brothers and sisters with the same parents don't look identical. Use the words crossing over and independent assortment."
         }
       ]
     }

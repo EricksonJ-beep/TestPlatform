@@ -1,6 +1,6 @@
 {
   "name": "bio-u2-lt3-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology A",
   "relearning": [
@@ -244,6 +244,112 @@
               "explanation": "Each enzyme has a best pH. In strong stomach acid, amylase changes shape and stops working, while pepsin, which is built for pH 2, takes over. Thinking acid speeds up every enzyme is the common mistake."
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U2.LT3",
+      "mode": "watch",
+      "title": "U2.LT3 Watch: pH, acids and bases",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Introduction to pH (Khan Academy)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "oda2K4IFBaE"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "What does pH measure?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The temperature of a solution"
+                },
+                {
+                  "id": "b",
+                  "text": "The concentration of hydrogen ions (H⁺) in a solution"
+                },
+                {
+                  "id": "c",
+                  "text": "How much water is in a solution"
+                }
+              ],
+              "answer": "b",
+              "explanation": "pH is a measure of the concentration of hydrogen ions (H⁺). The lower the pH, the more H⁺ and the stronger the acid."
+            },
+            {
+              "id": "w2",
+              "kind": "fill_blank",
+              "prompt": "Lemon juice has a pH of 2. Tomato juice has a pH of 4. How many times more H⁺ does the lemon juice have? Type a number.",
+              "answer": [
+                "100",
+                "100 times",
+                "100x",
+                "one hundred",
+                "a hundred"
+              ],
+              "explanation": "4 − 2 = 2 steps, and each step is 10 times, so 10 × 10 = 100 times more H⁺. Saying 2 times more is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "What Is The pH Scale (FuseSchool)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "ckbsHM2igT0"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "A solution has more OH⁻ ions than H⁺ ions. What is it?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "An acid, with a pH below 7"
+                },
+                {
+                  "id": "b",
+                  "text": "Neutral, with a pH of 7"
+                },
+                {
+                  "id": "c",
+                  "text": "A base, with a pH above 7"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Bases have more hydroxide ions (OH⁻) and fewer H⁺, so their pH is above 7. Mixing up H⁺ (acids) and OH⁻ (bases) is the common mistake."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "What does an indicator, like litmus or universal indicator paper, do?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "It changes color to show the pH"
+                },
+                {
+                  "id": "b",
+                  "text": "It soaks up extra H⁺ so the pH barely changes"
+                },
+                {
+                  "id": "c",
+                  "text": "It turns an acid into a base"
+                }
+              ],
+              "answer": "a",
+              "explanation": "An indicator changes color to show the pH. Soaking up extra H⁺ or OH⁻ so the pH barely changes is the job of a buffer."
+            }
+          ],
+          "shortAnswer": "An antacid is a weak base. Explain what happens to the pH when it mixes with stomach acid, and why. Use the words H⁺, OH⁻ and neutralization."
         }
       ]
     }

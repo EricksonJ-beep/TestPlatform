@@ -1,6 +1,6 @@
 {
   "name": "bio-u4-lt3-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology A",
   "relearning": [
@@ -311,6 +311,120 @@
               "afterStepId": "s4"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U4.LT3",
+      "mode": "watch",
+      "title": "U4.LT3 Watch: photosynthesis",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Photosynthesis (UPDATED) (Amoeba Sisters)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "CMiPYHNNg28"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Which are the REACTANTS of photosynthesis?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Glucose and oxygen"
+                },
+                {
+                  "id": "b",
+                  "text": "Glucose and water"
+                },
+                {
+                  "id": "c",
+                  "text": "Carbon dioxide and water"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Carbon dioxide and water go in, and light energy powers the reaction. Glucose and oxygen are the products. Swapping them is the common mistake, because respiration runs the other way."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "How are photosynthesis and cellular respiration related?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The products of one are the reactants of the other"
+                },
+                {
+                  "id": "b",
+                  "text": "They are the same process in two different organelles"
+                },
+                {
+                  "id": "c",
+                  "text": "Plants do only photosynthesis, and animals do only respiration"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Photosynthesis is the reverse of respiration: CO₂ and H₂O are the products of respiration and the reactants of photosynthesis. Plants do both."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Photosynthesis: The Original Solar Power: Crash Course Biology #28",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "-ZRsLhaukn8"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "Where do the Light Dependent Reactions happen?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "In the stroma"
+                },
+                {
+                  "id": "b",
+                  "text": "In the thylakoids"
+                },
+                {
+                  "id": "c",
+                  "text": "In the mitochondria"
+                }
+              ],
+              "answer": "b",
+              "explanation": "The Light Dependent Reactions happen in the thylakoids, the stacked discs inside the chloroplast. The stroma is where the Calvin Cycle happens, the common mix-up."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "A tiny seed grows into a huge oak tree. Where does most of the mass of its wood come from?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Minerals in the soil"
+                },
+                {
+                  "id": "b",
+                  "text": "The water it takes in"
+                },
+                {
+                  "id": "c",
+                  "text": "CO₂ in the air"
+                }
+              ],
+              "answer": "c",
+              "explanation": "The Calvin Cycle uses carbon atoms from CO₂ to build glucose, and the tree builds wood from glucose. Thinking a plant's mass comes from the soil is the common mistake."
+            }
+          ],
+          "shortAnswer": "Write the equation for photosynthesis in words. Then explain where the O₂ comes from and where the carbon in the glucose comes from."
         }
       ]
     }

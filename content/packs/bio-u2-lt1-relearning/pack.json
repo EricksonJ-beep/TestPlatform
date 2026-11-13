@@ -1,6 +1,6 @@
 {
   "name": "bio-u2-lt1-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology A",
   "relearning": [
@@ -283,6 +283,120 @@
               "afterStepId": "s5"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U2.LT1",
+      "mode": "watch",
+      "title": "U2.LT1 Watch: atoms, elements, molecules and bonds",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Elements and Molecules (Bozeman Science)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "6pUzPh_lCO8"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Which particle has a negative charge and moves in the space around the nucleus?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The proton"
+                },
+                {
+                  "id": "b",
+                  "text": "The neutron"
+                },
+                {
+                  "id": "c",
+                  "text": "The electron"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Electrons are negative and move around the nucleus. Protons (positive) and neutrons (no charge) are in the nucleus. Putting electrons in the nucleus is the common mistake."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Water (H₂O) is a compound. Why?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "It is a liquid"
+                },
+                {
+                  "id": "b",
+                  "text": "It has two or more different elements bonded together"
+                },
+                {
+                  "id": "c",
+                  "text": "It has more than one atom"
+                }
+              ],
+              "answer": "b",
+              "explanation": "A compound has two or more different elements bonded together. Having more than one atom only makes it a molecule: O₂ is a molecule but not a compound."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Carbon... SO SIMPLE: Crash Course Biology #1",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "QnQe0xW_JY4"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "What holds the two ions together in an ionic bond?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Their opposite charges attract"
+                },
+                {
+                  "id": "b",
+                  "text": "They share electrons"
+                },
+                {
+                  "id": "c",
+                  "text": "Their neutrons stick together"
+                }
+              ],
+              "answer": "a",
+              "explanation": "In an ionic bond, one atom gives electrons to another. That makes a positive ion and a negative ion, and opposite charges attract. Sharing electrons is a covalent bond."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "A neutral atom loses one electron. What is it now?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "A different element"
+                },
+                {
+                  "id": "b",
+                  "text": "A negative ion of the same element"
+                },
+                {
+                  "id": "c",
+                  "text": "A positive ion of the same element"
+                }
+              ],
+              "answer": "c",
+              "explanation": "It now has more protons than electrons, so it is a positive ion. Its protons did not change, so it is still the same element."
+            }
+          ],
+          "shortAnswer": "Explain why O₂ is a molecule but not a compound, and why CO₂ is both a molecule and a compound."
         }
       ]
     }

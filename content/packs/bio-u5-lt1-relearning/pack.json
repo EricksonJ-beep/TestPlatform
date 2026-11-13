@@ -1,6 +1,6 @@
 {
   "name": "bio-u5-lt1-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology B",
   "relearning": [
@@ -280,6 +280,106 @@
               "explanation": "Spindle fibers attach at the centromeres and pull the chromatids to opposite ends. The nuclear membrane has already broken down by then, so the nucleus can't be doing it."
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U5.LT1",
+      "mode": "watch",
+      "title": "U5.LT1 Watch: mitosis and the cell cycle",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Mitosis (UPDATED 2026)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "ShEzlXZPpPM"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Which of these is a job of mitosis?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Making new cells for growth, repair and replacing old cells"
+                },
+                {
+                  "id": "b",
+                  "text": "Making sperm and egg cells"
+                },
+                {
+                  "id": "c",
+                  "text": "Cutting the chromosome number in half"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Mitosis makes new body cells for growth, repair and replacing old cells. Making gametes and halving the chromosome number is meiosis, the common mix-up."
+            },
+            {
+              "id": "w2",
+              "kind": "fill_blank",
+              "prompt": "A human skin cell with 46 chromosomes goes through mitosis and cytokinesis. How many cells are there at the end? Type a number.",
+              "answer": ["2", "two"],
+              "explanation": "Mitosis makes 2 identical cells, each with 46 chromosomes. Answering 4 is the common mistake; that is meiosis."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Mitosis & the Cell Cycle: How Cells Clone Themselves: Crash Course Biology #29",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "skPOXcVvS5c"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "Which part of the cell cycle is the longest?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Anaphase"
+                },
+                {
+                  "id": "b",
+                  "text": "Cytokinesis"
+                },
+                {
+                  "id": "c",
+                  "text": "Interphase"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Interphase (G1, S and G2) is the longest part of the cell cycle. It is not a phase of mitosis, which is the common mistake."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "How is cytokinesis different in a plant cell and an animal cell?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "A plant cell pinches in the middle; an animal cell forms a cell plate"
+                },
+                {
+                  "id": "b",
+                  "text": "A plant cell forms a cell plate; an animal cell's membrane pinches in the middle"
+                },
+                {
+                  "id": "c",
+                  "text": "A plant cell skips cytokinesis"
+                }
+              ],
+              "answer": "b",
+              "explanation": "In a plant cell, a cell plate forms down the middle and becomes the new cell wall. In an animal cell, the membrane pinches in the middle."
+            }
+          ],
+          "shortAnswer": "Explain the difference between a chromosome and a sister chromatid. Use the words S phase and centromere."
         }
       ]
     }

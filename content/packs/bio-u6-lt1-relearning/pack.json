@@ -1,6 +1,6 @@
 {
   "name": "bio-u6-lt1-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology B",
   "relearning": [
@@ -222,6 +222,106 @@
               "afterStepId": "t5"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U6.LT1",
+      "mode": "watch",
+      "title": "U6.LT1 Watch: Punnett squares",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Monohybrids and the Punnett Square Guinea Pigs",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "i-0rSv6oxSY"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "In pea plants, tall (T) is dominant over short (t). Which of these is a phenotype?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Tt"
+                },
+                {
+                  "id": "b",
+                  "text": "tt"
+                },
+                {
+                  "id": "c",
+                  "text": "Short"
+                }
+              ],
+              "answer": "c",
+              "explanation": "The phenotype is the trait you see (tall or short). Tt and tt are genotypes, the letters. Mixing up the two is the common mistake."
+            },
+            {
+              "id": "w2",
+              "kind": "fill_blank",
+              "prompt": "Tall (T) is dominant over short (t). Cross Tt × tt. What percent of the offspring are expected to be tall? Type a number.",
+              "answer": ["50", "50%", "50 %", "1/2", "0.5", ".5", "half", "50 percent"],
+              "explanation": "The boxes are Tt, tt, Tt and tt: 2 of 4 are tall, so 50%. Answering 75% is the common mistake; that is the answer for Tt × Tt."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Intro to Genetics: Why Your Cat Looks Like That: Crash Course Biology #31",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "YnJPbphsoMY"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "Two tall pea plants are crossed, and one of the offspring is short (tall is dominant). What are the parents' genotypes?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "TT and TT"
+                },
+                {
+                  "id": "b",
+                  "text": "TT and Tt"
+                },
+                {
+                  "id": "c",
+                  "text": "Tt and Tt"
+                }
+              ],
+              "answer": "c",
+              "explanation": "The short offspring is tt, so it got one t from each parent. Both parents are tall, so each also has a T: Tt and Tt."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "What is the genotypic ratio for the cross Tt × Tt?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "1 TT : 2 Tt : 1 tt"
+                },
+                {
+                  "id": "b",
+                  "text": "3 TT : 1 tt"
+                },
+                {
+                  "id": "c",
+                  "text": "2 Tt : 2 tt"
+                }
+              ],
+              "answer": "a",
+              "explanation": "The boxes are TT, Tt, Tt and tt, so 1 TT : 2 Tt : 1 tt. The 3 : 1 ratio is the phenotypic ratio (3 tall : 1 short), which is the common mix-up."
+            }
+          ],
+          "shortAnswer": "Explain the difference between a genotype and a phenotype. Use the Tt × Tt cross to show why the genotypic ratio and the phenotypic ratio are different."
         }
       ]
     }

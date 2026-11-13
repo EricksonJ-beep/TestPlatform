@@ -1,6 +1,6 @@
 {
   "name": "bio-u3-lt3-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology A",
   "relearning": [
@@ -311,6 +311,120 @@
               "afterStepId": "s5"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U3.LT3",
+      "mode": "watch",
+      "title": "U3.LT3 Watch: cell parts and their jobs",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Introduction to Cells: The Grand Cell Tour (Amoeba Sisters)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "8IlzKri08kk"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Which organelle holds the DNA and controls the cell's activities?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Golgi apparatus"
+                },
+                {
+                  "id": "b",
+                  "text": "Nucleus"
+                },
+                {
+                  "id": "c",
+                  "text": "Vacuole"
+                }
+              ],
+              "answer": "b",
+              "explanation": "The nucleus is the main office: it holds the blueprints (DNA) and controls the cell. The Golgi apparatus packages and ships proteins, and vacuoles store water and other materials."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Which three parts do plant cells have that animal cells do not?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "A nucleus, ribosomes and mitochondria"
+                },
+                {
+                  "id": "b",
+                  "text": "A cell membrane, cytoplasm and a Golgi apparatus"
+                },
+                {
+                  "id": "c",
+                  "text": "A cell wall, chloroplasts and a large central vacuole"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Only plant cells have a cell wall, chloroplasts and a large central vacuole. The other parts listed are in both plant and animal cells, including mitochondria."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Biology: Cell Structure (Nucleus Medical Media)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "URUJD5NEXC8"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "What is the job of the ribosomes?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "They build proteins"
+                },
+                {
+                  "id": "b",
+                  "text": "They store water"
+                },
+                {
+                  "id": "c",
+                  "text": "They release energy from food"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Ribosomes are the workers that build proteins. Vacuoles store water, and mitochondria release energy from food as ATP."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "In a model of a plant cell, where does the cell wall go?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Inside the cell membrane"
+                },
+                {
+                  "id": "b",
+                  "text": "Outside the cell membrane"
+                },
+                {
+                  "id": "c",
+                  "text": "Around the nucleus"
+                }
+              ],
+              "answer": "b",
+              "explanation": "The cell wall is the rigid layer outside the cell membrane. Putting the cell wall inside the membrane is the common mistake."
+            }
+          ],
+          "shortAnswer": "Follow one protein from where it is built to where it leaves the cell. Name the organelles in order and say what each one does."
         }
       ]
     }

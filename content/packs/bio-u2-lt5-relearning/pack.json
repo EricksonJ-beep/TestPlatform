@@ -1,6 +1,6 @@
 {
   "name": "bio-u2-lt5-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology A",
   "relearning": [
@@ -258,6 +258,120 @@
               "explanation": "Cold slows the enzyme, but it works again when warmed. High heat and the wrong pH change the enzyme's shape, which denatures it. Thinking cold denatures enzymes is the common mistake."
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U2.LT5",
+      "mode": "watch",
+      "title": "U2.LT5 Watch: how enzymes work",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Enzymes, Updated (Amoeba Sisters)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "qgVFkRn8f10"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "What is the active site of an enzyme?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The molecule the enzyme works on"
+                },
+                {
+                  "id": "b",
+                  "text": "The part of the enzyme with a shape that fits its substrate"
+                },
+                {
+                  "id": "c",
+                  "text": "The new molecules the reaction makes"
+                }
+              ],
+              "answer": "b",
+              "explanation": "The active site is the part of the enzyme that the substrate fits into, like a lock for one key. The molecule it works on is the substrate, and the new molecules are the products."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "How does an enzyme speed up a chemical reaction?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "It lowers the activation energy"
+                },
+                {
+                  "id": "b",
+                  "text": "It raises the activation energy"
+                },
+                {
+                  "id": "c",
+                  "text": "It gets used up to make the products"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Enzymes lower the activation energy, the push a reaction needs to get started. The enzyme is not used up, so it can be used over and over."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Enzymes (Bozeman Science)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "ok9esggzN18"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "Lipase breaks down fats, but it does not break down starch. Why?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Lipase is used up after one reaction"
+                },
+                {
+                  "id": "b",
+                  "text": "Starch has no activation energy"
+                },
+                {
+                  "id": "c",
+                  "text": "Starch does not fit the shape of lipase's active site"
+                }
+              ],
+              "answer": "c",
+              "explanation": "An enzyme works like a lock and key: its active site fits only one kind of substrate. Thinking one enzyme works on any substrate is the common mistake."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "A human enzyme is heated to 70 °C and then cooled back to 37 °C. It still does not work. Why?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Cooling it back down denatured it"
+                },
+                {
+                  "id": "b",
+                  "text": "The heat denatured it, so its active site no longer fits the substrate"
+                },
+                {
+                  "id": "c",
+                  "text": "It was used up by the heat"
+                }
+              ],
+              "answer": "b",
+              "explanation": "High heat denatures (unfolds) an enzyme, and its active site loses its shape. Cold only slows an enzyme down. It does not denature it."
+            }
+          ],
+          "shortAnswer": "Explain why enzymes are important in the human body. Name one enzyme and its substrate, and say what would happen to that reaction without the enzyme."
         }
       ]
     }

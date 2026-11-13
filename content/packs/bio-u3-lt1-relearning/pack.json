@@ -1,6 +1,6 @@
 {
   "name": "bio-u3-lt1-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology A",
   "relearning": [
@@ -283,6 +283,124 @@
               "afterStepId": "s3"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U3.LT1",
+      "mode": "watch",
+      "title": "U3.LT1 Watch: the cell theory",
+      "sections": [
+        {
+          "part": "core",
+          "title": "The wacky history of cell theory - Lauren Royal-Woods (TED-Ed)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "4OpBylwH9DU"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Which of these is one of the three original statements of the cell theory?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "All cells have a nucleus"
+                },
+                {
+                  "id": "b",
+                  "text": "All cells are the same size and shape"
+                },
+                {
+                  "id": "c",
+                  "text": "All cells come from pre-existing cells"
+                }
+              ],
+              "answer": "c",
+              "explanation": "The three statements: all living things are made of one or more cells, the cell is the basic unit of structure and function, and all cells come from pre-existing cells. Thinking all cells have a nucleus is the common mistake: the cell theory never says that."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Which scientist built powerful lenses and was the first to see living microorganisms?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Anton van Leeuwenhoek"
+                },
+                {
+                  "id": "b",
+                  "text": "Robert Hooke"
+                },
+                {
+                  "id": "c",
+                  "text": "Theodor Schwann"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Leeuwenhoek was the first to see living microorganisms. Hooke named cells after looking at thin slices of cork, and Schwann concluded that all animals are made of cells."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Cell theory (Khan Academy)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "zk3vlhz1b6k"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "Which scientist stated in 1855 that new cells come only from existing cells?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Matthias Schleiden"
+                },
+                {
+                  "id": "b",
+                  "text": "Rudolf Virchow"
+                },
+                {
+                  "id": "c",
+                  "text": "Robert Hooke"
+                },
+                {
+                  "id": "d",
+                  "text": "Theodor Schwann"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Virchow stated that new cells come only from existing cells. Schleiden studied plants, Schwann studied animals, and Hooke named cells."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "A virus has genetic material, but it is not made of cells. By the cell theory, is a virus a living thing?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "No, because it is not made of cells"
+                },
+                {
+                  "id": "b",
+                  "text": "Yes, because it has genetic material"
+                },
+                {
+                  "id": "c",
+                  "text": "Yes, because it is very small"
+                }
+              ],
+              "answer": "a",
+              "explanation": "The cell theory says all living things are made of one or more cells, and a virus is not made of cells. Saying a virus is alive because it has genetic material is the common mistake."
+            }
+          ],
+          "shortAnswer": "Explain why the cell theory took about 200 years to complete. Name at least two of the scientists and what each one added."
         }
       ]
     }

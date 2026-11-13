@@ -1,6 +1,6 @@
 {
   "name": "bio-u6-lt2-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology B",
   "relearning": [
@@ -264,6 +264,120 @@
               "afterStepId": "t5"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U6.LT2",
+      "mode": "watch",
+      "title": "U6.LT2 Watch: complex inheritance",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Incomplete Dominance, Codominance, Polygenic Traits, and Epistasis!",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "YJHGfbW55l0"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "In cattle, a red parent (RR) and a white parent (WW) have a roan calf (RW) with both red hairs and white hairs. Which pattern is this?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Incomplete dominance"
+                },
+                {
+                  "id": "b",
+                  "text": "Codominance"
+                },
+                {
+                  "id": "c",
+                  "text": "Polygenic"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Both colors show side by side, like a checkered shirt, so it is codominance. A blend, like pink, would be incomplete dominance, which is the common mix-up."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Cross a pink snapdragon (RW) with a red snapdragon (RR). What percent of the offspring are expected to be pink?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "0%"
+                },
+                {
+                  "id": "b",
+                  "text": "25%"
+                },
+                {
+                  "id": "c",
+                  "text": "50%"
+                }
+              ],
+              "answer": "c",
+              "explanation": "The boxes are RR, RW, RR and RW: 2 of 4 are pink, so 50%. None can be white, because the red parent has no W to give."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Punnett Squares and Sex-Linked Traits (UPDATED)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "dN9SZHO6Wjg"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "A colorblind father (X^{b}Y) and a mother who is not a carrier (X^{B}X^{B}) have children. What percent of their sons are expected to be colorblind?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "0%"
+                },
+                {
+                  "id": "b",
+                  "text": "50%"
+                },
+                {
+                  "id": "c",
+                  "text": "100%"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Sons get the Y from dad and their X from mom, and both of mom's X's are X^{B}. Giving a son his X from his dad is the common mistake."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "A male has only one X chromosome. What does that mean for an X-linked recessive trait like colorblindness?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "He can be a carrier without showing the trait"
+                },
+                {
+                  "id": "b",
+                  "text": "One recessive allele is enough for him to show the trait"
+                },
+                {
+                  "id": "c",
+                  "text": "He can't inherit the trait"
+                }
+              ],
+              "answer": "b",
+              "explanation": "The Y is missing that gene, so a male has no second copy to cover a recessive allele. Only females (XX) can be carriers."
+            }
+          ],
+          "shortAnswer": "A carrier mother (X^{B}X^{b}) and a colorblind father (X^{b}Y) have a colorblind daughter. Explain where each of her X chromosomes came from and why she is colorblind."
         }
       ]
     }
