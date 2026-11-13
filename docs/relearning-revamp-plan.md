@@ -715,8 +715,9 @@ Same as C2.
 
 - *Watch added Nov 13 (Jon approved the list in `docs/watch-videos/biology.md`), built as C2's:*
   - *Each target's core video is the list's first choice, and its extension is the backup. A
-    section holds one video: U6.LT2's extension is the sex-linked clip (the blood-type clip is
-    left out) and U7.LT3's is Crash Course #35.*
+    section holds one video: U7.LT3's extension is Crash Course #35. U6.LT2 has two extension
+    sections, the sex-linked clip and then the ABO blood-type clip (Jon, Nov 13; revision 3),
+    whose checks use A, B and O as Jon writes them.*
   - *Each video has 2 quick checks after it, on the target's core idea in Jon's wording (36 ATP,
     the If…then hypothesis, plant-like / animal-like / fungus-like protists), and the extension
     a short answer. Lengths are 5 minutes; the videos aren't trimmed.*
