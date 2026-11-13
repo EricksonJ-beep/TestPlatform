@@ -1,6 +1,6 @@
 {
   "name": "bio-u8-lt2-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology B",
   "relearning": [
@@ -293,6 +293,120 @@
               "afterStepId": "s4"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U8.LT2",
+      "mode": "watch",
+      "title": "U8.LT2 Watch: bacteria",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Bacteria (Updated, Amoeba Sisters)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "ORB866QSGv8"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Bacteria are prokaryotes. What does that mean?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "They have no cell wall"
+                },
+                {
+                  "id": "b",
+                  "text": "They are made of many cells"
+                },
+                {
+                  "id": "c",
+                  "text": "They have no nucleus and no membrane-bound organelles"
+                }
+              ],
+              "answer": "c",
+              "explanation": "A prokaryote is like a studio apartment: one open room with no nucleus. Bacteria still have a cell wall, ribosomes and DNA."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Which statement about bacteria is true?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Most bacteria are helpful or harmless"
+                },
+                {
+                  "id": "b",
+                  "text": "All bacteria are germs that cause disease"
+                },
+                {
+                  "id": "c",
+                  "text": "Bacteria are only found in dirty places"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Only a small number of bacteria cause disease. Thinking all bacteria are germs is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Old & Odd: Archaea, Bacteria & Protists - CrashCourse Biology #35",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "vAR47-g6tlA"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "Which description fits Kingdom Eubacteria?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "\"Ancient bacteria\" that live only in extreme places"
+                },
+                {
+                  "id": "b",
+                  "text": "\"True bacteria\": the most common kind, found almost everywhere"
+                },
+                {
+                  "id": "c",
+                  "text": "Bacteria that have a nucleus"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Eubacteria are the common bacteria in soil, water, your skin and your gut. The ancient bacteria of extreme places are Archaebacteria, and no bacteria have a nucleus."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "Bacteria that cause disease are called –",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "normal flora"
+                },
+                {
+                  "id": "b",
+                  "text": "decomposers"
+                },
+                {
+                  "id": "c",
+                  "text": "pathogens"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Pathogens cause diseases like strep throat and Lyme disease. Normal flora are the bacteria that always live in your gut and on your skin."
+            }
+          ],
+          "shortAnswer": "Explain one way Eubacteria and Archaebacteria are alike and one way they are different."
         }
       ]
     }

@@ -1,6 +1,6 @@
 {
   "name": "bio-u7-lt2-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology B",
   "relearning": [
@@ -265,6 +265,106 @@
               "explanation": "Ligase seals the gaps between short pieces of new DNA. Unzipping is helicase's job."
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U7.LT2",
+      "mode": "watch",
+      "title": "U7.LT2 Watch: DNA replication",
+      "sections": [
+        {
+          "part": "core",
+          "title": "DNA Replication (Updated, Amoeba Sisters)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "Qqe4thU-os8"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "In DNA replication, what is the template?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The new strand that is being built"
+                },
+                {
+                  "id": "b",
+                  "text": "An old strand used as the pattern for a new strand"
+                },
+                {
+                  "id": "c",
+                  "text": "The enzyme that unzips the DNA"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Each old strand is the template: DNA polymerase reads it and adds the matching nucleotides. The enzyme that unzips is helicase."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "Which list puts the steps of DNA replication in the right order?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "DNA polymerase unzips the DNA, then helicase adds matching nucleotides"
+                },
+                {
+                  "id": "b",
+                  "text": "DNA polymerase adds matching nucleotides, then helicase unzips the two new molecules"
+                },
+                {
+                  "id": "c",
+                  "text": "Helicase unzips the DNA, then DNA polymerase adds matching nucleotides, making two identical molecules"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Unzip, then match: helicase separates the strands, and DNA polymerase builds a new strand on each old one. Mixing up helicase (unzips) and DNA polymerase (builds) is the common mistake."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "DNA Replication (FuseSchool)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "lSvF5-rBRGQ"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "fill_blank",
+              "prompt": "An old strand reads TACGGA. Type the new strand DNA polymerase builds on it.",
+              "answer": ["ATGCCT", "ATG CCT", "A T G C C T"],
+              "explanation": "Match each base: T→A, A→T, C→G, G→C, G→C, A→T. The new strand is ATGCCT."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "A student writes UUAG as the new DNA strand built on the old strand AATC. What is the mistake?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The new strand should read AATC, the same as the old strand"
+                },
+                {
+                  "id": "b",
+                  "text": "Nothing is wrong"
+                },
+                {
+                  "id": "c",
+                  "text": "New DNA uses T, not U: the new strand is TTAG"
+                }
+              ],
+              "answer": "c",
+              "explanation": "A pairs with T in DNA, so the new strand is TTAG. U is only used in RNA, when a gene is transcribed."
+            }
+          ],
+          "shortAnswer": "Describe the jobs of helicase, DNA polymerase and DNA ligase in DNA replication."
         }
       ]
     }

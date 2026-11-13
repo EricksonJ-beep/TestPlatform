@@ -1,6 +1,6 @@
 {
   "name": "bio-u8-lt4-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology B",
   "relearning": [
@@ -311,6 +311,120 @@
               "explanation": "That partnership is a lichen. Mycorrhizae are fungus–plant root partners, which is the common mix-up."
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U8.LT4",
+      "mode": "watch",
+      "title": "U8.LT4 Watch: the fungi",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Protists and Fungi (fungi half)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "zK7Ckmxxqds"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "Which statement is true of ALL fungi?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "They make their own food with chlorophyll"
+                },
+                {
+                  "id": "b",
+                  "text": "They are prokaryotes"
+                },
+                {
+                  "id": "c",
+                  "text": "They are eukaryotic heterotrophs: they can't make their own food"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Fungi have a nucleus and no chlorophyll, so they must absorb food. Calling fungi plants is the common mistake."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "What is a mycelium?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "A tangled mass of hyphae, usually hidden in soil or wood"
+                },
+                {
+                  "id": "b",
+                  "text": "The mushroom that grows above the ground"
+                },
+                {
+                  "id": "c",
+                  "text": "A tiny cell a fungus releases to reproduce"
+                }
+              ],
+              "answer": "a",
+              "explanation": "The mycelium is the main body of the fungus, made of hyphae. The mushroom is only the fruiting body, and the tiny cells are spores."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Fungi: Death Becomes Them - CrashCourse Biology #39",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "m4DUZhnNo4s"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "A lichen is a fungus living with an alga or cyanobacteria. What does each partner do?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The fungus makes food by photosynthesis, and the alga gives shelter"
+                },
+                {
+                  "id": "b",
+                  "text": "Both partners make food by photosynthesis"
+                },
+                {
+                  "id": "c",
+                  "text": "The alga or cyanobacteria makes food, and the fungus gives shelter and water"
+                }
+              ],
+              "answer": "c",
+              "explanation": "Fungi have no chlorophyll, so the alga or cyanobacteria makes the food. The fungus gives it shelter and water."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "A fungus on a dead log breaks the log down and returns its nutrients to the soil. What role is the fungus playing?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Pathogen"
+                },
+                {
+                  "id": "b",
+                  "text": "Decomposer"
+                },
+                {
+                  "id": "c",
+                  "text": "Producer"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Decomposers break down dead things and return nutrients to the soil. Thinking all fungi are harmful is the common mistake."
+            }
+          ],
+          "shortAnswer": "Explain why a mushroom is not the whole fungus. Use the words hyphae, mycelium and fruiting body."
         }
       ]
     }

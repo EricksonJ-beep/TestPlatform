@@ -1,6 +1,6 @@
 {
   "name": "bio-u7-lt3-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology B",
   "relearning": [
@@ -218,6 +218,106 @@
               "afterStepId": "s5"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U7.LT3",
+      "mode": "watch",
+      "title": "U7.LT3 Watch: protein synthesis",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Protein Synthesis: Transcription and Translation (Updated)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "oefAI2x2CQM"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "In the cookbook analogy, DNA is the master cookbook that can't leave the library. What is the photocopy of one recipe?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The ribosome"
+                },
+                {
+                  "id": "b",
+                  "text": "The protein"
+                },
+                {
+                  "id": "c",
+                  "text": "Messenger RNA (mRNA)"
+                }
+              ],
+              "answer": "c",
+              "explanation": "mRNA is the copy of one gene that leaves the nucleus. The ribosome is the kitchen, and the protein is the finished dish."
+            },
+            {
+              "id": "w2",
+              "kind": "fill_blank",
+              "prompt": "Transcribe the DNA triplet ATG into mRNA. Type the three mRNA bases.",
+              "answer": ["UAC", "U A C", "U-A-C"],
+              "explanation": "A→U, T→A, G→C, so the mRNA is UAC. Writing T in mRNA is the common mistake: RNA uses U instead."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "How RNA gets translated into protein power: Crash Course Biology #35",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "6ulXau2HyHg"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "The mRNA is AUG GGC UUU UGA. Codons: AUG = Met, GGC = Gly, UUU = Phe, UGA = stop. How many amino acids are in the chain?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "4"
+                },
+                {
+                  "id": "b",
+                  "text": "3"
+                },
+                {
+                  "id": "c",
+                  "text": "12"
+                }
+              ],
+              "answer": "b",
+              "explanation": "The chain is Met – Gly – Phe: 3 amino acids. The stop codon adds no amino acid, so counting it (4) is the common mistake."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "What is the job of tRNA (transfer RNA)?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "It brings the right amino acid to the ribosome"
+                },
+                {
+                  "id": "b",
+                  "text": "It carries the message from the nucleus to the ribosome"
+                },
+                {
+                  "id": "c",
+                  "text": "It makes up the ribosome itself"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Each tRNA carries one amino acid and matches its anticodon to a codon on the mRNA. mRNA carries the message, and rRNA makes up the ribosome."
+            }
+          ],
+          "shortAnswer": "Describe how a gene becomes a protein. Use the words transcription, mRNA, ribosome, translation and codon."
         }
       ]
     }

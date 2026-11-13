@@ -1,6 +1,6 @@
 {
   "name": "bio-u7-lt4-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology B",
   "relearning": [
@@ -239,6 +239,124 @@
               "afterStepId": "s5"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U7.LT4",
+      "mode": "watch",
+      "title": "U7.LT4 Watch: mutations",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Mutations (Updated, Amoeba Sisters)",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "vl6Vlf2thvI"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "THE CAT ATE THE RAT becomes THE CAT ATE THE BAT. Which kind of mutation is this like?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "A frameshift caused by an insertion"
+                },
+                {
+                  "id": "b",
+                  "text": "A substitution (point mutation)"
+                },
+                {
+                  "id": "c",
+                  "text": "A frameshift caused by a deletion"
+                }
+              ],
+              "answer": "b",
+              "explanation": "One letter was swapped and only one word changed, so it is a substitution. A frameshift would turn every word after the mistake into nonsense."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "A piece of a chromosome breaks off and attaches to a different chromosome. Which chromosomal mutation is this?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Deletion"
+                },
+                {
+                  "id": "b",
+                  "text": "Duplication"
+                },
+                {
+                  "id": "c",
+                  "text": "Inversion"
+                },
+                {
+                  "id": "d",
+                  "text": "Translocation"
+                }
+              ],
+              "answer": "d",
+              "explanation": "A translocation moves a piece to a different chromosome. An inversion flips a piece backward on the same chromosome."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Mutations: Silent, Missense, Nonsense, and Frameshift",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "3hSchyU_6dc"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "The mRNA AUG CAU GGA changes to AUG CGU GGA. CAU = His and CGU = Arg. What kind of mutation is this?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Silent: the protein stays the same"
+                },
+                {
+                  "id": "b",
+                  "text": "Nonsense: the protein is cut short"
+                },
+                {
+                  "id": "c",
+                  "text": "Missense: one amino acid changes"
+                }
+              ],
+              "answer": "c",
+              "explanation": "One base was swapped and the codon now codes for a different amino acid (His → Arg), so it is missense. It is not silent, because the amino acid changed."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "Three bases are inserted in the middle of a gene. What is the most likely effect on the protein?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "One amino acid is added, and the rest stay the same"
+                },
+                {
+                  "id": "b",
+                  "text": "Every amino acid after the insertion changes"
+                },
+                {
+                  "id": "c",
+                  "text": "The protein does not change at all"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Three bases add one whole codon, so the reading frame stays the same. Calling a three-base insertion a frameshift is the common mistake."
+            }
+          ],
+          "shortAnswer": "A substitution near the start of a gene changes one codon into a stop codon. Name this kind of mutation and predict what happens to the protein."
         }
       ]
     }

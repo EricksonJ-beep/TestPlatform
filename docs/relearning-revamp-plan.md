@@ -702,7 +702,7 @@ the student-account test.
 ### C4 · Biology Read · Watch · Do (33 targets)
 Same as C2.
 
-*Read and Do built Nov 5 for all 33 targets (Watch waits on Jon):*
+*Read and Do built Nov 5 for all 33 targets; Watch added Nov 13:*
 - *One pack per target, `bio-uX-ltY-relearning`. Read is a core and an extension text with 4
   quick checks and one short answer. Do is flashcards with a self-quiz or worked steps, varied by
   target. It includes Punnett squares drawn as math grids, DNA → mRNA → amino acids with the
@@ -712,6 +712,16 @@ Same as C2.
 - *Checks: `scripts/check-pack.ts` is clean on all 33. Each writer re-solved its own checks. I
   re-solved a random 24 of the 285, and all were right. All 12 math grids render.*
 - *Genotypes are never fill-ins, because fill-in grading ignores case, so "Bb" would match "bb".*
+
+- *Watch added Nov 13 (Jon approved the list in `docs/watch-videos/biology.md`), built as C2's:*
+  - *Each target's core video is the list's first choice, and its extension is the backup. A
+    section holds one video: U6.LT2's extension is the sex-linked clip (the blood-type clip is
+    left out) and U7.LT3's is Crash Course #35.*
+  - *Each video has 2 quick checks after it, on the target's core idea in Jon's wording (36 ATP,
+    the If…then hypothesis, plant-like / animal-like / fungus-like protists), and the extension
+    a short answer. Lengths are 5 minutes; the videos aren't trimmed.*
+  - *All 33 pass `scripts/check-pack.ts` at revision 2. Each writer re-solved its own checks.*
+  - *Not yet played on a student account; the list's "check the link" notes still stand.*
 
 **Done when** every Biology target has all three modes and its videos are approved.
 

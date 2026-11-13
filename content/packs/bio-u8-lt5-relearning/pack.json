@@ -1,6 +1,6 @@
 {
   "name": "bio-u8-lt5-relearning",
-  "revision": 1,
+  "revision": 2,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology B",
   "relearning": [
@@ -293,6 +293,120 @@
               "afterStepId": "s4"
             }
           ]
+        }
+      ]
+    },
+    {
+      "target": "U8.LT5",
+      "mode": "watch",
+      "title": "U8.LT5 Watch: the plant kingdom",
+      "sections": [
+        {
+          "part": "core",
+          "title": "Plants: Diversity, Structure, & Adaptations",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "A_DF246uVlU"
+          },
+          "checks": [
+            {
+              "id": "w1",
+              "kind": "multiple_choice",
+              "prompt": "In the plumbing analogy, what are a plant's \"pipes\"?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The waxy cuticle"
+                },
+                {
+                  "id": "b",
+                  "text": "Vascular tissue: xylem and phloem"
+                },
+                {
+                  "id": "c",
+                  "text": "Stomata"
+                }
+              ],
+              "answer": "b",
+              "explanation": "Xylem carries water up from the roots, and phloem carries sugar from the leaves. Plants without these pipes, like mosses, stay small."
+            },
+            {
+              "id": "w2",
+              "kind": "multiple_choice",
+              "prompt": "What is the difference between a gymnosperm and an angiosperm?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Gymnosperm seeds form in cones; angiosperm seeds are inside a fruit"
+                },
+                {
+                  "id": "b",
+                  "text": "Gymnosperms have no vascular tissue; angiosperms do"
+                },
+                {
+                  "id": "c",
+                  "text": "Gymnosperms use spores; angiosperms use seeds"
+                }
+              ],
+              "answer": "a",
+              "explanation": "Both are vascular plants with seeds. Gymnosperm means \"naked seed\": the seed sits in a cone, not inside a fruit."
+            }
+          ]
+        },
+        {
+          "part": "extension",
+          "title": "Vascular Plants = Winning! - Crash Course Biology #37",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "h9oDTMXM7M8"
+          },
+          "checks": [
+            {
+              "id": "w3",
+              "kind": "multiple_choice",
+              "prompt": "What does the waxy cuticle on a leaf do?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "It lets carbon dioxide into the leaf"
+                },
+                {
+                  "id": "b",
+                  "text": "It carries sugar to the rest of the plant"
+                },
+                {
+                  "id": "c",
+                  "text": "It keeps water from evaporating"
+                }
+              ],
+              "answer": "c",
+              "explanation": "The cuticle is a waxy layer that holds water in. Stomata are the openings that let carbon dioxide in, and phloem carries sugar."
+            },
+            {
+              "id": "w4",
+              "kind": "multiple_choice",
+              "prompt": "How is a seed different from a spore?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "A spore holds a tiny plant plus food; a seed is a single cell"
+                },
+                {
+                  "id": "b",
+                  "text": "A seed holds a tiny plant (embryo) plus food inside a coat; a spore is a single cell with no stored food"
+                },
+                {
+                  "id": "c",
+                  "text": "They are two names for the same thing"
+                }
+              ],
+              "answer": "b",
+              "explanation": "A seed protects and feeds the embryo, so it can wait for good conditions. Mosses and ferns use spores; gymnosperms and angiosperms use seeds."
+            }
+          ],
+          "shortAnswer": "Choose two of these adaptations: cuticle, stomata, seeds, pollen. Explain how each one helps a plant live on land."
         }
       ]
     }
