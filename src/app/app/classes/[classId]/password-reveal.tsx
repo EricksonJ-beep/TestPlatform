@@ -10,7 +10,8 @@ export function PasswordReveal({ email, password }: { email: string; password: s
 
   async function copy() {
     try {
-      await navigator.clipboard.writeText(`${email}\t${password}`);
+      // The password alone: it gets pasted straight into the sign-in password box.
+      await navigator.clipboard.writeText(password);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {
@@ -30,7 +31,7 @@ export function PasswordReveal({ email, password }: { email: string; password: s
         ) : (
           <Copy data-icon="inline-start" aria-hidden />
         )}
-        {copied ? "Copied" : "Copy"}
+        {copied ? "Copied" : "Copy password"}
       </Button>
     </div>
   );
