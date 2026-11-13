@@ -20,7 +20,7 @@ const swatches = [
   { name: "Teal deep", token: "bg-brand-deep", hex: "#0A6261", text: "text-white" },
   { name: "Teal soft", token: "bg-brand-soft", hex: "#E4F1F0", text: "text-brand-deep" },
   { name: "Action coral", token: "bg-coral", hex: "#FF6B5C", text: "text-white" },
-  { name: "Coral (buttons)", token: "bg-coral-deep", hex: "#E2553A", text: "text-white" },
+  { name: "Coral (buttons)", token: "bg-coral-deep", hex: "#CC4429", text: "text-white" },
   { name: "Success", token: "bg-success", hex: "#2E9E5B", text: "text-white" },
   { name: "Warning", token: "bg-warning", hex: "#F4A300", text: "text-foreground" },
   { name: "Error", token: "bg-error", hex: "#E5484D", text: "text-white" },

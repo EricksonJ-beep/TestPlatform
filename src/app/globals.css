@@ -80,7 +80,7 @@
   --brand-soft: #e4f1f0;
   --brand-foreground: #ffffff;
   --coral: #ff6b5c; /* action coral (accents) */
-  --coral-deep: #e2553a; /* buttons use the deeper coral for contrast */
+  --coral-deep: #cc4429; /* buttons: white text on it is 4.7:1 (AA); #e2553a was 3.75:1 (H6.2) */
   --coral-soft: #ffece8;
 
   /* Status */

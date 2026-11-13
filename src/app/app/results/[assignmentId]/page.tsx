@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { closeExpiredAttempts } from "@/lib/attempt-sweep";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft, Download, LayoutGrid } from "lucide-react";
@@ -28,6 +29,8 @@ export default async function AssignmentResultsPage({
     if (isAuthzError(err)) notFound();
     throw err;
   }
+  // Tests left open past their time limit are submitted before the page reads them (H3.2).
+  await closeExpiredAttempts({ assignmentId });
   const a = await getAssignmentRow(assignmentId);
   if (!a) notFound();
   const [rows, grid, items, corrections] = await Promise.all([

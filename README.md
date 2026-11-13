@@ -28,6 +28,13 @@ Anthropic API (Word/PDF import).
 Environment variables are listed in `.env.example`. `docs/authz-sweep.md` lists every server
 action and route with its guard (`node scripts/authz-sweep.mjs` regenerates it).
 
+## Hardening (Nov 9, 2026)
+
+[docs/hardening-plan.md](docs/hardening-plan.md) is the review of the whole app as tickets:
+what was fixed (answers that survive a wifi drop, a submit that is claimed once, throttled
+logins, sessions that end on a password reset, the tier board's cheap poll, alt text, the
+end-to-end run in CI) and what is still open, including four choices that are Jon's.
+
 ## Local setup
 
 1. Node 20+ (`node -v`). Then `npm ci`.
@@ -76,7 +83,9 @@ importer keeps file names as warnings.
 | `npm run db:generate` | Generate a migration after editing `src/db/schema.ts`                |
 | `npm run db:seed`     | Idempotent seed (`scripts/seed.ts`)                                  |
 | `npm run db:studio`   | Drizzle Studio                                                       |
-| `npm test`            | Vitest: authorization rules, class actions, CSV (in-memory Postgres) |
+| `npm test`            | Vitest: every rule and server action (in-memory Postgres)             |
+| `npm run e2e`         | One student end to end in a real browser (needs the app running)     |
+| `npm run db:restore`  | Load a Drive backup into an empty database ([docs/backup.md](docs/backup.md)) |
 | `npm run lint`        | ESLint, including the `bloom/require-authz` rule                     |
 | `npm run typecheck`   | `next typegen` + `tsc --noEmit`                                      |
 | `npm run format`      | Prettier (Markdown is excluded on purpose)                           |

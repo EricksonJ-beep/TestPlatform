@@ -124,6 +124,26 @@ describe("fill in the blank", () => {
     const co = { ...fb, gradingConfig: { acceptedAnswers: ["CO"], caseSensitive: true } };
     expect(gradeResponse(co, { kind: "text", text: "Co" }).isCorrect).toBe(false);
   });
+
+  it("forgives typing marks: curly apostrophes, a full stop after the answer, odd spaces (H3.4)", () => {
+    const law = { ...fb, gradingConfig: { acceptedAnswers: ["Newton's first law"] } };
+    expect(gradeResponse(law, { kind: "text", text: "Newton\u2019s first law." }).isCorrect).toBe(
+      true
+    );
+    expect(gradeResponse(law, { kind: "text", text: "newton's\u00A0first  law" }).isCorrect).toBe(
+      true
+    );
+    expect(gradeResponse(fb, { kind: "text", text: "erythrocytes," }).isCorrect).toBe(true);
+    // The accepted answer gets the same cleaning, so one that ends in a full stop still matches.
+    const us = { ...fb, gradingConfig: { acceptedAnswers: ["U.S."] } };
+    expect(gradeResponse(us, { kind: "text", text: "u.s." }).isCorrect).toBe(true);
+    expect(gradeResponse(us, { kind: "text", text: "U.S" }).isCorrect).toBe(true);
+    // Still wrong when the words differ, and capitals still count where they are asked for.
+    expect(gradeResponse(law, { kind: "text", text: "Newtons first law" }).isCorrect).toBe(false);
+    const co = { ...fb, gradingConfig: { acceptedAnswers: ["CO"], caseSensitive: true } };
+    expect(gradeResponse(co, { kind: "text", text: "Co." }).isCorrect).toBe(false);
+    expect(gradeResponse(co, { kind: "text", text: "CO." }).isCorrect).toBe(true);
+  });
 });
 
 describe("short answer and extended response", () => {
@@ -563,6 +583,35 @@ describe("final score: highest counts", () => {
     expect(correctionsCapOn({ type: "summative", correctionsCap: true, cvtcRules: false })).toBe(
       false
     );
+  });
+
+  it("the best attempt is the best percent, not the most points (H3.3)", () => {
+    // Pool draws can give attempts different totals: 7 of 7 beats 8 of 10.
+    const tenPoints = {
+      attemptId: "a1",
+      number: 1,
+      totalEarned: 8,
+      totalPossible: 10,
+      perTarget: [],
+    };
+    const sevenPoints = {
+      attemptId: "a2",
+      number: 2,
+      totalEarned: 7,
+      totalPossible: 7,
+      perTarget: [],
+    };
+    for (const type of ["formative", "practice"] as const) {
+      expect(computeFinalScore(type, [tenPoints, sevenPoints], { threshold: 80 })).toMatchObject({
+        bestAttemptId: "a2",
+        percent: 100,
+        totalEarned: 7,
+        totalPossible: 7,
+      });
+      expect(
+        computeFinalScore(type, [sevenPoints, tenPoints], { threshold: 80 }).bestAttemptId
+      ).toBe("a2");
+    }
   });
 
   it("formative: best attempt by total; later attempt wins ties; practice same", () => {

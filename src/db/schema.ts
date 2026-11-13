@@ -126,6 +126,11 @@ export const users = pgTable(
     /** Set when a teacher issues a temp password; the student is nudged to change it. */
     mustChangePassword: boolean("must_change_password").default(false).notNull(),
     lastLoginAt: timestamp("last_login_at", { withTimezone: true }),
+    /**
+     * When the password last changed (a teacher's reset, or the user's own change). A session
+     * that began before it is signed out (hardening plan H4.2, Nov 9 2026). Null: never changed.
+     */
+    passwordChangedAt: timestamp("password_changed_at", { withTimezone: true }),
     ...timestamps,
   },
   (t) => [
@@ -439,6 +444,8 @@ export const questions = pgTable(
       onDelete: "set null",
     }),
     mediaUrl: text("media_url"),
+    /** What the picture shows, for students who can't see it (hardening plan H6.1). */
+    mediaAlt: text("media_alt"),
     videoUrl: text("video_url"),
     stimulusId: uuid("stimulus_id").references(() => stimuli.id, { onDelete: "set null" }),
     templateId: uuid("template_id").references(() => questionTemplates.id, {
@@ -861,6 +868,8 @@ export const activityLog = pgTable(
   (t) => [
     index("activity_log_user_time_idx").on(t.userId, t.createdAt),
     index("activity_log_time_idx").on(t.createdAt),
+    /** The per-test activity log reads by assignment (hardening plan H5.3). */
+    index("activity_log_assignment_idx").on(t.assignmentId),
   ]
 );
 
@@ -901,6 +910,10 @@ export const responses = pgTable(
   (t) => [
     uniqueIndex("responses_attempt_question_unique").on(t.attemptId, t.questionId),
     index("responses_question_idx").on(t.questionId),
+    /** Answers still waiting for a teacher's score: the Dashboard and grading queue read these (H5.3). */
+    index("responses_ungraded_idx")
+      .on(t.attemptId)
+      .where(sql`${t.autoScore} is null and ${t.manualScore} is null`),
   ]
 );
 
@@ -1027,9 +1040,7 @@ export const skywardMarks = pgTable(
     recordedAt: timestamp("recorded_at", { withTimezone: true }).defaultNow().notNull(),
     ...timestamps,
   },
-  (t) => [
-    uniqueIndex("skyward_marks_cell_unique").on(t.assignmentId, t.columnKey, t.studentId),
-  ]
+  (t) => [uniqueIndex("skyward_marks_cell_unique").on(t.assignmentId, t.columnKey, t.studentId)]
 );
 
 // ---------------------------------------------------------------------------
@@ -1626,6 +1637,18 @@ export const relearningVideoFlags = pgTable(
 // ---------------------------------------------------------------------------
 // AI usage (Ticket 1.17): one row per model call, so spend is visible
 // ---------------------------------------------------------------------------
+
+/**
+ * Failed tries at something guessable (hardening plan H4.1, Nov 9 2026): a login, a class join
+ * code, a test's access code, a resume code, the teacher invite code. One row per key (what was
+ * tried, and by whom or from where), counting failures inside the current window. No foreign
+ * keys: a key can name an account that doesn't exist.
+ */
+export const authThrottle = pgTable("auth_throttle", {
+  key: text("key").primaryKey(),
+  failures: integer("failures").default(0).notNull(),
+  windowStartedAt: timestamp("window_started_at", { withTimezone: true }).defaultNow().notNull(),
+});
 
 export const aiUsage = pgTable(
   "ai_usage",

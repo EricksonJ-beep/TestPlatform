@@ -282,6 +282,30 @@ describe("create", () => {
     if (!bad.ok) expect(bad.fieldErrors?.mediaUrl?.[0]).toMatch(/https/);
   });
 
+  it("keeps the image's description, and drops it when there is no image (H6.1)", async () => {
+    asUser(ids.owner);
+    const img = "https://example.com/cell.png";
+    const withAlt = await createQuestion(
+      ids.bank,
+      mc({ mediaUrl: img, mediaAlt: "  A plant cell with five parts numbered 1 to 5  " })
+    );
+    expect(withAlt.ok).toBe(true);
+    if (withAlt.ok)
+      expect(await getQuestionForEdit(withAlt.data.questionId)).toMatchObject({
+        mediaUrl: img,
+        mediaAlt: "A plant cell with five parts numbered 1 to 5",
+      });
+    const noImage = await createQuestion(ids.bank, mc({ mediaAlt: "left over from before" }));
+    expect(noImage.ok).toBe(true);
+    if (noImage.ok)
+      expect((await getQuestionForEdit(noImage.data.questionId))!.mediaAlt).toBeNull();
+    const tooLong = await createQuestion(
+      ids.bank,
+      mc({ mediaUrl: img, mediaAlt: "x".repeat(301) })
+    );
+    expect(tooLong).toMatchObject({ ok: false, status: 400 });
+  });
+
   it("targets must belong to the bank's course", async () => {
     asUser(ids.owner);
     await expect(createQuestion(ids.bank, mc({ targetIds: [ids.ltOther] }))).resolves.toMatchObject(

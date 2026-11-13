@@ -99,14 +99,21 @@ export type CorrectionIssue = "answer_missing" | "why_missing" | "why_short" | "
 export const ISSUE_TEXT: Record<CorrectionIssue, string> = {
   answer_missing: "Write the correct answer.",
   why_missing: "Explain why it's correct in your own words.",
-  why_short: "Write at least two sentences.",
+  why_short: "Write at least two sentences. End each one with a period.",
   why_copied: "That's copied word for word. Say it your own way.",
 };
 
-/** Number of sentences: runs of text ended by . ! ? (or the end), ignoring fragments under three characters. */
+/**
+ * Number of sentences: runs of text ended by . ! ? … (or the end), ignoring fragments under three
+ * characters. Counted the way students type (Nov 12 2026, a set that couldn't be submitted): a
+ * closing quote or bracket may follow the period, a missing space after it still ends the sentence
+ * ("two cells.Meiosis makes four"), and a new line starts a new one. A decimal (3.5) never splits.
+ */
 export function sentenceCount(text: string): number {
   return text
-    .split(/[.!?]+(?:\s+|$)/)
+    .split(
+      /[.!?…]+["'”’)\]]*(?:\s+|$)|(?<=\p{L}{2})[.!?]+(?=\p{L})|(?<=\p{L})[.!?]+(?=\p{Lu}\p{Ll})|\n+/u
+    )
     .map((s) => s.trim())
     .filter((s) => s.replace(/[^\p{L}\p{N}]/gu, "").length >= 3).length;
 }

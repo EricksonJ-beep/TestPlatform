@@ -27,7 +27,7 @@ const schemaChange = z
  * must verify; the new one meets the policy; `must_change_password` clears.
  */
 export const changePassword = withAuthz(async (formData: FormData) => {
-  const session = await requireSession();
+  const session = await requireSession({ tempPasswordOk: true });
   const parsed = schemaChange.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
     const fieldErrors: Record<string, string[]> = {};
@@ -46,8 +46,28 @@ export const changePassword = withAuthz(async (formData: FormData) => {
     });
   await db
     .update(schema.users)
-    .set({ passwordHash: await hashPassword(parsed.data.next), mustChangePassword: false })
+    .set({
+      passwordHash: await hashPassword(parsed.data.next),
+      mustChangePassword: false,
+      // Every session from before this moment ends (H4.2), on any device.
+      passwordChangedAt: new Date(),
+    })
     .where(eq(schema.users.id, session.userId));
+  // This device signs straight back in with the new password, so the person who just changed it
+  // carries on. If that fails they are sent to log in, which is the safe outcome.
+  const identifier = session.email ?? session.username;
+  if (identifier) {
+    try {
+      const { signIn } = await import("@/auth");
+      await signIn("credentials", {
+        email: identifier,
+        password: parsed.data.next,
+        redirect: false,
+      });
+    } catch {
+      /* the next page load ends the old session and asks them to log in */
+    }
+  }
   revalidatePath("/student");
   revalidatePath("/app/settings");
   return { ok: true };
@@ -55,7 +75,7 @@ export const changePassword = withAuthz(async (formData: FormData) => {
 
 /** Whether the signed-in user still has to change a temporary password (for the nudge). */
 export const passwordStatus = withAuthz(async () => {
-  const session = await requireSession();
+  const session = await requireSession({ tempPasswordOk: true });
   const user = await db.query.users.findFirst({
     columns: { mustChangePassword: true },
     where: eq(schema.users.id, session.userId),

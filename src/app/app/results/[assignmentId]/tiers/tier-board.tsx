@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowUp, Pause, Play } from "lucide-react";
 import { cn } from "cn";
 import type { TierBoard, TierCard } from "@/lib/queries/tiers";
@@ -59,31 +59,47 @@ export function TierBoardView({ initial }: { initial: Board }) {
   const [sortReadiness, setSortReadiness] = useState(true);
   const allPeriods = board.allPeriods;
 
+  // The version the page holds goes with each poll, so an unchanged board costs the server a
+  // few small reads. Nothing is asked while the tab is hidden or a poll is still out (H5.1).
+  const versionRef = useRef(board.version);
+  useEffect(() => {
+    versionRef.current = board.version;
+  }, [board.version]);
   useEffect(() => {
     if (!live) return;
     let cancelled = false;
+    let inFlight = false;
     const tick = async () => {
+      if (inFlight || document.visibilityState !== "visible") return;
+      inFlight = true;
       try {
         const r = await fetch(
-          `/api/results/${board.assignment.id}/tiers?all=${allPeriods ? 1 : 0}`,
-          {
-            cache: "no-store",
-          }
+          `/api/results/${board.assignment.id}/tiers?all=${allPeriods ? 1 : 0}&v=${encodeURIComponent(versionRef.current)}`,
+          { cache: "no-store" }
         );
         if (!r.ok || cancelled) return;
-        const next = (await r.json()) as Board;
+        const next = (await r.json()) as Board | { unchanged: true };
         setLastPoll(new Date());
+        if ("unchanged" in next) return;
         setBoard((prev) =>
           next.version === prev.version && next.allPeriods === prev.allPeriods ? prev : next
         );
       } catch {
         /* the next tick retries */
+      } finally {
+        inFlight = false;
       }
     };
     const t = setInterval(tick, POLL_MS);
+    // Coming back to the tab catches up at once.
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void tick();
+    };
+    document.addEventListener("visibilitychange", onVisible);
     return () => {
       cancelled = true;
       clearInterval(t);
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, [live, board.assignment.id, allPeriods]);
 

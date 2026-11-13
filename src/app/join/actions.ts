@@ -7,8 +7,33 @@ import { signIn } from "@/auth";
 import { db, schema } from "@/db";
 import { ActionError, publicAction, withAuthz, requireStudent } from "@/lib/authz";
 import { logActivity } from "@/lib/activity-log";
+import { isUniqueViolation } from "@/lib/db-errors";
 import { normalizeJoinCode, uniqueUsername } from "@/lib/join";
 import { hashPassword, passwordPolicy } from "@/lib/password";
+import {
+  clientAddress,
+  isThrottled,
+  recordFailure,
+  THROTTLE,
+  throttleKey,
+  TOO_MANY_TRIES,
+} from "@/lib/throttle";
+
+/**
+ * Join codes are short, so guessing them is slowed by address (H4.1, Nov 9 2026). The limit is
+ * roomy: a whole class joins from one school address, typos included.
+ */
+async function joinGuard() {
+  const address = await clientAddress();
+  const key = throttleKey("join-from", address);
+  const limited = address !== "unknown";
+  return {
+    blocked: limited && (await isThrottled(key, THROTTLE.joinAddress)),
+    miss: async () => {
+      if (limited) await recordFailure(key, THROTTLE.joinAddress);
+    },
+  };
+}
 
 export type JoinLookup = {
   classId: string;
@@ -44,9 +69,13 @@ async function classForCode(code: string) {
 /** Public by design: turns a code into the class and the unclaimed names (no other student data). */
 export const lookupJoinCode = publicAction(
   withAuthz(async (code: string) => {
+    const guard = await joinGuard();
+    if (guard.blocked) throw new ActionError(TOO_MANY_TRIES, 429);
     const cls = await classForCode(String(code ?? ""));
-    if (!cls)
+    if (!cls) {
+      await guard.miss();
       throw new ActionError("That code doesn't match a class. Check it with your teacher.", 404);
+    }
     if (!cls.joinOpen) throw new ActionError("Joining is closed for this class right now.", 403);
     const names = await db
       .select({
@@ -116,8 +145,13 @@ export const joinClass = publicAction(
       return { fieldErrors: fe };
     }
     const d = parsed.data;
+    const guard = await joinGuard();
+    if (guard.blocked) return { error: TOO_MANY_TRIES };
     const cls = await classForCode(d.code);
-    if (!cls) return { error: "That code doesn't match a class. Check it with your teacher." };
+    if (!cls) {
+      await guard.miss();
+      return { error: "That code doesn't match a class. Check it with your teacher." };
+    }
     if (!cls.joinOpen) return { error: "Joining is closed for this class right now." };
 
     let firstName = d.firstName;
@@ -138,27 +172,58 @@ export const joinClass = publicAction(
       rosterId = name.id;
     }
 
-    const username = await uniqueUsername(firstName, lastName);
-    const [user] = await db
-      .insert(schema.users)
-      .values({
-        email: null,
-        username,
-        passwordHash: await hashPassword(d.password),
-        role: "student",
-        firstName,
-        lastName,
-        organizationId: cls.organizationId,
-        mustChangePassword: false,
-      })
-      .returning({ id: schema.users.id });
+    // Two joins at the same moment can pick the same username (the same name claimed twice, or
+    // two students who share a name). The loser of that race tries the next free one; if the
+    // roster name itself has gone, they are told (H4.3, Nov 9 2026).
+    const taken = {
+      error:
+        "Someone already joined with that name. If it's you, log in instead; otherwise tell your teacher.",
+    };
+    const passwordHash = await hashPassword(d.password);
+    let username = "";
+    let user: { id: string } | undefined;
+    for (let attempt = 0; attempt < 4 && !user; attempt++) {
+      username = await uniqueUsername(firstName, lastName);
+      try {
+        [user] = await db
+          .insert(schema.users)
+          .values({
+            email: null,
+            username,
+            passwordHash,
+            role: "student",
+            firstName,
+            lastName,
+            organizationId: cls.organizationId,
+            mustChangePassword: false,
+          })
+          .returning({ id: schema.users.id });
+      } catch (err) {
+        if (!isUniqueViolation(err)) throw err;
+        if (rosterId) {
+          const now = await db.query.rosterNames.findFirst({
+            columns: { studentId: true },
+            where: eq(schema.rosterNames.id, rosterId),
+          });
+          if (!now || now.studentId) return taken;
+        }
+      }
+    }
+    if (!user) return { error: "That didn't go through. Try again." };
     await db.insert(schema.enrollments).values({ classId: cls.id, studentId: user.id });
     await logActivity({ userId: user.id, kind: "class_joined", detail: { className: cls.name } });
     if (rosterId) {
-      await db
+      // One conditional UPDATE (H4.3): of two students picking the same name at the same
+      // moment, one gets it. The other's new account is taken back and they are told.
+      const claimed = await db
         .update(schema.rosterNames)
         .set({ studentId: user.id })
-        .where(eq(schema.rosterNames.id, rosterId));
+        .where(and(eq(schema.rosterNames.id, rosterId), isNull(schema.rosterNames.studentId)))
+        .returning({ id: schema.rosterNames.id });
+      if (claimed.length === 0) {
+        await db.delete(schema.users).where(eq(schema.users.id, user.id));
+        return taken;
+      }
     } else {
       await db
         .insert(schema.rosterNames)
@@ -185,9 +250,13 @@ export const joinClass = publicAction(
 /** A signed-in student adds another class with its code. */
 export const joinAnotherClass = withAuthz(async (code: string) => {
   const session = await requireStudent();
+  const codeKey = throttleKey("join-as", session.userId);
+  if (await isThrottled(codeKey, THROTTLE.code)) throw new ActionError(TOO_MANY_TRIES, 429);
   const cls = await classForCode(String(code ?? ""));
-  if (!cls)
+  if (!cls) {
+    await recordFailure(codeKey, THROTTLE.code);
     throw new ActionError("That code doesn't match a class. Check it with your teacher.", 404);
+  }
   if (!cls.joinOpen) throw new ActionError("Joining is closed for this class right now.", 403);
   const already = await db.query.enrollments.findFirst({
     columns: { id: true },

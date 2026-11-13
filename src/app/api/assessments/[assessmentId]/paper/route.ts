@@ -9,6 +9,7 @@ import {
   questionsForServedSet,
 } from "@/lib/queries/assessments";
 import { listTargets } from "@/lib/queries/courses";
+import { fetchPublicBytes } from "@/lib/safe-fetch";
 import { getObjectStream, isMediaProxyUrl } from "@/lib/storage";
 
 export const dynamic = "force-dynamic";
@@ -54,8 +55,12 @@ async function loadImages(urls: string[], origin: string): Promise<Map<string, I
       if (isMediaProxyUrl(url)) {
         const obj = await getObjectStream(url.slice("/api/media/".length));
         if (obj) bytes = await readAll(obj.body);
-      } else if (/^https?:\/\//.test(url) || url.startsWith("/")) {
-        const r = await fetch(new URL(url, origin));
+      } else if (/^https?:\/\//.test(url)) {
+        // An address someone typed: public web addresses only, with a time and size limit (H4.6).
+        bytes = await fetchPublicBytes(url);
+      } else if (url.startsWith("/") && !url.startsWith("//")) {
+        // A file this site serves itself (public/).
+        const r = await fetch(new URL(url, origin), { signal: AbortSignal.timeout(8000) });
         if (r.ok) bytes = new Uint8Array(await r.arrayBuffer());
       }
       if (!bytes) continue;

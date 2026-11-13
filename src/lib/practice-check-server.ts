@@ -246,6 +246,13 @@ async function dealRound(checkId: string): Promise<{ roundId: string }> {
   });
   if (deal.questions.length === 0)
     throw new CheckError("There are no practice questions for this target yet. Tell your teacher.");
+  // A round shorter than the pass mark can never be passed (H3.1, Nov 9 2026): the student would
+  // loop on "Try a new 5" for good. Don't deal it; Bank health shows the teacher which band is short.
+  if (deal.questions.length < check.passMark)
+    throw new CheckError(
+      "There aren't enough practice questions for this target yet. Tell your teacher.",
+      409
+    );
   // Ordering and matching options are shuffled, choice options keep the author's order (as practice).
   const served = await serveQuestions(
     deal.questions.map((q) => ({

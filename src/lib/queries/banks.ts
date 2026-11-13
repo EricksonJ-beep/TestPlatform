@@ -348,6 +348,7 @@ export type QuestionForEdit = {
   tags: string[];
   notes: string | null;
   mediaUrl: string | null;
+  mediaAlt: string | null;
   videoUrl: string | null;
   stimulusId: string | null;
   externalId: string | null;
@@ -396,6 +397,7 @@ export async function getQuestionForEdit(questionId: string): Promise<QuestionFo
     tags: q.tags,
     notes: q.notes,
     mediaUrl: q.mediaUrl,
+    mediaAlt: q.mediaAlt,
     videoUrl: q.videoUrl,
     stimulusId: q.stimulusId,
     externalId: q.externalId,

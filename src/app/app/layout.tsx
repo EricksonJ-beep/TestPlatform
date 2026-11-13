@@ -9,7 +9,7 @@ import { setCurrentCourse } from "./courses/actions";
 
 /** Teacher shell: teal sidebar + top bar. proxy.ts already keeps non-teachers out. */
 export default async function TeacherLayout({ children }: LayoutProps<"/app">) {
-  const session = await requireTeacher();
+  const session = await requireTeacher({ tempPasswordOk: true });
   const [org, { courses, current }] = await Promise.all([
     db
       .select({ name: schema.organizations.name })

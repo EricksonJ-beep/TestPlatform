@@ -24,4 +24,48 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
+      # src/db/schema.ts and drizzle/ must agree: a schema edit without its migration fails here
+      # (hardening plan H7.1).
+      - name: Schema has its migration
+        run: |
+          npx drizzle-kit generate --name drift
+          test -z "$(git status --porcelain drizzle)" || (git status --short drizzle && echo "Run npm run db:generate and commit the migration." && exit 1)
       - run: npm test
+
+  # One student, start to finish, in a real browser against a production build (H7.1, H7.5):
+  # log in, take a quiz with the connection cut partway, submit, open corrections.
+  e2e:
+    name: Build and student end to end
+    runs-on: ubuntu-latest
+    env:
+      # The embedded Postgres that `npm run db:local` serves.
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5433/postgres
+      AUTH_SECRET: ci-only-not-a-real-secret
+      AUTH_URL: http://localhost:3000
+      TEACHER_INVITE_CODE: ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Local database with every migration applied
+        run: |
+          npm run db:local > db.log 2>&1 &
+          for i in $(seq 1 30); do (echo > /dev/tcp/127.0.0.1/5433) 2>/dev/null && break; sleep 1; done
+          npm run db:migrate
+      # `next build` on its own: `npm run build` would also apply content packs, which this run doesn't need.
+      - run: npx next build
+      - name: Start the app
+        run: |
+          npx next start -p 3000 > app.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf http://localhost:3000/api/health > /dev/null && break; sleep 1; done
+          curl -sf http://localhost:3000/api/health
+      - run: npm run e2e
+      - name: Logs, if it failed
+        if: failure()
+        run: |
+          tail -n 80 app.log || true
+          tail -n 20 db.log || true

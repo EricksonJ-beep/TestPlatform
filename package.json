@@ -19,7 +19,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "db:local": "tsx scripts/db-local.ts",
-    "smoke": "node scripts/smoke.mjs"
+    "smoke": "node scripts/smoke.mjs",
+    "e2e": "node scripts/e2e-student.mjs",
+    "db:restore": "tsx --env-file-if-exists=.env.local scripts/restore-backup.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.129.0",
@@ -37,7 +39,7 @@
     "katex": "^0.18.7",
     "lucide-react": "^1.47.0",
     "mammoth": "^1.13.0",
-    "next": "16.3.5",
+    "next": "16.4.6",
     "next-auth": "^5.0.0-beta.32",
     "pdf-lib": "^1.17.1",
     "pg": "^8.23.0",
@@ -59,7 +61,7 @@
     "dotenv": "^18.0.2",
     "drizzle-kit": "^0.31.11",
     "eslint": "^9",
-    "eslint-config-next": "16.3.5",
+    "eslint-config-next": "16.4.6",
     "eslint-config-prettier": "^10.1.8",
     "playwright": "^1.63.0",
     "prettier": "^3.9.8",
