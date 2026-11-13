@@ -1,6 +1,6 @@
 {
   "name": "bio-u6-lt2-relearning",
-  "revision": 2,
+  "revision": 3,
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Biology B",
   "relearning": [
@@ -378,6 +378,59 @@
             }
           ],
           "shortAnswer": "A carrier mother (X^{B}X^{b}) and a colorblind father (X^{b}Y) have a colorblind daughter. Explain where each of her X chromosomes came from and why she is colorblind."
+        },
+        {
+          "part": "extension",
+          "title": "Multiple Alleles (ABO Blood Types) and Punnett Squares",
+          "minutes": 5,
+          "body": {
+            "type": "video",
+            "youtubeId": "9O5JQqlngFY"
+          },
+          "checks": [
+            {
+              "id": "w5",
+              "kind": "multiple_choice",
+              "prompt": "A person with type AB blood has one A allele and one B allele. What does type AB show about the A and B alleles?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "A is dominant over B"
+                },
+                {
+                  "id": "b",
+                  "text": "They blend into something in between"
+                },
+                {
+                  "id": "c",
+                  "text": "They are codominant, so both show"
+                }
+              ],
+              "answer": "c",
+              "explanation": "A and B are codominant: both show, so the blood is type AB. O is the recessive allele. The video may write the alleles as Iᴬ, Iᴮ and i; in class we write A, B and O."
+            },
+            {
+              "id": "w6",
+              "kind": "multiple_choice",
+              "prompt": "A type A parent (AO) and a type O parent (OO) have a child. What is the chance the child has type O blood?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "25%"
+                },
+                {
+                  "id": "b",
+                  "text": "50%"
+                },
+                {
+                  "id": "c",
+                  "text": "0%"
+                }
+              ],
+              "answer": "b",
+              "explanation": "The boxes are AO, AO, OO and OO: 2 of 4 are OO, so 50%. O is recessive, so only OO gives type O; the AO children are type A."
+            }
+          ]
         }
       ]
     }

@@ -1,6 +1,6 @@
 # Biology "Watch" relearning candidates (all 33 targets)
 
-*Approved by Jon Nov 13 2026: First choice is the core video and Backup the extension in each `bio-uX-ltY-relearning` pack. A section holds one video, so where a Backup cell lists two, one is used: U6.LT2 uses the sex-linked clip (the ABO blood-type clip is not in the pack) and U7.LT3 uses Crash Course #35 alone. Still to do on a student account (Restricted Mode): play each pick.*
+*Approved by Jon Nov 13 2026: First choice is the core video and Backup the extension in each `bio-uX-ltY-relearning` pack. A section holds one video, so where a Backup cell lists two, one is used: U7.LT3 uses Crash Course #35 alone. U6.LT2 has both of its Backup clips, as two extension sections (sex-linked, then ABO blood types; Jon, Nov 13: "add the blood type video to U6.LT2"). Still to do on a student account (Restricted Mode): play each pick.*
 
 **At a glance**
 - Every target has a first choice and a backup. Most picks are Amoeba Sisters and Crash Course Biology. TED-Ed, Bozeman, FuseSchool and Khan Academy fill the gaps.
