@@ -18,7 +18,16 @@ export const HOSTED_ACTIVITY_PAGES: { path: string; title: string; height?: numb
     title: "Osteon (Haversian system): label the structures",
     height: 1750,
   },
-  { path: "/activities/ap-unit2-review.html", title: "A&P Unit 2 review: vocabulary cards and practice questions" },
+  {
+    path: "/activities/ap-unit2-review.html",
+    title: "A&P Unit 2 review: vocabulary cards and practice questions",
+  },
+  // Its photos sit beside it in public/activities/muscle-lab/. The finish panel lists missed muscles, so it runs a little taller.
+  {
+    path: "/activities/muscle-lab.html",
+    title: "Muscle lab: how muscles are named, explore the models, name the muscle",
+    height: 1400,
+  },
 ];
 
 /** Iframe height for an activity url: the hosted page's own, else the default. */

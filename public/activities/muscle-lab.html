@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A&amp;P Muscle Lab Activities</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1d2733; --muted:#5b6876; --paper:#ffffff; --wash:#f2f5f8; --line:#d5dce4;
+  --navy:#0b3a66; --sel:#2b5fa8; --sel-wash:#eaf1fb;
+  --ok:#0f7a5c; --ok-wash:#e3f4ee; --miss:#b4233c; --miss-wash:#fbe6ea; --warn:#9a5b00; --warn-wash:#fff4e0;
+  --font:"Atkinson Hyperlegible", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.45}
+.wrap{max-width:900px;margin:0 auto;padding:16px}
+.banner{background:var(--navy);color:#fff;border-radius:8px;padding:14px 18px;text-align:center}
+.banner .course{font-size:.95rem;opacity:.9}
+.banner h1{font-size:1.5rem;margin:4px 0 0}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 0;border-bottom:2px solid var(--line)}
+.tab{font:700 1rem var(--font);color:var(--muted);background:none;border:none;border-bottom:3px solid transparent;margin-bottom:-2px;padding:10px 14px;cursor:pointer}
+.tab[aria-selected="true"]{color:var(--navy);border-bottom-color:var(--navy)}
+.tab:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--sel);outline-offset:2px}
+.panel{padding-top:16px}
+.panel[hidden]{display:none}
+button{font-family:var(--font)}
+.btn{border:1px solid var(--sel);background:var(--sel);color:#fff;border-radius:999px;padding:8px 18px;font-size:1rem;font-weight:700;cursor:pointer}
+.btn.ghost{background:var(--paper);color:var(--sel)}
+.btn:disabled{opacity:.45;cursor:default}
+.round{flex:none;width:42px;height:42px;border-radius:50%;border:none;background:var(--sel);color:#fff;font-size:1.3rem;font-weight:700;cursor:pointer;display:grid;place-items:center}
+.round:disabled{opacity:.35;cursor:default}
+.lead{margin:0 0 14px;color:var(--muted)}
+.pager{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px}
+.counter{color:var(--muted)}
+
+/* A photo sized by its own shape, so labels and hotspots placed in percent stay on target. */
+.photo{position:relative;margin:0 auto;max-width:100%;background:var(--wash);border-radius:8px}
+.photo img{display:block;width:100%;height:100%;border-radius:8px}
+
+/* ---------- how muscles are named ---------- */
+.slide{border:1px solid var(--line);border-radius:10px;padding:18px;min-height:560px}
+.slide h2{margin:0 0 8px;font-size:1.3rem;color:var(--navy)}
+.slide p{margin:0 0 14px;font-size:1.08rem}
+.figs{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:flex-start}
+.tag{position:absolute;transform:translate(-50%,-50%);background:rgba(255,255,255,.93);border:1px solid var(--line);border-radius:6px;padding:2px 8px;font-size:.9rem;font-weight:700;white-space:nowrap;box-shadow:0 1px 4px rgba(20,40,70,.25)}
+/* On a tall, narrow photo a label near an edge sits beside the model, not across it. */
+.tag.side{transform:translateY(-50%);white-space:normal;width:min-content}
+
+/* ---------- explore the models ---------- */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.chip{border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:5px 12px;font-size:.92rem;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:#fff;font-weight:700}
+.view-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:6px 12px;margin-bottom:10px}
+.view-head h2{margin:0;font-size:1.2rem;color:var(--navy)}
+.stage{min-height:600px;display:flex;align-items:flex-start;justify-content:center}
+.spot{position:absolute;width:30px;height:30px;border-radius:50%;border:2px solid #fff;background:#8a1d8f;color:#fff;font-size:1.25rem;font-weight:700;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0;box-shadow:0 1px 5px rgba(0,0,0,.5)}
+.spot.seen{background:var(--ok)}
+.spot[aria-expanded="true"]{background:var(--navy);z-index:3}
+.bubble{position:absolute;z-index:4;width:max-content;max-width:230px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 12px;box-shadow:0 4px 14px rgba(20,40,70,.3);font-size:.95rem}
+.bubble b{display:block;font-size:1.02rem;color:var(--navy)}
+.namebar{min-height:2.9em;margin-top:10px;padding:8px 12px;border-radius:8px;background:var(--wash);text-align:center}
+.namebar b{color:var(--navy)}
+
+/* ---------- name the muscle ---------- */
+.q-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:4px 10px;color:var(--muted);font-size:.95rem}
+.bar{height:6px;background:var(--wash);border-radius:3px;overflow:hidden;margin:6px 0 14px}
+.bar span{display:block;height:100%;width:0;background:var(--ok);transition:width .3s}
+.qbox{border:1px solid var(--line);border-radius:10px;padding:18px}
+.card-stage{height:470px;display:flex;align-items:center;justify-content:center}
+.stem{font-size:1.12rem;font-weight:700;margin:14px 0 4px}
+.note{margin:0 0 4px;color:var(--muted)}
+.answer-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+.answer-row input{flex:1 1 240px;min-width:0;font:inherit;font-size:1.08rem;border:1.5px solid #8a97a5;border-radius:8px;padding:9px 12px;background:#fff;color:var(--ink)}
+.answer-row input.right{border-color:var(--ok);background:var(--ok-wash)}
+.answer-row input.wrong{border-color:var(--miss);background:var(--miss-wash)}
+.feedback{min-height:2.9em;margin:10px 0 0;font-weight:700}
+.feedback.ok{color:var(--ok)} .feedback.miss{color:var(--miss)} .feedback.near{color:var(--warn)}
+.feedback .hint{display:block;font-weight:400;color:var(--ink)}
+.q-controls{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-top:14px}
+.q-controls .left{display:flex;gap:8px;flex-wrap:wrap}
+.q-controls .right{display:flex;gap:8px}
+.dots{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:16px}
+.dots button{width:16px;height:16px;border-radius:50%;border:2px solid #8a97a5;background:#fff;padding:0;cursor:pointer}
+.dots button.cur{border-color:var(--sel);box-shadow:0 0 0 2px var(--sel-wash)}
+.dots button.ok{background:var(--ok);border-color:var(--ok)}
+.dots button.miss{background:var(--miss);border-color:var(--miss)}
+.finish{display:none;margin-top:18px;padding:16px;border-radius:8px;background:var(--ok-wash);border:1px solid #b9e0d2}
+.finish.show{display:block}
+.finish h2{margin:0 0 6px;font-size:1.2rem}
+.missed a{color:var(--sel)}
+@media (max-width:560px){
+  .banner h1{font-size:1.25rem}
+  .tab{padding:8px 10px;font-size:.95rem}
+  .card-stage{height:auto;min-height:200px}
+  .slide{min-height:0}
+  .stage{min-height:0}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="banner">
+    <div class="course">General Anatomy and Physiology</div>
+    <h1>Muscle Lab Activities</h1>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tab-named" aria-controls="panel-named" aria-selected="true">1. How muscles are named</button>
+    <button class="tab" role="tab" id="tab-explore" aria-controls="panel-explore" aria-selected="false">2. Explore the models</button>
+    <button class="tab" role="tab" id="tab-cards" aria-controls="panel-cards" aria-selected="false">3. Name the muscle</button>
+  </div>
+
+  <!-- ===== How muscles are named ===== -->
+  <section class="panel" id="panel-named" role="tabpanel" aria-labelledby="tab-named">
+    <p class="lead" id="namedLead"></p>
+    <div class="slide" id="slide" aria-live="polite"></div>
+    <div class="pager">
+      <button class="round" id="sprev" aria-label="Previous page">&#8249;</button>
+      <span class="counter" id="scount"></span>
+      <button class="round" id="snext" aria-label="Next page">&#8250;</button>
+    </div>
+  </section>
+
+  <!-- ===== Explore the models ===== -->
+  <section class="panel" id="panel-explore" role="tabpanel" aria-labelledby="tab-explore" hidden>
+    <p class="lead">Pick a view, then tap each <b>+</b> to see what the arrow is pointing to. Try to say the name before you tap.</p>
+    <div class="chips" id="chips"></div>
+    <div class="view-head"><h2 id="vtitle"></h2><span class="counter" id="vcount"></span></div>
+    <div class="stage"><div class="photo" id="vphoto"></div></div>
+    <div class="namebar" id="namebar" aria-live="polite"></div>
+    <div class="pager">
+      <button class="round" id="vprev" aria-label="Previous view">&#8249;</button>
+      <span class="counter" id="vpos"></span>
+      <button class="round" id="vnext" aria-label="Next view">&#8250;</button>
+    </div>
+  </section>
+
+  <!-- ===== Name the muscle ===== -->
+  <section class="panel" id="panel-cards" role="tabpanel" aria-labelledby="tab-cards" hidden>
+    <div class="q-head"><span id="qpos"></span><span>Right on the first try: <b id="score">0</b> / <span id="possible"></span></span></div>
+    <div class="bar"><span id="qbar"></span></div>
+    <div class="qbox">
+      <div class="card-stage"><div class="photo" id="cphoto"></div></div>
+      <p class="stem"><label for="answer">Name the muscle the arrow is pointing to.</label></p>
+      <p class="note" id="cnote" hidden></p>
+      <div class="answer-row">
+        <input id="answer" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Your answer">
+        <button class="btn" id="check">Check</button>
+      </div>
+      <div class="feedback" id="feedback" aria-live="polite"></div>
+    </div>
+    <div class="q-controls">
+      <div class="left">
+        <button class="btn ghost" id="show">Show answer</button>
+      </div>
+      <div class="right">
+        <button class="round" id="qprev" aria-label="Previous card">&#8249;</button>
+        <button class="round" id="qnext" aria-label="Next card">&#8250;</button>
+      </div>
+    </div>
+    <div class="dots" id="dots"></div>
+    <div class="finish" id="finish">
+      <h2>Practice complete</h2>
+      <div id="summary"></div>
+      <div class="missed" id="missedList"></div>
+      <p style="margin:12px 0 0"><button class="btn ghost" id="startOver">Start over</button></p>
+    </div>
+  </section>
+</div>
+
+<script>
+/* =====================================================================
+   CONTENT: rebuilt from the three H5P activities on the CVTC 806-177
+   "Muscle Lab H5P Activities" page: How Muscles are Named (course
+   presentation), Muscle lab learning/review activities (image hotspots)
+   and Name the Muscles Activity (flashcards). Photos are in
+   /activities/muscle-lab/. Edit here to change content.
+
+   slides: head, html (only <strong> is used), imgs[{src,w,h,labels[{t,x,y}]}]
+           label x,y = the label's centre, in percent of the photo
+   views:  tab, title, src, w, h, spots[{x,y,name,note}]
+           spot x,y = the + button's top-left corner, in percent of the photo
+   cards:  src, w, h, a (the answer), note (optional line under the prompt)
+   ===================================================================== */
+const ITEM = {
+  id: "muscle-lab",
+  title: "A&P Muscle Lab Activities",
+  intro: "Anatomists name the skeletal muscles according to a number of criteria, each of which describes the muscle in some way. These include naming the muscle after its shape, size, fiber direction, location, number of origins or its action.",
+  slides: [
+    {"head": "Shape", "html": "The names of some muscles reflect their shape. For example, the deltoid is a large, triangular-shaped muscle that covers the shoulder. It is so-named because the Greek letter delta is a triangle.", "imgs": [{"src": "named-01.jpg", "w": 820, "h": 326, "labels": [{"t": "Deltoid", "x": 88.3, "y": 0}]}]},
+    {"head": "Location or relationship to a bone", "html": "The skeletal muscle’s anatomical location or its relationship to a particular bone often determines its name. For example, the frontalis muscle is located on top of the frontal bone of the skull. Other examples are muscles of the arm that include the term brachii (of the arm).", "imgs": [{"src": "named-02.jpg", "w": 535, "h": 559, "labels": [{"t": "Frontalis of the Occipitofrontalis", "x": 100, "y": 10.8}]}, {"src": "named-03.jpg", "w": 820, "h": 461, "labels": [{"t": "Biceps brachii", "x": 41.3, "y": 26.0}, {"t": "Triceps brachii", "x": 39.9, "y": 63.9}]}]},
+    {"head": "Size", "html": "For the buttocks, the size of the muscles influences the names: gluteus <strong>maximus</strong> (largest), gluteus <strong>medius</strong> (medium), and the gluteus <strong>minimus</strong> (smallest). Another example are the pectoral muscles including <strong>major</strong> or <strong>minor</strong>.", "imgs": [{"src": "named-04.jpg", "w": 478, "h": 559, "labels": [{"t": "Gluteus medius", "x": 98.2, "y": 57.7}]}, {"src": "named-05.jpg", "w": 247, "h": 559, "labels": [{"t": "Gluteus maximus", "x": 53.8, "y": 59.5}]}, {"src": "named-06.jpg", "w": 591, "h": 559, "labels": [{"t": "Pectoralis major", "x": 49.7, "y": 34.2}]}]},
+    {"head": "Length", "html": "Names are often used to indicate length—<strong>brevis</strong> (short), <strong>longus</strong> (long)", "imgs": []},
+    {"head": "Position", "html": "Some muscles indicate their positions relative to the midline: <strong>lateralis</strong> (to the outside away from the midline), and <strong>medialis</strong> (toward the midline).", "imgs": [{"src": "named-07.jpg", "w": 231, "h": 559, "labels": [{"t": "Vastus lateralis", "x": 98.1, "y": 35.9}, {"t": "Vastus medialis", "x": 5.6, "y": 38.2}]}]},
+    {"head": "Direction", "html": "The direction of the muscle fibers and fascicles are used to describe muscles. For example, the abdominal muscles all indicated the direction of the fibers such as the <strong>rectus</strong> (straight), the <strong>obliques</strong> (at an angle) and the <strong>transverse</strong> (horizontal) muscles of the abdomen.", "imgs": [{"src": "named-08.jpg", "w": 487, "h": 559, "labels": [{"t": "Rectus abdominis", "x": 85.5, "y": 50.9}, {"t": "External oblique", "x": 44.7, "y": 54.3}]}]},
+    {"head": "Muscle numbers", "html": "Some muscle names indicate the number of muscles in a group. One example of this is the quadriceps, a group of four muscles located on the anterior (front) thigh.", "imgs": []},
+    {"head": "Origin", "html": "Other muscle names can provide information as to how many origins a particular muscle has, such as the biceps brachii. The prefix <strong>bi</strong> indicates that the muscle has two origins and <strong>tri</strong> indicates three origins.", "imgs": [{"src": "named-09.jpg", "w": 820, "h": 350, "labels": [{"t": "Biceps brachii", "x": 36.0, "y": 23.4}, {"t": "Triceps brachii", "x": 33.0, "y": 63.1}]}]},
+    {"head": "Attachment point(s)", "html": "The location of a muscle’s attachment can also appear in its name. When the name of a muscle is based on the attachments, the origin is always named first. For instance, the sternocleidomastoid muscle of the neck has a dual origin on the sternum (sterno) and clavicle (cleido), and it inserts on the mastoid process of the temporal bone.", "imgs": [{"src": "named-10.jpg", "w": 581, "h": 559, "labels": [{"t": "Sternocleidomastoid", "x": 24.7, "y": 71.6}]}]},
+    {"head": "Action", "html": "The last feature by which to name a muscle is its action. When muscles are named for the movement they produce, one can find action words in their name. Some examples are <strong>flexors</strong> (decrease the angle at the joint), <strong>extensors</strong> (increase the angle at the joint), <strong>abductors</strong> (move the bone away from the midline), or <strong>adductors</strong> (move the bone toward the midline).", "imgs": []}
+  ],
+  views: [
+    {"src": "explore-01.jpg", "w": 700, "h": 559, "title": "Muscles of the Head and Neck", "tab": "Head & neck muscles", "spots": [{"x": 24, "y": 13.8, "name": "Temporalis muscle", "note": "Temporalis muscle"}, {"x": 85.6, "y": 6.3, "name": "Occipitofrontalis muscle", "note": "Frontalis muscle of the Occipitofrontalis"}, {"x": 89.2, "y": 24.2, "name": "Orbicularis oculi", "note": "Orbicularis oculi"}, {"x": 90, "y": 55.7, "name": "Orbicularis oris", "note": "Orbicularis oris"}, {"x": 27.2, "y": 54.5, "name": "Masseter", "note": "Masseter"}, {"x": 18, "y": 71.0, "name": "Sternocleidomastoid", "note": "Sternocleidomastoid"}]},
+    {"src": "explore-02.jpg", "w": 697, "h": 559, "title": "Muscles of the Chest and Abdomen", "tab": "Chest & abdominal muscles", "spots": [{"x": 83.6, "y": 11.8, "name": "Pectoralis major", "note": "Pectoralis major muscle"}, {"x": 83.2, "y": 40.6, "name": "rectus abdominis", "note": "Rectus abdominis muscle"}, {"x": 17.6, "y": 27.7, "name": "Serratus anterior", "note": "Serratus anterior muscle"}, {"x": 20, "y": 45.5, "name": "External oblique", "note": "External oblique muscle"}, {"x": 20.4, "y": 84.2, "name": "Sartorius", "note": "Leg muscle Sartorius"}]},
+    {"src": "explore-03.jpg", "w": 471, "h": 559, "title": "Intercostal muscles", "tab": "Intercostals", "spots": [{"x": 95.2, "y": 36.2, "name": "Intercostals", "note": "Intercostal muscle"}]},
+    {"src": "explore-04.jpg", "w": 498, "h": 559, "title": "Muscles of the Arm", "tab": "Arm muscles", "spots": [{"x": 16.7, "y": 60.4, "name": "Brachioradialis", "note": "Brachioradialis"}, {"x": 15.4, "y": 40.9, "name": "Biceps brachii", "note": "Biceps brachii muscle"}, {"x": 88.6, "y": 31.4, "name": "Triceps brachii", "note": "Triceps brachii muscle"}, {"x": 61.4, "y": 1.6, "name": "Supraspinatus", "note": "Supraspinatus"}, {"x": 63.8, "y": 11.4, "name": "Infraspinatus", "note": "Infraspinatus"}, {"x": 59.4, "y": 15.5, "name": "Teres minor", "note": "Teres minor"}, {"x": 63.2, "y": 20.1, "name": "Teres major", "note": "Teres major"}, {"x": 48.4, "y": 64.9, "name": "Extensors", "note": "Extensors"}, {"x": 50.0, "y": 87.0, "name": "Interossei muscles", "note": "Interossei muscles"}, {"x": 47.4, "y": 12.8, "name": "Deltoid", "note": "Deltoid"}, {"x": 54.4, "y": 82.4, "name": "Hypothenar muscles", "note": "Hypothenar muscle group"}]},
+    {"src": "explore-05.jpg", "w": 813, "h": 559, "title": "Muscles of the Back and Shoulder", "tab": "Back & shoulder muscles", "spots": [{"x": 22.2, "y": 18.5, "name": "Trapezius", "note": "Trapezius muscle"}, {"x": 32, "y": 39.0, "name": "Teres minor", "note": "Teres minor muscle"}, {"x": 28.0, "y": 48.1, "name": "Teres major", "note": "Teres major muscle"}, {"x": 24.4, "y": 71.4, "name": "Latissimus dorsi", "note": "Latissimus dorsi muscle"}, {"x": 90, "y": 21.7, "name": "Deltoid", "note": "Deltoid muscle"}, {"x": 45.8, "y": 33.8, "name": "Infraspinatus", "note": "Infraspinatus"}]},
+    {"src": "explore-06.jpg", "w": 665, "h": 559, "title": "Muscles of the front of the leg", "tab": "Anterior leg muscles 1", "spots": [{"x": 74.0, "y": 66.8, "name": "Tibialis anterior", "note": "Tibialis anterior muscle"}, {"x": 15.5, "y": 42.5, "name": "Vastus medialis", "note": "Vastus medialis muscle"}, {"x": 77.0, "y": 24.0, "name": "Vastus lateralis", "note": "Vastus lateralis muscle"}, {"x": 79.4, "y": 30.5, "name": "Iliotibial band", "note": "Iliotibial band"}, {"x": 29.4, "y": 18.0, "name": "Rectus femoris", "note": "Rectus femoris. Vastus intermedius is deep to this muscle."}, {"x": 46.1, "y": 9.4, "name": "Sartorius", "note": "Sartorius"}, {"x": 57.4, "y": 61.8, "name": "Fibularis longus", "note": "Fibularis longus"}]},
+    {"src": "explore-07.jpg", "w": 241, "h": 819, "title": "Anterior leg muscles", "tab": "Anterior leg muscles 2", "spots": [{"x": 7.4, "y": 2.8, "name": "Iliopsoas", "note": "Iliopsoas muscle"}, {"x": 63.4, "y": 27.1, "name": "Vastus intermedius", "note": "Vastus intermedius. (Rectus femoris was removed to see this muscle.)"}, {"x": 44.2, "y": 19.2, "name": "Sartorius", "note": "Sartorius"}, {"x": 48.2, "y": 39.9, "name": "Vastus medialis", "note": "Vastus medialis"}, {"x": 77.8, "y": 36.7, "name": "Vastus lateralis", "note": "Vastus lateralis"}, {"x": 66.6, "y": 68.9, "name": "Tibialis anterior", "note": "Tibialis anterior"}]},
+    {"src": "explore-08.jpg", "w": 1100, "h": 619, "title": "Muscle of the inner leg", "tab": "Inner leg muscles", "spots": [{"x": 37.6, "y": 21.8, "name": "Gracilis", "note": "Gracilis Muscle"}, {"x": 73.7, "y": 24.9, "name": "Sartorius", "note": "Sartorius muscle"}, {"x": 53.3, "y": 32.8, "name": "Semimembranosus", "note": "Semimembranosus muscle. This is easier to see in your visual analogy guide."}, {"x": 51.7, "y": 59.0, "name": "Gastrocnemius", "note": "Gastrocnemius"}, {"x": 46.9, "y": 84.1, "name": "Achilles tendon", "note": "Achilles tendon. Also known as the calcaneal tendon."}, {"x": 59.1, "y": 39.5, "name": "Vastus medialis", "note": "Vastus medialis"}, {"x": 51.3, "y": 96.5, "name": "Intrinsic foot muscles", "note": "Intrinsic foot muscles"}]},
+    {"src": "explore-09.jpg", "w": 684, "h": 559, "title": "Gluteus minimus", "tab": "Gluteus minimus", "spots": [{"x": 58.0, "y": 67.9, "name": "Gluteus minimus", "note": "Gluteus minimus"}]},
+    {"src": "explore-10.jpg", "w": 585, "h": 559, "title": "Muscles of the back of the leg", "tab": "Posterior leg muscles", "spots": [{"x": 59.4, "y": 84.3, "name": "Achilles tendon", "note": "Achilles tendon is also called the Calcaneal tendon"}, {"x": 49.7, "y": 68.3, "name": "Soleus", "note": "Soleus muscle"}, {"x": 78.8, "y": 60.5, "name": "Gastrocnemius", "note": "Gastrocnemius muscle"}, {"x": 21.6, "y": 24.4, "name": "Biceps femoris", "note": "Biceps femoris muscle"}, {"x": 77.7, "y": 23.4, "name": "Semitendinosus", "note": "Semitendinosus muscle"}, {"x": 77.0, "y": 5.0, "name": "Gluteus maximus", "note": "Gluteus maximus muscle"}, {"x": 38.7, "y": 19.4, "name": "Iliotibial band", "note": "Iliotibial band"}]}
+  ],
+  cards: [
+    {"src": "card-01.jpg", "w": 820, "h": 511, "a": "occipitofrontalis"},
+    {"src": "card-02.jpg", "w": 811, "h": 559, "a": "Temporalis"},
+    {"src": "card-03.jpg", "w": 814, "h": 559, "a": "Orbicularis oculi"},
+    {"src": "card-04.jpg", "w": 820, "h": 541, "a": "Orbicularis oris"},
+    {"src": "card-05.jpg", "w": 551, "h": 559, "a": "Masseter"},
+    {"src": "card-06.jpg", "w": 617, "h": 559, "a": "sternocleidomastoid"},
+    {"src": "card-07.jpg", "w": 672, "h": 559, "a": "Teres minor"},
+    {"src": "card-08.jpg", "w": 652, "h": 559, "a": "teres major"},
+    {"src": "card-09.jpg", "w": 674, "h": 559, "a": "Trapezius"},
+    {"src": "card-10.jpg", "w": 695, "h": 559, "a": "Latissimus dorsi"},
+    {"src": "card-11.jpg", "w": 733, "h": 559, "a": "Deltoid"},
+    {"src": "card-12.jpg", "w": 538, "h": 559, "a": "Gluteus maximus"},
+    {"src": "card-13.jpg", "w": 655, "h": 559, "a": "Gluteus medius"},
+    {"src": "card-14.jpg", "w": 570, "h": 559, "a": "Triceps brachii"},
+    {"src": "card-15.jpg", "w": 547, "h": 559, "a": "Triceps brachii"},
+    {"src": "card-16.jpg", "w": 562, "h": 559, "a": "Biceps brachii"},
+    {"src": "card-17.jpg", "w": 588, "h": 559, "a": "Brachioradialis"},
+    {"src": "card-18.jpg", "w": 523, "h": 559, "a": "Tibialis anterior"},
+    {"src": "card-19.jpg", "w": 505, "h": 559, "a": "Gastrocnemius"},
+    {"src": "card-20.jpg", "w": 500, "h": 559, "a": "Semitendinosus"},
+    {"src": "card-21.jpg", "w": 407, "h": 559, "a": "Biceps femoris"},
+    {"src": "card-22.jpg", "w": 1100, "h": 619, "a": "Semimembranosus"},
+    {"src": "card-23.jpg", "w": 527, "h": 559, "a": "Sartorius"},
+    {"src": "card-24.jpg", "w": 543, "h": 559, "a": "Vastus medialis"},
+    {"src": "card-25.jpg", "w": 1100, "h": 619, "a": "Rectus femoris"},
+    {"src": "card-26.jpg", "w": 511, "h": 559, "a": "Vastus lateralis"},
+    {"src": "card-27.jpg", "w": 684, "h": 559, "a": "Pectoralis major"},
+    {"src": "card-28.jpg", "w": 647, "h": 559, "a": "Serratus anterior"},
+    {"src": "card-29.jpg", "w": 605, "h": 559, "a": "External oblique"},
+    {"src": "card-30.jpg", "w": 601, "h": 559, "a": "Rectus abdominis"},
+    {"src": "card-31.jpg", "w": 413, "h": 559, "a": "Intercostal"},
+    {"src": "card-32.jpg", "w": 546, "h": 559, "a": "Gracilis"},
+    {"src": "card-33.jpg", "w": 505, "h": 559, "a": "Achilles tendon", "note": "Also called the Calcaneal tendon"},
+    {"src": "card-34.jpg", "w": 820, "h": 262, "a": "Iliopsoas"},
+    {"src": "card-35.jpg", "w": 820, "h": 493, "a": "Soleus"},
+    {"src": "card-36.jpg", "w": 508, "h": 559, "a": "Iliotibial band"},
+    {"src": "card-37.jpg", "w": 1100, "h": 619, "a": "Vastus intermedius"}
+  ]
+};
+
+/* Other answers a card accepts, by its answer in lower case. */
+const ALSO = {
+  "intercostal": ["intercostals", "external intercostal", "external intercostals"],
+  "achilles tendon": ["calcaneal tendon", "achilles"],
+  "iliotibial band": ["it band", "iliotibial tract", "it tract"]
+};
+/* Answers that are part of the right one: a nudge, not a miss. */
+const PART = {
+  "occipitofrontalis": {"frontalis": "Frontalis is the front belly of this muscle. Type the name of the whole muscle."}
+};
+/* What each card's photo shows, for screen readers (never the answer). */
+const REGION = ["head, side view","head, side view","head, side view","head, side view","head, side view","head and neck, side view",
+  "back and shoulder","back and shoulder","back and shoulder","back and shoulder","back and shoulder","hip, back view","hip, back view",
+  "arm","arm","arm","forearm","lower leg, front view","lower leg, back view","thigh, back view","thigh, back view","thigh, inner view",
+  "thigh, front view","thigh, front view","thigh, front view","thigh, front view","chest and abdomen","chest and abdomen",
+  "chest and abdomen","chest and abdomen","rib cage","thigh, inner view","lower leg, back view","hip and thigh","lower leg, back view",
+  "thigh, side view","thigh with the rectus femoris removed"];
+
+const $ = id => document.getElementById(id);
+const BASE = 'muscle-lab/';
+const STORE = 'bloom-muscle-lab-v1';
+
+/* A photo box that keeps the picture's shape and is at most maxH tall. */
+function sizePhoto(box, im, maxH){
+  box.style.aspectRatio = im.w + ' / ' + im.h;
+  box.style.width = 'min(100%, ' + Math.round(maxH * im.w / im.h) + 'px)';
+}
+function photoImg(im, alt){
+  const img = document.createElement('img');
+  img.src = BASE + im.src; img.alt = alt; img.width = im.w; img.height = im.h;
+  return img;
+}
+
+/* ---------------- tabs ---------------- */
+const TABS = ['named', 'explore', 'cards'];
+function showTab(name){
+  TABS.forEach(t => {
+    $('tab-' + t).setAttribute('aria-selected', String(t === name));
+    $('panel-' + t).hidden = t !== name;
+  });
+  if (name === 'cards') renderCard(false);
+}
+TABS.forEach(t => $('tab-' + t).addEventListener('click', () => showTab(t)));
+
+/* ---------------- 1. how muscles are named ---------------- */
+let sl = 0;
+$('namedLead').textContent = ITEM.intro;
+function renderSlide(){
+  const s = ITEM.slides[sl], box = $('slide');
+  box.innerHTML = '';
+  const h = document.createElement('h2'); h.textContent = s.head;
+  const p = document.createElement('p'); p.innerHTML = s.html;
+  box.append(h, p);
+  if (s.imgs.length) {
+    const figs = document.createElement('div'); figs.className = 'figs';
+    const maxH = s.imgs.length > 2 ? 330 : 380;
+    s.imgs.forEach(im => {
+      const ph = document.createElement('div'); ph.className = 'photo';
+      sizePhoto(ph, im, maxH);
+      ph.append(photoImg(im, 'Muscle model showing ' + im.labels.map(l => l.t).join(' and ')));
+      im.labels.forEach(l => {
+        const t = document.createElement('span'); t.className = 'tag'; t.textContent = l.t;
+        t.style.top = Math.min(Math.max(l.y, 7), 93) + '%';
+        if (im.w / im.h < 0.6 && l.x < 35) { t.classList.add('side'); t.style.right = (100 - l.x) + '%'; }
+        else if (im.w / im.h < 0.6 && l.x > 65) { t.classList.add('side'); t.style.left = l.x + '%'; }
+        else t.style.left = Math.min(Math.max(l.x, 18), 82) + '%';
+        ph.append(t);
+      });
+      figs.append(ph);
+    });
+    box.append(figs);
+  }
+  $('scount').textContent = 'Page ' + (sl + 1) + ' of ' + ITEM.slides.length;
+  $('sprev').disabled = sl === 0;
+  $('snext').disabled = sl === ITEM.slides.length - 1;
+}
+$('sprev').addEventListener('click', () => { if (sl > 0) { sl--; renderSlide(); } });
+$('snext').addEventListener('click', () => { if (sl < ITEM.slides.length - 1) { sl++; renderSlide(); } });
+
+/* ---------------- 2. explore the models ---------------- */
+let vw = 0;
+const seen = ITEM.views.map(v => v.spots.map(() => false));
+function buildChips(){
+  ITEM.views.forEach((v, i) => {
+    const b = document.createElement('button'); b.className = 'chip'; b.type = 'button'; b.textContent = v.tab;
+    b.addEventListener('click', () => { vw = i; renderView(); });
+    $('chips').append(b);
+  });
+}
+function closeBubble(){
+  const ph = $('vphoto');
+  ph.querySelectorAll('.bubble').forEach(b => b.remove());
+  ph.querySelectorAll('.spot').forEach(b => b.setAttribute('aria-expanded', 'false'));
+}
+function countSeen(){
+  const n = seen[vw].filter(Boolean).length, t = seen[vw].length;
+  $('vcount').textContent = n + ' of ' + t + ' found';
+}
+function renderView(){
+  const v = ITEM.views[vw], ph = $('vphoto');
+  [...$('chips').children].forEach((c, i) => c.setAttribute('aria-pressed', String(i === vw)));
+  $('vtitle').textContent = v.title;
+  ph.innerHTML = '';
+  sizePhoto(ph, v, 580);
+  ph.append(photoImg(v, v.title + ': a model with ' + v.spots.length + (v.spots.length === 1 ? ' arrow' : ' arrows')));
+  v.spots.forEach((s, i) => {
+    const b = document.createElement('button'); b.type = 'button';
+    b.className = 'spot' + (seen[vw][i] ? ' seen' : '');
+    b.textContent = '+';
+    b.style.left = 'clamp(0px, ' + s.x + '%, calc(100% - 30px))';
+    b.style.top = 'clamp(0px, ' + s.y + '%, calc(100% - 30px))';
+    b.setAttribute('aria-expanded', 'false');
+    b.setAttribute('aria-label', seen[vw][i] ? s.name : 'Arrow ' + (i + 1) + ': show the name');
+    b.addEventListener('click', e => {
+      e.stopPropagation();
+      const open = b.getAttribute('aria-expanded') === 'true';
+      closeBubble();
+      if (open) return;
+      seen[vw][i] = true; b.classList.add('seen'); b.setAttribute('aria-expanded', 'true'); b.setAttribute('aria-label', s.name);
+      const bub = document.createElement('div'); bub.className = 'bubble';
+      const nm = document.createElement('b'); nm.textContent = s.name; bub.append(nm);
+      if (s.note && s.note.toLowerCase() !== s.name.toLowerCase()) bub.append(document.createTextNode(s.note));
+      if (s.x > 55) bub.style.right = 'calc(100% - ' + s.x + '% + 6px)'; else bub.style.left = 'calc(' + s.x + '% + 36px)';
+      if (s.y > 70) bub.style.bottom = 'calc(100% - ' + s.y + '% - 30px)'; else bub.style.top = s.y + '%';
+      ph.append(bub);
+      $('namebar').innerHTML = ''; const nb = document.createElement('b'); nb.textContent = s.name;
+      $('namebar').append(nb);
+      if (s.note && s.note.toLowerCase() !== s.name.toLowerCase()) $('namebar').append(document.createElement('br'), document.createTextNode(s.note));
+      countSeen();
+    });
+    ph.append(b);
+  });
+  $('namebar').textContent = 'Tap a + on the photo.';
+  $('vpos').textContent = 'View ' + (vw + 1) + ' of ' + ITEM.views.length;
+  $('vprev').disabled = vw === 0;
+  $('vnext').disabled = vw === ITEM.views.length - 1;
+  countSeen();
+}
+$('vphoto').addEventListener('click', closeBubble);
+$('vprev').addEventListener('click', () => { if (vw > 0) { vw--; renderView(); } });
+$('vnext').addEventListener('click', () => { if (vw < ITEM.views.length - 1) { vw++; renderView(); } });
+
+/* ---------------- 3. name the muscle ---------------- */
+const CARDS = ITEM.cards;
+$('possible').textContent = CARDS.length;
+let cur = 0, cs = [], finished = false, startTime = Date.now(), flash = null;
+
+/* state per card: misses, closed ('right' | 'shown' | ''), first (right on the first check), last typed */
+function blank(){ return CARDS.map(() => ({misses: 0, closed: '', first: false, typed: ''})); }
+function save(){
+  try { localStorage.setItem(STORE, JSON.stringify({cs, cur, finished, started: startTime})); } catch(e) {}
+}
+function load(){
+  try {
+    const d = JSON.parse(localStorage.getItem(STORE) || 'null');
+    if (d && Array.isArray(d.cs) && d.cs.length === CARDS.length) {
+      cs = d.cs; cur = Math.min(Math.max(d.cur | 0, 0), CARDS.length - 1); finished = !!d.finished;
+      if (d.started) startTime = d.started;
+      return;
+    }
+  } catch(e) {}
+  cs = blank();
+}
+function norm(s){
+  return String(s).toLowerCase().replace(/[^a-z ]+/g, ' ').replace(/\s+/g, ' ').trim()
+    .replace(/^the /, '').replace(/ muscles?$/, '');
+}
+function keys(card){
+  const a = card.a.toLowerCase();
+  return [a].concat(ALSO[a] || []).map(norm);
+}
+/* Letters apart, to tell a spelling slip from a wrong muscle. */
+function distance(a, b){
+  const row = Array.from({length: b.length + 1}, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    let prev = row[0]; row[0] = i;
+    for (let j = 1; j <= b.length; j++) {
+      const t = row[j];
+      row[j] = Math.min(row[j] + 1, row[j - 1] + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1));
+      prev = t;
+    }
+  }
+  return row[b.length];
+}
+function hintFor(card){
+  const words = card.a.split(' ');
+  return 'Hint: it starts with "' + card.a[0].toUpperCase() + '" and is ' +
+    (words.length === 1 ? 'one word' : words.length + ' words') + ' (' + words.map(w => w.length).join(' + ') + ' letters).';
+}
+function pretty(a){ return a[0].toUpperCase() + a.slice(1); }
+
+function renderCard(focus){
+  const c = CARDS[cur], s = cs[cur], ph = $('cphoto');
+  ph.innerHTML = '';
+  sizePhoto(ph, c, 470);
+  ph.append(photoImg(c, 'Muscle model, ' + REGION[cur] + '. An arrow points to the muscle to name.'));
+  $('cnote').hidden = !c.note; $('cnote').textContent = c.note || '';
+  const inp = $('answer'), fb = $('feedback');
+  inp.className = ''; fb.className = 'feedback'; fb.textContent = '';
+  inp.disabled = !!s.closed; $('check').disabled = !!s.closed; $('show').disabled = !!s.closed;
+  if (s.closed === 'right') {
+    inp.value = s.typed; inp.classList.add('right'); fb.classList.add('ok');
+    fb.textContent = 'Correct: ' + pretty(c.a) + '.' + (s.first ? '' : ' (Not on the first try.)');
+  } else if (s.closed === 'shown') {
+    inp.value = s.typed; inp.classList.add('wrong'); fb.classList.add('miss');
+    fb.textContent = 'The answer is ' + pretty(c.a) + '.';
+  } else {
+    inp.value = s.typed || '';
+    if (flash) {
+      fb.classList.add(flash.kind); fb.textContent = flash.text;
+      if (flash.kind === 'miss') inp.classList.add('wrong');
+    }
+    if (s.misses >= 3) { const h = document.createElement('span'); h.className = 'hint'; h.textContent = hintFor(c); fb.append(h); }
+  }
+  flash = null;
+  const closed = cs.filter(x => x.closed).length;
+  $('qpos').textContent = 'Card ' + (cur + 1) + ' of ' + CARDS.length;
+  $('score').textContent = cs.filter(x => x.first).length;
+  $('qbar').style.width = (closed / CARDS.length * 100) + '%';
+  $('qprev').disabled = cur === 0;
+  $('qnext').disabled = cur === CARDS.length - 1;
+  const dots = $('dots'); dots.innerHTML = '';
+  cs.forEach((x, i) => {
+    const d = document.createElement('button'); d.type = 'button';
+    d.className = (i === cur ? 'cur ' : '') + (x.closed ? (x.first ? 'ok' : 'miss') : '');
+    d.setAttribute('aria-label', 'Card ' + (i + 1) + (x.closed ? (x.first ? ', right on the first try' : ', not on the first try') : ', not answered'));
+    d.addEventListener('click', () => { cur = i; renderCard(true); save(); });
+    dots.append(d);
+  });
+  if (focus) (s.closed ? (cur < CARDS.length - 1 ? $('qnext') : $('qprev')) : inp).focus({preventScroll: true});
+}
+function afterClose(){
+  save();
+  if (!finished && cs.every(x => x.closed)) finish();
+}
+function check(){
+  const c = CARDS[cur], s = cs[cur];
+  if (s.closed) return;
+  const typed = $('answer').value, n = norm(typed);
+  s.typed = typed;
+  if (!n) { flash = {kind: 'near', text: 'Type the muscle name, then press Check.'}; renderCard(true); return; }
+  const ks = keys(c);
+  if (ks.includes(n)) {
+    s.closed = 'right'; s.first = s.misses === 0;
+    renderCard(true); afterClose(); return;
+  }
+  const part = (PART[c.a.toLowerCase()] || {})[n];
+  if (part) { flash = {kind: 'near', text: part}; renderCard(true); save(); return; }
+  s.misses++;
+  const close = ks.some(k => distance(n, k) <= 2);
+  flash = {kind: 'miss', text: close ? 'So close. Check your spelling and try again.' : 'Not quite. Try again.'};
+  renderCard(true); save();
+}
+$('check').addEventListener('click', check);
+$('answer').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); check(); } });
+$('answer').addEventListener('input', () => { cs[cur].typed = $('answer').value; });
+$('show').addEventListener('click', () => {
+  const s = cs[cur];
+  if (s.closed) return;
+  s.closed = 'shown'; s.first = false; s.typed = $('answer').value;
+  renderCard(true); afterClose();
+});
+$('qprev').addEventListener('click', () => { if (cur > 0) { cur--; renderCard(true); save(); } });
+$('qnext').addEventListener('click', () => { if (cur < CARDS.length - 1) { cur++; renderCard(true); save(); } });
+$('startOver').addEventListener('click', () => {
+  cs = blank(); cur = 0; finished = false; startTime = Date.now();
+  $('finish').classList.remove('show');
+  save(); renderCard(true);
+});
+
+function showSummary(){
+  const score = cs.filter(x => x.first).length;
+  const missed = CARDS.map((c, i) => ({c, i})).filter(x => !cs[x.i].first);
+  $('summary').textContent = 'You named ' + score + ' of ' + CARDS.length + ' on your first try (' +
+    Math.round(score / CARDS.length * 100) + '%).';
+  const ml = $('missedList'); ml.innerHTML = '';
+  if (missed.length) {
+    const p = document.createElement('p'); p.style.margin = '10px 0 0';
+    p.append('Review these: ');
+    missed.forEach((x, k) => {
+      const a = document.createElement('a'); a.href = '#'; a.textContent = pretty(x.c.a);
+      a.addEventListener('click', e => { e.preventDefault(); cur = x.i; renderCard(true); window.scrollTo({top: 0, behavior: 'smooth'}); });
+      p.append(a, k < missed.length - 1 ? ', ' : '');
+    });
+    ml.append(p);
+  }
+  $('finish').classList.add('show');
+  return {score, missed};
+}
+function finish(){
+  finished = true; save();
+  const r = showSummary();
+  const secs = Math.round((Date.now() - startTime) / 1000);
+  try {
+    window.parent.postMessage({source: 'bloom-practice', activity: ITEM.id, type: 'complete',
+      total: CARDS.length, firstTry: r.score, misses: r.missed.length,
+      missedTerms: r.missed.map(x => pretty(x.c.a)), seconds: secs}, '*');
+  } catch(e) {}
+}
+
+buildChips();
+renderSlide();
+renderView();
+load();
+renderCard(false);
+if (finished) showSummary();
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "anatomy-u2-activity-muscle-lab",
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Anatomy and Physiology",
+  "activity": {
+    "kind": "interactive",
+    "title": "Muscle lab: how muscles are named, explore the models, name the muscle",
+    "url": "/activities/muscle-lab.html",
+    "instructions": "Work through the three tabs in order. 1: read how muscles get their names. 2: tap each + on the model photos to learn the muscles. 3: type the name of the muscle each arrow points to (37 cards). Spelling counts. You get a hint after three misses, and the activity is done when every card is answered; your first-try score is what your teacher sees.",
+    "targets": ["U2"],
+    "published": true
+  }
+}
