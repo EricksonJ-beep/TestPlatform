@@ -1,0 +1,13 @@
+{
+  "name": "anatomy-u3-quiz-nervous",
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Anatomy and Physiology",
+  "unit": "Unit 3",
+  "bank": "AP · Unit 3 Quiz: Nervous System",
+  "assessment": {
+    "title": "Unit 3 Quiz: Nervous System",
+    "type": "formative",
+    "instructions": "Twenty questions on the nervous system: the CNS and PNS, neurons and neuroglia, synapses and reflexes, the meninges and cerebrospinal fluid, and the spinal cord and its nerves. Your best attempt counts."
+  },
+  "assign": []
+}
