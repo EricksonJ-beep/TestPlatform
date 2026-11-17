@@ -1,0 +1,13 @@
+{
+  "name": "anatomy-u3-quiz-senses",
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Anatomy and Physiology",
+  "unit": "Unit 3",
+  "bank": "AP · Unit 3 Quiz: Senses",
+  "assessment": {
+    "title": "Unit 3 Quiz: Senses",
+    "type": "formative",
+    "instructions": "Twenty questions on the senses: the somatic senses and their receptors, smell and taste, the structures of the eye and ear, and vision and hearing disorders. Your best attempt counts."
+  },
+  "assign": []
+}

@@ -1,0 +1,13 @@
+{
+  "name": "anatomy-u3-lab-quiz-muscles",
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Anatomy and Physiology",
+  "unit": "Unit 3",
+  "bank": "AP · Unit 3 Lab Quiz: Muscles",
+  "assessment": {
+    "title": "Unit 3 Lab Quiz: Muscles",
+    "type": "formative",
+    "instructions": "Ten questions on the muscle lab: name muscles from photos of the lab models, plus one muscle tissue slide. Your best attempt counts."
+  },
+  "assign": []
+}
