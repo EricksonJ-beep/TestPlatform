@@ -1094,6 +1094,30 @@ describe("content packs", () => {
         .from(schema.activityTargets)
         .where(eq(schema.activityTargets.activityId, reviewAct.id))
     ).toEqual([{ activityId: reviewAct.id, learningTargetId: u2.id }]);
+    // The muscle lab page (Nov 17 2026), rebuilt from the CVTC H5P activities: created on U2.
+    const muscleLab = first.find((o) => o.name === "anatomy-u2-activity-muscle-lab")!;
+    expect(muscleLab.status).toBe("applied");
+    if (muscleLab.status === "applied") {
+      expect(muscleLab.summary).toMatchObject({
+        activity: { reused: false, targets: 1, published: true },
+        errors: [],
+      });
+    }
+    const [muscleAct] = await db
+      .select()
+      .from(schema.relearningActivities)
+      .where(eq(schema.relearningActivities.url, "/activities/muscle-lab.html"));
+    expect(muscleAct).toMatchObject({
+      kind: "interactive",
+      courseId: ids.course,
+      isPublished: true,
+    });
+    expect(
+      await db
+        .select()
+        .from(schema.activityTargets)
+        .where(eq(schema.activityTargets.activityId, muscleAct.id))
+    ).toEqual([{ activityId: muscleAct.id, learningTargetId: u2.id }]);
     // Second run: nothing changes, and a retake count changed in the builder is kept.
     const bctTest = (await db.query.assessments.findFirst({
       where: eq(schema.assessments.title, "Unit 2 Test: Biochemistry"),
