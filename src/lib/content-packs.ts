@@ -17,6 +17,10 @@
  * Practice packs (Jon, Oct 13 2026: a bank of about 50 per learning target):
  * `practiceSet` publishes a set that deals from the pack's bank, and the
  * activity can be a reading or guided notes written right in the pack.
+ *
+ * Worksheet packs (Jon, Nov 18 2026: "Can I get this added to Bloom for practice"):
+ * `worksheet` registers one of his Apps Script worksheets the way Practice →
+ * Worksheets → Register does (PLAN.md §3.7a). Such a pack needs no bank or CSV.
  */
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
@@ -28,6 +32,12 @@ import { commitImport } from "@/lib/import/question-import";
 import { insertTargetSections } from "@/lib/target-sections";
 import { relearningIssues, type PackRelearning } from "@/lib/relearning-pack";
 import { writeRelearningOption } from "@/lib/relearning-write";
+import {
+  parseWorksheetRef,
+  pendingScriptId,
+  reprocessWorksheet,
+  syncLinkedContent,
+} from "@/lib/worksheets";
 
 export type { PackRelearning } from "@/lib/relearning-pack";
 
@@ -129,6 +139,18 @@ export type PackDefinition = {
   };
   /** Read · Watch · Do options (relearning revamp R4): one per target and mode. */
   relearning?: PackRelearning[];
+  /** An Apps Script worksheet to register for the teacher in this course (PLAN.md §3.7a). */
+  worksheet?: {
+    title: string;
+    /** The student link from the Worksheet Index (…/exec). */
+    studentUrl: string;
+    /** The Index's "Script ID": what the worksheet's webhook sends. Without it the link is matched on the first submit. */
+    scriptId?: string;
+    /** Default "practice", as in the Register dialog. */
+    countsAs?: "practice" | "activity" | "both";
+    /** Learning-target codes in this course; unknown codes are reported, not created. */
+    targets: string[];
+  };
 };
 
 export type PackOutcome =
@@ -271,6 +293,8 @@ export async function applyPack(
     summary.activity = await applyActivity(def.activity, teacher.id, course.id, errors);
   if (def.relearning?.length)
     summary.relearning = await applyRelearning(def.relearning, teacher.id, course.id, errors);
+  if (def.worksheet)
+    summary.worksheet = await applyWorksheet(def.worksheet, teacher.id, course.id, errors);
   const retakePools = await syncRetakePools(def, teacher.id);
   if (retakePools.length) summary.retakePools = retakePools;
   summary.errors = errors;
@@ -758,6 +782,77 @@ async function applyRelearning(
     sections += wrote.sections;
   }
   return kept.length ? { options, sections, kept } : { options, sections };
+}
+
+/**
+ * The worksheet half of a pack: what `registerWorksheet` does from the Register dialog. Claims
+ * the entry a webhook or an earlier registration by link already made (by script id, then by
+ * link), or creates it; then its linked practice set and/or activity are made and tagged, and
+ * submits already received are applied. Needs at least one matching target, as the dialog does.
+ */
+async function applyWorksheet(
+  w: NonNullable<PackDefinition["worksheet"]>,
+  teacherId: string,
+  courseId: string,
+  errors: string[]
+): Promise<Record<string, unknown>> {
+  const studentUrl = parseWorksheetRef(w.studentUrl)?.studentUrl;
+  if (!studentUrl) {
+    errors.push("worksheet studentUrl isn't a student link (…/exec); not registered");
+    return { registered: false };
+  }
+  const targetIds = await resolveTargets(w.targets, courseId, errors);
+  if (!targetIds.length) {
+    errors.push("no learning target matched, so the worksheet was not registered");
+    return { registered: false };
+  }
+  const pendingId = pendingScriptId(studentUrl);
+  const scriptId = w.scriptId?.trim() || pendingId;
+  const existing =
+    (await db.query.worksheets.findFirst({ where: eq(schema.worksheets.scriptId, scriptId) })) ??
+    (await db.query.worksheets.findFirst({
+      where: or(
+        eq(schema.worksheets.scriptId, pendingId),
+        eq(schema.worksheets.studentUrl, studentUrl)
+      ),
+    }));
+  if (existing?.ownerId && existing.ownerId !== teacherId) {
+    errors.push("another teacher already registered that worksheet; left alone");
+    return { registered: false };
+  }
+  const values = {
+    ownerId: teacherId,
+    courseId,
+    countsAs: w.countsAs ?? ("practice" as const),
+    registered: true,
+    title: w.title,
+    studentUrl,
+  };
+  let worksheetId: string;
+  if (existing) {
+    worksheetId = existing.id;
+    // Registered by link before the script id was known: the real id replaces the placeholder.
+    const adopt = existing.scriptId === pendingId && scriptId !== pendingId ? { scriptId } : {};
+    await db
+      .update(schema.worksheets)
+      .set({ ...values, ...adopt })
+      .where(eq(schema.worksheets.id, worksheetId));
+  } else {
+    const [row] = await db
+      .insert(schema.worksheets)
+      .values({ scriptId, ...values })
+      .returning({ id: schema.worksheets.id });
+    worksheetId = row.id;
+  }
+  await syncLinkedContent(worksheetId, targetIds);
+  const reprocessed = await reprocessWorksheet(worksheetId);
+  return {
+    worksheetId,
+    registered: true,
+    reused: Boolean(existing),
+    targets: targetIds.length,
+    ...reprocessed,
+  };
 }
 
 /** Apply every pack that has not been applied yet; never throws for one bad pack. */
