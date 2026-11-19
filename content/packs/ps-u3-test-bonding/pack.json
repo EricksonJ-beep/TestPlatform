@@ -1,5 +1,7 @@
 {
   "name": "ps-u3-test-bonding",
+  "revision": 2,
+  "revisionOnly": ["PS-U3T-006"],
   "teacherEmail": "EricksonJ@cadott.k12.wi.us",
   "course": "Physical Science A",
   "unit": "Unit 3 · Bonding",
