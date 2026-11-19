@@ -107,12 +107,13 @@ export const ISSUE_TEXT: Record<CorrectionIssue, string> = {
  * Number of sentences: runs of text ended by . ! ? … (or the end), ignoring fragments under three
  * characters. Counted the way students type (Nov 12 2026, a set that couldn't be submitted): a
  * closing quote or bracket may follow the period, a missing space after it still ends the sentence
- * ("two cells.Meiosis makes four"), and a new line starts a new one. A decimal (3.5) never splits.
+ * ("two cells.Meiosis makes four"), also after a number ("the pH is 3.It is an acid", Nov 19 2026),
+ * and a new line starts a new one. A decimal (3.5) never splits.
  */
 export function sentenceCount(text: string): number {
   return text
     .split(
-      /[.!?…]+["'”’)\]]*(?:\s+|$)|(?<=\p{L}{2})[.!?]+(?=\p{L})|(?<=\p{L})[.!?]+(?=\p{Lu}\p{Ll})|\n+/u
+      /[.!?…]+["'”’)\]]*(?:\s+|$)|(?<=\p{L}{2})[.!?]+(?=\p{L})|(?<=\p{L})[.!?]+(?=\p{Lu}\p{Ll})|(?<=\p{N})[.!?]+(?=\p{L}{2})|\n+/u
     )
     .map((s) => s.trim())
     .filter((s) => s.replace(/[^\p{L}\p{N}]/gu, "").length >= 3).length;

@@ -87,6 +87,11 @@ describe("sentenceCount", () => {
     // No space after the period.
     expect(sentenceCount("mitosis makes two cells.meiosis makes four")).toBe(2);
     expect(sentenceCount("The answer is B.It is because water moves out")).toBe(2);
+    // No space after a period that follows a number.
+    expect(sentenceCount("The pH is 3.It is an acid")).toBe(2);
+    expect(sentenceCount("the ph is 3.it is an acid")).toBe(2);
+    expect(sentenceCount("The pH is 3.5 so it is an acid")).toBe(1);
+    expect(sentenceCount("CO2.H2O is not a thing")).toBe(1);
     // A new line instead of a period.
     expect(sentenceCount("The answer is mitosis\nIt makes two identical cells")).toBe(2);
     // A closing bracket or quote after the period.
