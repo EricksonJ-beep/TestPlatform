@@ -6,7 +6,12 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, ChevronLeft, ChevronRight, Lightbulb, Lock, X } from "lucide-react";
 import { cn } from "cn";
-import { correctionIssues, ISSUE_TEXT, type CorrectionIssue } from "@/lib/corrections";
+import {
+  correctionIssues,
+  ISSUE_TEXT,
+  MIN_WHY_WORDS,
+  type CorrectionIssue,
+} from "@/lib/corrections";
 import type { CorrectionItem, CorrectionsForm as FormPayload } from "@/lib/queries/corrections";
 import { QuestionMedia } from "@/components/questions/question-media";
 import { RichText } from "@/components/rich-text";
@@ -308,7 +313,7 @@ export function CorrectionsForm({ form }: { form: FormPayload }) {
             disabled={!editable}
             onChange={(e) => onChange("explanation", e.target.value)}
             onBlur={flush}
-            placeholder="At least two sentences. Say why the right answer works, or why yours didn't."
+            placeholder={`At least ${MIN_WHY_WORDS} words. Say why the right answer works, or why yours didn't.`}
           />
           {uniqueIssues.length ? (
             <ul className="text-xs text-warning-foreground" data-issues>

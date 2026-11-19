@@ -96,27 +96,23 @@ export type CorrectionDraft = { correctAnswer: string; explanation: string };
 
 export type CorrectionIssue = "answer_missing" | "why_missing" | "why_short" | "why_copied";
 
+/** Words an explanation needs (Jon, Nov 19 2026: "switch it to a minimum of 10 words"). */
+export const MIN_WHY_WORDS = 10;
+
 export const ISSUE_TEXT: Record<CorrectionIssue, string> = {
   answer_missing: "Write the correct answer.",
   why_missing: "Explain why it's correct in your own words.",
-  why_short: "Write at least two sentences. End each one with a period.",
+  why_short: `Write at least ${MIN_WHY_WORDS} words.`,
   why_copied: "That's copied word for word. Say it your own way.",
 };
 
 /**
- * Number of sentences: runs of text ended by . ! ? … (or the end), ignoring fragments under three
- * characters. Counted the way students type (Nov 12 2026, a set that couldn't be submitted): a
- * closing quote or bracket may follow the period, a missing space after it still ends the sentence
- * ("two cells.Meiosis makes four"), also after a number ("the pH is 3.It is an acid", Nov 19 2026),
- * and a new line starts a new one. A decimal (3.5) never splits.
+ * Number of words: runs of text between spaces that hold a letter or a digit ("H+" and "3.5"
+ * each count once; a stray dash or period alone does not). Replaces the two-sentence rule, which
+ * measured punctuation and twice kept a real explanation from being submitted.
  */
-export function sentenceCount(text: string): number {
-  return text
-    .split(
-      /[.!?…]+["'”’)\]]*(?:\s+|$)|(?<=\p{L}{2})[.!?]+(?=\p{L})|(?<=\p{L})[.!?]+(?=\p{Lu}\p{Ll})|(?<=\p{N})[.!?]+(?=\p{L}{2})|\n+/u
-    )
-    .map((s) => s.trim())
-    .filter((s) => s.replace(/[^\p{L}\p{N}]/gu, "").length >= 3).length;
+export function wordCount(text: string): number {
+  return text.split(/\s+/).filter((w) => /[\p{L}\p{N}]/u.test(w)).length;
 }
 
 const normalize = (s: string) =>
@@ -153,7 +149,7 @@ export function correctionIssues(
   if (!draft.correctAnswer.trim()) issues.push("answer_missing");
   const why = draft.explanation.trim();
   if (!why) issues.push("why_missing");
-  else if (sentenceCount(why) < 2) issues.push("why_short");
+  else if (wordCount(why) < MIN_WHY_WORDS) issues.push("why_short");
   else if (
     isVerbatimCopy(why, source.explanation) ||
     (source.optionFeedback ?? []).some((f) => isVerbatimCopy(why, f))

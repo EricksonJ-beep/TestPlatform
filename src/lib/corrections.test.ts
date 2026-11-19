@@ -3,11 +3,11 @@ import {
   correctionIssues,
   correctionsProgressState,
   tallyProgress,
+  wordCount,
   correctionsClear,
   correctionsSummary,
   isVerbatimCopy,
   questionsNeedingCorrection,
-  sentenceCount,
 } from "./corrections";
 
 const items = [
@@ -73,34 +73,14 @@ describe("questionsNeedingCorrection", () => {
   });
 });
 
-describe("sentenceCount", () => {
-  it("counts sentences ended by . ! ? and the trailing one", () => {
-    expect(sentenceCount("Osmosis moves water. It goes toward more solute")).toBe(2);
-    expect(sentenceCount("Because it does!")).toBe(1);
-    expect(sentenceCount("Why? Because. Really.")).toBe(3);
-    expect(sentenceCount("3.5 m/s is the speed. Units matter.")).toBe(2);
-    expect(sentenceCount("")).toBe(0);
-    expect(sentenceCount("ok")).toBe(0);
-  });
-
-  it("counts sentences the way students type them", () => {
-    // No space after the period.
-    expect(sentenceCount("mitosis makes two cells.meiosis makes four")).toBe(2);
-    expect(sentenceCount("The answer is B.It is because water moves out")).toBe(2);
-    // No space after a period that follows a number.
-    expect(sentenceCount("The pH is 3.It is an acid")).toBe(2);
-    expect(sentenceCount("the ph is 3.it is an acid")).toBe(2);
-    expect(sentenceCount("The pH is 3.5 so it is an acid")).toBe(1);
-    expect(sentenceCount("CO2.H2O is not a thing")).toBe(1);
-    // A new line instead of a period.
-    expect(sentenceCount("The answer is mitosis\nIt makes two identical cells")).toBe(2);
-    // A closing bracket or quote after the period.
-    expect(sentenceCount("Water leaves the cell (osmosis.) Then the cell shrinks")).toBe(2);
-    expect(sentenceCount('The book calls it "diffusion." It needs no energy')).toBe(2);
-    expect(sentenceCount("The mitochondria makes ATP… It is the powerhouse")).toBe(2);
-    // Still one sentence: a run-on, and a formula with a dot in it.
-    expect(sentenceCount("I picked A but it was C because the membrane lets water in")).toBe(1);
-    expect(sentenceCount("H2O.CO2 is not a thing")).toBe(1);
+describe("wordCount", () => {
+  it("counts words however they are punctuated", () => {
+    expect(wordCount("Osmosis moves water toward more solute")).toBe(6);
+    expect(wordCount("  The pH is 3.5,   so it has more H+  ")).toBe(9);
+    expect(wordCount("mitosis makes two cells.meiosis makes four")).toBe(6);
+    expect(wordCount("The answer is mitosis\nIt makes two cells")).toBe(8);
+    expect(wordCount("yes - no . ...")).toBe(2);
+    expect(wordCount("")).toBe(0);
   });
 });
 
@@ -132,7 +112,7 @@ describe("isVerbatimCopy", () => {
 
 describe("correctionIssues", () => {
   const src = { explanation: "The mitochondria make ATP for the cell by cellular respiration." };
-  it("requires an answer and two original sentences", () => {
+  it("requires an answer and ten original words", () => {
     expect(correctionIssues({ correctAnswer: "", explanation: "" }, src)).toEqual([
       "answer_missing",
       "why_missing",
@@ -140,6 +120,19 @@ describe("correctionIssues", () => {
     expect(
       correctionIssues({ correctAnswer: "Mitochondria", explanation: "It makes ATP." }, src)
     ).toEqual(["why_short"]);
+    // Nine words is short; ten is enough, with or without periods.
+    expect(
+      correctionIssues(
+        { correctAnswer: "Acid", explanation: "a pH of 3 is acidic because of H+" },
+        src
+      )
+    ).toEqual(["why_short"]);
+    expect(
+      correctionIssues(
+        { correctAnswer: "Acid", explanation: "a pH of 3 is acidic because of more H+" },
+        src
+      )
+    ).toEqual([]);
     expect(
       correctionIssues(
         {
