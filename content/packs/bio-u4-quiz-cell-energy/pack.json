@@ -1,0 +1,13 @@
+{
+  "name": "bio-u4-quiz-cell-energy",
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Biology A",
+  "unit": "Unit 4 · Cell Energy",
+  "bank": "Bio · Unit 4 Quiz: Cell Energy",
+  "assessment": {
+    "title": "Unit 4 Quiz: Cell Energy",
+    "type": "formative",
+    "instructions": "25 questions, one point each, on Unit 4: cellular respiration (LT1), aerobic and anaerobic respiration (LT2), photosynthesis (LT3), and investigating photosynthesis (LT4). Some questions use the Muscle Fatigue, Fun with Yeast, and floating leaf disk labs. Your best attempt counts."
+  },
+  "assign": []
+}
