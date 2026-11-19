@@ -243,6 +243,20 @@ export function correctionsCapOn(input: {
   return input.type === "formative" && input.correctionsCap && !input.cvtcRules;
 }
 
+/**
+ * Where the retake window applies (Jon, Nov 19 2026: "when they retake an assessment or do any
+ * sort of optional retakes… that would default to a two week window"): every test, and a quiz
+ * under the corrections cap, never in a CVTC course. Until then it was the cap's rule alone.
+ */
+export function retakeWindowOn(input: {
+  type: "practice" | "formative" | "summative";
+  correctionsCap: boolean;
+  cvtcRules: boolean | null | undefined;
+}): boolean {
+  if (input.cvtcRules) return false;
+  return input.type === "summative" || correctionsCapOn(input);
+}
+
 /** Under the cap, the ceiling corrections lift attempt 1 to: the threshold below it, 100 at or above. */
 export function correctionsCeiling(firstPercent: number, threshold: number): number {
   return firstPercent < threshold ? threshold : 100;

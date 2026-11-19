@@ -4,7 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db, schema } from "@/db";
-import { defaultAttempts, parseLocalDateTime } from "@/lib/assignments";
+import { DEFAULT_RETAKE_WINDOW_DAYS, defaultAttempts, parseLocalDateTime } from "@/lib/assignments";
 import { recomputeGatesForAssignment } from "@/lib/practice";
 import { ActionError, requireOwner, requireShared, requireTeacher, withAuthz } from "@/lib/authz";
 
@@ -95,7 +95,7 @@ function settingsFrom(d: z.infer<typeof settingsSchema>) {
     retakeWaitHours: d.retakeWaitHours ?? 0,
     retakesNeedUnlock: d.retakesNeedUnlock,
     correctionsCap: d.correctionsCap,
-    retakeWindowDays: d.retakeWindowDays ?? 7,
+    retakeWindowDays: d.retakeWindowDays ?? DEFAULT_RETAKE_WINDOW_DAYS,
   };
 }
 

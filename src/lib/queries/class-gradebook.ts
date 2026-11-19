@@ -619,7 +619,7 @@ export async function getClassGradebook(
     if (nextUnlocked && noRetake) unlockedBlocker = { reason: "no_retake" };
     else if (nextUnlocked) {
       unlockedBlocker = requestBlocker({
-        assignment: { ...a, retakeWindowDays: card.capped ? a.retakeWindowDays : null },
+        assignment: { ...a, retakeWindowDays: card.windowed ? a.retakeWindowDays : null },
         used,
         lastSubmittedAt,
         firstSubmittedAt,
@@ -734,6 +734,8 @@ export async function getClassGradebook(
       correctionsRule: card.rule,
       retakeBy: card.retakeBy,
       retakeWindowClosed: card.windowClosed,
+      relearnBy: card.relearnBy,
+      relearnGoalPassed: card.relearnGoalPassed,
       firstPercent: finished[0]?.percent ?? null,
       paused: !!pause,
       progress: open ? { answered: Math.min(open.answered, open.total), total: open.total } : null,

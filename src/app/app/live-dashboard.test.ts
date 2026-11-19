@@ -526,7 +526,7 @@ describe("the stamp", () => {
     // "Retakes need my OK" with a 3-day wait: "Unlocked · after …" turns into a startable try.
     await db
       .update(schema.assignments)
-      .set({ retakesNeedUnlock: true, retakeWaitHours: 72 })
+      .set({ retakesNeedUnlock: true, retakeWaitHours: 72, retakeWindowDays: 7 })
       .where(eq(schema.assignments.id, ids.asg3));
     expect(await later(last + 73 * H)).not.toBe(await later(last + 71 * H));
     // The cap's 7-day window: the 48-hour "Retake by" mark appears, then the window closes.

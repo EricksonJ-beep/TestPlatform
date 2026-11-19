@@ -2,7 +2,12 @@
 
 import { useState } from "react";
 import { Pencil, Plus, RefreshCw } from "lucide-react";
-import { defaultAttempts, generateAccessCode, toLocalDateTimeValue } from "@/lib/assignments";
+import {
+  DEFAULT_RETAKE_WINDOW_DAYS,
+  defaultAttempts,
+  generateAccessCode,
+  toLocalDateTimeValue,
+} from "@/lib/assignments";
 import type { AssignmentRow } from "@/lib/queries/assignments";
 import { useTzOffset } from "@/components/local-time";
 import { Button } from "@/components/ui/button";
@@ -376,11 +381,12 @@ export function AssignmentDialog({
                 min={0}
                 max={90}
                 className="w-32"
-                defaultValue={existing?.retakeWindowDays ?? 7}
+                defaultValue={existing?.retakeWindowDays ?? DEFAULT_RETAKE_WINDOW_DAYS}
               />
               <p className="text-xs text-muted-foreground">
-                Under the corrections cap, retakes must start within this many days. 0 means no
-                window.
+                On a test, and on a quiz under the corrections cap, a retake must start within this
+                many days; after that the student asks you for it. 0 means no window. Students also
+                see a goal to finish relearning within 7 days.
               </p>
               <FieldError errors={fieldErrors} name="retakeWindowDays" />
             </div>

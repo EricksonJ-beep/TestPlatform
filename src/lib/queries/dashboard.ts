@@ -11,7 +11,7 @@ import { alias, type AnyPgColumn } from "drizzle-orm/pg-core";
 import { db, schema } from "@/db";
 import { capRetakeWindow } from "@/lib/assignments";
 import { correctionsClear } from "@/lib/corrections";
-import { correctionsCapOn } from "@/lib/grading";
+import { correctionsCapOn, retakeWindowOn } from "@/lib/grading";
 import {
   needsYouCounts,
   pathRequestBlocker,
@@ -237,6 +237,7 @@ export async function listRetakeRequests(
     const closed = !!r.closesAt && r.closesAt.getTime() <= now.getTime();
     // The cap's retake window applies only where the cap does (never in a CVTC course).
     const capped = correctionsCapOn(r);
+    const windowed = retakeWindowOn(r);
     const path = paths.get(pathKey(r.assignmentId, r.studentId))?.state ?? null;
     const rule = path
       ? pathRule(path)
@@ -250,7 +251,7 @@ export async function listRetakeRequests(
     // Past the cap's window on an open test (Oct 14 2026: "Let them ask while it's still open
     // too"); a request carries no approval, so none is taken into account.
     const windowEnded = capRetakeWindow({
-      capped,
+      windowed,
       rule,
       open: !closed,
       retakeWindowDays: r.retakeWindowDays,
@@ -271,7 +272,7 @@ export async function listRetakeRequests(
         rule === "to_full"
           ? { reason: "no_retake" }
           : requestBlocker({
-              assignment: { ...r, retakeWindowDays: capped ? r.retakeWindowDays : null },
+              assignment: { ...r, retakeWindowDays: windowed ? r.retakeWindowDays : null },
               used: r.used,
               lastSubmittedAt: asDate(r.lastSubmittedAt),
               firstSubmittedAt: asDate(r.firstSubmittedAt),

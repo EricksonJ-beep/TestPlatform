@@ -705,8 +705,11 @@ export const assignments = pgTable(
      * own and the highest counts. Ignored on practice and summatives.
      */
     correctionsCap: boolean("corrections_cap").default(true).notNull(),
-    /** Under the cap: days after the first attempt during which a retake may start (0 = no limit). */
-    retakeWindowDays: integer("retake_window_days").default(7).notNull(),
+    /**
+     * Days after the first attempt during which a retake may start (0 = no limit); past it the
+     * student asks. On tests and capped quizzes (`retakeWindowOn`); two weeks since Nov 19 2026.
+     */
+    retakeWindowDays: integer("retake_window_days").default(14).notNull(),
     /** Relearning revamp (P4): right first answers out of 5 that pass a practice check. */
     practicePass: integer("practice_pass").default(4).notNull(),
     ...timestamps,

@@ -288,6 +288,13 @@
       "when": 1795103855069,
       "tag": "0040_three_attempts",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1795106661767,
+      "tag": "0041_retake_window_two_weeks",
+      "breakpoints": true
     }
   ]
 }
