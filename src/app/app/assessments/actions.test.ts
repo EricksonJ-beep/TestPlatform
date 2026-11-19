@@ -186,7 +186,7 @@ describe("create and settings", () => {
     ).assessmentId;
     const s = await getAssessmentDetail(ids.summative);
     expect(s).toMatchObject({
-      attemptLimit: 1,
+      attemptLimit: 3,
       reviewMode: "teacher_approved",
       randomizeQuestions: true,
       randomizeOptions: false,
