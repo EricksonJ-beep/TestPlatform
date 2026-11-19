@@ -7,7 +7,14 @@
   "assessment": {
     "title": "Unit 3 Test: Bonding",
     "type": "summative",
-    "instructions": "32 questions on Unit 3 (Chapter 8), 40 points, 10 for each learning target: why atoms bond and electron dot structures (LT1), ionic bonds and naming ionic compounds (LT2), covalent bonds and naming covalent compounds (LT3), and comparing ionic and covalent compounds (LT4). Have your periodic table and polyatomic ion list out. Questions marked 2 points are worth more. On number questions, type just the number; on charges, include the sign. Show your work on scratch paper."
+    "instructions": "32 questions on Unit 3 (Chapter 8), 40 points, 10 for each learning target: why atoms bond and electron dot structures (LT1), ionic bonds and naming ionic compounds (LT2), covalent bonds and naming covalent compounds (LT3), and comparing ionic and covalent compounds (LT4). Have your periodic table and polyatomic ion list out. Questions marked 2 points are worth more. On number questions, type just the number; on charges, include the sign. Show your work on scratch paper.",
+    "retakePools": {
+      "U3.LT1": "PS U3.LT1 Retake Pool",
+      "U3.LT2": "PS U3.LT2 Retake Pool",
+      "U3.LT3": "PS U3.LT3 Retake Pool",
+      "U3.LT4": "PS U3.LT4 Retake Pool"
+    },
+    "retakeDrawCount": 10
   },
   "assign": []
 }
