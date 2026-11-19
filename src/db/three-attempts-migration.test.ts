@@ -52,14 +52,12 @@ it("raises only Jon's Biology and Physical Science assignments below three attem
       .insert(schema.classes)
       .values({ ownerId: c.ownerId, courseId: c.id, name: title })
       .returning();
-    await db
-      .insert(schema.assignments)
-      .values({
-        ownerId: c.ownerId,
-        assessmentId: a.id,
-        classId: cls.id,
-        attemptsAllowed: attempts,
-      });
+    await db.insert(schema.assignments).values({
+      ownerId: c.ownerId,
+      assessmentId: a.id,
+      classId: cls.id,
+      attemptsAllowed: attempts,
+    });
   }
   const file = readFileSync("drizzle/0040_three_attempts.sql", "utf8");
   for (let run = 0; run < 2; run++)
