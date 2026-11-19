@@ -20,10 +20,11 @@
  */
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import { and, eq, inArray, isNotNull, isNull, or, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, isNull, ne, or, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { parseCsvRecords } from "@/lib/csv";
 import { parseQuestionRecords } from "@/lib/import/question-csv";
+import { finalizeAttempt } from "@/lib/attempts";
 import { commitImport } from "@/lib/import/question-import";
 import { insertTargetSections } from "@/lib/target-sections";
 import { relearningIssues, type PackRelearning } from "@/lib/relearning-pack";
@@ -129,6 +130,28 @@ export type PackDefinition = {
   };
   /** Read · Watch · Do options (relearning revamp R4): one per target and mode. */
   relearning?: PackRelearning[];
+  /**
+   * Answer-key fixes for tests already taken (Jon, Nov 19 2026: a confusing fill-in on the Unit 3
+   * Test). Editing a question makes a new version, and finished attempts stay on the version they
+   * were served, so a key edit never reaches them. A key fix instead widens the key **in place**
+   * on every version of the question (found by external_id in the pack's bank) and re-scores every
+   * finished attempt that was served one. Each fix applies once, recorded as `<pack>#<id>`;
+   * manual scores are kept, as with Regrade.
+   */
+  keyFixes?: PackKeyFix[];
+};
+
+export type PackKeyFix = {
+  /** Names the fix in content_packs; never reuse one. */
+  id: string;
+  externalId: string;
+  /** Fill-in only: more answers to accept, as the editor lists them. */
+  alsoAccept?: string[];
+  /**
+   * Fill-in only: regular expressions; a cleaned answer (trimmed, spaces collapsed, lower case)
+   * that matches one in full is accepted.
+   */
+  alsoAcceptPatterns?: string[];
 };
 
 export type PackOutcome =
@@ -239,6 +262,7 @@ export async function applyPack(
   });
   if (done) {
     renamed.push(...(await syncRetakePools(def, teacher.id)));
+    renamed.push(...(await applyKeyFixes(def, teacher.id)));
     return { name: def.name, status: "already_applied", renamed };
   }
   const course = await db.query.courses.findFirst({
@@ -273,9 +297,117 @@ export async function applyPack(
     summary.relearning = await applyRelearning(def.relearning, teacher.id, course.id, errors);
   const retakePools = await syncRetakePools(def, teacher.id);
   if (retakePools.length) summary.retakePools = retakePools;
+  const keyFixes = await applyKeyFixes(def, teacher.id);
+  if (keyFixes.length) summary.keyFixes = keyFixes;
   summary.errors = errors;
   await db.insert(schema.contentPacks).values({ name: appliedName(def), summary });
   return { name: def.name, status: "applied", summary };
+}
+
+/**
+ * The pack's `keyFixes`, each once: widen a fill-in's key in place on every version of the
+ * question, then re-score the finished attempts that were served one (`finalizeAttempt`, the same
+ * path as Regrade, so manual scores stand and final scores are recomputed). A fix whose question
+ * is not found, or is not a fill-in, is reported and tried again next deploy.
+ */
+async function applyKeyFixes(def: PackDefinition, teacherId: string): Promise<string[]> {
+  if (!def.keyFixes?.length || !def.bank) return [];
+  const out: string[] = [];
+  for (const fix of def.keyFixes) {
+    const name = `${def.name}#${fix.id}`;
+    const done = await db.query.contentPacks.findFirst({
+      columns: { name: true },
+      where: eq(schema.contentPacks.name, name),
+    });
+    if (done) continue;
+    const bank = await db.query.questionBanks.findFirst({
+      columns: { id: true },
+      where: and(
+        eq(schema.questionBanks.ownerId, teacherId),
+        sql`lower(${schema.questionBanks.name}) = ${key(def.bank)}`
+      ),
+    });
+    const current = bank
+      ? await db.query.questions.findFirst({
+          columns: { id: true, previousVersionId: true },
+          where: and(
+            eq(schema.questions.bankId, bank.id),
+            sql`lower(${schema.questions.externalId}) = ${key(fix.externalId)}`
+          ),
+        })
+      : undefined;
+    if (!current) {
+      out.push(`key fix ${fix.id}: question ${fix.externalId} not found`);
+      continue;
+    }
+    // Every version: the one students were served may be an earlier one.
+    const ids = [current.id];
+    for (let prev = current.previousVersionId; prev && !ids.includes(prev);) {
+      ids.push(prev);
+      const row = await db.query.questions.findFirst({
+        columns: { previousVersionId: true },
+        where: eq(schema.questions.id, prev),
+      });
+      prev = row?.previousVersionId ?? null;
+    }
+    const versions = await db
+      .select({
+        id: schema.questions.id,
+        type: schema.questions.type,
+        gradingConfig: schema.questions.gradingConfig,
+      })
+      .from(schema.questions)
+      .where(inArray(schema.questions.id, ids));
+    if (versions.some((v) => v.type !== "fill_blank")) {
+      out.push(`key fix ${fix.id}: ${fix.externalId} is not a fill-in`);
+      continue;
+    }
+    const merge = (a: string[] | undefined, b: string[] | undefined) => [
+      ...new Set([...(a ?? []), ...(b ?? [])]),
+    ];
+    for (const v of versions) {
+      const cfg = (v.gradingConfig ?? { acceptedAnswers: [] }) as {
+        acceptedAnswers: string[];
+        acceptedPatterns?: string[];
+        caseSensitive?: boolean;
+      };
+      const acceptedPatterns = merge(cfg.acceptedPatterns, fix.alsoAcceptPatterns);
+      await db
+        .update(schema.questions)
+        .set({
+          gradingConfig: {
+            ...cfg,
+            acceptedAnswers: merge(cfg.acceptedAnswers, fix.alsoAccept),
+            ...(acceptedPatterns.length ? { acceptedPatterns } : {}),
+          },
+        })
+        .where(eq(schema.questions.id, v.id));
+    }
+    const attempts = await db
+      .selectDistinct({ id: schema.attempts.id, submittedAt: schema.attempts.submittedAt })
+      .from(schema.attempts)
+      .innerJoin(schema.responses, eq(schema.responses.attemptId, schema.attempts.id))
+      .where(
+        and(inArray(schema.responses.questionId, ids), ne(schema.attempts.status, "in_progress"))
+      );
+    let failed = 0;
+    for (const a of attempts) {
+      try {
+        await finalizeAttempt(a.id, a.submittedAt ?? new Date());
+      } catch (e) {
+        failed++;
+        console.error(`[packs] ${name}: attempt ${a.id} not re-scored:`, e);
+      }
+    }
+    const summary = { versions: ids.length, attempts: attempts.length, failed };
+    // Recorded only when every attempt was re-scored, so a partial run repeats next deploy
+    // (the key merge and the re-score are both safe to repeat).
+    if (!failed) await db.insert(schema.contentPacks).values({ name, summary });
+    out.push(
+      `key fix ${fix.id}: re-scored ${attempts.length - failed} of ${attempts.length} attempts on ${fix.externalId}`
+    );
+  }
+  return out;
 }
 
 /**

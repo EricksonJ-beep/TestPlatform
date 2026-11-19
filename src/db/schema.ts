@@ -409,7 +409,7 @@ export type NumericGradingConfig = {
 export type GradingConfig =
   | NumericGradingConfig
   | { keywords: string[]; minMatches?: number }
-  | { acceptedAnswers: string[]; caseSensitive?: boolean }
+  | { acceptedAnswers: string[]; acceptedPatterns?: string[]; caseSensitive?: boolean }
   | { partialCredit: boolean }
   | Record<string, unknown>;
 
