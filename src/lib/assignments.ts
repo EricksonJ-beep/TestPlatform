@@ -208,9 +208,12 @@ export function attemptDueAt(input: {
   return due;
 }
 
-/** Attempt defaults: practice unlimited, formative 3, summative 1 (Jon, Sept 28 2026; PLAN.md §2 said 1 + 1 retake). */
+/**
+ * Attempt defaults: practice unlimited, quizzes and tests 3. Tests were 1 until Nov 19 2026
+ * (Jon: with one attempt no retake is offered, even to a student who wants to raise a target).
+ */
 export function defaultAttempts(type: "practice" | "formative" | "summative"): number | null {
-  return type === "practice" ? null : type === "formative" ? 3 : 1;
+  return type === "practice" ? null : 3;
 }
 
 /**

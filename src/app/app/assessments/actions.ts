@@ -4,6 +4,7 @@ import { and, asc, eq, inArray, max } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db, schema } from "@/db";
+import { defaultAttempts } from "@/lib/assignments";
 import { ActionError, requireOwner, requireShared, requireTeacher, withAuthz } from "@/lib/authz";
 import { ownsCourse, rememberCourse } from "@/lib/current-course";
 import { isBankKind } from "@/lib/bank-kinds";
@@ -103,9 +104,10 @@ export const createAssessment = withAuthz(async (formData: FormData) => {
       courseId,
       title,
       type,
-      // Jon's defaults (Sept 28, 2026): one summative attempt, corrections reviewed by
-      // the teacher, shuffled question order, one at a time, results shown right away.
-      attemptLimit: type === "practice" ? null : type === "formative" ? 3 : 1,
+      // Jon's defaults (Sept 28, 2026; three attempts on tests too since Nov 19, 2026):
+      // corrections reviewed by the teacher, shuffled question order, one at a time, results
+      // shown right away.
+      attemptLimit: defaultAttempts(type),
       reviewMode: "teacher_approved",
       retakeThreshold: 80,
       optionalRetakes: true,
