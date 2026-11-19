@@ -18,6 +18,7 @@ import { join } from "node:path";
 import { and, eq, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { gradeResponse } from "@/lib/grading";
+import { createAttempt, finalizeAttempt } from "@/lib/attempts";
 import { applyAllPacks, applyPack, listPacks } from "./content-packs";
 import { loadBankHealth } from "@/lib/queries/bank-health";
 import { ensureWalkthrough, readWalkthroughSetup } from "@/lib/walkthrough";
@@ -1493,6 +1494,142 @@ describe("content packs", () => {
         where: eq(schema.relearningActivities.title, "New notes title"),
       })
     ).toHaveLength(1);
+  });
+
+  it("keyFixes: widens a fill-in's key in place on every version and re-scores finished attempts once", async () => {
+    const root = mkdtempSync(join(tmpdir(), "bloom-packs-"));
+    const name = "test-keyfix-pack";
+    mkdirSync(join(root, name));
+    writeFileSync(
+      join(root, name, "questions.csv"),
+      [
+        "external_id,course,learning_target,type,stem,correct,points,explanation",
+        "KF-1,Physical Science A,U1.LT2,fill_blank,Ion charge: ___,+2|2+|2,2,Group 2.",
+        "KF-2,Physical Science A,U1.LT2,numeric,How many?,5,1,Five.",
+      ].join("\n")
+    );
+    const [cls] = await db
+      .insert(schema.classes)
+      .values({ ownerId: ids.teacher, courseId: ps.id, name: "KF · 1st Hour" })
+      .returning();
+    const students = await db
+      .insert(schema.users)
+      .values(
+        ["both", "wrong", "inprogress"].map((n) => ({
+          email: `kf-${n}@s`,
+          passwordHash: "x",
+          role: "student" as const,
+          firstName: n,
+          lastName: "KF",
+        }))
+      )
+      .returning();
+    await db
+      .insert(schema.enrollments)
+      .values(students.map((u) => ({ classId: cls.id, studentId: u.id })));
+    const def = {
+      name,
+      teacherEmail: "EricksonJ@cadott.k12.wi.us",
+      course: "Physical Science A",
+      bank: "PS · Key fix bank",
+      assessment: { title: "Key fix quiz", type: "formative" as const },
+      assign: [{ class: "KF · 1st Hour" }],
+    };
+    const first = await applyPack(def, root);
+    expect(first.status).toBe("applied");
+    const assessmentId = (first as unknown as { summary: { assessmentId: string } }).summary
+      .assessmentId;
+    const asg = (await db.query.assignments.findFirst({
+      where: eq(schema.assignments.assessmentId, assessmentId),
+    }))!;
+    const v1 = (await db.query.questions.findFirst({
+      where: eq(schema.questions.externalId, "KF-1"),
+    }))!;
+
+    const take = async (studentId: string, text: string, finish = true) => {
+      const { attemptId } = await createAttempt({ assignmentId: asg.id, studentId });
+      await db
+        .insert(schema.responses)
+        .values({ attemptId, questionId: v1.id, answer: { kind: "text", text } });
+      if (finish) await finalizeAttempt(attemptId);
+      return attemptId;
+    };
+    const both = await take(students[0].id, "2, +2");
+    const wrong = await take(students[1].id, "2, -2");
+    const open = await take(students[2].id, "2 and 2+", false);
+    // Jon had already given the second student a point by hand.
+    await db
+      .update(schema.responses)
+      .set({ manualScore: 1 })
+      .where(and(eq(schema.responses.attemptId, wrong), eq(schema.responses.questionId, v1.id)));
+    await finalizeAttempt(wrong);
+    const scoreOf = async (attemptId: string) => {
+      const a = (await db.query.attempts.findFirst({ where: eq(schema.attempts.id, attemptId) }))!;
+      const r = (await db.query.responses.findFirst({
+        where: and(
+          eq(schema.responses.attemptId, attemptId),
+          eq(schema.responses.questionId, v1.id)
+        ),
+      }))!;
+      return { score: a.score, status: a.status, auto: r.autoScore, manual: r.manualScore };
+    };
+    expect(await scoreOf(both)).toMatchObject({ score: 0, auto: 0 });
+
+    // The teacher edits the question in Bloom before the fix ships: a new version takes the id.
+    const again = { ...def, revision: 2 };
+    expect((await applyPack(again, root)).status).toBe("applied");
+    const v2 = (await db.query.questions.findFirst({
+      where: eq(schema.questions.externalId, "KF-1"),
+    }))!;
+    expect(v2.id).not.toBe(v1.id);
+
+    const fixed = {
+      ...again,
+      keyFixes: [{ id: "both-numbers", externalId: "KF-1", alsoAcceptPatterns: ["2, ?\\+2"] }],
+    };
+    const out = await applyPack(fixed, root);
+    expect(out).toMatchObject({ status: "already_applied" });
+    if (out.status === "already_applied")
+      expect(out.renamed).toContain("key fix both-numbers: re-scored 2 of 2 attempts on KF-1");
+    expect(await scoreOf(both)).toMatchObject({ score: 2, auto: 2, manual: null });
+    // The wrong charge is still wrong, and the hand-given point stands.
+    expect(await scoreOf(wrong)).toMatchObject({ score: 1, auto: 0, manual: 1 });
+    // An attempt still being taken is left alone; it is graded with the wider key when it ends.
+    expect(await scoreOf(open)).toMatchObject({ status: "in_progress", score: null });
+    await finalizeAttempt(open);
+    expect(await scoreOf(open)).toMatchObject({ score: 0 });
+    for (const q of [v1, v2]) {
+      const row = (await db.query.questions.findFirst({ where: eq(schema.questions.id, q.id) }))!;
+      expect(row.gradingConfig).toMatchObject({
+        acceptedAnswers: ["+2", "2+", "2"],
+        acceptedPatterns: ["2, ?\\+2"],
+      });
+    }
+    const [final] = await db
+      .select()
+      .from(schema.assignmentFinalScores)
+      .where(eq(schema.assignmentFinalScores.studentId, students[0].id));
+    expect(final.totalEarned).toBe(2);
+
+    // Once: a second deploy does nothing, and an unknown question is reported, not recorded.
+    const second = await applyPack(fixed, root);
+    if (second.status === "already_applied") expect(second.renamed).toEqual([]);
+    const missing = await applyPack(
+      { ...fixed, keyFixes: [{ id: "nope", externalId: "KF-404", alsoAccept: ["x"] }] },
+      root
+    );
+    if (missing.status === "already_applied")
+      expect(missing.renamed).toEqual(["key fix nope: question KF-404 not found"]);
+    const numeric = await applyPack(
+      { ...fixed, keyFixes: [{ id: "num", externalId: "KF-2", alsoAccept: ["five"] }] },
+      root
+    );
+    if (numeric.status === "already_applied")
+      expect(numeric.renamed).toEqual(["key fix num: KF-2 is not a fill-in"]);
+    const recorded = await db.query.contentPacks.findMany({
+      where: sql`${schema.contentPacks.name} like ${name + "#%"}`,
+    });
+    expect(recorded.map((r) => r.name)).toEqual([`${name}#both-numbers`]);
   });
 
   it("skips a pack whose teacher is missing and leaves it unapplied for next time", async () => {

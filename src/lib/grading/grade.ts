@@ -82,7 +82,11 @@ const typed = (s: string) =>
     .replace(/[.,;:!]+$/, "");
 
 export function gradeFillBlank(q: GradableQuestion, a: Answer): GradeResult {
-  const cfg = (q.gradingConfig ?? {}) as { acceptedAnswers?: string[]; caseSensitive?: boolean };
+  const cfg = (q.gradingConfig ?? {}) as {
+    acceptedAnswers?: string[];
+    acceptedPatterns?: string[];
+    caseSensitive?: boolean;
+  };
   const text = a && a.kind === "text" ? a.text : "";
   if (!text.trim()) return wrong(q, "No answer.");
   const accepted = cfg.acceptedAnswers ?? [];
@@ -91,8 +95,22 @@ export function gradeFillBlank(q: GradableQuestion, a: Answer): GradeResult {
       ? typed(plainDigits(s)).trim().replace(/\s+/g, " ")
       : norm(typed(plainDigits(s)));
   const given = clean(text);
-  const ok = accepted.some((x) => clean(x) === given);
+  const ok =
+    accepted.some((x) => clean(x) === given) ||
+    (cfg.acceptedPatterns ?? []).some((p) => matchesWhole(p, given, !cfg.caseSensitive));
   return ok ? right(q) : wrong(q, "Not one of the accepted answers.");
+}
+
+/**
+ * A key fix's pattern (content packs, `keyFixes`): the cleaned answer must match all of it. A
+ * pattern that will not compile accepts nothing.
+ */
+function matchesWhole(pattern: string, given: string, ignoreCase: boolean): boolean {
+  try {
+    return new RegExp(`^(?:${pattern})$`, ignoreCase ? "i" : "").test(given);
+  } catch {
+    return false;
+  }
 }
 
 export function gradeShortAnswer(q: GradableQuestion, a: Answer): GradeResult {

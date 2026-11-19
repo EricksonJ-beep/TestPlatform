@@ -16,5 +16,15 @@
     },
     "retakeDrawCount": 10
   },
-  "assign": []
+  "assign": [],
+  "keyFixes": [
+    {
+      "id": "q6-valence-and-charge",
+      "externalId": "PS-U3T-006",
+      "alsoAcceptPatterns": [
+        "(?:valence|electrons?|ve|e|charge|ions?|ionic|is|the|of|has|with|a|its|mg|magnesium|positive|plus|[ :=()])*2(?:valence|electrons?|ve|e|charge|ions?|ionic|is|the|of|has|with|a|its|mg|magnesium|positive|plus|[ :=()])*(?:\\s*[,;/&|]\\s*|\\s+and\\s+|\\s+then\\s+|\\s+)(?:valence|electrons?|ve|e|charge|ions?|ionic|is|the|of|has|with|a|its|mg|magnesium|positive|plus|[ :=()])*(?:[+⁺] ?2|[2²] ?[+⁺]|2)(?:valence|electrons?|ve|e|charge|ions?|ionic|is|the|of|has|with|a|its|mg|magnesium|positive|plus|[ :=()])*",
+        "(?:valence|electrons?|ve|e|charge|ions?|ionic|is|the|of|has|with|a|its|mg|magnesium|positive|plus|[ :=()])*(?:[+⁺] ?2|[2²] ?[+⁺])(?:valence|electrons?|ve|e|charge|ions?|ionic|is|the|of|has|with|a|its|mg|magnesium|positive|plus|[ :=()])*(?:\\s*[,;/&|]\\s*|\\s+and\\s+|\\s+then\\s+|\\s+)(?:valence|electrons?|ve|e|charge|ions?|ionic|is|the|of|has|with|a|its|mg|magnesium|positive|plus|[ :=()])*2(?:valence|electrons?|ve|e|charge|ions?|ionic|is|the|of|has|with|a|its|mg|magnesium|positive|plus|[ :=()])*"
+      ]
+    }
+  ]
 }

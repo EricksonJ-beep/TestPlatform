@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   computeFinalScore,
@@ -94,6 +96,69 @@ describe("multiple select", () => {
       pointsEarned: 2,
       isCorrect: true,
     });
+  });
+});
+
+describe("fill in the blank: key-fix patterns", () => {
+  // The real fix on the Unit 3 Test's Mg table question (Jon, Nov 19 2026): students who typed
+  // the valence electrons and the charge get credit; a wrong charge still does not.
+  const pack = JSON.parse(
+    readFileSync(join(process.cwd(), "content/packs/ps-u3-test-bonding/pack.json"), "utf8")
+  ) as { keyFixes: { alsoAcceptPatterns: string[] }[] };
+  const mg = q("fill_blank", {
+    points: 2,
+    gradingConfig: {
+      acceptedAnswers: ["+2", "2+", "2"],
+      acceptedPatterns: pack.keyFixes[0].alsoAcceptPatterns,
+      caseSensitive: false,
+    },
+  });
+  const graded = (text: string) => gradeResponse(mg, { kind: "text", text }).isCorrect;
+  it.each([
+    "2",
+    "+2",
+    "2+",
+    "2, +2",
+    "2,+2",
+    "2 +2",
+    "2 and +2",
+    "2 / 2+",
+    "2; +2",
+    "2, 2",
+    "2 2",
+    "2 & 2+",
+    "2 (+2)",
+    "2 valence electrons, +2 charge",
+    "Valence: 2  Charge: +2",
+    "2 ve and 2+",
+    "2, + 2",
+    "2, Mg²⁺",
+    "+2, 2",
+    "2+ and 2",
+    "2, +2.",
+  ])("accepts %j", (text) => expect(graded(text)).toBe(true));
+  it.each([
+    "2, -2",
+    "2, −2",
+    "2 and 2-",
+    "2-2",
+    "22",
+    "2, negative 2",
+    "2, 3",
+    "12, +2",
+    "2, +22",
+    "3, +2",
+    "2, +2, 8",
+    "-2",
+    "two",
+    "",
+  ])("rejects %j", (text) => expect(graded(text)).toBe(false));
+  it("a pattern that will not compile accepts nothing", () => {
+    const bad = q("fill_blank", {
+      gradingConfig: { acceptedAnswers: ["x"], acceptedPatterns: ["("], caseSensitive: false },
+    });
+    expect(gradeResponse(bad, { kind: "text", text: "(" }).isCorrect).toBe(false);
+    expect(gradeResponse(bad, { kind: "text", text: "x" }).isCorrect).toBe(true);
   });
 });
 
