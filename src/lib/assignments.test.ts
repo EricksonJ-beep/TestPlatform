@@ -66,7 +66,7 @@ describe("canStartAttempt", () => {
     ).toEqual({ ok: true });
     expect(
       startReasonText({ ok: false, reason: "window_closed", closedAt: at("2026-09-21T14:00:00Z") })
-    ).toMatch(/Retakes on this quiz closed Sep 21/);
+    ).toMatch(/Retakes closed Sep 21/);
   });
   it("blocks outside the window", () => {
     expect(
@@ -221,7 +221,7 @@ describe("canStartAttempt", () => {
 
 describe("capRetakeWindow", () => {
   const input = {
-    capped: true,
+    windowed: true,
     rule: "gate" as const,
     open: true,
     retakeWindowDays: 7,
@@ -239,7 +239,7 @@ describe("capRetakeWindow", () => {
   });
   it("doesn't apply without the cap, at or above the line, on a closed test, or before attempt 1", () => {
     const none = { retakeBy: null, passed: false };
-    expect(capRetakeWindow({ ...input, capped: false })).toEqual(none);
+    expect(capRetakeWindow({ ...input, windowed: false })).toEqual(none);
     expect(capRetakeWindow({ ...input, rule: "to_full" })).toEqual(none);
     expect(capRetakeWindow({ ...input, open: false })).toEqual(none);
     expect(capRetakeWindow({ ...input, firstSubmittedAt: null })).toEqual(none);

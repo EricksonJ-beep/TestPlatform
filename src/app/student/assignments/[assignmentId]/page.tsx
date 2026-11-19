@@ -180,6 +180,12 @@ export default async function StudentAssignmentPage({
               {a.attemptsAllowed === 1 ? "attempt" : "attempts"} used
             </span>
           ) : null}
+          {a.relearnBy ? (
+            <span data-relearn-goal={a.relearnGoalPassed ? "passed" : "open"}>
+              {a.relearnGoalPassed ? "Relearning goal was " : "Goal: finish relearning by "}
+              <LocalTime date={a.relearnBy} />
+            </span>
+          ) : null}
           {a.retakeBy && a.attemptsUsed > 0 ? (
             <span data-retake-window={a.retakeWindowClosed ? "closed" : "open"}>
               {/* Past it the student asks for the retake (Jon, Oct 14 2026), so not "closed". */}

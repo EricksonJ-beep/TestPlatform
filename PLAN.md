@@ -218,7 +218,7 @@ This is the workflow Claude Code must implement exactly. *Relearning revamp, app
    - *Auto:* corrections are approved when they're submitted.
    - *Teacher-approved:* you approve, with an AI first-pass flagging thin explanations. Relearning and the check go ahead meanwhile. The raised quiz score and the retake wait for your approval, and corrections sent back are fixed without redoing the relearning or the check.
 7. **Retake:**
-   - **Formative:** the whole quiz, same number of questions. The retake's score stands on its own (no correction credit). It's allowed up to the attempt limit (default 3), starting within the retake window (7 days from attempt 1). Attempt 3 needs a fresh 4/5 check on any target still below 80% on the retake; if none are below, no check is needed.
+   - **Formative:** the whole quiz, same number of questions. The retake's score stands on its own (no correction credit). It's allowed up to the attempt limit (default 3), starting within the retake window (two weeks from attempt 1 since Nov 19, 2026; it was 7 days). Attempt 3 needs a fresh 4/5 check on any target still below 80% on the retake; if none are below, no check is needed.
    - **Summative (targeted):** **Full test** or **Custom**. Required targets are locked in. Targets at/above 80% are optional and need corrections on their missed questions first, nothing more. The retake serves **new questions from each selected target's pool**, matching the original section size. One retake by default.
 8. **Highest score counts per target**, for quizzes and tests. A test's targets are summed into one test score, while a quiz's targets go to Skyward one column each. All attempts, corrections, relearning and practice rounds are kept for the growth view and the score trail.
 
@@ -241,7 +241,7 @@ Attempt 1 → LT1 10, LT2 10, LT3 10, LT4 7 = 37/40 (92.5%). LT4 is 70% → belo
 - **Summatives:** three gates per required or opted-in target: corrections (approved, if that mode is on) + one completed relearning activity + one completed practice set, in any order. Practice is completion-based, not score-based.
 - **Formatives: corrections cap** (Jon and colleague, Oct 8 2026, on by default per assignment). Attempt 1 below the threshold → *Must do corrections*; finishing them lifts the score to the threshold and no higher. Attempt 1 at or above it → corrections optional; finishing them lifts the score to 100%.
 - **Before a quiz retake** (or asking for one), each target below the threshold needs a finished practice scored 80%+ on that target's questions (docs/student-home-plan.md, R3).
-- A retake's score stands on its own (no correction credit), and the highest attempt counts, up to the attempt limit (3) within the retake window (7 days from attempt 1). Corrections stay open after the window.
+- A retake's score stands on its own (no correction credit), and the highest attempt counts, up to the attempt limit (3) within the retake window (two weeks from attempt 1 since Nov 19, 2026; it was 7 days). Corrections stay open after the window.
 
 ---
 
@@ -425,6 +425,7 @@ Repo, Next.js + Tailwind + shadcn scaffold, Neon project + Drizzle schema/migrat
 | Sharing at launch = | You + one physical science colleague, shared bank |
 | Skyward = | Track the counting score + **one CSV per Skyward assignment** (header `Last Name,First Name,ID,Score`; percent, whole number; quizzes one file per learning target, tests one overall score; ID = the digits before the @ in the student's Cadott email); no direct integration in v1 |
 | Formative attempts = | Default 3, configurable per assignment |
+| Test attempts and windows (Nov 19, 2026) = | Tests default to 3 attempts (they were 1). **Retake window: two weeks** from attempt 1 on tests and capped quizzes; past it the student asks and the teacher approves. **Relearning goal: 7 days** from attempt 1 to finish corrections, relearning and practice, shown to the student as a soft date that locks nothing. Neither applies in a CVTC course |
 | Corrections review = | Per-assignment: auto-unlock or teacher-approved (AI first-pass). From the relearning launch, relearning and the practice check open on submit; only the raised quiz score and the retake wait for approval |
 | Relearning (Nov 4, 2026) = | The student picks **Read · Watch · Do**; each has a core (3–5 min) and an extension (5–10 min), with quick checks (unlimited tries) and at most one short answer. A quiz on 2+ targets stitches the cores (about 10 min); tests use core + extension per target (about 10–15 min). Watch uses YouTube in Restricted Mode (each video tested on a student account) or Jon's uploads |
 | Quiz path (Nov 4, 2026) = | Per target. Below 80%: corrections + relearning + practice check → 80% automatically, then keep it or retake. At/above 80%: corrections → 90%, plus the path → 100%, no retake. Attempt 3 needs a fresh 4/5 check. The path stays open after a quiz closes (then Ask to retake) |

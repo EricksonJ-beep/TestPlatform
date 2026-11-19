@@ -369,6 +369,8 @@ describe("Ask to retake (R4, R6)", () => {
       retakeRequested: false,
       retakeBy: null,
       retakeWindowClosed: false,
+      relearnBy: null,
+      relearnGoalPassed: false,
       final: { percent: 80 },
     });
     as(ids.viola, "student");
@@ -776,6 +778,7 @@ describe("Past the cap's retake window on a quiz still open (Jon, Oct 14 2026)",
         assessmentId: quiz.id,
         attemptsAllowed: 3,
         timeLimitMinutes: 20,
+        retakeWindowDays: 7,
         opensAt: new Date(Date.now() - 20 * 86_400_000),
         closesAt: new Date(Date.now() + 10 * 86_400_000),
       })
@@ -812,7 +815,7 @@ describe("Past the cap's retake window on a quiz still open (Jon, Oct 14 2026)",
       final: { percent: 80 },
     });
     as(open.quinn, "student");
-    await refused(startAttempt(open.id, null), 403, /^Retakes on this quiz closed/);
+    await refused(startAttempt(open.id, null), 403, /^Retakes closed/);
     // Her list: an optional ask that says the window ended, never "closed".
     const list = buildStudentToDo({ assignments: [await openCard()] });
     expect(list.higher[0]).toMatchObject({
@@ -870,6 +873,8 @@ describe("Past the cap's retake window on a quiz still open (Jon, Oct 14 2026)",
       reopenedUntil: null,
       retakeBy: null,
       retakeWindowClosed: false,
+      relearnBy: null,
+      relearnGoalPassed: false,
     });
     const { cell: c, column } = await openCell();
     expect(column.status).toBe("open");
@@ -899,7 +904,7 @@ describe("Past the cap's retake window on a quiz still open (Jon, Oct 14 2026)",
       retakeWindowClosed: true,
     });
     as(open.quinn, "student");
-    await refused(startAttempt(open.id, null), 403, /^Retakes on this quiz closed/);
+    await refused(startAttempt(open.id, null), 403, /^Retakes closed/);
     await ok(requestRetake(open.id));
     expect(await openUnlock()).toMatchObject({ grantedAt: null, grantedBy: null, openUntil: null });
     expect(await requestsLogged(open.quinn)).toBe(2);

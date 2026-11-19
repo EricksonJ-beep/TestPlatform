@@ -24,7 +24,7 @@ import {
 } from "@/lib/attempt-pause";
 import { correctionsClear } from "@/lib/corrections";
 import { setOptIn, setOptIns } from "@/lib/gates";
-import { correctionsCapOn } from "@/lib/grading";
+import { correctionsCapOn, retakeWindowOn } from "@/lib/grading";
 import { practiceOwed, practiceOwedText, quizPracticeNeeds } from "@/lib/quiz-practice";
 import {
   clearFailures,
@@ -257,8 +257,8 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
   const check = canStartAttempt({
     assignment: {
       ...assignment,
-      // The retake window is a corrections-cap rule, so formatives only (Jon, Oct 8 2026).
-      retakeWindowDays: capped ? assignment.retakeWindowDays : null,
+      // The retake window: every test, and a quiz under the cap (Jon, Nov 19 2026).
+      retakeWindowDays: retakeWindowOn(assignment) ? assignment.retakeWindowDays : null,
     },
     attemptsUsed: used,
     lastSubmittedAt,

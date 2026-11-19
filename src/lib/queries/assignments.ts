@@ -191,6 +191,9 @@ export type StudentAssignment = {
   retakeBy: Date | null;
   /** `retakeBy` has passed (decided server-side so the cards never read the clock while rendering). */
   retakeWindowClosed: boolean;
+  /** The relearning goal (Nov 19 2026): finish corrections, relearning and practice by then. Soft. */
+  relearnBy: Date | null;
+  relearnGoalPassed: boolean;
   /** Attempt 1's percent, which the cap reads. */
   firstPercent: number | null;
   /** The counting score as the gradebook has it, and how it came about. */
@@ -478,6 +481,8 @@ export async function listStudentAssignments(
           quizPractice: card.quizPractice,
           retakeBy: card.retakeBy,
           retakeWindowClosed: card.windowClosed,
+          relearnBy: card.relearnBy,
+          relearnGoalPassed: card.relearnGoalPassed,
           firstPercent,
           correctionsCap: card.capped,
           cvtcRules,

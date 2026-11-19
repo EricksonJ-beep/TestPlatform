@@ -51,6 +51,8 @@ export type ToDoAssignment = Pick<
   | "correctionsRule"
   | "retakeBy"
   | "retakeWindowClosed"
+  | "relearnBy"
+  | "relearnGoalPassed"
   | "firstPercent"
   | "paused"
   | "progress"
@@ -181,6 +183,19 @@ function closeWhen(a: ToDoAssignment): ToDoRow["when"] {
 }
 
 /**
+ * The relearning goal on a row (Jon, Nov 19 2026): "Goal: finish by …" while corrections,
+ * relearning or practice are still to do; once the date has passed, when retakes close instead,
+ * so the row always names the next date that matters. A soft date: nothing locks on it.
+ */
+function relearnWhen(a: ToDoAssignment): ToDoRow["when"] {
+  if (!a.relearnBy) return null;
+  if (!a.relearnGoalPassed) return { label: "Goal: finish by", at: a.relearnBy };
+  return a.retakeBy && !a.retakeWindowClosed
+    ? { label: "Past your 7-day goal. Retakes close", at: a.retakeBy }
+    : null;
+}
+
+/**
  * What doing the corrections earns, from the corrections rule (Jon, Oct 13–14 2026): to 100% where
  * that is the way up ("there's no retake at your score"); attempt 1 of a capped quiz lifts to the
  * threshold; otherwise they unlock the next attempt, or, on a closed test, come before asking to
@@ -279,7 +294,7 @@ function rowsFor(a: ToDoAssignment, buildable: ReadonlySet<string>): ToDoRow[] {
     note: null,
     progress: null,
     checklist: [],
-    when: closeWhen(a),
+    when: relearnWhen(a) ?? closeWhen(a),
     minutes: null,
     needsCode: false,
     ...r,
@@ -374,7 +389,7 @@ function rowsFor(a: ToDoAssignment, buildable: ReadonlySet<string>): ToDoRow[] {
             ? { label: "You can start after", at: a.nextAttemptAt }
             : kind === "retake" && a.retakeBy && !a.retakeWindowClosed
               ? { label: "Retake by", at: a.retakeBy }
-              : closeWhen(a),
+              : (relearnWhen(a) ?? closeWhen(a)),
         action: n.action.kind === "retake" && a.nextAttemptAt ? null : action,
         path: view.lines,
       }),

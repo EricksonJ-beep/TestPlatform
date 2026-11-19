@@ -385,3 +385,72 @@ describe("deriveCardState (who owes what)", () => {
     ).toMatchObject({ state: "retake_available", retakeRequested: false });
   });
 });
+
+describe("two-week retake window and the 7-day relearning goal (Jon, Nov 19 2026)", () => {
+  const test: CardInput = {
+    ...base,
+    type: "summative",
+    retakeWindowDays: 14,
+    corrections: "approved",
+    firstPercent: 85,
+    bestPercent: 85,
+    finalPercent: 85,
+    plan: plan({ optional: ["lt1"] }),
+  };
+  it("a test has the window too: Retake by for 14 days, then the student asks", () => {
+    const inside = deriveCardState({ ...test, firstSubmittedAt: ago(13) }, now);
+    expect(inside).toMatchObject({ state: "retake_available", windowClosed: false });
+    expect(inside.retakeBy).toEqual(new Date(ago(13).getTime() + 14 * DAY));
+    expect(deriveCardState({ ...test, firstSubmittedAt: ago(15) }, now)).toMatchObject({
+      state: "ask_to_retake",
+      windowClosed: true,
+    });
+    // A window of 0 never closes; a CVTC course and practice have no window at all.
+    for (const off of [{ retakeWindowDays: 0 }, { cvtcRules: true }, { type: "practice" as const }])
+      expect(deriveCardState({ ...test, ...off, firstSubmittedAt: ago(40) }, now)).toMatchObject({
+        retakeBy: null,
+        windowClosed: false,
+      });
+    // An approved retake lifts the window until its end, as on a quiz.
+    expect(
+      deriveCardState(
+        { ...test, firstSubmittedAt: ago(15), openUntil: new Date(now.getTime() + DAY) },
+        now
+      )
+    ).toMatchObject({ state: "retake_available", windowClosed: false });
+  });
+  it("the relearning goal is attempt 1 + 7 days while a step is still the student's to do", () => {
+    const owing = { ...test, firstPercent: 40, bestPercent: 40, finalPercent: 40 };
+    for (const [input, state] of [
+      [{ ...owing, corrections: "needed" as const }, "corrections_needed"],
+      [
+        { ...owing, plan: plan({ required: ["lt1"], selected: ["lt1"], locked: ["lt1"] }) },
+        "relearning",
+      ],
+      [{ ...base }, "corrections_needed"],
+    ] as const) {
+      const c = deriveCardState({ ...input, firstSubmittedAt: ago(2) }, now);
+      expect(c.state).toBe(state);
+      expect(c.relearnBy).toEqual(new Date(ago(2).getTime() + 7 * DAY));
+      expect(c.relearnGoalPassed).toBe(false);
+    }
+    // Soft: past the goal nothing locks; the card still says what to do.
+    expect(
+      deriveCardState({ ...owing, corrections: "needed", firstSubmittedAt: ago(9) }, now)
+    ).toMatchObject({ state: "corrections_needed", relearnGoalPassed: true, windowClosed: false });
+    // A shorter retake window pulls the goal in with it.
+    expect(
+      deriveCardState(
+        { ...owing, corrections: "needed", retakeWindowDays: 5, firstSubmittedAt: ago(2) },
+        now
+      ).relearnBy
+    ).toEqual(new Date(ago(2).getTime() + 5 * DAY));
+    // No goal once the retake is ready, while waiting on the teacher, or with nothing owed.
+    for (const input of [
+      { ...test, firstSubmittedAt: ago(2) },
+      { ...owing, corrections: "submitted" as const, firstSubmittedAt: ago(2) },
+      { ...owing, corrections: "needed" as const, cvtcRules: true, firstSubmittedAt: ago(2) },
+    ])
+      expect(deriveCardState(input, now).relearnBy).toBeNull();
+  });
+});

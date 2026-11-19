@@ -103,6 +103,31 @@ export function canStartAttempt(input: {
   return { ok: true };
 }
 
+/** The retake window an assignment starts with (Jon, Nov 19 2026: two weeks; it was 7 days). */
+export const DEFAULT_RETAKE_WINDOW_DAYS = 14;
+
+/**
+ * The relearning goal (Jon, Nov 19 2026: "doing the corrections, the relearning, the practice,
+ * being ready to take a retake… in a 7 day window… a soft deadline"). A date shown to the
+ * student; nothing locks when it passes.
+ */
+export const RELEARNING_GOAL_DAYS = 7;
+
+/**
+ * The date the student is asked to be retake-ready by: attempt 1 + 7 days, or the retake window's
+ * end when that comes sooner. Null before attempt 1.
+ */
+export function relearningGoal(
+  retakeWindowDays: number | null | undefined,
+  firstSubmittedAt: Date | null | undefined
+): Date | null {
+  if (!firstSubmittedAt) return null;
+  const days = retakeWindowDays
+    ? Math.min(RELEARNING_GOAL_DAYS, retakeWindowDays)
+    : RELEARNING_GOAL_DAYS;
+  return new Date(firstSubmittedAt.getTime() + days * 86_400_000);
+}
+
 /** When the retake window shuts: first submission + the window; null when there is no window yet. */
 export function retakeWindowEnd(
   retakeWindowDays: number | null | undefined,
@@ -114,13 +139,14 @@ export function retakeWindowEnd(
 
 /**
  * The cap's retake window as it bounds this student's next retake: when it ends, and whether it
- * has passed. It applies under the cap (`correctionsCapOn`) where a retake is on offer (not
+ * has passed. It applies where the window does (`retakeWindowOn`) and a retake is on offer (not
  * `to_full`, decision 2), on a test open to the student, and not while an approved retake's end
  * is ahead (`approvedUntil`). Once it has passed on an open test the student asks the teacher for
  * the retake, as on a closed one (Jon, Oct 14 2026: "Let them ask while it's still open too").
  */
 export function capRetakeWindow(input: {
-  capped: boolean;
+  /** The window applies to this assignment (`retakeWindowOn`: a test, or a quiz under the cap). */
+  windowed: boolean;
   rule: CorrectionsRule;
   /** The test is open for this student (its effective close hasn't passed). */
   open: boolean;
@@ -131,7 +157,7 @@ export function capRetakeWindow(input: {
   now: Date;
 }): { retakeBy: Date | null; passed: boolean } {
   const retakeBy =
-    input.capped &&
+    input.windowed &&
     input.rule !== "to_full" &&
     input.open &&
     !approvedUntil(input.openUntil, input.now)
@@ -159,7 +185,7 @@ export function startReasonText(check: Exclude<StartCheck, { ok: true }>): strin
     return `Your next attempt opens ${fmt(check.availableAt)}.`;
   }
   if (check.reason === "window_closed" && check.closedAt) {
-    return `Retakes on this quiz closed ${fmt(check.closedAt)}.`;
+    return `Retakes closed ${fmt(check.closedAt)}. Ask your teacher to open one for you.`;
   }
   return START_REASON_TEXT[check.reason];
 }
@@ -178,7 +204,7 @@ export const START_REASON_TEXT: Record<Exclude<StartCheck, { ok: true }>["reason
   no_attempts_left: "You've used every attempt.",
   wait: "You have to wait before your next attempt.",
   needs_unlock: "Your teacher opens each retake. Ask them to unlock your next attempt.",
-  window_closed: "The retake window for this quiz has closed.",
+  window_closed: "The retake window has closed. Ask your teacher to open a retake for you.",
 };
 
 /** Codes are compared case-insensitively, ignoring spaces and dashes. */

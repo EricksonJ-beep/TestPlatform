@@ -8,11 +8,12 @@
 import {
   assignmentStatus,
   capRetakeWindow,
+  relearningGoal,
   needsUnlock,
   type AssignmentStatus,
 } from "@/lib/assignments";
 import type { CorrectionsState } from "@/lib/corrections";
-import { correctionsCapOn } from "@/lib/grading";
+import { correctionsCapOn, retakeWindowOn } from "@/lib/grading";
 import {
   practiceOwed,
   quizPracticeNeeds,
@@ -51,6 +52,14 @@ export const CORRECTIONS_STATES: ReadonlySet<CycleState> = new Set<CycleState>([
   "corrections_to_full",
   "corrections_returned",
   "corrections_submitted",
+]);
+
+/** The steps before a retake that are the student's to do: what the relearning goal counts down. */
+const RELEARNING_STATES: ReadonlySet<CycleState> = new Set<CycleState>([
+  "corrections_needed",
+  "corrections_to_full",
+  "corrections_returned",
+  "relearning",
 ]);
 
 /**
@@ -120,6 +129,8 @@ export type CardState = {
   cycle: CycleState | null;
   /** The corrections cap as it applies here (`correctionsCapOn`). */
   capped: boolean;
+  /** The retake window applies here (`retakeWindowOn`: a test, or a quiz under the cap). */
+  windowed: boolean;
   rule: CorrectionsRule;
   /**
    * Under the cap: the last moment a retake may start without asking; null before attempt 1, with
@@ -133,6 +144,14 @@ export type CardState = {
    * too").
    */
   windowClosed: boolean;
+  /**
+   * The relearning goal (Jon, Nov 19 2026): the date the student is asked to finish corrections,
+   * relearning and practice by, 7 days after attempt 1. Set only while one of those is theirs to
+   * do on an open test. It never locks anything.
+   */
+  relearnBy: Date | null;
+  /** `relearnBy` has passed (decided here so the cards never read the clock while rendering). */
+  relearnGoalPassed: boolean;
   /**
    * Quiz relearning (Jon, Oct 14 2026, R3): the targets missed on the latest finished attempt that
    * need practice before a retake, done or not; empty where it doesn't apply.
@@ -184,6 +203,8 @@ export function deriveCardState(input: CardInput, now: Date): CardState {
   const reopened = reopenedUntil(input.closesAt, input.openUntil, now);
   // Corrections cap (Jon, Oct 8 2026): formatives only, never in a CVTC course (Oct 13 2026).
   const capped = correctionsCapOn(input);
+  // The retake window (Nov 19 2026): every test, and a quiz under the cap.
+  const windowed = retakeWindowOn(input);
   // The relearning path (Nov 4 2026): it decides what corrections do and what comes next.
   const path = input.path ?? null;
   const rule = path
@@ -212,7 +233,7 @@ export function deriveCardState(input: CardInput, now: Date): CardState {
   // (Oct 14 2026). Past it on an open test, the student asks too ("Let them ask while it's still
   // open too").
   const { retakeBy, passed: windowClosed } = capRetakeWindow({
-    capped,
+    windowed,
     rule,
     open: status === "open",
     retakeWindowDays: input.retakeWindowDays,
@@ -276,14 +297,23 @@ export function deriveCardState(input: CardInput, now: Date): CardState {
   else if (windowClosed && retakeReady)
     state = retakeRequested ? "awaiting_unlock" : "ask_to_retake";
   else state = cycle ?? "not_started";
+  // The relearning goal (Nov 19 2026): shown while the steps before a retake are still the
+  // student's to do, on a test open to them. A soft date; nothing reads it to lock anything.
+  const relearnBy =
+    windowed && status === "open" && cycle !== null && RELEARNING_STATES.has(cycle)
+      ? relearningGoal(input.retakeWindowDays, input.firstSubmittedAt)
+      : null;
   return {
     status,
     state,
     cycle,
     capped,
+    windowed,
     rule,
     retakeBy,
     windowClosed,
+    relearnBy,
+    relearnGoalPassed: relearnBy !== null && now >= relearnBy,
     quizPractice,
     reopenedUntil: reopened,
     retakeOpenUntil: approved && !reopened && status === "open" ? approved : null,

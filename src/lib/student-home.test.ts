@@ -46,6 +46,8 @@ function a(title: string, over: Partial<StudentAssignment> = {}): StudentAssignm
     correctionsRule: "gate",
     retakeBy: null,
     retakeWindowClosed: false,
+    relearnBy: null,
+    relearnGoalPassed: false,
     firstPercent: null,
     final: null,
     status: "open",
@@ -104,6 +106,19 @@ const violaCarbs = a("Unit 2 Quiz: Carbohydrates", {
 const summary = (r: ToDoRow) => [r.kind, r.title];
 
 describe("the student to-do list", () => {
+  it("a row carries the 7-day relearning goal, then when retakes close (Jon, Nov 19 2026)", () => {
+    const open = { ...violaCarbs, status: "open" as const, closesAt: null };
+    const when = (over: Partial<StudentAssignment>) =>
+      buildStudentToDo({ assignments: [{ ...open, ...over }] }).todo[0].when;
+    expect(when({ relearnBy: OCT16 })).toEqual({ label: "Goal: finish by", at: OCT16 });
+    // Past the goal nothing locks: the row names the date that still matters.
+    expect(when({ relearnBy: OCT16, relearnGoalPassed: true, retakeBy: OCT20 })).toEqual({
+      label: "Past your 7-day goal. Retakes close",
+      at: OCT20,
+    });
+    expect(when({ relearnBy: OCT16, relearnGoalPassed: true })).toBeNull();
+    expect(when({})).toBeNull();
+  });
   it("Viola: two corrections rows, lowest score first (Jon: below 80 leads), counted", () => {
     const list = buildStudentToDo({ assignments: [violaCarbs, violaLt1] });
     expect(list.headline).toBe("You have 2 things to do.");
@@ -475,6 +490,8 @@ describe("the student to-do list", () => {
           cycle: "retake_available",
           retakeBy: null,
           retakeWindowClosed: false,
+          relearnBy: null,
+          relearnGoalPassed: false,
           retakeOpenUntil: OCT16,
         }),
       ],

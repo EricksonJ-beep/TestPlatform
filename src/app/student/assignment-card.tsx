@@ -248,6 +248,12 @@ export function AssignmentCard({ a }: { a: StudentAssignment }) {
               Best {Math.round(a.bestPercent)}%{allProficient ? " · all targets proficient" : ""}
             </span>
           ) : null}
+          {a.relearnBy && a.state !== "in_progress" && a.state !== "awaiting_grade" ? (
+            <span data-relearn-goal={a.relearnGoalPassed ? "passed" : "open"}>
+              {a.relearnGoalPassed ? "Relearning goal was " : "Goal: finish relearning by "}
+              <LocalTime date={a.relearnBy} />
+            </span>
+          ) : null}
           {a.retakeBy &&
           a.state !== "in_progress" &&
           a.state !== "awaiting_grade" &&
