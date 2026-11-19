@@ -1,0 +1,13 @@
+{
+  "name": "ps-u3-test-bonding",
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science A",
+  "unit": "Unit 3 · Bonding",
+  "bank": "PS · Unit 3 Test",
+  "assessment": {
+    "title": "Unit 3 Test: Bonding",
+    "type": "summative",
+    "instructions": "32 questions on Unit 3 (Chapter 8), 40 points, 10 for each learning target: why atoms bond and electron dot structures (LT1), ionic bonds and naming ionic compounds (LT2), covalent bonds and naming covalent compounds (LT3), and comparing ionic and covalent compounds (LT4). Have your periodic table and polyatomic ion list out. Questions marked 2 points are worth more. On number questions, type just the number; on charges, include the sign. Show your work on scratch paper."
+  },
+  "assign": []
+}
