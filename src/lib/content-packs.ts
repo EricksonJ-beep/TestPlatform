@@ -40,6 +40,13 @@ export type PackDefinition = {
    * versions), and the set and activity are found by title and updated.
    */
   revision?: number;
+  /**
+   * With a later `revision`: the external_ids that revision changes (Jon, Nov 19 2026: one
+   * question on the Unit 3 Test reworded). A question already in the bank and not listed is left
+   * as it is, so it keeps its version and its results stay on one row. A database that never had
+   * the pack still imports every row.
+   */
+  revisionOnly?: string[];
   teacherEmail: string;
   course: string;
   /**
@@ -539,7 +546,24 @@ async function applyQuiz(
 
   const csvText = readFileSync(join(root, def.name, "questions.csv"), "utf8");
   const { records } = parseCsvRecords(csvText);
-  const rows = parseQuestionRecords(records);
+  let rows = parseQuestionRecords(records);
+  if (def.revisionOnly) {
+    const only = new Set(def.revisionOnly.map(key));
+    const live = await db
+      .select({ externalId: schema.questions.externalId })
+      .from(schema.questions)
+      .where(
+        and(
+          eq(schema.questions.bankId, bank.id),
+          eq(schema.questions.isArchived, false),
+          isNotNull(schema.questions.externalId)
+        )
+      );
+    const have = new Set(live.map((q) => key(q.externalId!)));
+    rows = rows.filter(
+      (r) => !r.externalId || only.has(key(r.externalId)) || !have.has(key(r.externalId))
+    );
+  }
   const result = await commitImport(bank.id, rows);
   const questionIds = result.rows.flatMap((r) => (r.questionId ? [r.questionId] : []));
   errors.push(...result.rows.filter((r) => r.error).map((r) => `line ${r.line}: ${r.error}`));
@@ -600,6 +624,38 @@ async function applyQuiz(
     });
     if (existing) {
       assessmentId = existing.id;
+      // A revision made new versions: the pack's assessment follows its questions to them, so
+      // the next student is served the corrected question. Attempts already taken keep the
+      // version they were served.
+      const updated = await db
+        .select({ id: schema.questions.id, previous: schema.questions.previousVersionId })
+        .from(schema.questions)
+        .where(
+          and(
+            inArray(schema.questions.id, questionIds),
+            isNotNull(schema.questions.previousVersionId)
+          )
+        );
+      if (updated.length) {
+        const sections = await db
+          .select({ id: schema.assessmentSections.id })
+          .from(schema.assessmentSections)
+          .where(eq(schema.assessmentSections.assessmentId, existing.id));
+        for (const q of updated)
+          if (sections.length)
+            await db
+              .update(schema.assessmentQuestions)
+              .set({ questionId: q.id })
+              .where(
+                and(
+                  eq(schema.assessmentQuestions.questionId, q.previous!),
+                  inArray(
+                    schema.assessmentQuestions.sectionId,
+                    sections.map((x) => x.id)
+                  )
+                )
+              );
+      }
       if (unitId)
         await db
           .update(schema.assessments)

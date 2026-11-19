@@ -12,11 +12,12 @@ vi.mock("@/db", async () => {
   return { db, schema, dbDriver: "pg" };
 });
 
-import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { and, eq, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
+import { parseCsvRecords } from "@/lib/csv";
 import { gradeResponse } from "@/lib/grading";
 import { createAttempt, finalizeAttempt } from "@/lib/attempts";
 import { applyAllPacks, applyPack, listPacks } from "./content-packs";
@@ -1630,6 +1631,65 @@ describe("content packs", () => {
       where: sql`${schema.contentPacks.name} like ${name + "#%"}`,
     });
     expect(recorded.map((r) => r.name)).toEqual([`${name}#both-numbers`]);
+  });
+
+  it("revisionOnly: a revision re-versions only the listed questions, and the pack's test follows them", async () => {
+    const root = mkdtempSync(join(tmpdir(), "bloom-packs-"));
+    const name = "test-revision-only-pack";
+    mkdirSync(join(root, name));
+    const csv = (stem: string) =>
+      [
+        "external_id,course,learning_target,type,stem,correct,points,explanation",
+        `RO-1,Physical Science A,U1.LT2,fill_blank,${stem},+2|2+|2,2,Group 2.`,
+        "RO-2,Physical Science A,U1.LT2,numeric,How many?,5,1,Five.",
+      ].join("\n");
+    const def = {
+      name,
+      teacherEmail: "EricksonJ@cadott.k12.wi.us",
+      course: "Physical Science A",
+      bank: "PS · Revision-only bank",
+      assessment: { title: "Revision-only test", type: "summative" as const },
+    };
+    writeFileSync(join(root, name, "questions.csv"), csv("Old: ___"));
+    const first = await applyPack(def, root);
+    const assessmentId = (first as unknown as { summary: { assessmentId: string } }).summary
+      .assessmentId;
+    const onTest = async () =>
+      (
+        await db
+          .select({ stem: schema.questions.stem, version: schema.questions.version })
+          .from(schema.assessmentQuestions)
+          .innerJoin(
+            schema.assessmentSections,
+            eq(schema.assessmentQuestions.sectionId, schema.assessmentSections.id)
+          )
+          .innerJoin(
+            schema.questions,
+            eq(schema.assessmentQuestions.questionId, schema.questions.id)
+          )
+          .where(eq(schema.assessmentSections.assessmentId, assessmentId))
+      )
+        .map((q) => `${q.stem} v${q.version}`)
+        .sort();
+    expect(await onTest()).toEqual(["How many? v1", "Old: ___ v1"]);
+
+    writeFileSync(join(root, name, "questions.csv"), csv("New: ___"));
+    const out = await applyPack({ ...def, revision: 2, revisionOnly: ["RO-1"] }, root);
+    expect(out).toMatchObject({
+      status: "applied",
+      summary: { imported: { inserted: 0, updated: 1 }, assessmentId },
+    });
+    // The untouched question keeps its version; the test now serves the reworded one.
+    expect(await onTest()).toEqual(["How many? v1", "New: ___ v2"]);
+  });
+
+  it("no real pack puts a measurement unit in the CSV's course-unit column", () => {
+    for (const def of listPacks()) {
+      const file = join(process.cwd(), "content", "packs", def.name, "questions.csv");
+      if (!existsSync(file)) continue;
+      for (const r of parseCsvRecords(readFileSync(file, "utf8")).records)
+        expect(r.unit && r.unit === r.unit_2 ? `${def.name}: ${r.external_id}` : "").toBe("");
+    }
   });
 
   it("skips a pack whose teacher is missing and leaves it unapplied for next time", async () => {
