@@ -1,0 +1,13 @@
+{
+  "name": "ps-u3-worksheet-bonding-test-review",
+  "teacherEmail": "EricksonJ@cadott.k12.wi.us",
+  "course": "Physical Science A",
+  "unit": "Unit 3 · Bonding",
+  "worksheet": {
+    "title": "Bonding Unit Test Review",
+    "studentUrl": "https://script.google.com/a/macros/cadott.k12.wi.us/s/AKfycbzCO3muZn072nTLm4gEpsbfZE3W6GgsbdD_llcfT5Tl__g4cXZ4lBQ3nx2QoR2DLHo/exec",
+    "scriptId": "1j6INjMfUd-uJ2LHIc2YKOzjpY6OYqnRdrGMRSIDV5Vap3qL9N07-hWpF",
+    "countsAs": "practice",
+    "targets": ["U3.LT1", "U3.LT2", "U3.LT3", "U3.LT4"]
+  }
+}

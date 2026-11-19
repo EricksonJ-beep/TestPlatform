@@ -1212,6 +1212,101 @@ describe("content packs", () => {
     }))!;
     expect(un.isPublished).toBe(false);
   });
+  it("a worksheet pack registers the Apps Script worksheet as a published practice set on its targets", async () => {
+    const studentUrl =
+      "https://script.google.com/a/macros/cadott.k12.wi.us/s/AKfycbTestDeployment/exec";
+    const base = {
+      teacherEmail: "EricksonJ@cadott.k12.wi.us",
+      course: "Physical Science A",
+    };
+    // Jon had already registered it by its link, so the pack claims that entry and gives it the real id.
+    const [byLink] = await db
+      .insert(schema.worksheets)
+      .values({ scriptId: `pending:${studentUrl}`, studentUrl, ownerId: ids.teacher })
+      .returning();
+    const made = await applyPack({
+      ...base,
+      name: "test-worksheet-pack",
+      worksheet: {
+        title: "Test Unit Review",
+        studentUrl: `${studentUrl}?authuser=0`,
+        scriptId: "1testScriptIdForTheWorksheetPack0000",
+        targets: ["U3.LT1", "U3.LT2", "U3.LT9"],
+      },
+    });
+    expect(made.status).toBe("applied");
+    if (made.status === "applied")
+      expect(made.summary).toMatchObject({
+        worksheet: { worksheetId: byLink.id, registered: true, reused: true, targets: 2 },
+        errors: ['learning target "U3.LT9" not found in the course; not tagged'],
+      });
+    const ws = (await db.query.worksheets.findFirst({
+      where: eq(schema.worksheets.id, byLink.id),
+    }))!;
+    expect(ws).toMatchObject({
+      scriptId: "1testScriptIdForTheWorksheetPack0000",
+      studentUrl,
+      title: "Test Unit Review",
+      countsAs: "practice",
+      registered: true,
+      courseId: ps.id,
+    });
+    const sets = await db.query.practiceSets.findMany({
+      where: eq(schema.practiceSets.worksheetId, ws.id),
+    });
+    expect(sets).toHaveLength(1);
+    expect(sets[0]).toMatchObject({ title: "Test Unit Review", isPublished: true, bankId: null });
+    const tagged = await db
+      .select({ code: schema.learningTargets.code })
+      .from(schema.practiceSetTargets)
+      .innerJoin(
+        schema.learningTargets,
+        eq(schema.learningTargets.id, schema.practiceSetTargets.learningTargetId)
+      )
+      .where(eq(schema.practiceSetTargets.practiceSetId, sets[0].id));
+    expect(tagged.map((r) => r.code).sort()).toEqual(["U3.LT1", "U3.LT2"]);
+
+    // The pack shipped in the repo (applied by the test above): Jon's Unit 3 review, on all four targets.
+    const review = (await db.query.worksheets.findFirst({
+      where: eq(schema.worksheets.title, "Bonding Unit Test Review"),
+    }))!;
+    expect(review).toMatchObject({ registered: true, countsAs: "practice", courseId: ps.id });
+    expect(review.scriptId).not.toMatch(/^pending:/);
+    const reviewSet = (await db.query.practiceSets.findFirst({
+      where: eq(schema.practiceSets.worksheetId, review.id),
+    }))!;
+    expect(reviewSet.isPublished).toBe(true);
+    expect(
+      await db.query.practiceSetTargets.findMany({
+        where: eq(schema.practiceSetTargets.practiceSetId, reviewSet.id),
+      })
+    ).toHaveLength(4);
+
+    // No matching target, or not a student link: nothing is registered, and the pack says why.
+    const none = await applyPack({
+      ...base,
+      name: "test-worksheet-pack-no-target",
+      worksheet: {
+        title: "Untagged",
+        studentUrl: "https://script.google.com/macros/s/AKfycbUntagged/exec",
+        targets: ["U9.LT9"],
+      },
+    });
+    if (none.status === "applied")
+      expect(none.summary).toMatchObject({ worksheet: { registered: false } });
+    const bad = await applyPack({
+      ...base,
+      name: "test-worksheet-pack-bad-link",
+      worksheet: { title: "Bad", studentUrl: "https://example.com/x", targets: ["U3.LT1"] },
+    });
+    if (bad.status === "applied")
+      expect(bad.summary).toMatchObject({ worksheet: { registered: false } });
+    expect(
+      await db.query.worksheets.findMany({
+        where: sql`${schema.worksheets.title} in ('Untagged', 'Bad')`,
+      })
+    ).toHaveLength(0);
+  });
   it("a relearning pack makes Read · Watch · Do options and updates their sections in place (R4)", async () => {
     const base = {
       name: "test-relearning-pack",
