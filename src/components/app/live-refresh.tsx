@@ -118,10 +118,8 @@ export function LiveRefresh({
       title={TITLE[shown]}
       data-live={shown}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium",
-        live
-          ? "border-success/40 bg-success-soft text-success-foreground"
-          : "border-border text-muted-foreground hover:text-foreground"
+        "inline-flex h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold",
+        live ? "bg-stain-tint text-stain-deep" : "bg-segment text-ink-soft hover:text-ink"
       )}
       onClick={() => {
         if (!on) {
@@ -138,12 +136,12 @@ export function LiveRefresh({
       <span
         className={cn(
           "inline-block size-2 rounded-full",
-          live ? "bg-success" : "bg-muted-foreground/50",
-          live && refreshing && "animate-pulse"
+          live ? "bg-stain" : "bg-ink-muted",
+          live && refreshing && "opacity-50"
         )}
         aria-hidden
       />
-      {live ? "Live" : "Paused"}
+      {live ? "Updating live" : "Updates paused"}
     </button>
   );
 }

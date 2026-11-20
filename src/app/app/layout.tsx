@@ -7,7 +7,7 @@ import { AppSidebar } from "@/components/app/sidebar";
 import { AppTopbar } from "@/components/app/topbar";
 import { setCurrentCourse } from "./courses/actions";
 
-/** Teacher shell: teal sidebar + top bar. proxy.ts already keeps non-teachers out. */
+/** Teacher shell: the white sidebar (stacked above the page on a narrow screen) + top bar. proxy.ts already keeps non-teachers out. */
 export default async function TeacherLayout({ children }: LayoutProps<"/app">) {
   const session = await requireTeacher({ tempPasswordOk: true });
   const [org, { courses, current }] = await Promise.all([
@@ -22,14 +22,14 @@ export default async function TeacherLayout({ children }: LayoutProps<"/app">) {
 
   return (
     <CourseFocusProvider currentId={current?.id ?? null} pick={setCurrentCourse}>
-      <div className="flex min-h-full">
+      <div className="flex min-h-full flex-wrap md:flex-nowrap">
         <AppSidebar
           organizationName={org[0]?.name ?? null}
           courses={courses}
           currentCourse={current}
           pickCourse={setCurrentCourse}
         />
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex min-w-0 flex-1 basis-full flex-col md:basis-0">
           <AppTopbar session={session} />
           <main className="flex-1 px-4 py-6 md:px-6">{children}</main>
         </div>

@@ -3,6 +3,7 @@
 import { Hand } from "lucide-react";
 import { cn } from "cn";
 import { Button } from "@/components/ui/button";
+import { btn } from "@/components/home/ui";
 import { useAction } from "@/components/use-action";
 import { requestRetake } from "../../actions";
 import { useAskAnnouncer } from "../../ask-announcer";
@@ -18,6 +19,7 @@ export function RequestRetakeButton({
   primary = false,
   title,
   block = false,
+  look = "default",
 }: {
   assignmentId: string;
   attemptNumber: number;
@@ -28,12 +30,37 @@ export function RequestRetakeButton({
   title?: string;
   /** Full width and 44px tall below `sm` (the student home's to-do rows). */
   block?: boolean;
+  /** "home": the redesigned student home's 44px outline button. */
+  look?: "default" | "home";
 }) {
   // The action revalidates every page this button is on: no second render (`useAction`).
   const { run, pending, error } = useAction({ refresh: false });
   const announce = useAskAnnouncer();
   const text = label ?? `Request attempt ${attemptNumber}`;
   const shown = pending ? "Sending…" : text;
+  if (look === "home")
+    return (
+      <span className="inline-flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          className={cn(btn.base, btn.outline)}
+          disabled={pending}
+          aria-label={title ? `${shown}: ${title}` : undefined}
+          onClick={() =>
+            run(requestRetake(assignmentId), () =>
+              announce?.("Sent. It now says Waiting on your teacher.")
+            )
+          }
+        >
+          {shown}
+        </button>
+        {error ? (
+          <span role="alert" className="text-[13px] text-eosin-text">
+            {error}
+          </span>
+        ) : null}
+      </span>
+    );
   return (
     <span
       className={cn(

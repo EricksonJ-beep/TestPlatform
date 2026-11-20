@@ -1,46 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import {
-  ArrowUp,
-  Check,
-  Clock,
-  EyeOff,
-  Flag,
-  Hand,
-  Pause,
-  PenLine,
-  Play,
-  Search,
-  Timer,
-  Users,
-  type LucideIcon,
-} from "lucide-react";
+import { ArrowUp, Clock, Flag, Search } from "lucide-react";
 import { cn } from "cn";
-import type { CellTone } from "@/lib/class-gradebook";
-import { periodLabel } from "@/lib/class-focus";
-import type { PeriodOption } from "@/lib/current-course";
 import {
   cellMarks,
   cellTitle,
-  compactCell,
-  DEFAULT_FILTERS,
   footerTitle,
-  gradebookView,
-  phoneLine,
-  rightNow,
   scoreText,
-  shortColumnLabels,
-  timeLeft,
   unitBands,
   WHO_CHIP_LABEL,
   WHO_CHIPS,
   whoChip,
-  type CompactCell,
   type GradebookFilters,
-  type LiveRow,
+  type GradebookView,
   type WhoChip,
 } from "@/lib/gradebook-view";
 import type {
@@ -48,26 +21,13 @@ import type {
   ClassGradebookCell,
   ClassGradebookColumn,
 } from "@/lib/queries/class-gradebook";
-import { EmptyState } from "@/components/empty-state";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { pickDashboardClass } from "@/app/app/actions";
-import { LetContinueButton } from "@/app/app/results/[assignmentId]/let-continue-button";
+import { cellLook, cellText, kindLabels, type CellLook } from "@/lib/teacher-home";
+import { btn, segmented } from "@/components/home/ui";
 import { deviceFlag } from "./device-flag";
-import { GradebookPanel, type PanelTarget } from "./gradebook-panel";
-import { setHideScores, useHideScores } from "./hide-scores";
-import { TagPill, TONE_CLASS } from "./gradebook-tag";
+import type { PanelTarget } from "./gradebook-panel";
+import { setHideScores } from "./hide-scores";
+import { TagPill } from "./gradebook-tag";
 import { ScoreTrail } from "@/components/score-trail";
-
-const KEY: { tone: CellTone; label: string }[] = [
-  { tone: "coral", label: "Your move" },
-  { tone: "brand", label: "Testing now" },
-  { tone: "warning", label: "Student owes" },
-  { tone: "coral_outline", label: "Your OK (optional)" },
-  { tone: "muted", label: "Quiet" },
-  { tone: "success", label: "Done" },
-];
 
 /**
  * "Detailed" (Nov 5 2026): the compact grid is the default, so the whole semester fits on one
@@ -79,287 +39,144 @@ const KEY: { tone: CellTone; label: string }[] = [
 const detailedView = deviceFlag("bloom.gradebook.detailed");
 
 // ---------------------------------------------------------------------------
-// The section
+// The gradebook
 // ---------------------------------------------------------------------------
 
 /**
- * CLASS (Jon, Oct 13 2026, dashboard plan build step 4): the sidebar course's class periods as
- * chips, opening on the one picked last (decision 8), then that class's gradebook: the "Right
- * now" strip while someone is testing, the who-needs-what chips, and every student × every test
- * of the class with one status tag per cell. A cell or a name opens a side panel with the matching
- * actions; on a phone it is one line per student.
+ * The class gradebook (Jon, Oct 13 2026, dashboard plan build step 4; drawn as the home pages
+ * redesign §4 has it): the toolbar (Find, Sort, Hide scores, Detailed, Owes something, Practice
+ * and the who-needs-what chips), then every student × every test of the class under its unit,
+ * and the key. A cell or a name opens the side panel with the matching actions (the page owns
+ * the panel and the filters, so the chips above the gradebook drive the same view).
  */
-export function ClassGradebookSection({
-  course,
-  classes,
-  currentClassId,
-  gradebook,
-  live,
+export function Gradebook({
+  gb,
+  view,
+  filters,
+  set,
+  hideScores,
+  onOpen,
 }: {
-  course: { id: string; name: string } | null;
-  classes: PeriodOption[];
-  currentClassId: string | null;
-  gradebook: ClassGradebook | null;
-  /** The page's Live indicator (`LiveRefresh`), shown at the right of the header. */
-  live?: React.ReactNode;
+  gb: ClassGradebook;
+  view: GradebookView;
+  filters: GradebookFilters;
+  set: (patch: Partial<GradebookFilters>) => void;
+  hideScores: boolean;
+  onOpen: (t: PanelTarget) => void;
 }) {
-  return (
-    <Card data-class-gradebook>
-      <CardHeader>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-          <CardTitle className="inline-flex items-center gap-2">
-            <Users className="size-4 text-brand-deep" aria-hidden />
-            Class
-          </CardTitle>
-          {course ? (
-            <span
-              className="text-sm text-muted-foreground"
-              title="Every test assigned this term. Click a cell or a name for what's next; switch courses in the sidebar."
-            >
-              {course.name}
-              {gradebook ? ` · ${gradebook.class.name}` : ""}
-            </span>
-          ) : null}
-          {classes.length > 1 || (classes.length === 1 && classes[0].period) ? (
-            <PeriodChips classes={classes} currentId={currentClassId} />
-          ) : null}
-          {live ? <div className="ml-auto">{live}</div> : null}
-        </div>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-2.5">
-        {!course ? (
-          <EmptyState
-            icon={Users}
-            title="No course yet"
-            description="Make a course and a class, and this class's gradebook shows here."
-            action={
-              <Button variant="outline" nativeButton={false} render={<Link href="/app/courses" />}>
-                Courses
-              </Button>
-            }
-            className="py-6"
-          />
-        ) : !gradebook ? (
-          <EmptyState
-            icon={Users}
-            title={`No classes on ${course.name} yet`}
-            description="Add a class period for this course on the Classes page, or pick another course in the sidebar."
-            action={
-              <Button variant="outline" nativeButton={false} render={<Link href="/app/classes" />}>
-                Classes
-              </Button>
-            }
-            className="py-6"
-          />
-        ) : (
-          <GradebookBody key={gradebook.class.id} gb={gradebook} />
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-/** One chip per class period of the course; picking one is remembered (`pickDashboardClass`). */
-function PeriodChips({
-  classes,
-  currentId,
-}: {
-  classes: PeriodOption[];
-  currentId: string | null;
-}) {
-  const router = useRouter();
-  const [pending, start] = useTransition();
-  const [picked, setPicked] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const shown = pending && picked ? picked : currentId;
-  return (
-    <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Class period">
-      {classes.map((c) => (
-        <button
-          key={c.id}
-          type="button"
-          title={c.name}
-          aria-pressed={c.id === shown}
-          data-period={c.id}
-          disabled={pending}
-          className={cn(
-            "rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors",
-            c.id === shown
-              ? "border-brand bg-brand text-brand-foreground"
-              : "border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
-          )}
-          onClick={() => {
-            if (c.id === currentId) return;
-            setPicked(c.id);
-            setError(null);
-            start(async () => {
-              // The action revalidates /app, which already re-renders this page with the new
-              // period; a second refresh on top would render it all twice.
-              const r = await pickDashboardClass(c.id);
-              if (!r.ok) {
-                setError(r.error);
-                router.refresh();
-              }
-            });
-          }}
-        >
-          {periodLabel(c)}
-        </button>
-      ))}
-      {error ? <span className="text-xs text-error-foreground">{error}</span> : null}
-    </div>
-  );
-}
-
-function GradebookBody({ gb }: { gb: ClassGradebook }) {
-  const [filters, setFilters] = useState<GradebookFilters>(DEFAULT_FILTERS);
-  const [panel, setPanel] = useState<PanelTarget | null>(null);
-  const hideScores = useHideScores();
   const detailed = detailedView.use();
-  const view = gradebookView(gb, filters);
-  const live = rightNow(gb);
-  const set = (patch: Partial<GradebookFilters>) => setFilters((f) => ({ ...f, ...patch }));
-  const now = gb.generatedAt;
-
-  if (gb.students.length === 0 || gb.columns.length === 0)
-    return (
-      <EmptyState
-        icon={Users}
-        title={
-          gb.students.length === 0 ? "Nobody has joined this class yet" : "Nothing assigned yet"
-        }
-        description={
-          gb.students.length === 0
-            ? "Students show here once they join with the class code."
-            : "Tests you assign to this class show here as columns."
-        }
-        action={
-          <Button
-            variant="outline"
-            nativeButton={false}
-            render={
-              <Link
-                href={gb.students.length === 0 ? `/app/classes/${gb.class.id}` : "/app/assign"}
-              />
-            }
-          >
-            {gb.students.length === 0 ? "Class page" : "Assign"}
-          </Button>
-        }
-        className="py-6"
-      />
-    );
-
+  const chips = WHO_CHIPS.filter((c) => view.chips[c] > 0 || c === filters.chip);
   return (
-    <>
-      <RightNow live={live} now={now} onOpen={setPanel} />
-
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs">
-        <WhoChips
-          counts={view.chips}
-          active={filters.chip}
-          onPick={(chip) => set({ chip: filters.chip === chip ? null : chip })}
-        />
-        <div className="flex flex-wrap items-center gap-1.5 md:ml-auto">
-          <Toggle
-            on={filters.onlyOwing}
-            onClick={() => set({ onlyOwing: !filters.onlyOwing })}
-            data="only-owing"
-            title="Only students who owe something"
-          >
-            Owes something
-          </Toggle>
-          {gb.columns.some((c) => c.type === "practice") ? (
-            <Toggle
-              on={filters.showPractice}
-              onClick={() => set({ showPractice: !filters.showPractice })}
-              data="practice"
-              title={
-                view.practiceColumns > 0
-                  ? `Show ${view.practiceColumns} practice ${view.practiceColumns === 1 ? "column" : "columns"}`
-                  : "Hide the practice columns"
-              }
-            >
-              Practice
-            </Toggle>
-          ) : null}
-          <span className="inline-flex items-center text-muted-foreground" role="group">
-            <span className="mr-0.5">Sort</span>
+    <div className="flex flex-col gap-4" data-class-gradebook>
+      <div className="flex flex-wrap items-center gap-3">
+        <h2 className="mr-auto font-display text-2xl font-semibold tracking-tight">Gradebook</h2>
+        <label className="relative">
+          <span className="sr-only">Find a student</span>
+          <Search
+            className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-ink-muted"
+            aria-hidden
+          />
+          <input
+            type="search"
+            value={filters.find}
+            onChange={(e) => set({ find: e.target.value })}
+            placeholder="Find"
+            className="h-11 w-44 rounded-[10px] border border-line-strong bg-surface pr-3 pl-9 text-[15px] text-ink placeholder:text-ink-muted"
+            data-find-student
+          />
+        </label>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-ink-muted" id="gradebook-sort">
+            Sort
+          </span>
+          <div className={segmented.track} role="group" aria-labelledby="gradebook-sort">
             {(["name", "todo"] as const).map((s) => (
               <button
                 key={s}
                 type="button"
                 aria-pressed={filters.sort === s}
                 data-sort={s}
-                className={cn(
-                  "rounded-md px-1.5 py-0.5 hover:text-foreground",
-                  filters.sort === s && "bg-muted font-medium text-foreground"
-                )}
+                className={cn(segmented.segment, filters.sort === s ? segmented.on : segmented.off)}
                 onClick={() => set({ sort: s })}
               >
                 {s === "name" ? "Name" : "Most to do"}
               </button>
             ))}
-          </span>
-          <label className="relative">
-            <span className="sr-only">Find a student</span>
-            <Search
-              className="pointer-events-none absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-muted-foreground"
-              aria-hidden
-            />
-            <Input
-              value={filters.find}
-              onChange={(e) => set({ find: e.target.value })}
-              placeholder="Find student"
-              className="h-7 w-32 pl-7 text-xs"
-              data-find-student
-            />
-          </label>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={hideScores}
-            title="Hides every score on the Dashboard (the gradebook, Needs you and Recent activity) for the projector; status tags stay."
-            data-hide-scores
-            className={cn(
-              "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 font-medium",
-              hideScores
-                ? "bg-brand-soft text-brand-deep"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
-            )}
-            onClick={() => setHideScores(!hideScores)}
-          >
-            <EyeOff className="size-3.5" aria-hidden />
-            Hide scores
-          </button>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={detailed}
-            title="Detailed: each cell spelled out (status words, score history, tries). Remembered on this device."
-            data-detailed
-            className={cn(
-              "hidden rounded-md px-1.5 py-0.5 font-medium md:inline-flex",
-              detailed
-                ? "bg-brand-soft text-brand-deep"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
-            )}
-            onClick={() => detailedView.set(!detailed)}
-          >
-            Detailed
-          </button>
+          </div>
         </div>
+        <button
+          type="button"
+          aria-pressed={hideScores}
+          title="Hides every score on this page (the gradebook, Needs you and Recent activity) for the projector; the colours stay."
+          data-hide-scores
+          className={cn(btn.base, hideScores ? btn.dark : btn.outline)}
+          onClick={() => setHideScores(!hideScores)}
+        >
+          Hide scores
+        </button>
+        <button
+          type="button"
+          aria-pressed={detailed}
+          title="Detailed: each cell spelled out (status words, score history, tries). Remembered on this device."
+          data-detailed
+          className={cn(btn.base, detailed ? btn.dark : btn.outline)}
+          onClick={() => detailedView.set(!detailed)}
+        >
+          Detailed
+        </button>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Show">
+        <ToggleChip
+          on={filters.onlyOwing}
+          onClick={() => set({ onlyOwing: !filters.onlyOwing })}
+          data="only-owing"
+          title="Only students who owe something"
+        >
+          Owes something
+        </ToggleChip>
+        {gb.columns.some((c) => c.type === "practice") ? (
+          <ToggleChip
+            on={filters.showPractice}
+            onClick={() => set({ showPractice: !filters.showPractice })}
+            data="practice"
+            title={
+              view.practiceColumns > 0
+                ? `Show ${view.practiceColumns} practice ${view.practiceColumns === 1 ? "column" : "columns"}`
+                : "Hide the practice columns"
+            }
+          >
+            Practice
+          </ToggleChip>
+        ) : null}
+        {chips.map((c) => (
+          <ToggleChip
+            key={c}
+            on={filters.chip === c}
+            onClick={() => set({ chip: filters.chip === c ? null : c })}
+            who={c}
+            title={`Only students with a "${WHO_CHIP_LABEL[c]}" cell`}
+          >
+            {WHO_CHIP_LABEL[c]}
+            <span className="tabular">{view.chips[c]}</span>
+          </ToggleChip>
+        ))}
+        {chips.length === 0 ? (
+          <span className="text-sm text-done" data-who-chips="none">
+            Everyone is caught up.
+          </span>
+        ) : null}
       </div>
       {filters.chip ? (
-        <p className="-mt-2 text-xs text-muted-foreground" data-chip-names>
+        <p className="text-sm text-ink-muted" data-chip-names>
           {WHO_CHIP_LABEL[filters.chip]}:{" "}
           {view.rows.map((r, i) => (
             <span key={r.student.id}>
               {i > 0 ? ", " : ""}
               <button
                 type="button"
-                className="text-foreground hover:underline"
-                onClick={() => setPanel({ kind: "student", studentId: r.student.id })}
+                className="text-ink underline-offset-2 hover:underline"
+                onClick={() => onOpen({ kind: "student", studentId: r.student.id })}
               >
                 {r.student.firstName} {r.student.lastName}
               </button>
@@ -369,128 +186,74 @@ function GradebookBody({ gb }: { gb: ClassGradebook }) {
       ) : null}
 
       {view.rows.length === 0 ? (
-        <p className="py-4 text-center text-sm text-muted-foreground">
+        <p className="py-4 text-center text-[15px] text-ink-muted">
           No students match. Clear the filters to see the whole class.
         </p>
+      ) : detailed ? (
+        <DetailedGrid
+          gb={gb}
+          view={view}
+          chip={filters.chip}
+          hideScores={hideScores}
+          onOpen={onOpen}
+        />
       ) : (
-        <>
-          {detailed ? (
-            <DetailedGrid
-              gb={gb}
-              view={view}
-              chip={filters.chip}
-              hideScores={hideScores}
-              onOpen={setPanel}
-            />
-          ) : (
-            <CompactGrid
-              gb={gb}
-              view={view}
-              chip={filters.chip}
-              hideScores={hideScores}
-              onOpen={setPanel}
-            />
-          )}
-          <ul
-            className="divide-y divide-border rounded-lg border border-border md:hidden"
-            data-phone-list
-          >
-            {view.rows.map((r) => (
-              <li key={r.student.id}>
-                <button
-                  type="button"
-                  className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-muted/50"
-                  onClick={() => setPanel({ kind: "student", studentId: r.student.id })}
-                  data-phone-student={r.student.id}
-                >
-                  <span className={cn(r.toDo ? "font-medium" : "text-muted-foreground")}>
-                    {phoneLine(r)}
-                  </span>
-                  {r.toDo ? (
-                    <span className="rounded-md bg-warning-soft px-1.5 text-xs text-warning-foreground tabular">
-                      {r.toDo}
-                    </span>
-                  ) : (
-                    <Check className="size-4 text-success-foreground" aria-hidden />
-                  )}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </>
+        <CompactGrid
+          gb={gb}
+          view={view}
+          chip={filters.chip}
+          hideScores={hideScores}
+          onOpen={onOpen}
+        />
       )}
 
       <ul
-        className="hidden flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground md:flex"
+        className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[13px] text-ink-muted"
         aria-label="Key"
       >
         {KEY.map((k) => (
-          <li key={k.tone} className="inline-flex items-center gap-1">
-            {detailed ? (
-              <span
-                className={cn("inline-block size-3 rounded-sm", TONE_CLASS[k.tone])}
-                aria-hidden
-              />
-            ) : (
-              // A sample cell, as the grid draws it.
-              <span
-                className={cn(
-                  "relative inline-flex h-4 w-6 items-center justify-center rounded-sm border border-border text-[10px] tabular",
-                  COMPACT_TONE[k.tone]
-                )}
-                aria-hidden
-              >
-                {k.tone === "brand" ? "2/5" : "80"}
-                {k.tone === "coral" ? <YourMoveDot /> : null}
-              </span>
-            )}
+          <li key={k.look} className="inline-flex items-center gap-1.5">
+            <span
+              className={cn(
+                "inline-flex h-5 w-8 items-center justify-center rounded-md text-[11px] tabular",
+                LOOK[k.look]
+              )}
+              aria-hidden
+            >
+              {k.sample}
+            </span>
             {k.label}
           </li>
         ))}
-        {detailed ? null : (
-          <>
-            <li>
-              <span className="font-semibold text-warning-foreground">M</span> missing
-            </li>
-            <li>
-              <span className="font-semibold text-warning-foreground">–</span> not started
-            </li>
-            <li className="inline-flex items-center gap-1">
-              <span className="inline-block size-1.5 rounded-full bg-brand" aria-hidden />
-              open now
-            </li>
-            <li>Q quiz · T test · hover a cell for the details</li>
-          </>
-        )}
+        <li>Plain numbers are done.</li>
+        <li className="inline-flex items-center gap-1.5">
+          <span className="size-1.5 rounded-full bg-stain" aria-hidden />A dot under a label: open
+          now.
+        </li>
         {view.practiceColumns > 0 ? (
           <li>
             {view.practiceColumns} practice {view.practiceColumns === 1 ? "column" : "columns"}{" "}
-            hidden
+            hidden.
           </li>
         ) : null}
       </ul>
-
-      <GradebookPanel
-        gb={gb}
-        target={panel}
-        hideScores={hideScores}
-        showPractice={filters.showPractice}
-        onTarget={setPanel}
-      />
-    </>
+    </div>
   );
 }
 
-function Toggle({
+/** A 44px on/off chip: `segment` when off, ink when on. */
+function ToggleChip({
   on,
   onClick,
   data,
+  who,
   title,
   children,
 }: {
   on: boolean;
   onClick: () => void;
-  data: string;
+  data?: string;
+  who?: WhoChip;
   title?: string;
   children: React.ReactNode;
 }) {
@@ -499,12 +262,11 @@ function Toggle({
       type="button"
       aria-pressed={on}
       data-toggle={data}
+      data-who-chip={who}
       title={title}
       className={cn(
-        "rounded-md px-1.5 py-0.5 font-medium",
-        on
-          ? "bg-brand-soft text-brand-deep"
-          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+        "inline-flex h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold",
+        on ? "bg-ink text-white" : "bg-segment text-ink-soft hover:text-ink"
       )}
       onClick={onClick}
     >
@@ -514,204 +276,35 @@ function Toggle({
 }
 
 // ---------------------------------------------------------------------------
-// Right now
-// ---------------------------------------------------------------------------
-
-/**
- * Only while someone is in a test (decision 5): who is testing (answered of served, time left),
- * and who is paused, with Let them continue. Asked-to-finish students are marked; they also sit in
- * "Needs you".
- */
-function RightNow({
-  live,
-  now,
-  onOpen,
-}: {
-  live: { testing: LiveRow[]; paused: LiveRow[] };
-  now: Date;
-  onOpen: (t: PanelTarget) => void;
-}) {
-  if (live.testing.length + live.paused.length === 0) return null;
-  const open = (r: LiveRow) =>
-    onOpen({ kind: "cell", studentId: r.student.id, assignmentId: r.assignmentId });
-  return (
-    <section
-      className="flex flex-wrap items-center gap-x-6 gap-y-1 rounded-md bg-brand-soft/50 px-2.5 py-1"
-      aria-label="Right now"
-      data-right-now
-    >
-      {live.testing.length ? (
-        <LiveLine icon={Play} label={`Testing ${live.testing.length}`}>
-          {live.testing.map((r) => {
-            const left = timeLeft(r.dueAt, now);
-            return (
-              <li key={r.attemptId} data-testing={r.attemptId}>
-                <button type="button" className="hover:underline" onClick={() => open(r)}>
-                  <span className="font-medium">
-                    {r.student.firstName} {r.student.lastName[0]}
-                  </span>{" "}
-                  <span className="tabular">
-                    {r.answered}/{r.total}
-                  </span>
-                  {left ? ` · ${left}` : ""}
-                </button>
-              </li>
-            );
-          })}
-        </LiveLine>
-      ) : null}
-      {live.paused.length ? (
-        <LiveLine icon={Clock} label={`Paused ${live.paused.length}`}>
-          {live.paused.map((r) => (
-            <li
-              key={r.attemptId}
-              className="inline-flex items-center gap-1.5"
-              data-paused={r.attemptId}
-            >
-              <button type="button" className="hover:underline" onClick={() => open(r)}>
-                <span className="font-medium">
-                  {r.student.firstName} {r.student.lastName[0]}
-                </span>{" "}
-                · {r.title}{" "}
-                <span className="tabular">
-                  {r.answered}/{r.total}
-                </span>
-              </button>
-              <LetContinueButton attemptId={r.attemptId} asked={r.asked} />
-            </li>
-          ))}
-        </LiveLine>
-      ) : null}
-    </section>
-  );
-}
-
-function LiveLine({
-  icon: Icon,
-  label,
-  children,
-}: {
-  icon: LucideIcon;
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-      <span className="inline-flex items-center gap-1 font-semibold text-brand-deep">
-        <Icon className="size-3.5" aria-hidden />
-        {label}
-      </span>
-      <ul className="flex flex-wrap items-center gap-x-3 gap-y-1">{children}</ul>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Who needs what
-// ---------------------------------------------------------------------------
-
-const CHIP_TONE: Record<WhoChip, CellTone> = {
-  needs_you: "coral",
-  testing: "brand",
-  corrections: "warning",
-  sent_back: "warning",
-  relearning: "warning",
-  retake_needed: "warning",
-  ready: "coral_outline",
-  not_started: "warning",
-  missing: "warning",
-};
-
-/** Tap one to make its cells stand out and keep only the students who have one. */
-function WhoChips({
-  counts,
-  active,
-  onPick,
-}: {
-  counts: Record<WhoChip, number>;
-  active: WhoChip | null;
-  onPick: (chip: WhoChip) => void;
-}) {
-  const shown = WHO_CHIPS.filter((c) => counts[c] > 0 || c === active);
-  if (shown.length === 0)
-    return (
-      <p className="text-sm text-success-foreground" data-who-chips="none">
-        Everyone is caught up.
-      </p>
-    );
-  return (
-    <div className="flex flex-wrap items-center gap-0.5" role="group" aria-label="Who needs what">
-      {shown.map((c) => (
-        <button
-          key={c}
-          type="button"
-          aria-pressed={active === c}
-          data-who-chip={c}
-          className={cn(
-            "inline-flex items-center gap-1.5 rounded-md px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground",
-            active === c && "bg-muted text-foreground ring-1 ring-ring",
-            active && active !== c && "opacity-60"
-          )}
-          onClick={() => onPick(c)}
-        >
-          <span className={cn("size-2 rounded-full", DOT_CLASS[CHIP_TONE[c]])} aria-hidden />
-          {WHO_CHIP_LABEL[c]}
-          <span className="font-semibold text-foreground tabular">{counts[c]}</span>
-        </button>
-      ))}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // The grid
 // ---------------------------------------------------------------------------
+
+/** How each cell state is drawn (§4). State is never colour alone: each has its own words. */
+const LOOK: Record<CellLook, string> = {
+  done: "text-ink",
+  owes: "bg-owed font-bold text-owed-text",
+  testing: "bg-stain font-bold text-white",
+  paused: "bg-stain-tint font-semibold text-stain-deep",
+  missing: "border-[1.5px] border-dashed border-eosin-deep font-semibold text-eosin-text",
+  your_move: "bg-eosin font-bold text-ink",
+  your_ok: "border-[1.5px] border-eosin text-ink",
+  not_started: "text-ink-muted",
+  empty: "",
+};
+
+const KEY: { look: CellLook; label: string; sample: string }[] = [
+  { look: "testing", label: "Testing now", sample: "4/25" },
+  { look: "paused", label: "Paused", sample: "" },
+  { look: "owes", label: "Student owes corrections", sample: "62" },
+  { look: "missing", label: "Missing", sample: "" },
+  { look: "your_move", label: "Your move", sample: "74" },
+  { look: "your_ok", label: "Your OK (optional)", sample: "85" },
+];
 
 const TYPE_MARK: Record<ClassGradebookColumn["type"], string> = {
   formative: "F",
   summative: "S",
   practice: "P",
-};
-
-/** The chips' dots and the compact cells, in the gradebook's colour families. */
-const DOT_CLASS: Record<CellTone, string> = {
-  coral: "bg-coral",
-  brand: "bg-brand",
-  warning: "bg-warning",
-  coral_outline: "ring-1 ring-coral ring-inset",
-  muted: "bg-muted-foreground/40",
-  success: "bg-success",
-};
-
-/**
- * A compact cell's colour (Nov 5 2026): a soft fill for what needs someone (your move, testing,
- * the student owes), an outline for your optional OK, grey text for quiet, and plain for done, so
- * the colour is where the work is.
- */
-const COMPACT_TONE: Record<CellTone, string> = {
-  coral: "bg-coral-soft text-coral-deep font-semibold",
-  brand: "bg-brand-soft text-brand-deep font-medium",
-  warning: "bg-warning-soft text-warning-foreground",
-  coral_outline: "text-coral-deep ring-1 ring-coral/60 ring-inset",
-  muted: "text-muted-foreground",
-  success: "text-foreground",
-};
-
-/** The corner dot on the teacher's own moves, so coral reads apart from the student's amber. */
-function YourMoveDot() {
-  return (
-    <span className="absolute top-0.5 right-0.5 size-1.5 rounded-full bg-coral-deep" aria-hidden />
-  );
-}
-
-const CELL_ICON: Record<NonNullable<CompactCell["icon"]>, LucideIcon | null> = {
-  play: Play,
-  pause: Pause,
-  hand: Hand,
-  timer: Timer,
-  pen: PenLine,
-  check: Check,
-  dot: null,
 };
 
 /** Arrow keys move between the grid's cells and names (Home / End: the row's ends). */
@@ -746,12 +339,16 @@ function onGridKey(e: React.KeyboardEvent<HTMLTableElement>) {
   to.focus();
 }
 
+/** The unit header's rule: the newest unit violet, the next lighter, older ones lighter still. */
+const UNIT_RULE = ["border-stain", "border-stain-mid", "border-stain-faint"];
+
 /**
- * The compact grid (Jon, Nov 5 2026: "see the entire semester on one view without having to
- * scroll"): one narrow column per test under its unit, a short label with the full title on
- * hover, and a cell that is the score and a colour; the words are in the tooltip and the panel.
- * The name column and the header stay put if it ever has to scroll. Columns keep the loader's
- * newest-first order.
+ * The grid (home pages redesign §4; Jon, Nov 5 2026: "see the entire semester on one view"): a
+ * real table, laid out to the spec's proportions (a 1.7-share name column of at least 200px, one
+ * share of at least 64px per test, 6px between cells), scrolling sideways inside its card on a
+ * narrow screen with the names staying put. Unit names span their tests; a cell is the score and
+ * a fill, and its words are in the tooltip and the panel. Columns keep the loader's newest-first
+ * order.
  */
 function CompactGrid({
   gb,
@@ -761,30 +358,34 @@ function CompactGrid({
   onOpen,
 }: {
   gb: ClassGradebook;
-  view: ReturnType<typeof gradebookView>;
+  view: GradebookView;
   chip: WhoChip | null;
   hideScores: boolean;
   onOpen: (t: PanelTarget) => void;
 }) {
-  const labels = shortColumnLabels(view.columns);
   const bands = unitBands(view.columns);
-  const unitStart = new Set(bands.slice(1).map((b) => b.start));
+  const labels = kindLabels(view.columns);
   const n = view.columns.length;
-  const headTop = bands.length ? "top-5" : "top-0";
+  // The rank of each unit band among the named units, newest first, for its rule's colour.
+  const named = bands.filter((b) => b.unitId !== null);
+  const rule = (unitId: string | null) =>
+    unitId === null
+      ? "border-line"
+      : UNIT_RULE[
+          Math.min(
+            named.findIndex((b) => b.unitId === unitId),
+            UNIT_RULE.length - 1
+          )
+        ];
   return (
-    <div
-      // Under the top bar (3.5rem), the whole grid fits the window once scrolled to.
-      className="hidden max-h-[calc(100dvh-4.5rem)] overflow-auto rounded-lg border border-border md:block"
-      data-gradebook-grid="compact"
-    >
+    <div className="overflow-x-auto" data-gradebook-grid="compact">
       <table
-        className="table-fixed border-separate border-spacing-0 text-xs"
-        // As wide as it needs (about 3.5rem a test), never wider than the card.
-        style={{ width: `min(100%, ${10 + n * 3.5}rem)` }}
+        className="w-full table-fixed border-separate border-spacing-0 text-sm"
+        style={{ minWidth: `${Math.max(800, 200 + n * 70)}px` }}
         onKeyDown={onGridKey}
       >
         <colgroup>
-          <col className="w-40" />
+          <col style={{ width: `max(200px, ${(170 / (1.7 + n)).toFixed(2)}%)` }} />
           {view.columns.map((c) => (
             <col key={c.assignmentId} />
           ))}
@@ -792,24 +393,24 @@ function CompactGrid({
         <thead>
           {bands.length ? (
             <tr>
-              <th
-                scope="col"
-                className="sticky top-0 left-0 z-30 h-5 border-b border-border bg-card"
-                aria-hidden
-              />
+              <th scope="col" className="sticky left-0 z-10 bg-surface" aria-hidden />
               {bands.map((b) => (
                 <th
                   key={`${b.unitId}:${b.start}`}
                   scope="colgroup"
                   colSpan={b.span}
-                  title={b.name || "No unit"}
-                  className={cn(
-                    "sticky top-0 z-20 h-5 truncate border-b border-border bg-muted/60 px-1.5 text-left text-[10px] font-medium text-muted-foreground backdrop-blur",
-                    b.start > 0 && "border-l border-l-foreground/20"
-                  )}
+                  className="px-[3px] pb-1 text-left align-bottom font-body font-semibold"
                   data-unit-band={b.unitId ?? "none"}
                 >
-                  {b.name || "No unit"}
+                  <span
+                    className={cn(
+                      "block truncate border-b-[3px] pb-1.5 text-sm text-ink",
+                      rule(b.unitId)
+                    )}
+                    title={b.name || "No unit"}
+                  >
+                    {b.name || "No unit"}
+                  </span>
                 </th>
               ))}
             </tr>
@@ -817,10 +418,7 @@ function CompactGrid({
           <tr>
             <th
               scope="col"
-              className={cn(
-                "sticky left-0 z-30 border-r border-b border-border bg-card px-2 py-1 text-left text-[11px] font-medium text-muted-foreground",
-                headTop
-              )}
+              className="sticky left-0 z-10 bg-surface px-1 py-2 text-left text-[13px] font-medium text-ink-muted"
             >
               Student
             </th>
@@ -828,20 +426,14 @@ function CompactGrid({
               <th
                 key={c.assignmentId}
                 scope="col"
-                className={cn(
-                  "sticky z-20 border-r border-b border-border bg-card px-0.5 py-1 text-center font-medium",
-                  headTop,
-                  c.type === "summative" && "bg-brand-soft/60",
-                  unitStart.has(i) && "border-l border-l-foreground/20"
-                )}
+                className="px-[3px] py-2 text-center font-normal"
                 data-column={c.assignmentId}
               >
                 <Link
                   href={`/app/results/${c.assignmentId}`}
                   className={cn(
-                    "relative block truncate rounded-sm text-[11px] leading-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-                    c.type === "summative" && "font-semibold text-brand-deep",
-                    c.status === "scheduled" && "font-normal text-muted-foreground"
+                    "block truncate rounded-md text-[13px] hover:underline",
+                    c.type === "summative" ? "font-bold text-ink" : "text-ink-muted"
                   )}
                   title={columnTitle(c)}
                   aria-label={`${c.title}: open its results`}
@@ -849,7 +441,7 @@ function CompactGrid({
                   {labels[i]}
                 </Link>
                 <span className="flex h-2 items-center justify-center" aria-hidden>
-                  {c.status === "open" ? <span className="size-1.5 rounded-full bg-brand" /> : null}
+                  {c.status === "open" ? <span className="size-1.5 rounded-full bg-stain" /> : null}
                 </span>
               </th>
             ))}
@@ -860,11 +452,11 @@ function CompactGrid({
             <tr key={r.student.id} data-student-row={r.student.id}>
               <th
                 scope="row"
-                className="sticky left-0 z-10 border-r border-b border-border bg-card p-0 text-left font-medium"
+                className="sticky left-0 z-10 border-t border-line-soft bg-surface py-[3px] pr-2 text-left font-medium"
               >
                 <button
                   type="button"
-                  className="flex h-[22px] w-full items-center gap-1 px-2 text-left text-[13px] hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset"
+                  className="flex h-[34px] w-full items-center gap-2 rounded-[9px] px-1 text-left text-sm font-medium text-ink hover:bg-stain-wash"
                   onClick={() => onOpen({ kind: "student", studentId: r.student.id })}
                   title={`${r.student.firstName} ${r.student.lastName}${r.toDo ? `: ${r.toDo} to do` : ""}`}
                   data-open-student={r.student.id}
@@ -876,7 +468,7 @@ function CompactGrid({
                   </span>
                   {r.toDo ? (
                     <span
-                      className="ml-auto shrink-0 rounded bg-warning-soft px-1 text-[10px] leading-4 font-normal text-warning-foreground tabular"
+                      className="ml-auto inline-flex h-6 min-w-6 shrink-0 items-center justify-center rounded-full bg-owed px-1.5 text-[13px] font-bold text-owed-text tabular"
                       aria-label={`${r.toDo} to do`}
                     >
                       {r.toDo}
@@ -885,13 +477,7 @@ function CompactGrid({
                 </button>
               </th>
               {r.cells.map((cell, i) => (
-                <td
-                  key={cell.assignmentId}
-                  className={cn(
-                    "border-r border-b border-border p-0",
-                    unitStart.has(i) && "border-l border-l-foreground/20"
-                  )}
-                >
+                <td key={cell.assignmentId} className="border-t border-line-soft px-[3px] py-[3px]">
                   <CompactCellButton
                     cell={cell}
                     column={view.columns[i]}
@@ -899,7 +485,6 @@ function CompactGrid({
                     now={gb.generatedAt}
                     hideScores={hideScores}
                     dim={chip !== null && whoChip(cell.tag) !== chip}
-                    lit={chip !== null && whoChip(cell.tag) === chip}
                     r={ri}
                     c={i}
                     onClick={() =>
@@ -919,17 +504,14 @@ function CompactGrid({
           <tr>
             <th
               scope="row"
-              className="sticky bottom-0 left-0 z-30 border-r border-border bg-card px-2 py-1 text-left text-[11px] font-medium text-muted-foreground"
+              className="sticky left-0 z-10 border-t-2 border-ink bg-surface px-1 py-3 text-left align-top text-sm font-semibold text-ink"
             >
-              Class
+              Class average
             </th>
-            {view.columns.map((c, i) => (
+            {view.columns.map((c) => (
               <td
                 key={c.assignmentId}
-                className={cn(
-                  "sticky bottom-0 z-20 border-r border-border bg-muted px-0.5 py-1 text-center align-top text-[10px] leading-3.5 text-muted-foreground",
-                  unitStart.has(i) && "border-l border-l-foreground/20"
-                )}
+                className="border-t-2 border-ink px-[3px] py-3 text-center align-top"
                 title={footerTitle(c, { hideScores })}
                 data-footer={c.assignmentId}
               >
@@ -943,7 +525,7 @@ function CompactGrid({
   );
 }
 
-/** A compact header's tooltip: the full title, its type and window. */
+/** A column header's tooltip: the full title, its type and window. */
 function columnTitle(c: ClassGradebookColumn): string {
   const day = (d: Date) =>
     d.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/Chicago" });
@@ -968,7 +550,6 @@ function CompactCellButton({
   now,
   hideScores,
   dim,
-  lit,
   r,
   c,
   onClick,
@@ -979,15 +560,14 @@ function CompactCellButton({
   now: Date;
   hideScores: boolean;
   dim: boolean;
-  lit: boolean;
   r: number;
   c: number;
   onClick: () => void;
 }) {
-  const shown = compactCell(cell, { hideScores });
+  const look = cellLook(cell.tag);
+  const shown = cellText(cell, { hideScores });
   const marks = cellMarks(cell, column, now);
   const title = cellTitle(cell, column, now, { hideScores });
-  const Icon = shown.icon ? CELL_ICON[shown.icon] : null;
   return (
     <button
       type="button"
@@ -995,44 +575,34 @@ function CompactCellButton({
       title={title}
       aria-label={`${student.firstName} ${student.lastName}, ${title.replaceAll("\n", ". ")}`}
       className={cn(
-        "relative flex h-[22px] w-full items-center justify-center tabular transition-opacity hover:ring-1 hover:ring-foreground/30 hover:brightness-95 hover:ring-inset focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset",
-        COMPACT_TONE[cell.tag.tone],
-        cell.tag.kind === "missing" && "font-semibold ring-1 ring-warning ring-inset",
-        dim && "opacity-30",
-        lit && "ring-2 ring-ring ring-inset"
+        "relative flex h-[34px] w-full items-center justify-center rounded-[9px] tabular hover:brightness-95",
+        LOOK[look],
+        shown.small ? "text-xs" : "text-sm",
+        look === "done" || look === "not_started" || look === "empty" ? "hover:bg-stain-wash" : "",
+        dim && "opacity-30"
       )}
       data-cell={`${cell.assignmentId}:${cell.studentId}`}
       data-cell-tag={cell.tag.kind}
+      data-cell-look={look}
       data-r={r}
       data-c={c}
     >
-      {Icon ? (
-        <Icon className="size-3" aria-hidden />
-      ) : shown.icon === "dot" ? (
-        <span className="size-1 rounded-full bg-current" aria-hidden />
-      ) : (
-        shown.text
-      )}
-      {cell.tag.group === "your_move" && !cell.tag.closed ? <YourMoveDot /> : null}
-      {marks.retakeBy ? (
-        <Clock
-          className="absolute top-0.5 left-0.5 size-2.5 text-warning-foreground"
-          aria-hidden
-          data-retake-by
-        />
-      ) : null}
+      {shown.dot ? <span className="size-1.5 rounded-full bg-current" aria-hidden /> : shown.text}
       {marks.tabSwitches > 0 ? (
-        <Flag
-          className="absolute bottom-0.5 left-0.5 size-2.5 text-muted-foreground"
+        <span
+          className="absolute top-1 left-1 size-1.5 rounded-full bg-ink-muted"
           aria-hidden
           data-tab-switches={marks.tabSwitches}
         />
+      ) : null}
+      {marks.retakeBy ? (
+        <Clock className="absolute top-0.5 right-0.5 size-2.5" aria-hidden data-retake-by />
       ) : null}
     </button>
   );
 }
 
-/** The compact footer: the average, done of enrolled, and on tests the Tier board and ↑ N. */
+/** The class average row: the average, turned in of enrolled, and on tests the Tier board. */
 function CompactFooter({
   column: c,
   hideScores,
@@ -1045,24 +615,24 @@ function CompactFooter({
   if (c.status === "scheduled" && f.done === 0) return null;
   return (
     <span className="flex flex-col items-center tabular">
-      <span className="font-semibold text-foreground">
+      <span className="font-display text-lg leading-tight font-semibold text-ink">
         {!hideScores && f.average !== null ? Math.round(f.average) : "–"}
       </span>
-      <span>
-        {f.done}/{f.enrolled}
+      <span className="text-xs text-ink-muted">
+        {f.done} of {f.enrolled}
       </span>
       {c.type === "summative" ? (
-        <span className="inline-flex items-center gap-0.5">
+        <span className="inline-flex items-center gap-1 text-xs">
           <Link
             href={`/app/results/${c.assignmentId}/tiers`}
-            className="font-medium text-brand-deep hover:underline"
+            className="font-semibold text-stain-deep underline-offset-2 hover:underline"
             aria-label={`${c.title}: Tier board`}
           >
             Tiers
           </Link>
           {f.movedUpThisWeek > 0 ? (
-            <span className="inline-flex items-center text-success-foreground">
-              <ArrowUp className="size-2.5" aria-hidden />
+            <span className="inline-flex items-center text-done">
+              <ArrowUp className="size-3" aria-hidden />
               {f.movedUpThisWeek}
             </span>
           ) : null}
@@ -1085,14 +655,14 @@ function DetailedGrid({
   onOpen,
 }: {
   gb: ClassGradebook;
-  view: ReturnType<typeof gradebookView>;
+  view: GradebookView;
   chip: WhoChip | null;
   hideScores: boolean;
   onOpen: (t: PanelTarget) => void;
 }) {
   return (
     <div
-      className="hidden max-h-[70vh] overflow-auto rounded-lg border border-border md:block"
+      className="max-h-[70vh] overflow-auto rounded-2xl border border-line"
       data-gradebook-grid="detailed"
     >
       <table className="border-separate border-spacing-0 text-sm">
@@ -1152,7 +722,7 @@ function DetailedGrid({
                   {r.student.lastName}, {r.student.firstName}
                   {r.toDo ? (
                     <span
-                      className="rounded-md bg-warning-soft px-1 text-xs font-normal text-warning-foreground tabular"
+                      className="rounded-full bg-owed px-2 text-xs font-bold text-owed-text tabular"
                       title={`${r.toDo} to do`}
                     >
                       {r.toDo}
@@ -1191,7 +761,7 @@ function DetailedGrid({
               scope="row"
               className="sticky left-0 z-10 border-r border-border bg-card px-3 py-2 text-left text-xs font-medium text-muted-foreground"
             >
-              Class
+              Class average
             </th>
             {view.columns.map((c) => (
               <td
