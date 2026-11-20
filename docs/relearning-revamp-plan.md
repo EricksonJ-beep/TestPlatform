@@ -746,6 +746,10 @@ assignment still shows its old checklist, and Anatomy is unchanged.
   with "Got it", remembered on that device.*
 
 ### L0 · Walkthrough course (Jon, Nov 5: "Test course walkthrough")
+
+> **Removed Nov 20 2026** (Jon: "lets remove the Relearning Walkthrough"). The setup, the
+> `walkthrough-*` packs and the course itself are gone: a production deploy deletes the course and
+> everything in it once (`src/lib/remove-walkthrough.ts`). What follows is the record of what it was.
 A practice course to walk through the path as a student before switching the real courses on.
 - *Setup (`src/lib/walkthrough.ts`, run before the packs on every deploy, `content/walkthrough/setup.json`):*
   - *Jon gets a course called **Relearning Walkthrough**, with the path switched on, and a class
