@@ -49,10 +49,6 @@ const step = (label, script) => {
   if (s.status !== 0) failed.push(`${script} (exit ${s.status ?? "none"})`);
 };
 
-// The relearning walkthrough (Jon, Nov 5 2026): its practice course and class, before the packs
-// that fill them. Does nothing once they exist.
-step("walkthrough course", "scripts/walkthrough-setup.ts");
-
 // Content packs (Jon, Oct 2 2026): quizzes shipped in content/packs/ apply once, after migrations.
 step("applying content packs", "scripts/apply-packs.ts");
 
@@ -70,6 +66,10 @@ step("seeding score history", "scripts/score-history-seed.ts");
 // Schools (Nov 11 2026, H4.8): accounts from before schools were recorded get the one school.
 // Only fills blanks, so it also runs on a preview's own branch.
 step("recording the school on older accounts", "scripts/school-backfill.ts");
+
+// The relearning walkthrough (made Nov 5 2026) is removed (Jon, Nov 20 2026): its course and
+// everything in it. Production only; does nothing once it is gone.
+step("removing the relearning walkthrough", "scripts/remove-walkthrough.ts");
 
 if (failed.length) {
   console.error(
