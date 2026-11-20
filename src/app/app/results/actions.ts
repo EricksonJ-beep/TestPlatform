@@ -8,6 +8,7 @@ import { deleteAttempt as removeAttempt, finalizeAttempt } from "@/lib/attempts"
 import { staleRequest } from "@/lib/needs-you";
 import { capWindowPassed } from "@/lib/queries/reopen";
 import { endOfNextSchoolDay } from "@/lib/reopen";
+import { CODE_RULE_TEXT, checkTypedCode, codeExpiry } from "@/lib/todays-code";
 import {
   checkOffRelearning as checkOff,
   RelearningError,
@@ -15,7 +16,9 @@ import {
 } from "@/lib/relearning-server";
 import {
   currentResumeCode,
+  endResumeCode,
   issueResumeCode,
+  setResumeCode,
   resumeAttempt,
   settleAttempt,
 } from "@/lib/attempt-pause";
@@ -421,4 +424,33 @@ export const getResumeCode = withAuthz(async (fresh: boolean) => {
   const current = fresh ? null : await currentResumeCode(session.userId);
   const code = current ?? (await issueResumeCode(session.userId));
   return { code: code.code, expiresAt: code.expiresAt.toISOString() };
+});
+
+const todaysCodeInput = z.object({
+  code: z.string().max(60),
+  length: z.enum(["hour", "day"]),
+});
+
+/**
+ * Today's code (Jon, Nov 20 2026): the teacher's own word-and-numbers code, for this hour or
+ * the rest of the school day. It replaces the code that was running. While it runs it resumes
+ * paused tests and opens any of the teacher's tests that ask for an access code.
+ */
+export const setTodaysCode = withAuthz(async (input: z.infer<typeof todaysCodeInput>) => {
+  const session = await requireTeacher();
+  const d = todaysCodeInput.parse(input);
+  const typed = checkTypedCode(d.code);
+  if (!typed.ok) throw new ActionError(CODE_RULE_TEXT, 400, { code: [CODE_RULE_TEXT] });
+  const now = new Date();
+  const set = await setResumeCode(session.userId, typed.code, codeExpiry(d.length, now), now);
+  revalidatePath("/app");
+  return { code: set.code, expiresAt: set.expiresAt.toISOString() };
+});
+
+/** Turn the teacher's code off now: nothing opens with it any more. */
+export const endTodaysCode = withAuthz(async () => {
+  const session = await requireTeacher();
+  await endResumeCode(session.userId);
+  revalidatePath("/app");
+  return { ok: true };
 });

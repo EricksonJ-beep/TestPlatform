@@ -37,6 +37,8 @@ export type ActivityDetail = {
   reason?: PauseReason;
   /** resumed: the resume code, or the teacher's OK. */
   by?: "code" | "teacher";
+  /** attempt_started: opened with the teacher's code for today, not the test's own code. */
+  todaysCode?: boolean;
 };
 
 export async function logActivity(entry: {
@@ -109,9 +111,11 @@ export function activityLine(
       return d.className ? `Joined ${d.className}` : "Joined a class";
     case "attempt_started":
       // Jon, Oct 13 2026 (dashboard plan build step 5): a second or later try reads as a retake.
-      return d.attemptNumber && d.attemptNumber > 1
-        ? `Started retake (try ${d.attemptNumber})${on}`
-        : `Started attempt${n}${on}`;
+      return (
+        (d.attemptNumber && d.attemptNumber > 1
+          ? `Started retake (try ${d.attemptNumber})${on}`
+          : `Started attempt${n}${on}`) + (d.todaysCode ? " with today's code" : "")
+      );
     case "attempt_submitted":
       return `Submitted attempt${n}${on}`;
     case "corrections_submitted":
@@ -135,7 +139,7 @@ export function activityLine(
     case "resumed":
       return d.by === "teacher"
         ? `Resumed ${test} (you let them continue)`
-        : `Resumed ${test} with the resume code`;
+        : `Resumed ${test} with today's code`;
   }
 }
 

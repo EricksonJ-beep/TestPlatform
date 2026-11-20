@@ -189,7 +189,7 @@ describe("activity log", () => {
       "Asked to finish Lab Quiz: Skin"
     );
     expect(describeActivity({ ...base, kind: "resumed", detail: { by: "code" } })).toBe(
-      "Resumed Lab Quiz: Skin with the resume code"
+      "Resumed Lab Quiz: Skin with today's code"
     );
     expect(describeActivity({ ...base, kind: "resumed", detail: { by: "teacher" } })).toBe(
       "Resumed Lab Quiz: Skin (you let them continue)"

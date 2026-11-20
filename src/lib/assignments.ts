@@ -38,7 +38,8 @@ export type StartCheck =
 
 /**
  * Rule: a student may start an attempt only inside the window, with the access
- * code when one is set, while attempts remain (null = unlimited), after any
+ * code when one is set (or the teacher's code for today while it runs: Jon, Nov 20 2026),
+ * while attempts remain (null = unlimited), after any
  * waiting period, and, when the assignment says retakes need the teacher's OK,
  * once the teacher has unlocked that attempt number (attempt 1 never needs one).
  * The window is the student's own (Jon, Oct 14 2026, R5): a retake the teacher
@@ -67,6 +68,8 @@ export function canStartAttempt(input: {
   /** An approved reopen for this attempt (`attempt_unlocks.open_until`); null or absent when none. */
   openUntil?: Date | null;
   accessCode?: string | null;
+  /** The teacher's code for today, while it runs: it opens any of their tests that ask for a code. */
+  todaysCode?: string | null;
   now?: Date;
 }): StartCheck {
   const { assignment, attemptsUsed } = input;
@@ -81,7 +84,9 @@ export function canStartAttempt(input: {
   if (assignment.accessCode) {
     const given = (input.accessCode ?? "").trim();
     if (!given) return { ok: false, reason: "code_required" };
-    if (!codesMatch(given, assignment.accessCode)) return { ok: false, reason: "code_wrong" };
+    const todays = !!input.todaysCode && codesMatch(given, input.todaysCode);
+    if (!todays && !codesMatch(given, assignment.accessCode))
+      return { ok: false, reason: "code_wrong" };
   }
   if (assignment.attemptsAllowed !== null && attemptsUsed >= assignment.attemptsAllowed) {
     return { ok: false, reason: "no_attempts_left" };
@@ -199,8 +204,8 @@ export function nextAttemptAt(retakeWaitHours: number, lastSubmittedAt: Date | n
 export const START_REASON_TEXT: Record<Exclude<StartCheck, { ok: true }>["reason"], string> = {
   not_open: "This assignment isn't open yet.",
   closed: "This assignment has closed.",
-  code_required: "Enter the access code from your teacher.",
-  code_wrong: "That access code isn't right.",
+  code_required: "Enter the code from your teacher.",
+  code_wrong: "That code isn't right.",
   no_attempts_left: "You've used every attempt.",
   wait: "You have to wait before your next attempt.",
   needs_unlock: "Your teacher opens each retake. Ask them to unlock your next attempt.",
