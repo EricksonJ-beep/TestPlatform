@@ -808,6 +808,25 @@ export const resumeCodes = pgTable(
 );
 
 /**
+ * A teacher's master code (Jon, Nov 20 2026): until it expires (3:30 PM school time) it stands
+ * in for the access code of any of that teacher's assignments, and for the resume code. It
+ * opens nothing else (window, roster, attempt limits and unlocks still apply).
+ */
+export const masterCodes = pgTable(
+  "master_codes",
+  {
+    id: id(),
+    teacherId: uuid("teacher_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    code: text("code").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    ...timestamps,
+  },
+  (t) => [index("master_codes_teacher_idx").on(t.teacherId)]
+);
+
+/**
  * A teacher's permission for one student to start one more attempt on an
  * assignment that has `retakes_need_unlock` on. One row per attempt number;
  * attempt 1 never needs one. A student may open the row as a request

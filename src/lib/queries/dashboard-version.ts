@@ -63,6 +63,7 @@ export async function getDashboardVersion(
         practice: sql<string>`(select concat_ws(':', count(*), ${newest("p.completed_at")}) from ${schema.practiceAttempts} p where p.completed_at is not null and p.student_id in (select e.student_id from ${schema.enrollments} e join ${schema.classes} k on k.id = e.class_id where k.owner_id = ${teacherId}))`,
         worksheets: sql<string>`(select count(distinct (w.worksheet_id, w.email)) from ${schema.worksheetEvents} w join ${schema.worksheets} ws on ws.id = w.worksheet_id where ws.owner_id = ${teacherId} and w.student_id is null)`,
         resumeCodes: sql<string>`(select concat_ws(':', count(*), ${newest("r.created_at")}) from ${schema.resumeCodes} r where r.teacher_id = ${teacherId})`,
+        masterCodes: sql<string>`(select concat_ws(':', count(*), ${newest("m.expires_at")}) from ${schema.masterCodes} m where m.teacher_id = ${teacherId})`,
         // Boundaries already passed, per student × test with a finished attempt: each crossing
         // moves the count, so a tag that changes with the clock alone refreshes the page.
         boundaries: sql<string>`(select concat_ws(':', count(*) filter (where p.need_ok and p.wait_h > 0 and p.last_sub + p.wait_h * interval '1 hour' <= ${at}), count(*) filter (where p.capped and p.first_sub + p.win_d * interval '1 day' <= ${at}), count(*) filter (where p.capped and p.first_sub + p.win_d * interval '1 day' - interval '48 hours' <= ${at})) from (select s.retakes_need_unlock as need_ok, s.retake_wait_hours as wait_h, (not coalesce(co.cvtc_rules, false) and (m.type = 'summative' or (s.corrections_cap and m.type = 'formative'))) as capped, s.retake_window_days as win_d, min(a.submitted_at) as first_sub, max(a.submitted_at) as last_sub from ${schema.attempts} a join ${schema.assignments} s on s.id = a.assignment_id join ${schema.assessments} m on m.id = s.assessment_id left join ${schema.courses} co on co.id = m.course_id where s.owner_id = ${teacherId} and a.status <> 'in_progress' and (s.retakes_need_unlock or s.corrections_cap or m.type = 'summative') group by a.assignment_id, a.student_id, s.retakes_need_unlock, s.retake_wait_hours, s.corrections_cap, m.type, co.cvtc_rules, s.retake_window_days) p)`,
@@ -119,6 +120,7 @@ export async function getDashboardVersion(
     log,
     s?.worksheets,
     s?.resumeCodes,
+    s?.masterCodes,
     s?.boundaries,
     // The student's own close: a reopened retake pauses when its reopen ends (R5).
     openTestsPart(

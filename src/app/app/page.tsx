@@ -3,6 +3,7 @@ import { closeExpiredAttempts } from "@/lib/attempt-sweep";
 import { feedGroups, feedQuery, parseFeedFilter } from "@/lib/activity-filter";
 import { listClassActivity, listRecentActivity } from "@/lib/activity-log";
 import { currentResumeCode } from "@/lib/attempt-pause";
+import { currentMasterCode } from "@/lib/master-code-server";
 import { getCurrentClass, getCurrentCourse } from "@/lib/current-course";
 import { getClassGradebook } from "@/lib/queries/class-gradebook";
 import { getNeedsYou } from "@/lib/queries/dashboard";
@@ -10,7 +11,7 @@ import { getDashboardVersion } from "@/lib/queries/dashboard-version";
 import { LiveRefresh } from "@/components/app/live-refresh";
 import { HideScoresScope } from "@/components/app/hide-scores";
 import { RecentActivity } from "@/components/app/recent-activity";
-import { ResumeCodeHeader } from "@/components/app/resume-code-button";
+import { MasterCodeHeader, ResumeCodeHeader } from "@/components/app/resume-code-button";
 import { ClassHome } from "@/components/home/class-home";
 import { Greeting } from "@/components/home/greeting";
 import { PeriodSegments } from "@/components/home/period-segments";
@@ -50,9 +51,10 @@ export default async function DashboardPage({ searchParams }: PageProps<"/app">)
     groups: feedGroups(filter),
     limit: filter.days === 3 ? 150 : 60,
   };
-  const [inbox, code, activity, gradebook] = await Promise.all([
+  const [inbox, code, master, activity, gradebook] = await Promise.all([
     getNeedsYou(session.userId),
     currentResumeCode(session.userId),
+    currentMasterCode(session.userId),
     cls && filter.scope === "class"
       ? listClassActivity(cls.id, feed)
       : listRecentActivity(session.userId, feed),
@@ -95,9 +97,16 @@ export default async function DashboardPage({ searchParams }: PageProps<"/app">)
             />
           </div>
         </div>
-        <ResumeCodeHeader
-          initial={code ? { code: code.code, expiresAt: code.expiresAt.toISOString() } : null}
-        />
+        <div className="flex flex-wrap items-stretch gap-3">
+          <MasterCodeHeader
+            initial={
+              master ? { code: master.code, expiresAt: master.expiresAt.toISOString() } : null
+            }
+          />
+          <ResumeCodeHeader
+            initial={code ? { code: code.code, expiresAt: code.expiresAt.toISOString() } : null}
+          />
+        </div>
       </div>
 
       <ClassHome course={focus.course} period={period} gradebook={gradebook} inbox={inbox} />

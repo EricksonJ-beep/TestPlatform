@@ -23,6 +23,7 @@ import {
   touchAttempt,
 } from "@/lib/attempt-pause";
 import { correctionsClear } from "@/lib/corrections";
+import { masterCodeValid } from "@/lib/master-code-server";
 import { setOptIn, setOptIns } from "@/lib/gates";
 import { correctionsCapOn, retakeWindowOn } from "@/lib/grading";
 import { practiceOwed, practiceOwedText, quizPracticeNeeds } from "@/lib/quiz-practice";
@@ -201,6 +202,7 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
       opensAt: schema.assignments.opensAt,
       closesAt: schema.assignments.closesAt,
       accessCode: schema.assignments.accessCode,
+      ownerId: schema.assignments.ownerId,
       attemptsAllowed: schema.assignments.attemptsAllowed,
       retakeWaitHours: schema.assignments.retakeWaitHours,
       retakesNeedUnlock: schema.assignments.retakesNeedUnlock,
@@ -254,9 +256,16 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
   const codeKey = throttleKey("access-code", access.userId, assignmentId);
   if (assignment.accessCode && (await isThrottled(codeKey, THROTTLE.code)))
     throw new ActionError(TOO_MANY_TRIES, 429, { accessCode: [TOO_MANY_TRIES] });
+  // The teacher's master code stands in for this test's own code (Jon, Nov 20 2026). It is
+  // only the code that it replaces: every other rule below still applies.
+  const master =
+    !!assignment.accessCode &&
+    !!accessCode &&
+    (await masterCodeValid(assignment.ownerId, accessCode, now));
   const check = canStartAttempt({
     assignment: {
       ...assignment,
+      accessCode: master ? null : assignment.accessCode,
       // The retake window: every test, and a quiz under the cap (Jon, Nov 19 2026).
       retakeWindowDays: retakeWindowOn(assignment) ? assignment.retakeWindowDays : null,
     },
@@ -718,7 +727,7 @@ export const attemptHeartbeat = withAuthz(async (attemptId: string) => {
   return { paused: false };
 });
 
-/** Reopen a paused test with the teacher's resume code (good for one class period). */
+/** Reopen a paused test with the teacher's resume code (good for one class period) or master code. */
 export const resumeWithCode = withAuthz(async (attemptId: string, code: string) => {
   const access = await requireAttemptAccess(attemptId);
   assertOwnStudentRow(access, access.attempt);
@@ -730,7 +739,12 @@ export const resumeWithCode = withAuthz(async (attemptId: string, code: string) 
   const codeKey = throttleKey("resume-code", access.userId);
   if (await isThrottled(codeKey, THROTTLE.code))
     throw new ActionError(TOO_MANY_TRIES, 429, { code: [TOO_MANY_TRIES] });
-  if (!(await resumeCodeValid(asg.ownerId, String(code ?? "")))) {
+  const given = String(code ?? "");
+  // The master code reopens a paused test too (Jon, Nov 20 2026).
+  if (
+    !(await resumeCodeValid(asg.ownerId, given)) &&
+    !(await masterCodeValid(asg.ownerId, given))
+  ) {
     await recordFailure(codeKey, THROTTLE.code);
     throw new ActionError("That code isn't right, or it has run out. Ask your teacher.", 400, {
       code: ["That code isn't right, or it has run out. Ask your teacher."],

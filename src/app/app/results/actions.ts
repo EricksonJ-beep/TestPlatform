@@ -19,6 +19,7 @@ import {
   resumeAttempt,
   settleAttempt,
 } from "@/lib/attempt-pause";
+import { currentMasterCode, endMasterCode, issueMasterCode } from "@/lib/master-code-server";
 import {
   ActionError,
   type AttemptAccess,
@@ -421,4 +422,23 @@ export const getResumeCode = withAuthz(async (fresh: boolean) => {
   const current = fresh ? null : await currentResumeCode(session.userId);
   const code = current ?? (await issueResumeCode(session.userId));
   return { code: code.code, expiresAt: code.expiresAt.toISOString() };
+});
+
+/**
+ * The master code (Jon, Nov 20 2026): the current one, or a new one when `fresh` or none is
+ * running. Good until 3:30 PM school time; it stands in for any of this teacher's access codes
+ * and the resume code.
+ */
+export const getMasterCode = withAuthz(async (fresh: boolean) => {
+  const session = await requireTeacher();
+  const current = fresh ? null : await currentMasterCode(session.userId);
+  const code = current ?? (await issueMasterCode(session.userId));
+  return { code: code.code, expiresAt: code.expiresAt.toISOString() };
+});
+
+/** Turn the master code off before 3:30 PM. */
+export const stopMasterCode = withAuthz(async () => {
+  const session = await requireTeacher();
+  await endMasterCode(session.userId);
+  return { ok: true };
 });

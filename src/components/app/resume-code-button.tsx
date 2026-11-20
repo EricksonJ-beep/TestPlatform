@@ -15,9 +15,29 @@ import {
 } from "@/components/ui/dialog";
 import { useAction } from "@/components/use-action";
 import { btn } from "@/components/home/ui";
-import { getResumeCode } from "@/app/app/results/actions";
+import { getMasterCode, getResumeCode, stopMasterCode } from "@/app/app/results/actions";
 
 type Shown = { code: string; expiresAt: string };
+
+/** What each code's card and dialog say. */
+const COPY = {
+  resume: {
+    name: "Resume code",
+    ranOut: "Your resume code ran out.",
+    none: "No resume code running.",
+    get: "Get resume code",
+    about:
+      "Put this on the board. Students with a paused test type it to finish in class. It works for all your classes until it runs out.",
+  },
+  master: {
+    name: "Master code",
+    ranOut: "Your master code ran out.",
+    none: "No master code running.",
+    get: "Get master code",
+    about:
+      "Put this on the board. Students type it in place of any test's own access code, and to reopen a paused test. It works for all your classes until it runs out.",
+  },
+} as const;
 
 /**
  * Finish later (Jon, Oct 13 2026): the code to put on the board so students
@@ -62,6 +82,21 @@ export function ResumeCodeButton({ variant = "outline" }: { variant?: "outline" 
  * with the next live refresh, and the header follows it.
  */
 export function ResumeCodeHeader({ initial }: { initial: Shown | null }) {
+  return <CodeHeader kind="resume" initial={initial} />;
+}
+
+/**
+ * The Dashboard header's master code (Jon, Nov 20 2026): one easy code (`frog21`) that stands in
+ * for every test's own access code and the resume code until 3:30 PM, so nobody looks codes up
+ * test by test. New code replaces it; Turn off ends it early.
+ */
+export function MasterCodeHeader({ initial }: { initial: Shown | null }) {
+  return <CodeHeader kind="master" initial={initial} />;
+}
+
+function CodeHeader({ kind, initial }: { kind: keyof typeof COPY; initial: Shown | null }) {
+  const copy = COPY[kind];
+  const master = kind === "master";
   const [shown, setShown] = useState<Shown | null>(initial);
   const [open, setOpen] = useState(false);
   const [expired, setExpired] = useState(false);
@@ -76,10 +111,11 @@ export function ResumeCodeHeader({ initial }: { initial: Shown | null }) {
   }
   const { run, pending, error } = useAction();
   const load = (fresh: boolean) =>
-    run(getResumeCode(fresh), (d) => {
+    run(master ? getMasterCode(fresh) : getResumeCode(fresh), (d) => {
       setShown(d);
       setExpired(false);
     });
+  const stop = () => run(stopMasterCode(), () => setShown(null));
 
   // The code stops working at its time; say so rather than show a dead code.
   useEffect(() => {
@@ -93,17 +129,22 @@ export function ResumeCodeHeader({ initial }: { initial: Shown | null }) {
   return (
     <div
       className="flex flex-col gap-2 rounded-2xl border border-line bg-surface px-5 py-4"
-      data-resume-header
+      {...(master ? { "data-master-header": "" } : { "data-resume-header": "" })}
     >
       {live ? (
         <>
           <p className="text-[13px] text-ink-muted">
-            Resume code, good until <LocalTime date={live.expiresAt} mode="time" />
+            {copy.name}, good until{" "}
+            {/* A master code made after 3:30 PM runs to tomorrow; name the day. */}
+            <LocalTime date={live.expiresAt} mode={master ? "day-at" : "time"} />
           </p>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <span
-              className="font-display text-2xl leading-none font-bold tracking-[0.12em] text-ink"
-              data-resume-code
+              className={cn(
+                "font-display text-2xl leading-none font-bold text-ink",
+                master ? "tracking-[0.04em]" : "tracking-[0.12em]"
+              )}
+              {...(master ? { "data-master-code": "" } : { "data-resume-code": "" })}
             >
               {live.code}
             </span>
@@ -123,26 +164,35 @@ export function ResumeCodeHeader({ initial }: { initial: Shown | null }) {
               >
                 New code
               </button>
+              {master ? (
+                <button
+                  type="button"
+                  className={cn(btn.base, btn.outline)}
+                  disabled={pending}
+                  onClick={stop}
+                >
+                  Turn off
+                </button>
+              ) : null}
             </span>
           </div>
         </>
       ) : (
         <>
-          <p className="text-[13px] text-ink-muted">
-            {shown ? "Your resume code ran out." : "No resume code running."}
-          </p>
+          <p className="text-[13px] text-ink-muted">{shown ? copy.ranOut : copy.none}</p>
           <button
             type="button"
             className={cn(btn.base, btn.primary, "self-start")}
             disabled={pending}
             onClick={() => load(false)}
           >
-            {pending ? "Getting a code…" : "Get resume code"}
+            {pending ? "Getting a code…" : copy.get}
           </button>
         </>
       )}
       {error ? <span className="text-[13px] text-eosin-text">{error}</span> : null}
       <ResumeCodeDialog
+        kind={kind}
         open={open}
         onOpenChange={setOpen}
         shown={live}
@@ -155,6 +205,7 @@ export function ResumeCodeHeader({ initial }: { initial: Shown | null }) {
 }
 
 function ResumeCodeDialog({
+  kind = "resume",
   open,
   onOpenChange,
   shown,
@@ -162,6 +213,7 @@ function ResumeCodeDialog({
   error,
   onNew,
 }: {
+  kind?: keyof typeof COPY;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   shown: Shown | null;
@@ -173,15 +225,16 @@ function ResumeCodeDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Resume code</DialogTitle>
-          <DialogDescription>
-            Put this on the board. Students with a paused test type it to finish in class. It works
-            for all your classes until it runs out.
-          </DialogDescription>
+          <DialogTitle>{COPY[kind].name}</DialogTitle>
+          <DialogDescription>{COPY[kind].about}</DialogDescription>
         </DialogHeader>
         <p
-          className="py-4 text-center font-mono text-6xl font-semibold tracking-[0.3em] text-brand-deep"
-          data-resume-code
+          className={cn(
+            "py-4 text-center font-mono font-semibold text-brand-deep",
+            // A word and a number is longer than six characters; keep it on one line.
+            kind === "master" ? "text-5xl tracking-[0.08em] break-all" : "text-6xl tracking-[0.3em]"
+          )}
+          {...(kind === "master" ? { "data-master-code": "" } : { "data-resume-code": "" })}
         >
           {shown?.code ?? "······"}
         </p>
