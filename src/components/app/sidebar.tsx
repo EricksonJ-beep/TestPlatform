@@ -105,7 +105,7 @@ export function AppSidebar({
       )}
     >
       <div className={cn("flex h-11 items-center", collapsed ? "md:justify-center" : "px-1")}>
-        <Link href="/app" className="rounded-[10px]" aria-label="Bloom home">
+        <Link href="/app" className="flex h-11 items-center rounded-[10px]" aria-label="Bloom home">
           <span className={cn(collapsed && "md:hidden")}>
             <Wordmark />
           </span>
