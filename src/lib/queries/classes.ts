@@ -2,7 +2,7 @@
  * Class and roster reads. Callers must have passed requireTeacher() /
  * requireOwner() first; these functions scope by the ids they are given.
  */
-import { and, asc, count, desc, eq, isNull, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, isNotNull, isNull, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 
 export type ClassSummary = {
@@ -10,6 +10,8 @@ export type ClassSummary = {
   name: string;
   period: string | null;
   term: string | null;
+  schoolYear: string | null;
+  archivedAt: Date | null;
   courseId: string | null;
   courseName: string | null;
   students: number;
@@ -17,14 +19,22 @@ export type ClassSummary = {
   sortOrder: number;
 };
 
-/** The teacher's own order first (Jon, Oct 1 2026); untouched classes fall back to period, then name. */
-export async function listClasses(teacherId: string): Promise<ClassSummary[]> {
+/**
+ * The teacher's own order first (Jon, Oct 1 2026); untouched classes fall back to period, then name.
+ * Running classes unless `which` asks for the archived ones (Jon, Nov 20 2026).
+ */
+export async function listClasses(
+  teacherId: string,
+  which: "active" | "archived" = "active"
+): Promise<ClassSummary[]> {
   return db
     .select({
       id: schema.classes.id,
       name: schema.classes.name,
       period: schema.classes.period,
       term: schema.classes.term,
+      schoolYear: schema.classes.schoolYear,
+      archivedAt: schema.classes.archivedAt,
       courseId: schema.classes.courseId,
       courseName: schema.courses.name,
       students: count(schema.enrollments.id),
@@ -34,7 +44,14 @@ export async function listClasses(teacherId: string): Promise<ClassSummary[]> {
     .from(schema.classes)
     .leftJoin(schema.courses, eq(schema.classes.courseId, schema.courses.id))
     .leftJoin(schema.enrollments, eq(schema.enrollments.classId, schema.classes.id))
-    .where(eq(schema.classes.ownerId, teacherId))
+    .where(
+      and(
+        eq(schema.classes.ownerId, teacherId),
+        which === "archived"
+          ? isNotNull(schema.classes.archivedAt)
+          : isNull(schema.classes.archivedAt)
+      )
+    )
     .groupBy(schema.classes.id, schema.courses.name)
     .orderBy(
       asc(schema.classes.sortOrder),
@@ -68,6 +85,8 @@ export async function getClassDetail(classId: string) {
       name: schema.classes.name,
       period: schema.classes.period,
       term: schema.classes.term,
+      schoolYear: schema.classes.schoolYear,
+      archivedAt: schema.classes.archivedAt,
       courseId: schema.classes.courseId,
       courseName: schema.courses.name,
       ownerId: schema.classes.ownerId,

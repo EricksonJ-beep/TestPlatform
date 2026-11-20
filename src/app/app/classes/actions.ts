@@ -13,6 +13,7 @@ import { parseRosterNames } from "@/lib/roster";
 import { matchLunchCodes, parseLunchCodes } from "@/lib/lunch-codes";
 import { generateTempPassword, hashPassword, passwordPolicy } from "@/lib/password";
 import { isTeachersStudent, mayEnrollExisting } from "@/lib/school";
+import { SCHOOL_YEAR_TEXT, parseSchoolYear, schoolYearOf } from "@/lib/school-year";
 
 // ---------------------------------------------------------------------------
 // Classes
@@ -23,7 +24,26 @@ const classSchema = z.object({
   courseName: z.string().trim().max(80).optional().or(z.literal("")),
   period: z.string().trim().max(20).optional().or(z.literal("")),
   term: z.string().trim().max(40).optional().or(z.literal("")),
+  schoolYear: z.string().trim().max(20).optional().or(z.literal("")),
 });
+
+/** The teacher's course of that name (any capitals), made when it doesn't exist yet; null for no name. */
+async function courseIdFor(teacherId: string, courseName?: string): Promise<string | null> {
+  if (!courseName) return null;
+  const existing = await db.query.courses.findFirst({
+    columns: { id: true },
+    where: and(
+      eq(schema.courses.ownerId, teacherId),
+      sql`lower(${schema.courses.name}) = ${courseName.toLowerCase()}`
+    ),
+  });
+  if (existing) return existing.id;
+  const [course] = await db
+    .insert(schema.courses)
+    .values({ ownerId: teacherId, name: courseName })
+    .returning({ id: schema.courses.id });
+  return course.id;
+}
 
 /** Create a class owned by the signed-in teacher; a typed course name is created on the fly. */
 export const createClass = withAuthz(async (formData: FormData) => {
@@ -31,26 +51,14 @@ export const createClass = withAuthz(async (formData: FormData) => {
   const parsed = classSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) throw new ActionError("Check the form.", 400, fieldErrors(parsed.error));
   const { name, courseName, period, term } = parsed.data;
+  // The school year (Jon, Nov 20 2026): the one typed, else the one today falls in.
+  const schoolYear = parsed.data.schoolYear
+    ? parseSchoolYear(parsed.data.schoolYear)
+    : schoolYearOf(new Date());
+  if (!schoolYear)
+    throw new ActionError("Check the form.", 400, { schoolYear: [SCHOOL_YEAR_TEXT] });
 
-  let courseId: string | null = null;
-  if (courseName) {
-    const existing = await db.query.courses.findFirst({
-      columns: { id: true },
-      where: and(
-        eq(schema.courses.ownerId, session.userId),
-        sql`lower(${schema.courses.name}) = ${courseName.toLowerCase()}`
-      ),
-    });
-    if (existing) {
-      courseId = existing.id;
-    } else {
-      const [course] = await db
-        .insert(schema.courses)
-        .values({ ownerId: session.userId, name: courseName })
-        .returning({ id: schema.courses.id });
-      courseId = course.id;
-    }
-  }
+  const courseId = await courseIdFor(session.userId, courseName);
 
   const [cls] = await db
     .insert(schema.classes)
@@ -60,6 +68,7 @@ export const createClass = withAuthz(async (formData: FormData) => {
       name,
       period: period || null,
       term: term || null,
+      schoolYear,
     })
     .returning({ id: schema.classes.id });
 
@@ -314,6 +323,55 @@ export const deleteClass = withAuthz(async (classId: string) => {
     );
   await db.delete(schema.classes).where(eq(schema.classes.id, classId));
   revalidatePath("/app/classes");
+  revalidatePath("/app/assign");
+  revalidatePath("/app");
+  return { ok: true };
+});
+
+/**
+ * Archive a finished class, or bring it back (Jon, Nov 20 2026: "accessible but not on the main
+ * dashboard once finished"). Archived, it leaves the Dashboard, the Classes grid and the Assign
+ * class list, and joining with its code closes; its roster, assignments and results stay as
+ * they are, for the teacher and for its students.
+ */
+export const setClassArchived = withAuthz(async (classId: string, archived: boolean) => {
+  await requireOwner({ type: "class", id: classId });
+  await db
+    .update(schema.classes)
+    .set(archived ? { archivedAt: new Date(), joinOpen: false } : { archivedAt: null })
+    .where(eq(schema.classes.id, classId));
+  revalidatePath("/app/classes");
+  revalidatePath(`/app/classes/${classId}`);
+  revalidatePath("/app/assign");
+  revalidatePath("/app");
+  return { archived: !!archived };
+});
+
+/**
+ * Edit a class after it is made (Jon, Nov 20 2026: "in case I miss some information"): its
+ * name, course, period, term and school year, the fields of the New class form. A typed course
+ * name is made when it doesn't exist; a blank one takes the class out of its course.
+ */
+export const updateClass = withAuthz(async (classId: string, formData: FormData) => {
+  const session = await requireOwner({ type: "class", id: classId });
+  const parsed = classSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) throw new ActionError("Check the form.", 400, fieldErrors(parsed.error));
+  const { name, courseName, period, term } = parsed.data;
+  const schoolYear = parsed.data.schoolYear ? parseSchoolYear(parsed.data.schoolYear) : null;
+  if (parsed.data.schoolYear && !schoolYear)
+    throw new ActionError("Check the form.", 400, { schoolYear: [SCHOOL_YEAR_TEXT] });
+  await db
+    .update(schema.classes)
+    .set({
+      name,
+      courseId: await courseIdFor(session.userId, courseName),
+      period: period || null,
+      term: term || null,
+      schoolYear,
+    })
+    .where(eq(schema.classes.id, classId));
+  revalidatePath("/app/classes");
+  revalidatePath(`/app/classes/${classId}`);
   revalidatePath("/app/assign");
   revalidatePath("/app");
   return { ok: true };

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Users } from "lucide-react";
+import Link from "next/link";
+import { Archive, Users } from "lucide-react";
 import { requireTeacher } from "@/lib/authz";
 import { splitByCourse } from "@/lib/course-focus";
 import { getCurrentCourse } from "@/lib/current-course";
@@ -12,10 +13,16 @@ export const metadata: Metadata = { title: "Classes" };
 
 export default async function ClassesPage() {
   const session = await requireTeacher();
-  const [allClasses, { current }] = await Promise.all([
+  const [allClasses, allArchived, { current }] = await Promise.all([
     listClasses(session.userId),
+    listClasses(session.userId, "archived"),
     getCurrentCourse(session.userId),
   ]);
+  // Archived classes (Jon, Nov 20 2026): this course's and the course-less ones, newest year first.
+  const archivedSplit = splitByCourse(allArchived, current);
+  const archived = [...archivedSplit.mine, ...archivedSplit.orphans].sort(
+    (a, b) => (b.schoolYear ?? "").localeCompare(a.schoolYear ?? "") || a.name.localeCompare(b.name)
+  );
   // Course focus (docs/course-focus-plan.md): this course's periods; periods with no course
   // are listed apart so they never vanish.
   const { mine: classes, orphans, elsewhere } = splitByCourse(allClasses, current);
@@ -32,7 +39,12 @@ export default async function ClassesPage() {
         <NewClassDialog defaultCourseName={current?.name} />
       </div>
 
-      {classes.length === 0 ? (
+      {classes.length === 0 && archived.length > 0 ? (
+        <p className="rounded-lg border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
+          {current ? `No running classes in ${current.name}.` : "No running classes."} Your archived
+          classes are below.
+        </p>
+      ) : classes.length === 0 ? (
         <div className="rounded-lg border border-border bg-card">
           <EmptyState
             icon={Users}
@@ -64,6 +76,35 @@ export default async function ClassesPage() {
             adoptInto={current ?? undefined}
           />
         </section>
+      ) : null}
+      {archived.length > 0 ? (
+        <details className="rounded-lg border border-border bg-card" data-archived-classes>
+          <summary className="flex cursor-pointer items-center gap-2 px-4 py-3 text-sm font-medium">
+            <Archive className="size-4 text-muted-foreground" aria-hidden />
+            Archived{" "}
+            <span className="font-normal text-muted-foreground tabular">· {archived.length}</span>
+          </summary>
+          <ul className="divide-y divide-border border-t border-border">
+            {archived.map((c) => (
+              <li key={c.id}>
+                <Link
+                  href={`/app/classes/${c.id}`}
+                  className="flex flex-wrap items-baseline gap-x-3 gap-y-1 px-4 py-2.5 text-sm hover:bg-muted/50"
+                >
+                  <span className="font-medium">{c.name}</span>
+                  <span className="text-muted-foreground">
+                    {[c.courseName, c.period ? `Period ${c.period}` : null, c.term, c.schoolYear]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </span>
+                  <span className="ml-auto text-xs text-muted-foreground tabular">
+                    {c.students} {c.students === 1 ? "student" : "students"}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </details>
       ) : null}
       {elsewhere > 0 ? (
         <p className="text-xs text-muted-foreground" data-elsewhere>

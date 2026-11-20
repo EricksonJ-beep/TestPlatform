@@ -157,7 +157,8 @@ export function ClassGrid({
                 ) : null}
               </div>
               <p className="text-sm text-muted-foreground">
-                {[c.courseName, c.term].filter(Boolean).join(" · ") || "No course set"}
+                {[c.courseName, c.term, c.schoolYear].filter(Boolean).join(" · ") ||
+                  "No course set"}
               </p>
               <p className="mt-auto text-xs text-muted-foreground tabular">
                 {c.students} {c.students === 1 ? "student" : "students"}

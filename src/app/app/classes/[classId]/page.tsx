@@ -6,6 +6,7 @@ import { isAuthzError, requireOwner } from "@/lib/authz";
 import { getClassDetail } from "@/lib/queries/classes";
 import { Button } from "@/components/ui/button";
 import { AddStudentDialog } from "./add-student-dialog";
+import { ArchiveClassButton, EditClassDialog } from "./class-settings";
 import { DeleteClassButton } from "./delete-class-button";
 import { ImportCsvDialog } from "./import-csv-dialog";
 import { LunchCodesDialog } from "./lunch-codes-dialog";
@@ -39,9 +40,24 @@ export default async function ClassPage({ params }: PageProps<"/app/classes/[cla
         </Link>
         <div className="mt-2 flex flex-wrap items-end gap-3">
           <div className="mr-auto">
-            <h1 className="text-2xl">{cls.name}</h1>
+            <h1 className="flex flex-wrap items-center gap-2 text-2xl">
+              {cls.name}
+              {cls.archivedAt ? (
+                <span
+                  className="rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground"
+                  data-archived
+                >
+                  Archived
+                </span>
+              ) : null}
+            </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              {[cls.courseName, cls.period ? `Period ${cls.period}` : null, cls.term]
+              {[
+                cls.courseName,
+                cls.period ? `Period ${cls.period}` : null,
+                cls.term,
+                cls.schoolYear,
+              ]
                 .filter(Boolean)
                 .join(" · ") || "No course, period, or term set"}
               {" · "}
@@ -50,6 +66,7 @@ export default async function ClassPage({ params }: PageProps<"/app/classes/[cla
               </span>
             </p>
           </div>
+          <EditClassDialog cls={cls} />
           <Button
             variant="outline"
             nativeButton={false}
@@ -61,6 +78,7 @@ export default async function ClassPage({ params }: PageProps<"/app/classes/[cla
           <ImportCsvDialog classId={cls.id} />
           <LunchCodesDialog classId={cls.id} />
           <AddStudentDialog classId={cls.id} />
+          <ArchiveClassButton classId={cls.id} archived={!!cls.archivedAt} />
           <DeleteClassButton classId={cls.id} students={cls.roster.length} />
         </div>
       </div>

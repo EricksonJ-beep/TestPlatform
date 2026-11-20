@@ -28,7 +28,10 @@ import {
   renameStudent,
   reorderClasses,
   resetStudentPassword,
+  setClassArchived,
+  updateClass,
 } from "./actions";
+import { schoolYearOf } from "@/lib/school-year";
 import { listClasses } from "@/lib/queries/classes";
 
 const ids = { teacherA: "", teacherB: "", classA: "", maya: "" };
@@ -463,5 +466,81 @@ describe("adding a student who already has an account (H4.8: same school only)",
     const { ensureSingleSchool, defaultOrganizationId } = await import("@/lib/school");
     expect(await ensureSingleSchool()).toMatchObject({ organizationId: null, filled: 0 });
     expect(await defaultOrganizationId()).toBeNull();
+  });
+});
+
+/** School year and archiving (Jon, Nov 20 2026). */
+describe("school year and archive", () => {
+  let cls = "";
+  it("a new class gets the school year typed, or this year's; a bad one is refused", async () => {
+    asUser(ids.teacherA, "teacher");
+    const typed = await createClass(fd({ name: "Old Bio", schoolYear: "2025-2026" }));
+    const plain = await createClass(fd({ name: "New Bio" }));
+    if (!typed.ok || !plain.ok) throw new Error("create failed");
+    cls = typed.data.classId;
+    const year = async (id: string) =>
+      (await db.query.classes.findFirst({ where: eq(schema.classes.id, id) }))!.schoolYear;
+    expect(await year(cls)).toBe("2025-26");
+    expect(await year(plain.data.classId)).toBe(schoolYearOf(new Date()));
+    const bad = await createClass(fd({ name: "Nope", schoolYear: "Fall 2026" }));
+    expect(bad).toMatchObject({ ok: false, status: 400 });
+    if (!bad.ok) expect(bad.fieldErrors?.schoolYear).toHaveLength(1);
+  });
+
+  it("the owner edits a class afterwards: name, course, period, term, school year", async () => {
+    asUser(ids.teacherB, "teacher");
+    expect(await updateClass(cls, fd({ name: "Hijack" }))).toMatchObject({ ok: false });
+    asUser(ids.teacherA, "teacher");
+    expect(await updateClass(cls, fd({ name: "" }))).toMatchObject({ ok: false, status: 400 });
+    expect(await updateClass(cls, fd({ name: "Old Bio", schoolYear: "2026-28" }))).toMatchObject({
+      ok: false,
+      status: 400,
+    });
+    expect(
+      await updateClass(
+        cls,
+        fd({
+          name: "Bio 4th",
+          courseName: "BIOLOGY",
+          period: "4",
+          term: "Tri 2",
+          schoolYear: "2024/25",
+        })
+      )
+    ).toMatchObject({ ok: true });
+    const row = (await db.query.classes.findFirst({ where: eq(schema.classes.id, cls) }))!;
+    const biology = await db.query.courses.findFirst({
+      where: eq(schema.courses.ownerId, ids.teacherA),
+    });
+    expect(row).toMatchObject({
+      name: "Bio 4th",
+      courseId: biology!.id, // the existing course, not a second "BIOLOGY"
+      period: "4",
+      term: "Tri 2",
+      schoolYear: "2024-25",
+    });
+    // A new course name is made on the fly; a blank one takes the class out of its course.
+    await updateClass(cls, fd({ name: "Bio 4th", courseName: "Zoology" }));
+    const zoo = (await db.query.classes.findFirst({ where: eq(schema.classes.id, cls) }))!;
+    expect(zoo.courseId).not.toBe(biology!.id);
+    await updateClass(cls, fd({ name: "Bio 4th", courseName: "" }));
+    expect(
+      (await db.query.classes.findFirst({ where: eq(schema.classes.id, cls) }))!.courseId
+    ).toBeNull();
+  });
+
+  it("only the owner archives; an archived class leaves the list, closes joining and comes back", async () => {
+    asUser(ids.teacherB, "teacher");
+    expect(await setClassArchived(cls, true)).toMatchObject({ ok: false });
+    asUser(ids.teacherA, "teacher");
+    expect(await setClassArchived(cls, true)).toMatchObject({ ok: true });
+    expect((await listClasses(ids.teacherA)).map((c) => c.id)).not.toContain(cls);
+    expect((await listClasses(ids.teacherA, "archived")).map((c) => c.id)).toEqual([cls]);
+    const row = (await db.query.classes.findFirst({ where: eq(schema.classes.id, cls) }))!;
+    expect(row.archivedAt).not.toBeNull();
+    expect(row.joinOpen).toBe(false);
+    expect(await setClassArchived(cls, false)).toMatchObject({ ok: true });
+    expect((await listClasses(ids.teacherA)).map((c) => c.id)).toContain(cls);
+    expect(await listClasses(ids.teacherA, "archived")).toHaveLength(0);
   });
 });
