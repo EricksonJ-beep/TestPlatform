@@ -6,7 +6,10 @@ import { db, schema } from "@/db";
 import { requireStudent, studentCourseIds } from "@/lib/authz";
 import { listCustomPracticeOptions } from "@/lib/custom-practice";
 import { listStudentAssignments } from "@/lib/queries/assignments";
+import { studentLeaderboard } from "@/lib/leaderboard";
 import { listStudentClasses } from "@/lib/queries/classes";
+import { getClassLeaderboard } from "@/lib/queries/leaderboard";
+import { StudentLeaderboardCard } from "@/components/practice-leaderboard";
 import { getStudentPractice } from "@/lib/queries/practice";
 import { listStudentResults } from "@/lib/queries/student-results";
 import { buildStudentToDo, homeLanes, homeTab } from "@/lib/student-home";
@@ -52,6 +55,21 @@ export default async function StudentHome({ searchParams }: PageProps<"/student"
       </div>
     );
 
+  // The practice leaderboard (Jon, Nov 20 2026): one per running class of theirs, on Practice.
+  const boards =
+    tab === "practice"
+      ? (
+          await Promise.all(
+            classes
+              .filter((c) => !c.archivedAt)
+              .map(async (c) => ({
+                id: c.id,
+                name: c.name,
+                board: studentLeaderboard(await getClassLeaderboard(c.id), session.userId),
+              }))
+          )
+        ).flatMap((b) => (b.board ? [{ ...b, board: b.board }] : []))
+      : [];
   const [practice, buildable, me] = await Promise.all([
     getStudentPractice(session.userId, assignments),
     studentCourseIds(session.userId).then(listCustomPracticeOptions),
@@ -67,6 +85,13 @@ export default async function StudentHome({ searchParams }: PageProps<"/student"
     return (
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-5">
         <h1 className="text-2xl">{TAB_TITLE[tab]}</h1>
+        {boards.length ? (
+          <div className={boards.length > 1 ? "grid gap-4 sm:grid-cols-2" : undefined}>
+            {boards.map((b) => (
+              <StudentLeaderboardCard key={b.id} className={b.name} board={b.board} />
+            ))}
+          </div>
+        ) : null}
         <PracticeTab practice={practice} buildable={buildable} />
       </div>
     );

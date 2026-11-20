@@ -3,7 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Activity, ChevronLeft } from "lucide-react";
 import { isAuthzError, requireOwner } from "@/lib/authz";
+import { rankLeaderboard } from "@/lib/leaderboard";
 import { getClassDetail } from "@/lib/queries/classes";
+import { getClassLeaderboard } from "@/lib/queries/leaderboard";
+import { TeacherLeaderboard } from "@/components/practice-leaderboard";
 import { Button } from "@/components/ui/button";
 import { AddStudentDialog } from "./add-student-dialog";
 import { ArchiveClassButton, EditClassDialog } from "./class-settings";
@@ -87,6 +90,8 @@ export default async function ClassPage({ params }: PageProps<"/app/classes/[cla
         <JoinCodeCard classId={cls.id} code={cls.joinCode} open={cls.joinOpen} />
         <PendingNames classId={cls.id} names={cls.pending} />
       </div>
+
+      <TeacherLeaderboard entries={rankLeaderboard(await getClassLeaderboard(cls.id))} />
 
       <Roster classId={cls.id} roster={cls.roster} />
     </div>

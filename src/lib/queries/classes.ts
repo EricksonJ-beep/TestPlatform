@@ -159,13 +159,14 @@ export async function listCourses(teacherId: string) {
     .orderBy(asc(schema.courses.name));
 }
 
-/** The classes a student is enrolled in, for the student home. */
+/** The classes a student is enrolled in, for the student home. Archived ones stay listed. */
 export async function listStudentClasses(studentId: string) {
   return db
     .select({
       id: schema.classes.id,
       name: schema.classes.name,
       period: schema.classes.period,
+      archivedAt: schema.classes.archivedAt,
       courseName: schema.courses.name,
       teacherFirstName: schema.users.firstName,
       teacherLastName: schema.users.lastName,
