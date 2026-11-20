@@ -30,6 +30,7 @@ import { getCorrectionScope } from "@/lib/queries/corrections";
 import { getNeedsYou } from "@/lib/queries/dashboard";
 import { getPathState } from "@/lib/queries/relearning-path";
 import { nextCheck } from "@/lib/relearning-path";
+import { buildStepPath } from "@/lib/step-path";
 import { getRelearningView, relearningForMonitor } from "@/lib/relearning-server";
 import {
   checkOffRelearning,
@@ -544,6 +545,22 @@ describe("Clear to retake: the teacher clears relearning and the check (Jon, Nov
         clearNote: "Worked it at lunch",
       }),
     ]);
+    // The student's step path says who cleared it; a step they did themselves would say "Done".
+    const lt1 = await target("test", "lt1");
+    expect(lt1.byTeacher).toEqual({ relearn: true, practice: true });
+    const steps = buildStepPath({
+      path: await pathOf("test"),
+      assignmentId: ids.asg.test,
+      type: "summative",
+      correctionsAttemptId: testAttempt,
+      cycle: null,
+      attemptsUsed: 1,
+      attemptsAllowed: 2,
+      mustAsk: false,
+      nextAttemptAt: null,
+      kept: false,
+    });
+    expect(JSON.stringify(steps).match(/Cleared by your teacher, \w+ \d+/g)).toHaveLength(2);
     // Corrections were never cleared: they are still the first thing in the way.
     expect((await pathOf("test")).blockers[0]).toMatchObject({ kind: "corrections" });
     const monitor = (await relearningForMonitor(ids.asg.test, ids.st.eli))!;

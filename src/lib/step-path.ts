@@ -89,6 +89,16 @@ export function doneNote(at: Date | null): string | null {
     : null;
 }
 
+/** A step the teacher cleared for the student (Nov 20 2026): "Cleared by your teacher, Nov 4". */
+export function clearedNote(at: Date | null): string {
+  const date = at?.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: SCHOOL_TIME_ZONE,
+  });
+  return date ? `Cleared by your teacher, ${date}` : "Cleared by your teacher";
+}
+
 /** "U3.LT1", "U3.LT1 and U3.LT2", "U3.LT1, U3.LT2 and U3.LT3". */
 function list(codes: string[]): string {
   return codes.length <= 1
@@ -122,7 +132,13 @@ function relearnStep(t: PathTargetState): PathStep {
     label: "Relearn",
     state,
     note:
-      state === "locked" ? LOCKED.relearn : state === "done" ? doneNote(t.doneAt.relearn) : null,
+      state === "locked"
+        ? LOCKED.relearn
+        : state === "done"
+          ? t.byTeacher?.relearn
+            ? clearedNote(t.doneAt.relearn)
+            : doneNote(t.doneAt.relearn)
+          : null,
   };
 }
 
@@ -133,7 +149,13 @@ function practiceStep(t: PathTargetState): PathStep {
     label: "Practice check",
     state,
     note:
-      state === "locked" ? LOCKED.practice : state === "done" ? doneNote(t.doneAt.practice) : null,
+      state === "locked"
+        ? LOCKED.practice
+        : state === "done"
+          ? t.byTeacher?.practice
+            ? clearedNote(t.doneAt.practice)
+            : doneNote(t.doneAt.practice)
+          : null,
   };
 }
 
