@@ -8,7 +8,7 @@
  * check opens. Also the teacher's check-off where nothing is built (A5) and the "won't play"
  * flags (A6). Callers pass the guards first. Nothing here writes a score.
  */
-import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, asc, eq, gt, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import type { RelearningProgress } from "@/db/schema";
 import { recomputeFinalScore } from "@/lib/attempts";
@@ -630,6 +630,75 @@ export async function resolveVideoFlags(sectionId: string, teacherId: string): P
   return rows.length;
 }
 
+/** The bundle a teacher's check-off or clear acts on: a test target's own; a quiz's open one. */
+function teacherBundle(plan: RelearnPlan, targetId: string): RelearnBundle | undefined {
+  return (
+    plan.bundles.find((b) => b.targetIds.includes(targetId)) ??
+    (plan.ctx.state.type === "formative" ? plan.bundles.find((b) => !b.finished) : undefined)
+  );
+}
+
+/**
+ * Finish a target's relearning for the teacher (A5): a test target's own row; a quiz's whole
+ * bundle, since it is one stitched activity (Q3). Rows the student already finished are left as
+ * they are. Gives back the bundle's id and how many rows it finished.
+ */
+async function finishForTeacher(
+  plan: RelearnPlan,
+  input: { assignmentId: string; studentId: string; targetId: string; teacherId: string },
+  now: Date
+): Promise<{ bundleId: string; count: number }> {
+  const bundle = teacherBundle(plan, input.targetId);
+  const summative = plan.ctx.state.type === "summative";
+  if (bundle?.bundleId) {
+    if (bundle.finished) return { bundleId: bundle.bundleId, count: 0 };
+    const ids = summative
+      ? bundle.rows.filter((r) => r.learningTargetId === input.targetId).map((r) => r.id)
+      : bundle.rows.map((r) => r.id);
+    if (ids.length === 0) return { bundleId: bundle.bundleId, count: 0 };
+    const done = await db
+      .update(schema.relearningPaths)
+      .set({ finishedAt: now, checkedOffBy: input.teacherId })
+      .where(
+        and(inArray(schema.relearningPaths.id, ids), isNull(schema.relearningPaths.finishedAt))
+      )
+      .returning({ id: schema.relearningPaths.id });
+    return { bundleId: bundle.bundleId, count: done.length };
+  }
+  const members = summative ? [input.targetId] : (bundle?.targetIds ?? [input.targetId]);
+  const ids = members.includes(input.targetId) ? members : [...members, input.targetId];
+  const bundleId = crypto.randomUUID();
+  const done = await db
+    .insert(schema.relearningPaths)
+    .values(
+      ids.map((learningTargetId) => ({
+        assignmentId: input.assignmentId,
+        studentId: input.studentId,
+        learningTargetId,
+        bundleId,
+        mode: null,
+        finishedAt: now,
+        checkedOffBy: input.teacherId,
+      }))
+    )
+    .onConflictDoNothing()
+    .returning({ id: schema.relearningPaths.id });
+  // The row that stands (ours, or one the student started a moment ago) names the bundle.
+  const [row] = await db
+    .select({ bundleId: schema.relearningPaths.bundleId })
+    .from(schema.relearningPaths)
+    .where(
+      and(
+        eq(schema.relearningPaths.assignmentId, input.assignmentId),
+        eq(schema.relearningPaths.studentId, input.studentId),
+        eq(schema.relearningPaths.learningTargetId, input.targetId)
+      )
+    )
+    .limit(1);
+  if (!row) throw new Error("relearning row not created");
+  return { bundleId: row.bundleId, count: done.length };
+}
+
 /**
  * A5: the teacher checks the relearning off (nothing was built for it, or it was done another
  * way). A test target's own; a quiz's whole activity, since it is one stitched activity (Q3).
@@ -645,51 +714,177 @@ export async function checkOffRelearning(input: {
   const target = plan.ctx.state.targets.find((t) => t.id === input.targetId);
   if (!target || (target.role !== "required" && !target.onPath))
     throw new RelearningError("That target has no relearning to check off.", 409);
-  const now = new Date();
-  const bundle =
-    plan.bundles.find((b) => b.targetIds.includes(target.id)) ??
-    (plan.ctx.state.type === "formative" ? plan.bundles.find((b) => !b.finished) : undefined);
-  if (bundle?.finished) throw new RelearningError("That relearning is already done.", 409);
-  let count = 0;
-  if (bundle?.bundleId) {
-    const ids =
-      plan.ctx.state.type === "summative"
-        ? bundle.rows.filter((r) => r.learningTargetId === target.id).map((r) => r.id)
-        : bundle.rows.map((r) => r.id);
-    if (ids.length) {
-      const done = await db
-        .update(schema.relearningPaths)
-        .set({ finishedAt: now, checkedOffBy: input.teacherId })
-        .where(
-          and(inArray(schema.relearningPaths.id, ids), isNull(schema.relearningPaths.finishedAt))
-        )
-        .returning({ id: schema.relearningPaths.id });
-      count = done.length;
-    }
-  } else {
-    const members =
-      plan.ctx.state.type === "summative" ? [target.id] : (bundle?.targetIds ?? [target.id]);
-    const ids = members.includes(target.id) ? members : [...members, target.id];
-    const bundleId = crypto.randomUUID();
-    const done = await db
-      .insert(schema.relearningPaths)
-      .values(
-        ids.map((learningTargetId) => ({
-          assignmentId: input.assignmentId,
-          studentId: input.studentId,
-          learningTargetId,
-          bundleId,
-          mode: null,
-          finishedAt: now,
-          checkedOffBy: input.teacherId,
-        }))
-      )
-      .onConflictDoNothing()
-      .returning({ id: schema.relearningPaths.id });
-    count = done.length;
-  }
+  if (teacherBundle(plan, target.id)?.finished)
+    throw new RelearningError("That relearning is already done.", 409);
+  const { count } = await finishForTeacher(plan, input, new Date());
   if (count) await recomputeFinalScore(input.assignmentId, input.studentId);
   return { checkedOff: count };
+}
+
+/** Mark a practice check passed by the teacher, unless a round already passed it. */
+async function clearCheck(
+  input: { assignmentId: string; studentId: string; teacherId: string; note: string | null },
+  check:
+    | { purpose: "path"; bundleId: string; targetIds: string[] }
+    | { purpose: "attempt"; attemptNumber: number; targetIds: string[] },
+  passMark: number,
+  now: Date
+): Promise<boolean> {
+  const c = schema.practiceChecks;
+  const existing = await db.query.practiceChecks.findFirst({
+    columns: { id: true, passedAt: true },
+    where: and(
+      eq(c.assignmentId, input.assignmentId),
+      eq(c.studentId, input.studentId),
+      check.purpose === "path"
+        ? and(eq(c.purpose, "path"), eq(c.relearningBundleId, check.bundleId))
+        : and(eq(c.purpose, "attempt"), eq(c.unlocksAttemptNumber, check.attemptNumber))
+    ),
+  });
+  if (existing?.passedAt) return false;
+  const cleared = { passedAt: now, clearedBy: input.teacherId, clearNote: input.note };
+  if (existing) {
+    await db.update(c).set(cleared).where(eq(c.id, existing.id));
+    return true;
+  }
+  await db.insert(c).values({
+    assignmentId: input.assignmentId,
+    studentId: input.studentId,
+    purpose: check.purpose,
+    targetIds: check.targetIds,
+    relearningBundleId: check.purpose === "path" ? check.bundleId : null,
+    unlocksAttemptNumber: check.purpose === "attempt" ? check.attemptNumber : null,
+    passMark,
+    ...cleared,
+  });
+  return true;
+}
+
+/**
+ * Clear to retake (Jon, Nov 20 2026: "he's done something with me on the side"): the teacher
+ * clears a student's relearning and practice check, so the retake opens without them. One target
+ * (a test target's own; a quiz's whole stitched activity), or with no target every required
+ * target still open, plus the fresh check owed before the next attempt (Q6). Corrections are never
+ * cleared (PLAN.md principle 4). Steps the student finished themselves are left as theirs. The
+ * check keeps who cleared it and why; the path reads it as passed, so a quiz target is raised as
+ * if the student had passed (Q1).
+ */
+export async function clearPathForRetake(input: {
+  assignmentId: string;
+  studentId: string;
+  /** Null: every required target still open, and the fresh check before the next attempt. */
+  targetId: string | null;
+  teacherId: string;
+  note: string | null;
+}): Promise<{ cleared: string[]; attemptCheck: boolean }> {
+  const plan = await relearningPlan(input.assignmentId, input.studentId);
+  if (!plan) throw new RelearningError("This student isn't on the relearning path here.", 404);
+  const { state, assignment } = plan.ctx;
+  const open = state.targets.filter(
+    (t) => (t.role === "required" || t.onPath) && (t.relearn !== "done" || t.practice !== "done")
+  );
+  const wanted = input.targetId
+    ? open.filter((t) => t.id === input.targetId)
+    : open.filter((t) => t.role === "required");
+  if (input.targetId && wanted.length === 0)
+    throw new RelearningError("There's nothing left to clear on that target.", 409);
+  const now = new Date();
+  const done = new Set<string>();
+  const cleared = new Set<string>();
+  for (const t of wanted) {
+    const { bundleId } = await finishForTeacher(plan, { ...input, targetId: t.id }, now);
+    if (done.has(bundleId)) continue;
+    done.add(bundleId);
+    const members = (
+      await db
+        .select({ id: schema.relearningPaths.learningTargetId })
+        .from(schema.relearningPaths)
+        .where(eq(schema.relearningPaths.bundleId, bundleId))
+    ).map((r) => r.id);
+    if (
+      await clearCheck(
+        input,
+        { purpose: "path", bundleId, targetIds: members },
+        assignment.passMark,
+        now
+      )
+    )
+      for (const id of members) cleared.add(id);
+  }
+  let attemptCheck = false;
+  const fresh = state.attemptCheck;
+  if (!input.targetId && fresh && !fresh.passed)
+    attemptCheck = await clearCheck(
+      input,
+      { purpose: "attempt", attemptNumber: fresh.attemptNumber, targetIds: fresh.targetIds },
+      assignment.passMark,
+      now
+    );
+  if (cleared.size === 0 && !attemptCheck)
+    throw new RelearningError("There's nothing left to clear.", 409);
+  await recomputeFinalScore(input.assignmentId, input.studentId);
+  return {
+    cleared: state.targets.filter((t) => cleared.has(t.id)).map((t) => t.code),
+    attemptCheck,
+  };
+}
+
+/**
+ * Undo a clear: the check is open again, and the relearning the same clear checked off goes back
+ * to where the student left it (a row the clear made is removed). Only until the student uses it:
+ * once they start an attempt after the clear, it stands.
+ */
+export async function undoPathClear(input: {
+  assignmentId: string;
+  studentId: string;
+  checkId: string;
+}): Promise<{ undone: true }> {
+  const c = schema.practiceChecks;
+  const check = await db.query.practiceChecks.findFirst({
+    where: and(
+      eq(c.id, input.checkId),
+      eq(c.assignmentId, input.assignmentId),
+      eq(c.studentId, input.studentId)
+    ),
+  });
+  if (!check || !check.clearedBy || !check.passedAt)
+    throw new RelearningError("There's no clear to undo.", 404);
+  const used = await db.$count(
+    schema.attempts,
+    and(
+      eq(schema.attempts.assignmentId, input.assignmentId),
+      eq(schema.attempts.studentId, input.studentId),
+      gt(schema.attempts.startedAt, check.passedAt)
+    )
+  );
+  if (used > 0)
+    throw new RelearningError("They've started an attempt since you cleared this, so it stands.");
+  if (check.relearningBundleId) {
+    // Only what this clear checked off: both were written at the same moment.
+    const mine = and(
+      eq(schema.relearningPaths.bundleId, check.relearningBundleId),
+      isNotNull(schema.relearningPaths.checkedOffBy),
+      eq(schema.relearningPaths.finishedAt, check.passedAt)
+    );
+    await db.delete(schema.relearningPaths).where(and(mine, isNull(schema.relearningPaths.mode)));
+    await db
+      .update(schema.relearningPaths)
+      .set({ finishedAt: null, checkedOffBy: null })
+      .where(mine);
+  }
+  const rounds = await db.$count(
+    schema.practiceCheckRounds,
+    eq(schema.practiceCheckRounds.checkId, check.id)
+  );
+  // A check the student never tried was made by the clear; one they tried goes back to open.
+  if (rounds === 0) await db.delete(c).where(eq(c.id, check.id));
+  else
+    await db
+      .update(c)
+      .set({ passedAt: null, clearedBy: null, clearNote: null })
+      .where(eq(c.id, check.id));
+  await recomputeFinalScore(input.assignmentId, input.studentId);
+  return { undone: true };
 }
 
 /** What the student's relearning page shows for one bundle: its rows, sections and the picker. */
@@ -747,40 +942,101 @@ export type MonitorRelearningLine = {
   partsDone: number;
   finishedAt: Date | null;
   checkedOff: boolean;
+  /** Clear to retake: the teacher passed this target's practice check for the student. */
+  cleared: MonitorClear | null;
+};
+
+/** A teacher's clear of a practice check, as the monitor shows it and undoes it. */
+export type MonitorClear = { checkId: string; at: Date; note: string | null };
+
+export type RelearningMonitor = {
+  type: "formative" | "summative";
+  /** A quiz whose path raises the score: clearing a target raises it too. */
+  raises: boolean;
+  threshold: number;
+  lines: MonitorRelearningLine[];
+  /** The fresh check before the next attempt (Q6), while it is owed or the teacher cleared it. */
+  attemptCheck: { attemptNumber: number; codes: string[]; cleared: MonitorClear | null } | null;
 };
 
 /**
  * The relearning monitor's view (A5): each target on a student's path with its mode, how many of
- * its parts are done, and whether the teacher checked it off. Null off the path.
+ * its parts are done, and whether the teacher checked it off or cleared its check. Null off the path.
  */
 export async function relearningForMonitor(
   assignmentId: string,
   studentId: string
-): Promise<MonitorRelearningLine[] | null> {
+): Promise<RelearningMonitor | null> {
   const plan = await relearningPlan(assignmentId, studentId);
   if (!plan) return null;
+  const { state } = plan.ctx;
   const rows = plan.bundles.flatMap((b) => b.rows);
-  const sections = await loadSections({ ids: rows.flatMap((r) => r.servedSectionIds) });
+  const [sections, clears] = await Promise.all([
+    loadSections({ ids: rows.flatMap((r) => r.servedSectionIds) }),
+    db
+      .select({
+        id: schema.practiceChecks.id,
+        purpose: schema.practiceChecks.purpose,
+        targetIds: schema.practiceChecks.targetIds,
+        unlocksAttemptNumber: schema.practiceChecks.unlocksAttemptNumber,
+        passedAt: schema.practiceChecks.passedAt,
+        clearNote: schema.practiceChecks.clearNote,
+      })
+      .from(schema.practiceChecks)
+      .where(
+        and(
+          eq(schema.practiceChecks.assignmentId, assignmentId),
+          eq(schema.practiceChecks.studentId, studentId),
+          isNotNull(schema.practiceChecks.clearedBy),
+          isNotNull(schema.practiceChecks.passedAt)
+        )
+      ),
+  ]);
   const byId = new Map(sections.map((s) => [s.id, s]));
-  return plan.ctx.state.targets
-    .filter((t) => t.role === "required" || t.onPath)
-    .map((t) => {
-      const row = rows.find((r) => r.learningTargetId === t.id) ?? null;
-      const served = (row?.servedSectionIds ?? [])
-        .map((id) => byId.get(id))
-        .filter((s): s is SectionInfo & { optionId: string } => !!s);
-      return {
-        targetId: t.id,
-        code: t.code,
-        title: t.title,
-        role: t.role,
-        relearn: t.relearn,
-        practice: t.practice,
-        mode: row?.mode ?? null,
-        parts: served.length,
-        partsDone: served.filter((s) => sectionDone(s, row?.progress ?? {})).length,
-        finishedAt: row?.finishedAt ?? null,
-        checkedOff: !!row?.checkedOffBy,
-      };
-    });
+  const asClear = (c: (typeof clears)[number] | undefined): MonitorClear | null =>
+    c ? { checkId: c.id, at: c.passedAt!, note: c.clearNote } : null;
+  const code = new Map(state.targets.map((t) => [t.id, t.code]));
+  const fresh = state.attemptCheck;
+  const freshClear = fresh
+    ? asClear(
+        clears.find(
+          (c) => c.purpose === "attempt" && c.unlocksAttemptNumber === fresh.attemptNumber
+        )
+      )
+    : null;
+  return {
+    type: state.type,
+    raises: state.raises,
+    threshold: state.threshold,
+    attemptCheck:
+      fresh && (!fresh.passed || freshClear)
+        ? {
+            attemptNumber: fresh.attemptNumber,
+            codes: fresh.targetIds.map((id) => code.get(id) ?? id),
+            cleared: freshClear,
+          }
+        : null,
+    lines: state.targets
+      .filter((t) => t.role === "required" || t.onPath)
+      .map((t) => {
+        const row = rows.find((r) => r.learningTargetId === t.id) ?? null;
+        const served = (row?.servedSectionIds ?? [])
+          .map((id) => byId.get(id))
+          .filter((s): s is SectionInfo & { optionId: string } => !!s);
+        return {
+          targetId: t.id,
+          code: t.code,
+          title: t.title,
+          role: t.role,
+          relearn: t.relearn,
+          practice: t.practice,
+          mode: row?.mode ?? null,
+          parts: served.length,
+          partsDone: served.filter((s) => sectionDone(s, row?.progress ?? {})).length,
+          finishedAt: row?.finishedAt ?? null,
+          checkedOff: !!row?.checkedOffBy,
+          cleared: asClear(clears.find((c) => c.purpose === "path" && c.targetIds.includes(t.id))),
+        };
+      }),
+  };
 }
