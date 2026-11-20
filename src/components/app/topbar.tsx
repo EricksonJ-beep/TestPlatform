@@ -8,7 +8,7 @@ import type { Session } from "@/lib/session";
  */
 export function AppTopbar({ session }: { session: Session }) {
   return (
-    <header className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b border-border bg-card px-4 md:px-6">
+    <header className="bloom-shell flex h-14 items-center gap-3 border-b border-line bg-surface px-4 md:px-10">
       <div className="ml-auto">
         <AccountMenu
           firstName={session.firstName}

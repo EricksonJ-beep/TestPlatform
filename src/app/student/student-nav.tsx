@@ -18,14 +18,14 @@ const href = (t: HomeTab) => (t === "home" ? "/student" : `/student?tab=${t}`);
 /**
  * The student's sections in the top bar (Jon, Oct 20 2026: "the tabs should be at the top so they
  * are easier to see and follow"). Each is `?tab=` on the home, so a to-do row can still link to
- * one and Back returns to the last; the current one is underlined only on the home itself.
+ * one and Back returns to the last; the current one is white on ink only on the home itself.
  */
 export function StudentNav() {
   const pathname = usePathname();
   const params = useSearchParams();
   const current = pathname === "/student" ? homeTab(params.get("tab")) : null;
   return (
-    <nav aria-label="Your sections" className="flex self-stretch overflow-x-auto">
+    <nav aria-label="Your sections" className="flex flex-wrap gap-1">
       {HOME_TABS.map((t) => (
         <Link
           key={t}
@@ -33,10 +33,8 @@ export function StudentNav() {
           aria-current={current === t ? "page" : undefined}
           data-tab={t}
           className={cn(
-            "flex shrink-0 items-center border-b-[3px] px-3 text-sm font-medium whitespace-nowrap outline-none focus-visible:bg-white/15 sm:px-4 sm:text-[15px]",
-            current === t
-              ? "border-white font-semibold text-white"
-              : "border-transparent text-white/80 hover:text-white"
+            "flex h-11 shrink-0 items-center rounded-[10px] px-3 text-[15px] font-medium whitespace-nowrap sm:px-4",
+            current === t ? "bg-ink text-white" : "text-ink hover:bg-stain-wash"
           )}
         >
           {LABEL[t]}
@@ -46,12 +44,22 @@ export function StudentNav() {
   );
 }
 
-/** The home is wide (three lanes); every other student page keeps its reading width. */
+/**
+ * The home is wide (1120px, with its own padding: the redesign §5); every other student page
+ * keeps its reading width.
+ */
 export function StudentMain({ children }: { children: ReactNode }) {
-  const wide = usePathname() === "/student";
+  const pathname = usePathname();
+  const params = useSearchParams();
+  const home = pathname === "/student" && homeTab(params.get("tab")) === "home";
   return (
     <main
-      className={cn("mx-auto w-full flex-1 px-4 py-6 md:px-6", wide ? "max-w-6xl" : "max-w-3xl")}
+      className={cn(
+        "mx-auto w-full flex-1",
+        home
+          ? "max-w-[1120px] px-4 pt-6 pb-12 sm:px-8 sm:pt-9 sm:pb-16"
+          : cn("px-4 py-6 md:px-6", pathname === "/student" ? "max-w-6xl" : "max-w-3xl")
+      )}
     >
       {children}
     </main>
