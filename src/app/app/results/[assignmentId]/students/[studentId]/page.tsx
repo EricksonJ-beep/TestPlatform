@@ -8,11 +8,12 @@ import { db, schema } from "@/db";
 import { isAuthzError, requireOwner } from "@/lib/authz";
 import { loadScoreTrails, trailKey } from "@/lib/queries/score-trail";
 import { MODE_EMOJI, MODE_LABEL } from "@/lib/relearning";
-import { relearningForMonitor, type MonitorRelearningLine } from "@/lib/relearning-server";
+import { relearningForMonitor, type RelearningMonitor } from "@/lib/relearning-server";
 import { getRelearningMonitor } from "@/lib/queries/tiers";
 import { LocalTime } from "@/components/local-time";
 import { ScoreTrail } from "@/components/score-trail";
 import { CheckOffRelearningButton } from "./check-off-button";
+import { ClearToRetakeButton, UndoClearButton } from "./clear-button";
 import { TargetChip } from "@/components/targets/target-chip";
 import { Button } from "@/components/ui/button";
 
@@ -48,7 +49,7 @@ export default async function RelearningMonitorPage({
   ]);
   if (!m) {
     // A quiz has no tier board; on the relearning path it still has relearning to watch and check off.
-    if (!relearning?.length) notFound();
+    if (!relearning?.lines.length) notFound();
     const [who] = await db
       .select({
         firstName: schema.users.firstName,
@@ -87,7 +88,7 @@ export default async function RelearningMonitorPage({
             ) : null}
           </p>
         </div>
-        <RelearningSection assignmentId={assignmentId} studentId={studentId} lines={relearning} />
+        <RelearningSection assignmentId={assignmentId} studentId={studentId} monitor={relearning} />
       </div>
     );
   }
@@ -138,8 +139,8 @@ export default async function RelearningMonitorPage({
         </p>
       </div>
 
-      {relearning?.length ? (
-        <RelearningSection assignmentId={assignmentId} studentId={studentId} lines={relearning} />
+      {relearning?.lines.length ? (
+        <RelearningSection assignmentId={assignmentId} studentId={studentId} monitor={relearning} />
       ) : null}
 
       <section className="rounded-lg border border-border bg-card" aria-label="Readiness">
@@ -291,25 +292,48 @@ export default async function RelearningMonitorPage({
   );
 }
 
-/** Read · Watch · Do on the relearning path (R4): each target's mode and progress, and A5's check-off. */
+/**
+ * Read · Watch · Do on the relearning path (R4): each target's mode and progress, A5's check-off
+ * (relearning only), and Clear to retake (relearning and the practice check, Nov 20 2026).
+ */
 function RelearningSection({
   assignmentId,
   studentId,
-  lines,
+  monitor,
 }: {
   assignmentId: string;
   studentId: string;
-  lines: MonitorRelearningLine[];
+  monitor: RelearningMonitor;
 }) {
+  const { lines, attemptCheck } = monitor;
+  const raisesTo = monitor.raises ? monitor.threshold : null;
+  const open = (r: (typeof lines)[number]) => r.relearn !== "done" || r.practice !== "done";
+  // What one "Clear to retake" covers: the required targets still open, and a fresh check owed.
+  const all = lines.filter((r) => r.role === "required" && open(r)).map((r) => r.code);
+  const freshOwed = !!attemptCheck && !attemptCheck.cleared;
+  // A quiz's relearning is one stitched activity (Q3), so a clear on one target covers them all.
+  const quiz = monitor.type === "formative";
+  const allCodes = [...new Set([...all, ...(freshOwed ? attemptCheck.codes : [])])];
   return (
     <section
       className="rounded-lg border border-border bg-card"
       aria-label="Relearning path"
       data-monitor-relearning
     >
-      <h2 className="border-b border-border px-4 py-2 text-sm font-medium">
-        Relearning (Read · Watch · Do)
-      </h2>
+      <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2">
+        <h2 className="text-sm font-medium">Relearning (Read · Watch · Do)</h2>
+        {allCodes.length ? (
+          <span className="ml-auto">
+            <ClearToRetakeButton
+              assignmentId={assignmentId}
+              studentId={studentId}
+              targetId={null}
+              codes={allCodes}
+              raisesTo={raisesTo}
+            />
+          </span>
+        ) : null}
+      </div>
       <ul className="divide-y divide-border text-sm">
         {lines.map((r) => (
           <li
@@ -334,24 +358,78 @@ function RelearningSection({
                   · <LocalTime date={r.finishedAt} />
                 </>
               ) : null}
-              {r.practice === "done"
-                ? " · practice check passed"
-                : r.practice === "current"
-                  ? " · practice check open"
-                  : ""}
+              {r.cleared ? (
+                <>
+                  {" · practice check cleared by you "}
+                  <LocalTime date={r.cleared.at} />
+                  {r.cleared.note ? ` · “${r.cleared.note}”` : ""}
+                </>
+              ) : r.practice === "done" ? (
+                " · practice check passed"
+              ) : r.practice === "current" ? (
+                " · practice check open"
+              ) : (
+                ""
+              )}
             </span>
-            {!r.finishedAt && r.relearn !== "locked" ? (
-              <span className="ml-auto">
+            <span className="ml-auto inline-flex flex-wrap items-center gap-2">
+              {!r.finishedAt && r.relearn !== "locked" ? (
                 <CheckOffRelearningButton
                   assignmentId={assignmentId}
                   studentId={studentId}
                   targetId={r.targetId}
                   code={r.code}
                 />
+              ) : null}
+              {open(r) ? (
+                <ClearToRetakeButton
+                  assignmentId={assignmentId}
+                  studentId={studentId}
+                  targetId={r.targetId}
+                  codes={quiz ? lines.filter(open).map((x) => x.code) : [r.code]}
+                  raisesTo={raisesTo}
+                />
+              ) : r.cleared ? (
+                <UndoClearButton
+                  assignmentId={assignmentId}
+                  studentId={studentId}
+                  checkId={r.cleared.checkId}
+                  label={r.code}
+                />
+              ) : null}
+            </span>
+          </li>
+        ))}
+        {attemptCheck ? (
+          <li
+            className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2"
+            data-relearning-line="attempt-check"
+          >
+            <span className="font-medium">Before attempt {attemptCheck.attemptNumber}</span>
+            <span className="text-muted-foreground">
+              New practice check on {attemptCheck.codes.join(", ")}
+              {attemptCheck.cleared ? (
+                <>
+                  {" · cleared by you "}
+                  <LocalTime date={attemptCheck.cleared.at} />
+                  {attemptCheck.cleared.note ? ` · “${attemptCheck.cleared.note}”` : ""}
+                </>
+              ) : (
+                " · not passed yet"
+              )}
+            </span>
+            {attemptCheck.cleared ? (
+              <span className="ml-auto">
+                <UndoClearButton
+                  assignmentId={assignmentId}
+                  studentId={studentId}
+                  checkId={attemptCheck.cleared.checkId}
+                  label={`attempt ${attemptCheck.attemptNumber}`}
+                />
               </span>
             ) : null}
           </li>
-        ))}
+        ) : null}
       </ul>
     </section>
   );

@@ -10,8 +10,10 @@ import { capWindowPassed } from "@/lib/queries/reopen";
 import { endOfNextSchoolDay } from "@/lib/reopen";
 import {
   checkOffRelearning as checkOff,
+  clearPathForRetake,
   RelearningError,
   resolveVideoFlags,
+  undoPathClear,
 } from "@/lib/relearning-server";
 import {
   currentResumeCode,
@@ -254,6 +256,69 @@ export const checkOffRelearning = withAuthz(
     revalidatePath(`/app/results/${assignmentId}/students/${studentId}`);
     revalidatePath(`/student/assignments/${assignmentId}`);
     revalidatePath("/student");
+    return result;
+  }
+);
+
+/** Every page that shows a student's place on the path. */
+function revalidateStudentPath(assignmentId: string, studentId: string) {
+  revalidatePath("/app");
+  revalidatePath(`/app/results/${assignmentId}`);
+  revalidatePath(`/app/results/${assignmentId}/students/${studentId}`);
+  revalidatePath(`/student/assignments/${assignmentId}`);
+  revalidatePath("/student");
+}
+
+/**
+ * Clear to retake (Jon, Nov 20 2026): clear a student's relearning and practice check because
+ * they did the work with the teacher, with an optional note. One target, or with none every
+ * required target still open. Corrections stay required.
+ */
+export const clearToRetake = withAuthz(
+  async (
+    assignmentId: string,
+    studentId: string,
+    learningTargetId: string | null,
+    note: string
+  ) => {
+    const session = await requireOwner({ type: "assignment", id: assignmentId });
+    if (!isUuid(studentId) || (learningTargetId !== null && !isUuid(learningTargetId)))
+      throw new ActionError("Not found.", 404);
+    const text = typeof note === "string" ? note.trim() : "";
+    if (text.length > 300) throw new ActionError("Keep the note under 300 characters.", 400);
+    await enrolledStudent(assignmentId, studentId);
+    let result;
+    try {
+      result = await clearPathForRetake({
+        assignmentId,
+        studentId,
+        targetId: learningTargetId,
+        teacherId: session.userId,
+        note: text || null,
+      });
+    } catch (err) {
+      if (err instanceof RelearningError) throw new ActionError(err.message, err.status);
+      throw err;
+    }
+    revalidateStudentPath(assignmentId, studentId);
+    return result;
+  }
+);
+
+/** Undo a clear the student hasn't used yet: the check, and the relearning it checked off, reopen. */
+export const undoClearToRetake = withAuthz(
+  async (assignmentId: string, studentId: string, checkId: string) => {
+    await requireOwner({ type: "assignment", id: assignmentId });
+    if (!isUuid(studentId) || !isUuid(checkId)) throw new ActionError("Not found.", 404);
+    await enrolledStudent(assignmentId, studentId);
+    let result;
+    try {
+      result = await undoPathClear({ assignmentId, studentId, checkId });
+    } catch (err) {
+      if (err instanceof RelearningError) throw new ActionError(err.message, err.status);
+      throw err;
+    }
+    revalidateStudentPath(assignmentId, studentId);
     return result;
   }
 );

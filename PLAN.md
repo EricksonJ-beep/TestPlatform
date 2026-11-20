@@ -432,6 +432,7 @@ Repo, Next.js + Tailwind + shadcn scaffold, Neon project + Drizzle schema/migrat
 | Student view (Nov 4, 2026) = | **Step path** (subway-map circles) with one Next step box and one button, on the home row, the card and the assessment page |
 | Score history (Nov 4, 2026) = | Every score shows its trail (40 → 80 → 95), each step dated, in the gradebook, results and My results |
 | Relearning rollout (Nov 4, 2026) = | Physical Science and Biology launch together once their practice banks and Read · Watch · Do content are built (ticket L1); assignments taken before launch keep the old rules; Anatomy (CVTC) unchanged |
+| Clear to retake (Nov 20, 2026) = | On a student's Relearning monitor the teacher can **clear** the relearning and the practice check, for one target or for every required target still open (and the fresh check before attempt 3), with an optional note, because the student did the work with them. **Corrections are never cleared.** A cleared check counts as passed (a quiz target is raised to 80% once its corrections are approved) and shows as "cleared by you" to the teacher and **"Cleared by your teacher"** on the student's step path (as does relearning the teacher checked off). Undo until the student starts their next attempt. The older **Check off** still clears relearning alone |
 
 **Still open (defaults assumed):** standards framework (assume your own learning targets + NGSS codes optional).
 

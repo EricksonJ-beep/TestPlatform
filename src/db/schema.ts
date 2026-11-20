@@ -1569,6 +1569,13 @@ export const practiceChecks = pgTable(
     /** The assignment's pass mark when the check began (P4), so a later change can't move it. */
     passMark: integer("pass_mark").notNull(),
     passedAt: timestamp("passed_at", { withTimezone: true }),
+    /**
+     * Clear to retake (Jon, Nov 20 2026): the teacher who marked this check passed because the
+     * student did the work with them. Null when a round passed it.
+     */
+    clearedBy: uuid("cleared_by").references(() => users.id, { onDelete: "set null" }),
+    /** The teacher's reason for the clear, if they gave one. */
+    clearNote: text("clear_note"),
     ...timestamps,
   },
   (t) => [

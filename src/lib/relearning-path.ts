@@ -108,6 +108,8 @@ export type PathRelearning = {
   added: boolean;
   /** When it was finished (or checked off), for the step path's date. */
   finishedAt?: Date | null;
+  /** The teacher finished it for the student (Check off, or Clear to retake). */
+  byTeacher?: boolean;
 };
 
 /** A `practice_checks` row: passed once any round reached its pass mark. */
@@ -119,6 +121,8 @@ export type PathCheck = {
   passed: boolean;
   /** When it passed, for the step path's date. */
   passedAt?: Date | null;
+  /** The teacher passed it for the student (Clear to retake), not a round. */
+  byTeacher?: boolean;
 };
 
 export type PathInput = {
@@ -173,6 +177,8 @@ export type PathTargetState = PathTargetInfo & {
   countingFrom: string;
   /** When each done step was finished; null when not done or the date isn't known. */
   doneAt: { corrections: Date | null; relearn: Date | null; practice: Date | null };
+  /** Done steps the teacher cleared for the student (Nov 20 2026), so the step path can say so. */
+  byTeacher?: { relearn: boolean; practice: boolean };
 };
 
 export type PathBlocker =
@@ -367,6 +373,15 @@ export function pathFor(input: PathInput): PathState {
       counting,
       countingFrom,
       doneAt,
+      byTeacher: {
+        relearn: relearn === "done" && !!rel?.byTeacher,
+        // Theirs if any round passed it; the teacher's only when every passed check was cleared.
+        practice:
+          practice === "done" &&
+          input.checks
+            .filter((c) => c.purpose === "path" && c.passed && c.targetIds.includes(id))
+            .every((c) => c.byTeacher),
+      },
     };
   });
 

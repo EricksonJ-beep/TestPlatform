@@ -4,7 +4,8 @@
  * extension and finishes on the A3 credit rules, opening the practice check; a quiz on two
  * targets stitches their cores, and adding or removing an 80% target re-serves the bundle; modes
  * switch until finished (A4); a test target with nothing built waits for the teacher's check-off
- * (A5); a video that won't play is flagged and resolved (A6); nobody works on another's row.
+ * (A5); a video that won't play is flagged and resolved (A6); nobody works on another's row;
+ * the teacher clears relearning and the practice check to open a retake, and undoes it (Nov 20).
  */
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import type { Session } from "@/lib/session";
@@ -29,8 +30,14 @@ import { getCorrectionScope } from "@/lib/queries/corrections";
 import { getNeedsYou } from "@/lib/queries/dashboard";
 import { getPathState } from "@/lib/queries/relearning-path";
 import { nextCheck } from "@/lib/relearning-path";
-import { getRelearningView } from "@/lib/relearning-server";
-import { checkOffRelearning, resolveVideoFlag } from "@/app/app/results/actions";
+import { buildStepPath } from "@/lib/step-path";
+import { getRelearningView, relearningForMonitor } from "@/lib/relearning-server";
+import {
+  checkOffRelearning,
+  clearToRetake,
+  resolveVideoFlag,
+  undoClearToRetake,
+} from "@/app/app/results/actions";
 import { startAttempt } from "../actions";
 import { saveCorrection, submitCorrections } from "../corrections/actions";
 import {
@@ -496,5 +503,142 @@ describe("a test: one target at a time; nothing built waits for the teacher (S2,
     as(ids.teacher, "teacher");
     expect(await ok(resolveVideoFlag(video))).toEqual({ resolved: 1 });
     expect((await getNeedsYou(ids.teacher)).videos).toEqual([]);
+  });
+});
+
+describe("Clear to retake: the teacher clears relearning and the check (Jon, Nov 20 2026)", () => {
+  const pathOf = async (key: Asg) => (await getPathState(ids.asg[key], ids.st.eli))!.state;
+  const target = async (key: Asg, lt: Lt) =>
+    (await pathOf(key)).targets.find((t) => t.id === ids.lt[lt])!;
+  const checksOf = (key: Asg) =>
+    db
+      .select()
+      .from(schema.practiceChecks)
+      .where(
+        and(
+          eq(schema.practiceChecks.assignmentId, ids.asg[key]),
+          eq(schema.practiceChecks.studentId, ids.st.eli)
+        )
+      );
+  let testAttempt = "";
+
+  it("clears one test target with a note; corrections still hold the retake", async () => {
+    testAttempt = await take("eli", "test", { lt1: 2, lt3: 2 });
+    // A student can't clear their own path.
+    await refused(clearToRetake(ids.asg.test, ids.st.eli, ids.lt.lt1, ""), 403);
+    as(ids.teacher, "teacher");
+    await refused(clearToRetake(ids.asg.test, ids.st.eli, ids.lt.lt1, "x".repeat(301)), 400);
+    expect(
+      await ok(clearToRetake(ids.asg.test, ids.st.eli, ids.lt.lt1, "  Worked it at lunch  "))
+    ).toEqual({ cleared: ["U3.LT1"], attemptCheck: false });
+    expect(await target("test", "lt1")).toMatchObject({ relearn: "done", practice: "done" });
+    expect(await target("test", "lt3")).toMatchObject({ relearn: "locked", practice: "locked" });
+    expect(await rowFor("eli", "test", "lt1")).toMatchObject({
+      mode: null,
+      checkedOffBy: ids.teacher,
+    });
+    expect(await checksOf("test")).toEqual([
+      expect.objectContaining({
+        purpose: "path",
+        targetIds: [ids.lt.lt1],
+        clearedBy: ids.teacher,
+        clearNote: "Worked it at lunch",
+      }),
+    ]);
+    // The student's step path says who cleared it; a step they did themselves would say "Done".
+    const lt1 = await target("test", "lt1");
+    expect(lt1.byTeacher).toEqual({ relearn: true, practice: true });
+    const steps = buildStepPath({
+      path: await pathOf("test"),
+      assignmentId: ids.asg.test,
+      type: "summative",
+      correctionsAttemptId: testAttempt,
+      cycle: null,
+      attemptsUsed: 1,
+      attemptsAllowed: 2,
+      mustAsk: false,
+      nextAttemptAt: null,
+      kept: false,
+    });
+    expect(JSON.stringify(steps).match(/Cleared by your teacher, \w+ \d+/g)).toHaveLength(2);
+    // Corrections were never cleared: they are still the first thing in the way.
+    expect((await pathOf("test")).blockers[0]).toMatchObject({ kind: "corrections" });
+    const monitor = (await relearningForMonitor(ids.asg.test, ids.st.eli))!;
+    expect(monitor.lines.find((l) => l.code === "U3.LT1")!.cleared).toMatchObject({
+      note: "Worked it at lunch",
+    });
+    expect(monitor.lines.find((l) => l.code === "U3.LT3")!.cleared).toBeNull();
+    // Nothing left on that target.
+    await refused(clearToRetake(ids.asg.test, ids.st.eli, ids.lt.lt1, ""), 409, /nothing left/);
+  });
+
+  it("clears every target still open, and the retake is ready once corrections are in", async () => {
+    await correct("eli", testAttempt);
+    as(ids.teacher, "teacher");
+    expect(await ok(clearToRetake(ids.asg.test, ids.st.eli, null, ""))).toEqual({
+      cleared: ["U3.LT3"],
+      attemptCheck: false,
+    });
+    const state = await pathOf("test");
+    expect(state.complete).toBe(true);
+    expect(state.retakeReady).toBe(true);
+    const gates = await db
+      .select()
+      .from(schema.retakeGates)
+      .where(
+        and(
+          eq(schema.retakeGates.assignmentId, ids.asg.test),
+          eq(schema.retakeGates.studentId, ids.st.eli)
+        )
+      );
+    expect(gates.every((g) => g.correctionsOk && g.activityOk && g.practiceOk)).toBe(true);
+    await refused(clearToRetake(ids.asg.test, ids.st.eli, null, ""), 409, /nothing left/);
+  });
+
+  it("undoes a clear, back to where the student was, until they start the retake", async () => {
+    as(ids.teacher, "teacher");
+    const lt1 = (await checksOf("test")).find((c) => c.targetIds.includes(ids.lt.lt1))!;
+    expect(await ok(undoClearToRetake(ids.asg.test, ids.st.eli, lt1.id))).toEqual({ undone: true });
+    expect(await rowFor("eli", "test", "lt1")).toBeUndefined();
+    expect(await target("test", "lt1")).toMatchObject({ relearn: "current", practice: "locked" });
+    expect(await target("test", "lt3")).toMatchObject({ relearn: "done", practice: "done" });
+    expect((await pathOf("test")).retakeReady).toBe(false);
+    await refused(undoClearToRetake(ids.asg.test, ids.st.eli, lt1.id), 404);
+
+    // Relearning the old Check off finished stays checked off when a later clear is undone.
+    await ok(checkOffRelearning(ids.asg.test, ids.st.eli, ids.lt.lt1));
+    await new Promise((r) => setTimeout(r, 5));
+    await ok(clearToRetake(ids.asg.test, ids.st.eli, ids.lt.lt1, ""));
+    const again = (await checksOf("test")).find((c) => c.targetIds.includes(ids.lt.lt1))!;
+    await ok(undoClearToRetake(ids.asg.test, ids.st.eli, again.id));
+    expect(await target("test", "lt1")).toMatchObject({ relearn: "done", practice: "current" });
+
+    // Cleared again and used: once the retake has started, the clear stands.
+    await ok(clearToRetake(ids.asg.test, ids.st.eli, ids.lt.lt1, ""));
+    const used = (await checksOf("test")).find((c) => c.targetIds.includes(ids.lt.lt1))!;
+    await new Promise((r) => setTimeout(r, 5));
+    as(ids.st.eli, "student");
+    await ok(startAttempt(ids.asg.test, null));
+    as(ids.teacher, "teacher");
+    await refused(undoClearToRetake(ids.asg.test, ids.st.eli, used.id), 409, /stands/);
+  });
+
+  it("on a quiz, a clear raises the target to 80% like a passed check, and undo takes it back", async () => {
+    await correct("eli", await take("eli", "quiz", { lt1: 2 }));
+    const final = async () =>
+      (await db.query.assignmentFinalScores.findFirst({
+        where: and(
+          eq(schema.assignmentFinalScores.assignmentId, ids.asg.quiz),
+          eq(schema.assignmentFinalScores.studentId, ids.st.eli)
+        ),
+      }))!.percent;
+    expect(await final()).toBe(40);
+    as(ids.teacher, "teacher");
+    await ok(clearToRetake(ids.asg.quiz, ids.st.eli, null, ""));
+    expect(await final()).toBe(80);
+    const [check] = await checksOf("quiz");
+    await ok(undoClearToRetake(ids.asg.quiz, ids.st.eli, check.id));
+    expect(await final()).toBe(40);
+    expect(await checksOf("quiz")).toEqual([]);
   });
 });

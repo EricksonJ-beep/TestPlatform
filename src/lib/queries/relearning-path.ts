@@ -121,6 +121,7 @@ export async function loadPathStates(pairs: PathPair[]): Promise<Map<string, Pat
         learningTargetId: schema.relearningPaths.learningTargetId,
         bundleId: schema.relearningPaths.bundleId,
         finishedAt: schema.relearningPaths.finishedAt,
+        checkedOffBy: schema.relearningPaths.checkedOffBy,
         added: schema.relearningPaths.added,
       })
       .from(schema.relearningPaths)
@@ -139,6 +140,7 @@ export async function loadPathStates(pairs: PathPair[]): Promise<Map<string, Pat
         relearningBundleId: schema.practiceChecks.relearningBundleId,
         unlocksAttemptNumber: schema.practiceChecks.unlocksAttemptNumber,
         passedAt: schema.practiceChecks.passedAt,
+        clearedBy: schema.practiceChecks.clearedBy,
       })
       .from(schema.practiceChecks)
       .where(
@@ -266,6 +268,7 @@ export async function loadPathStates(pairs: PathPair[]): Promise<Map<string, Pat
         finished: r.finishedAt !== null,
         added: r.added,
         finishedAt: r.finishedAt,
+        byTeacher: r.checkedOffBy !== null,
       })),
       checks: (checksBy.get(k) ?? []).map((c) => ({
         purpose: c.purpose,
@@ -274,6 +277,7 @@ export async function loadPathStates(pairs: PathPair[]): Promise<Map<string, Pat
         unlocksAttemptNumber: c.unlocksAttemptNumber,
         passed: c.passedAt !== null,
         passedAt: c.passedAt,
+        byTeacher: c.clearedBy !== null,
       })),
     });
     out.set(k, {
