@@ -9,7 +9,47 @@
  * The app is light-only until Phase 3, so there is no .dark block yet.
  * shadcn's semantic variables are wired to these tokens below.
  */
+/*
+ * Home pages redesign (BLOOM_HOME_REDESIGN.md §1). The teacher home, the student home and the
+ * shared shell use these tokens by name. Other pages keep the teal and coral tokens below until
+ * they are migrated.
+ */
+@theme {
+  --color-slide: #f5f4fa; /* page background */
+  --color-surface: #ffffff; /* cards, sidebar, top bar */
+  --color-line: #e4e1f2; /* card and sidebar borders */
+  --color-line-soft: #efedf7; /* row dividers, bar tracks */
+  --color-line-strong: #cfcae6; /* outline buttons, inputs */
+  --color-ink: #1a1538; /* body text, dark panel, dark buttons */
+  --color-ink-raised: #272050; /* tiles and rows inside the dark panel */
+  --color-ink-muted: #5a547a; /* secondary text on light */
+  --color-ink-soft: #4d4770; /* inactive segmented-control text */
+  --color-on-ink-muted: #cfc9ee; /* secondary text on the dark panel */
+  --color-stain: #4a35c8; /* primary violet */
+  --color-stain-deep: #3a28a8; /* violet text on violet tint */
+  --color-stain-tint: #e6e1ff; /* paused cells, chips, avatar */
+  --color-stain-wash: #efecfb; /* active course row */
+  --color-stain-light: #b4a7ff; /* violet on dark */
+  --color-stain-pale: #a99bf2; /* bars under 70 */
+  --color-stain-mid: #8b7bea; /* second-newest unit's header rule */
+  --color-stain-faint: #c9c1f5; /* older units' header rule */
+  --color-eosin: #ff7aa8; /* pink on dark: live dot, primary action in the dark panel */
+  --color-eosin-pale: #ffb3cd; /* pink label text on dark */
+  --color-eosin-deep: #d6336c; /* focus ring, missing-cell border */
+  --color-eosin-text: #a61e4d; /* "Missing" text */
+  --color-eosin-tint: #ffe3ec; /* missing chip background */
+  --color-owed: #ffecc7; /* student-owes cell and chip */
+  --color-owed-text: #6b4100;
+  --color-owed-bar: #c97a00; /* corrections progress bar */
+  --color-done: #0f7b55; /* "Nothing is waiting" check */
+  --color-segment: #e9e6f5; /* segmented-control track, neutral chips */
+}
+
 @theme inline {
+  --font-display: var(--font-bricolage), var(--font-lexend), ui-sans-serif, system-ui, sans-serif;
+  --font-body:
+    var(--font-hanken), var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -155,4 +195,97 @@
 
 @utility tabular {
   font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Home pages redesign: the shell and the two home pages.
+ *
+ * `.bloom-shell` is the redesigned chrome (teacher sidebar and top bar, student top bar): new
+ * fonts, nothing else, since its parts name the new tokens themselves.
+ *
+ * `.bloom-home` is a redesigned page. While one is on screen, the older semantic tokens resolve to
+ * the new palette for the whole document (the `:has` rule), so the parts these pages share with
+ * pages not yet migrated (the gradebook's side panel, dialogs, Recent activity, the step path)
+ * carry no teal or coral here and are untouched everywhere else.
+ */
+.bloom-shell,
+.bloom-home {
+  --font-inter: var(--font-hanken);
+  --font-lexend: var(--font-bricolage);
+  font-family: var(--font-body);
+  color: var(--color-ink);
+}
+
+body:has(.bloom-home) {
+  --brand: var(--color-stain);
+  --brand-deep: var(--color-stain-deep);
+  --brand-soft: var(--color-stain-tint);
+  --coral: var(--color-eosin);
+  --coral-deep: var(--color-eosin-text);
+  --coral-soft: var(--color-eosin-tint);
+  --success: var(--color-done);
+  --success-soft: #e1f3ec;
+  --success-foreground: var(--color-done);
+  --warning: var(--color-owed-bar);
+  --warning-soft: var(--color-owed);
+  --warning-foreground: var(--color-owed-text);
+  --background: var(--color-slide);
+  --foreground: var(--color-ink);
+  --card: var(--color-surface);
+  --card-foreground: var(--color-ink);
+  --popover: var(--color-surface);
+  --popover-foreground: var(--color-ink);
+  --primary: var(--color-stain);
+  --secondary: var(--color-stain-tint);
+  --secondary-foreground: var(--color-stain-deep);
+  --muted: var(--color-line-soft);
+  --muted-foreground: var(--color-ink-muted);
+  --accent: var(--color-stain-wash);
+  --accent-foreground: var(--color-stain-deep);
+  --border: var(--color-line);
+  --input: var(--color-line-strong);
+  --ring: var(--color-eosin-deep);
+  --font-inter: var(--font-hanken);
+  --font-lexend: var(--font-bricolage);
+  font-family: var(--font-body);
+}
+
+/* The older cards these pages still show (Recent activity): a 1px line, 24px radius, no shadow. */
+.bloom-home [data-slot="card"] {
+  border: 1px solid var(--color-line);
+  border-radius: 24px;
+  box-shadow: none;
+}
+
+/* Visible focus (§1, accessibility floor). Unlayered, so it wins over the older ring utilities. */
+.bloom-shell :focus-visible,
+body:has(.bloom-home) :focus-visible {
+  outline: 3px solid var(--color-eosin-deep);
+  outline-offset: 2px;
+}
+
+/* The dark panel: the one signature element, exactly one per page. */
+.bloom-panel {
+  background-color: var(--color-ink);
+  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+  background-size: 22px 22px;
+  color: #ffffff;
+}
+
+/* The one animation: a pulsing ring on the live dot and on the current-question dot. */
+@keyframes bloomPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 122, 168, 0.7);
+  }
+  100% {
+    box-shadow: 0 0 0 12px rgba(255, 122, 168, 0);
+  }
+}
+.bloom-pulse {
+  animation: bloomPulse 1.6s ease-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bloom-pulse {
+    animation: none;
+  }
 }

@@ -3,29 +3,14 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import {
-  Check,
-  CheckCircle2,
-  ClipboardCheck,
-  Clock,
-  FileSpreadsheet,
-  Hand,
-  Inbox,
-  LockOpen,
-  type LucideIcon,
-  PenLine,
-  Play,
-  RotateCcw,
-  RefreshCw,
-  VideoOff,
-} from "lucide-react";
+import { createContext, useContext } from "react";
+import { Check, Clock } from "lucide-react";
+import { cn } from "cn";
 import {
   BLOCKER_LINE,
   needsYouCounts,
-  placeLabel,
   STALE_TEXT,
   type ClassPlace,
-  type NeedsYouGroup,
   type RequestBlocker,
 } from "@/lib/needs-you";
 import type {
@@ -37,9 +22,9 @@ import type {
   VideoFlagRow,
 } from "@/lib/queries/dashboard";
 import type { PendingVerification } from "@/lib/queries/practice";
+import { hourLabel } from "@/lib/teacher-home";
 import { LocalTime } from "@/components/local-time";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { btn } from "@/components/home/ui";
 import { useAction } from "@/components/use-action";
 import { verifyCompletion } from "@/app/app/practice/actions";
 import {
@@ -52,83 +37,11 @@ import {
 } from "@/app/app/results/actions";
 import { useHideScores } from "./hide-scores";
 
-const GROUPS: Record<
-  NeedsYouGroup,
-  { title: string; icon: LucideIcon; chip: (n: number) => string }
-> = {
-  asked: { title: "Asked to finish", icon: Hand, chip: (n) => `${n} asked to finish` },
-  requests: {
-    title: "Retake requests",
-    icon: LockOpen,
-    chip: (n) => `${n} retake ${n === 1 ? "request" : "requests"}`,
-  },
-  corrections: {
-    title: "Corrections to check",
-    icon: ClipboardCheck,
-    chip: (n) => `${n} correction ${n === 1 ? "set" : "sets"}`,
-  },
-  grading: {
-    title: "Answers to grade",
-    icon: PenLine,
-    chip: (n) => `${n} ${n === 1 ? "test" : "tests"} to grade`,
-  },
-  activities: {
-    title: "Activities to check off",
-    icon: CheckCircle2,
-    chip: (n) => `${n} ${n === 1 ? "activity" : "activities"} to check off`,
-  },
-  videos: {
-    title: "Videos that won't play",
-    icon: VideoOff,
-    chip: (n) => `${n} ${n === 1 ? "video" : "videos"} won't play`,
-  },
-  skyward: {
-    title: "Skyward updates",
-    icon: RefreshCw,
-    chip: (n) => `${n} ${n === 1 ? "grade" : "grades"} to update in Skyward`,
-  },
-  worksheets: {
-    title: "Worksheet emails",
-    icon: FileSpreadsheet,
-    chip: () => "Worksheet emails to match",
-  },
-};
-const ORDER: NeedsYouGroup[] = [
-  "asked",
-  "requests",
-  "corrections",
-  "grading",
-  "activities",
-  "videos",
-  "skyward",
-  "worksheets",
-];
-
-/**
- * The header's quick links (Jon, Oct 13 2026): one chip per kind of thing waiting, each jumping
- * to its group in the list below.
- */
-export function NeedsYouChips({ counts }: { counts: Record<NeedsYouGroup, number> }) {
-  const shown = ORDER.filter((g) => counts[g] > 0);
-  if (shown.length === 0) return null;
-  return (
-    <ul className="mt-2 flex flex-wrap gap-1.5" aria-label="What needs you">
-      {shown.map((g) => (
-        <li key={g}>
-          <a
-            href={`#needs-${g}`}
-            className="inline-flex items-center rounded-md bg-coral-soft px-2 py-0.5 text-xs font-medium text-coral-deep tabular hover:underline"
-            data-needs-chip={g}
-          >
-            {GROUPS[g].chip(counts[g])}
-          </a>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
 const name = (r: { firstName: string; lastName: string }) => `${r.firstName} ${r.lastName}`;
+
+/** Which class a row is in, in the home's words: "Biology, 3rd hour". */
+const placeLabel = (p: ClassPlace) =>
+  [p.courseName, hourLabel({ name: p.className, period: p.period })].filter(Boolean).join(", ");
 
 // Every action in this list revalidates /app, which re-renders the Dashboard in place.
 const NO_REFRESH = { refresh: false } as const;
@@ -157,20 +70,64 @@ const requestKey = (r: RetakeRequest) => r.id;
 const activityKey = (r: PendingVerification) => `${r.activityId}:${r.studentId}`;
 
 /**
- * "Needs you" (Jon, Oct 13 2026, dashboard plan): everything waiting on the teacher across all
- * their courses, grouped, each row naming its course · period and carrying its one-click action.
- * Approve and Check off keep the row with an Undo; Decline asks first, because only the student
- * can ask again.
+ * Where the queue is drawn (home pages redesign §3): "dark" inside the quiet mode's dark panel
+ * (rows on `ink-raised`, pink primary buttons), "light" in a white card under the gradebook while
+ * a test is live.
  */
-export function NeedsYouInbox({ inbox }: { inbox: NeedsYou }) {
+type Tone = "dark" | "light";
+const ToneContext = createContext<Tone>("light");
+
+/** A 44px button in the row's tone: the primary action, or the quieter second one. */
+function QButton({
+  kind = "primary",
+  className,
+  ...props
+}: React.ComponentProps<"button"> & { kind?: "primary" | "second" }) {
+  const tone = useContext(ToneContext);
+  return (
+    <button
+      type="button"
+      className={cn(
+        btn.base,
+        kind === "primary"
+          ? tone === "dark"
+            ? btn.eosin
+            : btn.primary
+          : tone === "dark"
+            ? btn.onDark
+            : btn.outline,
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
+function QLink({ href, children }: { href: string; children: React.ReactNode }) {
+  const tone = useContext(ToneContext);
+  return (
+    <Link href={href} className={cn(btn.base, tone === "dark" ? btn.eosin : btn.primary)}>
+      {children}
+    </Link>
+  );
+}
+
+/**
+ * "Needs you" (Jon, Oct 13 2026, dashboard plan; home pages redesign §3.3–3.4): everything
+ * waiting on the teacher across all their courses, one row per thing, each naming its kind, its
+ * course and period, and carrying its one-click action. Approve and Check off keep the row with
+ * an Undo; "Not yet" (decline) asks first, because only the student can ask again. Renders
+ * nothing when the queue is empty: the page says so itself.
+ */
+export function NeedsYouInbox({ inbox, tone = "light" }: { inbox: NeedsYou; tone?: Tone }) {
   const [keptRequests, setKeptRequests] = useState<Record<string, RetakeRequest>>({});
   const [keptActivities, setKeptActivities] = useState<Record<string, PendingVerification>>({});
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<{ text: string; error: boolean } | null>(null);
   const requests = withKept(inbox.requests, keptRequests, requestKey, (r) => time(r.requestedAt));
   const activities = withKept(inbox.activities, keptActivities, activityKey, (r) =>
     time(r.completedAt)
   );
-  // Badges count what still needs the teacher; rows done here stay listed for KEEP_MS.
+  // The count is what still needs the teacher; rows done here stay listed for KEEP_MS.
   const counts = needsYouCounts(inbox);
   const empty = counts.total === 0 && requests.done.size === 0 && activities.done.size === 0;
   const forgetRequest = (id: string) =>
@@ -186,172 +143,157 @@ export function NeedsYouInbox({ inbox }: { inbox: NeedsYou }) {
     window.setTimeout(() => forgetActivity(activityKey(r)), KEEP_MS);
   };
 
+  if (empty && !notice) return null;
   return (
-    <Card data-needs-you>
-      <CardHeader>
-        <CardTitle className="inline-flex items-center gap-2">
-          <Inbox className="size-4 text-coral-deep" aria-hidden />
-          Needs you
-        </CardTitle>
-        {/* Jon, Oct 14 2026: empty, the card shrinks to one line instead of a big blank box. */}
-        {empty ? (
-          <p
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground"
-            data-needs-you-empty
-          >
-            <CheckCircle2 className="size-4 shrink-0 text-success" aria-hidden />
-            Nothing is waiting on you. Retake requests, corrections, and grading land here.
-          </p>
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            From all your courses; each row says which class it&apos;s in.
-          </p>
-        )}
+    <ToneContext.Provider value={tone}>
+      <div className="flex flex-col gap-3" data-needs-you>
         {notice ? (
-          <p className="flex items-start gap-2 text-sm text-error-foreground" role="status">
-            <span className="flex-1">{notice}</span>
+          <p
+            className={cn(
+              "flex items-start gap-3 text-[15px]",
+              tone === "dark"
+                ? notice.error
+                  ? "text-eosin-pale"
+                  : "text-on-ink-muted"
+                : notice.error
+                  ? "text-eosin-text"
+                  : "text-ink-muted"
+            )}
+            role="status"
+          >
+            <span className="flex-1">{notice.text}</span>
             <button
               type="button"
-              className="text-xs text-muted-foreground hover:underline"
+              className="min-h-11 px-2 text-[13px] underline"
               onClick={() => setNotice(null)}
             >
               Dismiss
             </button>
           </p>
         ) : null}
-      </CardHeader>
-      {empty ? null : (
-        <CardContent className="p-0">
-          <div className="flex flex-col">
-            <Group id="asked" count={counts.asked} rows={inbox.asked.length}>
-              {inbox.asked.map((r) => (
-                <AskedRow
-                  key={r.attemptId}
-                  r={r}
-                  onFailed={(msg) => setNotice(`${name(r)}: ${msg}`)}
-                />
-              ))}
-            </Group>
-            <Group id="requests" count={counts.requests} rows={requests.rows.length}>
-              {requests.rows.map((r) => (
-                <RequestRow
-                  key={r.id}
-                  r={r}
-                  approved={requests.done.has(r.id)}
-                  onApproved={() => keepRequest(r)}
-                  onGone={() => forgetRequest(r.id)}
-                />
-              ))}
-            </Group>
-            <Group id="corrections" count={counts.corrections} rows={inbox.corrections.length}>
-              {inbox.corrections.map((r) => (
-                <CorrectionsRow key={r.attemptId} r={r} />
-              ))}
-            </Group>
-            <Group id="grading" count={counts.grading} rows={inbox.grading.length}>
-              {inbox.grading.map((r) => (
-                <GradingRowView key={r.assignmentId} r={r} />
-              ))}
-            </Group>
-            <Group id="activities" count={counts.activities} rows={activities.rows.length}>
-              {activities.rows.map((r) => (
-                <ActivityRow
-                  key={activityKey(r)}
-                  r={r}
-                  checked={activities.done.has(activityKey(r))}
-                  onChecked={() => keepActivity(r)}
-                />
-              ))}
-            </Group>
-            <Group id="videos" count={counts.videos} rows={inbox.videos.length}>
-              {inbox.videos.map((r) => (
-                <VideoRow key={r.sectionId} r={r} />
-              ))}
-            </Group>
-            <Group id="skyward" count={counts.skyward ? 1 : 0} rows={counts.skyward ? 1 : 0}>
-              <SkywardRow grades={counts.skyward} />
-            </Group>
-            <Group id="worksheets" count={counts.worksheets} rows={counts.worksheets}>
-              <WorksheetRow emails={inbox.worksheetEmails} />
-            </Group>
-          </div>
-        </CardContent>
-      )}
-    </Card>
+        <ul className="flex flex-col gap-2.5">
+          {inbox.asked.map((r) => (
+            <AskedRow
+              key={r.attemptId}
+              r={r}
+              onFailed={(msg) => setNotice({ text: `${name(r)}: ${msg}`, error: true })}
+            />
+          ))}
+          {requests.rows.map((r) => (
+            <RequestRow
+              key={r.id}
+              r={r}
+              approved={requests.done.has(r.id)}
+              onApproved={() => keepRequest(r)}
+              onGone={() => forgetRequest(r.id)}
+              onDeclined={() =>
+                setNotice({ text: `Declined. Only ${r.firstName} can ask again.`, error: false })
+              }
+            />
+          ))}
+          {inbox.corrections.map((r) => (
+            <CorrectionsRow key={r.attemptId} r={r} />
+          ))}
+          {inbox.grading.map((r) => (
+            <GradingRowView key={r.assignmentId} r={r} />
+          ))}
+          {activities.rows.map((r) => (
+            <ActivityRow
+              key={activityKey(r)}
+              r={r}
+              checked={activities.done.has(activityKey(r))}
+              onChecked={() => keepActivity(r)}
+            />
+          ))}
+          {inbox.videos.map((r) => (
+            <VideoRow key={r.sectionId} r={r} />
+          ))}
+          {counts.skyward ? <SkywardRow grades={counts.skyward} /> : null}
+          {counts.worksheets ? <WorksheetRow emails={inbox.worksheetEmails} /> : null}
+        </ul>
+      </div>
+    </ToneContext.Provider>
   );
 }
 
-function Group({
-  id,
-  count,
-  rows,
-  children,
-}: {
-  id: NeedsYouGroup;
-  /** Still waiting on the teacher. */
-  count: number;
-  /** Listed, including rows just done here (they keep an Undo). */
-  rows: number;
-  children: React.ReactNode;
-}) {
-  if (rows === 0) return null;
-  const { title, icon: Icon } = GROUPS[id];
-  return (
-    <section
-      id={`needs-${id}`}
-      aria-labelledby={`needs-${id}-title`}
-      className="scroll-mt-20 border-t border-border first:border-t-0"
-      data-needs-group={id}
-    >
-      <h3
-        id={`needs-${id}-title`}
-        className="flex items-center gap-2 px-6 pt-3 pb-1 text-xs font-medium text-muted-foreground"
-      >
-        <Icon className="size-3.5 text-coral-deep" aria-hidden />
-        {title}
-        {id !== "worksheets" ? (
-          <span className="rounded-md bg-coral-soft px-1.5 text-coral-deep tabular">{count}</span>
-        ) : null}
-      </h3>
-      <ul className="divide-y divide-border">{children}</ul>
-    </section>
-  );
-}
-
+/**
+ * One queue row (§3.4): a 13px kind label, the name at 17px, a detail line, and the actions at
+ * the right.
+ */
 function Row({
+  kind,
   who,
-  what,
   meta,
   note,
   error,
   actions,
   data,
 }: {
+  kind: string;
   who: React.ReactNode;
-  what?: React.ReactNode;
   meta: React.ReactNode;
   note?: React.ReactNode;
   error?: string | null;
   actions: React.ReactNode;
   data: Record<string, string>;
 }) {
+  const dark = useContext(ToneContext) === "dark";
   return (
-    <li className="flex flex-wrap items-center gap-x-3 gap-y-2 px-6 py-3 text-sm" {...data}>
-      <div className="min-w-0 flex-1">
-        <p className="font-medium">
-          {who}
-          {what ? <span className="font-normal text-muted-foreground"> · {what}</span> : null}
+    <li
+      className={cn(
+        "flex flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl px-5 py-4",
+        dark ? "bg-ink-raised text-white" : "border border-line bg-surface text-ink"
+      )}
+      {...data}
+    >
+      <div className="min-w-0 flex-1 basis-64">
+        <p
+          className={cn("text-[13px] font-semibold", dark ? "text-stain-light" : "text-stain-deep")}
+        >
+          {kind}
         </p>
-        <p className="text-xs text-muted-foreground">{meta}</p>
+        <p className="text-[17px] leading-snug font-semibold">{who}</p>
+        <p className={cn("text-sm", dark ? "text-on-ink-muted" : "text-ink-muted")}>{meta}</p>
         {note}
-        {error ? <p className="text-xs text-error-foreground">{error}</p> : null}
+        {error ? (
+          <p className={cn("text-[13px]", dark ? "text-eosin-pale" : "text-eosin-text")}>{error}</p>
+        ) : null}
       </div>
       <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>
     </li>
   );
 }
 
-/** Title (to its results) · course · period. */
+/** A quiet line under the detail, in the row's tone. */
+function Note({ children, ...props }: React.ComponentProps<"p">) {
+  const dark = useContext(ToneContext) === "dark";
+  return (
+    <p
+      className={cn("mt-0.5 text-[13px]", dark ? "text-on-ink-muted" : "text-ink-muted")}
+      {...props}
+    >
+      {children}
+    </p>
+  );
+}
+
+/** "Approved", "Checked off": what just happened on a row that keeps its Undo. */
+function Did({ children }: { children: React.ReactNode }) {
+  const dark = useContext(ToneContext) === "dark";
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 text-[13px] font-semibold",
+        dark ? "text-stain-light" : "text-done"
+      )}
+    >
+      <Check className="size-3.5" aria-hidden />
+      <span>{children}</span>
+    </span>
+  );
+}
+
+/** Title (to its results), course, period. */
 function Where({
   assignmentId,
   title,
@@ -363,10 +305,10 @@ function Where({
 }) {
   return (
     <>
-      <Link href={`/app/results/${assignmentId}`} className="hover:underline">
+      <Link href={`/app/results/${assignmentId}`} className="underline-offset-2 hover:underline">
         {title}
       </Link>
-      {" · "}
+      {", "}
       {placeLabel(place)}
     </>
   );
@@ -378,17 +320,16 @@ function AskedRow({ r, onFailed }: { r: PausedAttempt; onFailed: (message: strin
   return (
     <Row
       data={{ "data-needs-asked": r.attemptId }}
+      kind="Asked to finish"
       who={name(r)}
-      what={`try ${r.attemptNumber}`}
       meta={
         <>
-          <Where assignmentId={r.assignmentId} title={r.title} place={r.place} /> · asked{" "}
-          <LocalTime date={r.askedAt} />
+          <Where assignmentId={r.assignmentId} title={r.title} place={r.place} />, try{" "}
+          {r.attemptNumber}, asked <LocalTime date={r.askedAt} />
         </>
       }
       actions={
-        <Button
-          size="sm"
+        <QButton
           disabled={pending}
           onClick={() =>
             // No "are you sure?": it is harmless. If it fails (say they already used the code),
@@ -404,26 +345,33 @@ function AskedRow({ r, onFailed }: { r: PausedAttempt; onFailed: (message: strin
             )
           }
         >
-          <Play data-icon="inline-start" aria-hidden />
           {pending ? "Letting them in…" : "Let them continue"}
-        </Button>
+        </QButton>
       }
     />
   );
 }
 
 function BlockerNote({ b }: { b: RequestBlocker }) {
+  const dark = useContext(ToneContext) === "dark";
   return (
-    <p className="mt-0.5 inline-flex items-center gap-1 text-xs text-warning-foreground">
-      <Clock className="size-3.5" aria-hidden />
-      {BLOCKER_LINE[b.reason]}
-      {"codes" in b ? ` ${b.codes.join(", ")}.` : null}
-      {"at" in b ? (
-        <>
-          {" "}
-          <LocalTime date={b.at} />
-        </>
-      ) : null}
+    <p
+      className={cn(
+        "mt-0.5 inline-flex items-center gap-1 text-[13px]",
+        dark ? "text-eosin-pale" : "text-owed-text"
+      )}
+    >
+      <Clock className="size-3.5 shrink-0" aria-hidden />
+      <span>
+        {BLOCKER_LINE[b.reason]}
+        {"codes" in b ? ` ${b.codes.join(", ")}.` : null}
+        {"at" in b ? (
+          <>
+            {" "}
+            <LocalTime date={b.at} />
+          </>
+        ) : null}
+      </span>
     </p>
   );
 }
@@ -433,24 +381,25 @@ function RequestRow({
   approved,
   onApproved,
   onGone,
+  onDeclined,
 }: {
   r: RetakeRequest;
   approved: boolean;
   onApproved: () => void;
   onGone: () => void;
+  onDeclined: () => void;
 }) {
   const { run, pending, error } = useAction(NO_REFRESH);
   const [confirming, setConfirming] = useState(false);
-  // "Hide scores" covers the whole Dashboard, this list included (decision 6: the projector).
+  // "Hide scores" covers the whole page, this list included (decision 6: the projector).
   const hideScores = useHideScores();
   const meta = (
     <>
-      <Where assignmentId={r.assignmentId} title={r.title} place={r.place} />
-      {r.bestPercent !== null && !hideScores ? ` · best ${Math.round(r.bestPercent)}%` : ""}
+      <Where assignmentId={r.assignmentId} title={r.title} place={r.place} />, try {r.attemptNumber}
+      {r.bestPercent !== null && !hideScores ? `, best ${Math.round(r.bestPercent)}%` : ""}
       {r.requestedAt ? (
         <>
-          {" "}
-          · asked <LocalTime date={r.requestedAt} />
+          , asked <LocalTime date={r.requestedAt} />
         </>
       ) : null}
     </>
@@ -459,20 +408,19 @@ function RequestRow({
     return (
       <Row
         data={{ "data-needs-request": r.id, "data-stale": r.stale }}
+        kind="Retake request, leftover"
         who={name(r)}
-        what={`try ${r.attemptNumber}`}
         meta={meta}
-        note={<p className="mt-0.5 text-xs text-muted-foreground">{STALE_TEXT[r.stale]}</p>}
+        note={<Note>{STALE_TEXT[r.stale]}</Note>}
         error={error}
         actions={
-          <Button
-            size="sm"
-            variant="outline"
+          <QButton
+            kind="second"
             disabled={pending}
             onClick={() => run(clearRetakeRequest(r.assignmentId, r.id), onGone)}
           >
             {pending ? "Clearing…" : "Clear"}
-          </Button>
+          </QButton>
         }
       />
     );
@@ -480,8 +428,8 @@ function RequestRow({
   return (
     <Row
       data={{ "data-needs-request": r.id }}
+      kind="Retake request"
       who={name(r)}
-      what={`try ${r.attemptNumber}`}
       meta={meta}
       note={
         <>
@@ -489,15 +437,12 @@ function RequestRow({
               past the cap's window on an open one, it lets them retake it ("Let them ask while
               it's still open too"). */}
           {r.reopensUntil && !approved ? (
-            <p
-              className="mt-0.5 text-xs text-muted-foreground"
-              data-reopens={r.windowEnded ? "window" : "closed"}
-            >
+            <Note data-reopens={r.windowEnded ? "window" : "closed"}>
               {r.windowEnded
-                ? `Retake window ended · Approve lets ${r.firstName} retake it through `
-                : `Closed · Approve reopens it for ${r.firstName} through `}
+                ? `Retake window ended. Approve lets ${r.firstName} retake it through `
+                : `Closed. Approve reopens it for ${r.firstName} through `}
               <LocalTime date={r.reopensUntil} mode="date" />
-            </p>
+            </Note>
           ) : null}
           {r.blocker ? <BlockerNote b={r.blocker} /> : null}
         </>
@@ -506,8 +451,8 @@ function RequestRow({
       actions={
         approved ? (
           <>
-            <span className="inline-flex items-center gap-1 text-xs text-success-foreground">
-              <Check className="size-3.5" aria-hidden />
+            <Did>
+              Approved.{" "}
               {r.reopensUntil ? (
                 <>
                   {r.windowEnded ? "Retake open through" : "Reopened through"}{" "}
@@ -516,61 +461,45 @@ function RequestRow({
               ) : (
                 <>Try {r.attemptNumber} unlocked</>
               )}
-            </span>
-            <Button
-              size="sm"
-              variant="ghost"
+            </Did>
+            <QButton
+              kind="second"
               disabled={pending}
               onClick={() => run(undoRetakeApproval(r.assignmentId, r.studentId))}
             >
-              <RotateCcw data-icon="inline-start" aria-hidden />
               Undo
-            </Button>
+            </QButton>
           </>
         ) : confirming ? (
           <>
-            <span className="text-xs text-muted-foreground">
-              Decline? Only {r.firstName} can ask again.
-            </span>
-            <Button
-              size="sm"
-              variant="destructive"
+            <Note>Decline? Only {r.firstName} can ask again.</Note>
+            <QButton
               disabled={pending}
               onClick={() =>
                 run(revokeAttemptUnlock(r.assignmentId, r.studentId), () => {
                   setConfirming(false);
+                  onDeclined();
                   onGone();
                 })
               }
             >
               {pending ? "Declining…" : "Yes, decline"}
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              disabled={pending}
-              onClick={() => setConfirming(false)}
-            >
+            </QButton>
+            <QButton kind="second" disabled={pending} onClick={() => setConfirming(false)}>
               Cancel
-            </Button>
+            </QButton>
           </>
         ) : (
           <>
-            <Button
-              size="sm"
+            <QButton
               disabled={pending}
               onClick={() => run(unlockNextAttempt(r.assignmentId, r.studentId), onApproved)}
             >
               {pending ? "Approving…" : "Approve"}
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              disabled={pending}
-              onClick={() => setConfirming(true)}
-            >
-              Decline
-            </Button>
+            </QButton>
+            <QButton kind="second" disabled={pending} onClick={() => setConfirming(true)}>
+              Not yet
+            </QButton>
           </>
         )
       }
@@ -582,31 +511,21 @@ function CorrectionsRow({ r }: { r: CorrectionSetRow }) {
   return (
     <Row
       data={{ "data-needs-corrections": r.attemptId }}
+      kind="Corrections turned in"
       who={name(r)}
-      what={`try ${r.attemptNumber}`}
       meta={
         <>
-          <Where assignmentId={r.assignmentId} title={r.title} place={r.place} /> · {r.answers}{" "}
-          {r.answers === 1 ? "answer" : "answers"}
-          {r.flagged ? ` · ${r.flagged} flagged` : ""}
+          <Where assignmentId={r.assignmentId} title={r.title} place={r.place} />, try{" "}
+          {r.attemptNumber}, {r.answers} {r.answers === 1 ? "answer" : "answers"}
+          {r.flagged ? `, ${r.flagged} flagged` : ""}
           {r.submittedAt ? (
             <>
-              {" "}
-              · sent <LocalTime date={r.submittedAt} />
+              , sent <LocalTime date={r.submittedAt} />
             </>
           ) : null}
         </>
       }
-      actions={
-        <Button
-          size="sm"
-          variant="outline"
-          nativeButton={false}
-          render={<Link href={`/app/results/corrections?assignment=${r.assignmentId}`} />}
-        >
-          Review
-        </Button>
-      }
+      actions={<QLink href={`/app/results/corrections?assignment=${r.assignmentId}`}>Review</QLink>}
     />
   );
 }
@@ -615,34 +534,27 @@ function GradingRowView({ r }: { r: GradingRow }) {
   return (
     <Row
       data={{ "data-needs-grading": r.assignmentId }}
+      kind="To grade"
       who={
-        <Link href={`/app/results/${r.assignmentId}`} className="hover:underline">
+        <Link
+          href={`/app/results/${r.assignmentId}`}
+          className="underline-offset-2 hover:underline"
+        >
           {r.title}
         </Link>
       }
-      what={placeLabel(r.place)}
       meta={
         <>
-          {r.answers} {r.answers === 1 ? "answer" : "answers"} from {r.students}{" "}
-          {r.students === 1 ? "student" : "students"}
+          {placeLabel(r.place)}, {r.answers} {r.answers === 1 ? "answer" : "answers"} from{" "}
+          {r.students} {r.students === 1 ? "student" : "students"}
           {r.oldestAt ? (
             <>
-              {" "}
-              · oldest <LocalTime date={r.oldestAt} />
+              , oldest <LocalTime date={r.oldestAt} />
             </>
           ) : null}
         </>
       }
-      actions={
-        <Button
-          size="sm"
-          variant="outline"
-          nativeButton={false}
-          render={<Link href={`/app/results/grading?assignment=${r.assignmentId}`} />}
-        >
-          Grade →
-        </Button>
-      }
+      actions={<QLink href={`/app/results/grading?assignment=${r.assignmentId}`}>Grade</QLink>}
     />
   );
 }
@@ -660,15 +572,12 @@ function ActivityRow({
   return (
     <Row
       data={{ "data-needs-activity": `${r.activityId}:${r.studentId}` }}
+      kind="Activity to check off"
       who={name(r)}
-      what={r.activityTitle}
       meta={
         <>
-          {placeLabel(r.place)} · done <LocalTime date={r.completedAt} /> ·{" "}
-          <Link
-            href={`/app/practice/activities/${r.activityId}`}
-            className="text-brand-deep hover:underline"
-          >
+          {r.activityTitle}, {placeLabel(r.place)}, done <LocalTime date={r.completedAt} />.{" "}
+          <Link href={`/app/practice/activities/${r.activityId}`} className="underline">
             Peek at their work
           </Link>
         </>
@@ -677,29 +586,22 @@ function ActivityRow({
       actions={
         checked ? (
           <>
-            <span className="inline-flex items-center gap-1 text-xs text-success-foreground">
-              <Check className="size-3.5" aria-hidden />
-              Checked off
-            </span>
-            <Button
-              size="sm"
-              variant="ghost"
+            <Did>Checked off</Did>
+            <QButton
+              kind="second"
               disabled={pending}
               onClick={() => run(verifyCompletion(r.activityId, r.studentId, false))}
             >
-              <RotateCcw data-icon="inline-start" aria-hidden />
               Undo
-            </Button>
+            </QButton>
           </>
         ) : (
-          <Button
-            size="sm"
+          <QButton
             disabled={pending}
             onClick={() => run(verifyCompletion(r.activityId, r.studentId, true), onChecked)}
           >
-            <Check data-icon="inline-start" aria-hidden />
             {pending ? "Checking off…" : "Check off"}
-          </Button>
+          </QButton>
         )
       }
     />
@@ -716,53 +618,49 @@ function VideoRow({ r }: { r: VideoFlagRow }) {
   return (
     <Row
       data={{ "data-needs-video": r.sectionId }}
-      who={`${r.targetCode} · ${r.optionTitle}`}
-      what={`${r.part === "core" ? "Core" : "Extension"}${r.sectionTitle ? `: ${r.sectionTitle}` : ""}`}
+      kind="Video that won't play"
+      who={`${r.targetCode}, ${r.optionTitle}`}
       meta={
         <>
-          Wouldn&apos;t play for {r.students} {r.students === 1 ? "student" : "students"}
-          {r.errorCodes.length ? ` (error ${r.errorCodes.join(", ")})` : ""} · last{" "}
-          <LocalTime date={r.lastSeenAt} />
+          {r.part === "core" ? "Core" : "Extension"}
+          {r.sectionTitle ? `: ${r.sectionTitle}` : ""}. Wouldn&apos;t play for {r.students}{" "}
+          {r.students === 1 ? "student" : "students"}
+          {r.errorCodes.length ? ` (error ${r.errorCodes.join(", ")})` : ""}, last{" "}
+          <LocalTime date={r.lastSeenAt} />.
           {r.youtubeId ? (
             <>
               {" "}
-              ·{" "}
               <a
                 href={`https://www.youtube.com/watch?v=${r.youtubeId}`}
                 target="_blank"
                 rel="noreferrer"
-                className="text-brand-deep hover:underline"
+                className="underline"
               >
                 Open the video
               </a>
+              .
             </>
           ) : null}{" "}
-          ·{" "}
-          <Link
-            href={`/app/practice/relearning/${r.optionId}`}
-            className="text-brand-deep hover:underline"
-          >
+          <Link href={`/app/practice/relearning/${r.optionId}`} className="underline">
             Swap it
           </Link>
         </>
       }
       note={
-        <p className="text-xs text-muted-foreground">
+        <Note>
           Students were offered Read or Do instead. Try it on a student account; swap it in the
           editor if Restricted Mode blocks it.
-        </p>
+        </Note>
       }
       error={error}
       actions={
-        <Button
-          size="sm"
-          variant="outline"
+        <QButton
+          kind="second"
           disabled={pending}
           onClick={() => run(resolveVideoFlag(r.sectionId))}
         >
-          <Check data-icon="inline-start" aria-hidden />
           {pending ? "Saving…" : "Fixed it"}
-        </Button>
+        </QButton>
       }
     />
   );
@@ -772,18 +670,10 @@ function SkywardRow({ grades }: { grades: number }) {
   return (
     <Row
       data={{ "data-needs-skyward": String(grades) }}
+      kind="Skyward updates"
       who={`${grades} ${grades === 1 ? "grade" : "grades"} to update`}
       meta="Corrections, the relearning path or retakes changed these since they went to Skyward."
-      actions={
-        <Button
-          size="sm"
-          variant="outline"
-          nativeButton={false}
-          render={<Link href="/app/skyward" />}
-        >
-          Review →
-        </Button>
-      }
+      actions={<QLink href="/app/skyward">Review</QLink>}
     />
   );
 }
@@ -792,18 +682,10 @@ function WorksheetRow({ emails }: { emails: number }) {
   return (
     <Row
       data={{ "data-needs-worksheets": String(emails) }}
+      kind="Worksheet emails"
       who={`${emails} ${emails === 1 ? "email" : "emails"} to match`}
       meta="Worksheet submits from an email Bloom doesn't know yet. Link each one to a student."
-      actions={
-        <Button
-          size="sm"
-          variant="outline"
-          nativeButton={false}
-          render={<Link href="/app/practice/worksheets" />}
-        >
-          Match →
-        </Button>
-      }
+      actions={<QLink href="/app/practice/worksheets">Match</QLink>}
     />
   );
 }

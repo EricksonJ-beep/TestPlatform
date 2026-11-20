@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { KeyRound, Maximize2, Pencil, Power, RefreshCw, Sparkles } from "lucide-react";
+import { KeyRound, Pencil, Power, RefreshCw, Sparkles } from "lucide-react";
+import { cn } from "cn";
 import { LocalTime } from "@/components/local-time";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FieldError, useAction } from "@/components/use-action";
+import { btn } from "@/components/home/ui";
 import { endTodaysCode, getResumeCode, setTodaysCode } from "@/app/app/results/actions";
 import { suggestCode, type CodeLength } from "@/lib/todays-code";
 
@@ -107,57 +109,76 @@ export function ResumeCodeHeader({ initial }: { initial: Shown | null }) {
 
   const live = shown && !expired ? shown : null;
   return (
-    <div className="flex flex-wrap items-center gap-2 text-sm" data-resume-header>
-      <KeyRound className="size-4 text-muted-foreground" aria-hidden />
+    <div
+      className="flex flex-col gap-2 rounded-2xl border border-line bg-surface px-5 py-4"
+      data-resume-header
+    >
       {live ? (
         <>
-          <span>
-            Today&apos;s code{" "}
+          <p className="text-[13px] text-ink-muted">
+            Today&apos;s code, good until <LocalTime date={live.expiresAt} mode="time" />
+          </p>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <span
-              className="font-mono font-semibold tracking-widest text-brand-deep"
+              className="font-display text-2xl leading-none font-bold tracking-[0.12em] text-ink"
               data-resume-code
             >
               {live.code}
             </span>
-            <span className="text-muted-foreground">
-              {" "}
-              · good until <LocalTime date={live.expiresAt} mode="time" />
+            <span className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                className={cn(btn.base, btn.primary)}
+                onClick={() => openDialog(false)}
+              >
+                Show big
+              </button>
+              <button
+                type="button"
+                className={cn(btn.base, btn.outline)}
+                onClick={() => openDialog(true)}
+                data-code-change
+              >
+                Change
+              </button>
+              <button
+                type="button"
+                className={cn(btn.base, btn.outline)}
+                disabled={pending}
+                onClick={() => run(endTodaysCode(), () => setShown(null))}
+                data-code-off
+              >
+                Turn off
+              </button>
             </span>
-          </span>
-          <Button size="sm" variant="outline" onClick={() => openDialog(false)}>
-            <Maximize2 data-icon="inline-start" aria-hidden />
-            Show big
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => openDialog(true)} data-code-change>
-            <Pencil data-icon="inline-start" aria-hidden />
-            Change
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            disabled={pending}
-            onClick={() => run(endTodaysCode(), () => setShown(null))}
-            data-code-off
-          >
-            <Power data-icon="inline-start" aria-hidden />
-            Turn off
-          </Button>
+          </div>
         </>
       ) : (
         <>
-          <span className="text-muted-foreground">
+          <p className="text-[13px] text-ink-muted">
             {shown ? "Today's code ran out." : "No code running."}
-          </span>
-          <Button size="sm" variant="outline" onClick={() => openDialog(true)} data-code-set>
-            <Pencil data-icon="inline-start" aria-hidden />
-            Set today&apos;s code
-          </Button>
-          <Button size="sm" variant="ghost" disabled={pending} onClick={() => load(false)}>
-            Random code
-          </Button>
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              className={cn(btn.base, btn.primary)}
+              onClick={() => openDialog(true)}
+              data-code-set
+            >
+              Set today&apos;s code
+            </button>
+            <button
+              type="button"
+              className={cn(btn.base, btn.outline)}
+              disabled={pending}
+              onClick={() => load(false)}
+            >
+              Random code
+            </button>
+          </div>
         </>
       )}
-      {error && !open ? <span className="text-xs text-error-foreground">{error}</span> : null}
+      {error && !open ? <span className="text-[13px] text-eosin-text">{error}</span> : null}
       <ResumeCodeDialog
         open={open}
         onOpenChange={setOpen}

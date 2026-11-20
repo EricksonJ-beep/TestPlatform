@@ -18,10 +18,9 @@ export function useAskAnnouncer() {
 }
 
 /**
- * Around the student's to-do list (review of the Oct 14 2026 build): asking to retake takes the
- * row off its group and puts it under "Waiting on your teacher", collapsed on a phone, so the
- * button that had focus is gone. This says what happened in a polite live region and moves focus
- * to the Waiting group's summary once the list shows it.
+ * Around the student's to-do list (review of the Oct 14 2026 build): asking to retake turns the
+ * row into "Waiting on your teacher", so the button that had focus is gone. This says what
+ * happened in a polite live region and moves focus to the waiting row once the list shows it.
  */
 export function AskAnnouncer({ children }: { children: ReactNode }) {
   const [message, setMessage] = useState("");
@@ -30,7 +29,9 @@ export function AskAnnouncer({ children }: { children: ReactNode }) {
   // After every render (the list comes back with the request under Waiting): focus it once.
   useEffect(() => {
     if (!focusWaiting.current) return;
-    const summary = box.current?.querySelector<HTMLElement>('[data-todo-group="waiting"] summary');
+    const summary = box.current?.querySelector<HTMLElement>(
+      '[data-todo-group="waiting"] summary, [data-ask-focus]'
+    );
     if (!summary) return;
     focusWaiting.current = false;
     summary.focus();

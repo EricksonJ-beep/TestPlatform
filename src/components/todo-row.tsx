@@ -28,7 +28,7 @@ export function ToDoRowBody({
       <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
         <Heading className="text-base font-medium">{r.title}</Heading>
         {r.type ? (
-          <span className="rounded-md border border-border px-1.5 py-0.5 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+          <span className="rounded-md border border-border px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground">
             {TYPE_LABEL[r.type]}
           </span>
         ) : null}

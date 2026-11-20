@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { closeExpiredAttempts } from "@/lib/attempt-sweep";
 import { eq } from "drizzle-orm";
-import { KeyRound, Plus } from "lucide-react";
+import { KeyRound } from "lucide-react";
+import { cn } from "cn";
 import { db, schema } from "@/db";
 import { requireStudent, studentCourseIds } from "@/lib/authz";
 import { listCustomPracticeOptions } from "@/lib/custom-practice";
@@ -12,11 +13,15 @@ import { getClassLeaderboard } from "@/lib/queries/leaderboard";
 import { StudentLeaderboardCard } from "@/components/practice-leaderboard";
 import { getStudentPractice } from "@/lib/queries/practice";
 import { listStudentResults } from "@/lib/queries/student-results";
+import { getAnswerMaps, getRetakeAskTimes } from "@/lib/queries/student-home";
 import { buildStudentToDo, homeLanes, homeTab } from "@/lib/student-home";
+import { classChip, homeHeadline } from "@/lib/student-home-view";
+import { btn, chip } from "@/components/home/ui";
 import { AssessmentsTab } from "./assessments-tab";
 import { PracticeTab } from "./practice-tab";
 import { ResultsTab } from "./results-tab";
-import { ToDoList } from "./todo-list";
+import { AskAnnouncer } from "./ask-announcer";
+import { FixSection, NowPanel, RetakeSection, WaitingSection } from "./home-sections";
 import { PathIntro } from "./path/path-intro";
 
 const TAB_TITLE = {
@@ -26,10 +31,11 @@ const TAB_TITLE = {
 } as const;
 
 /**
- * The student home (Jon, Oct 14 2026, docs/student-home-plan.md; Oct 20 2026 redesign, option B
- * "Three lanes"): the sections live in the top bar (`?tab=`, layout). Home shows the greeting with
- * a count per lane, then the three lanes (Now · Fix it · Level up), then the class chips; each
- * other section has the page to itself. Reads only, so "View as student" sees it as is.
+ * The student home (Jon, Oct 14 2026, docs/student-home-plan.md; Oct 20 2026 "Three lanes"; drawn
+ * as the home pages redesign, BLOOM_HOME_REDESIGN.md §5): the sections live in the top bar
+ * (`?tab=`, layout). Home shows the greeting and the class chips, then the three steps in their
+ * unchanged order: one large "do this now" panel, "Then fix these" and "Want a higher score?".
+ * Each other section has the page to itself. Reads only, so "View as student" sees it as is.
  */
 export default async function StudentHome({ searchParams }: PageProps<"/student">) {
   const tab = homeTab((await searchParams).tab);
@@ -96,7 +102,7 @@ export default async function StudentHome({ searchParams }: PageProps<"/student"
       </div>
     );
 
-  // One list, one count (Jon, Oct 14 2026): what the header says is what the lanes show.
+  // One list (Jon, Oct 14 2026): the sections below show exactly these rows.
   const list = buildStudentToDo({
     assignments,
     activities: practice.activities,
@@ -105,52 +111,47 @@ export default async function StudentHome({ searchParams }: PageProps<"/student"
     ),
   });
   const lanes = homeLanes(list);
-  const chips = [
-    { n: lanes.now.length, label: "to start", className: "bg-coral-soft text-[#b93e27]" },
-    { n: lanes.fix.length, label: "to fix", className: "bg-warning-soft text-warning-foreground" },
-    { n: lanes.level.length, label: "to level up", className: "bg-brand-soft text-brand-deep" },
-  ].filter((c) => c.n > 0);
+  const asked = lanes.waiting.filter((r) => r.kind === "retake_requested");
+  const waiting = lanes.waiting.filter((r) => r.kind !== "retake_requested");
+  // The question dots: each open attempt's per-question answered state, by assignment.
+  const open = assignments.filter((a) => a.inProgressAttemptId);
+  const [byAttempt, askedAt] = await Promise.all([
+    getAnswerMaps(
+      session.userId,
+      open.map((a) => a.inProgressAttemptId!)
+    ),
+    getRetakeAskTimes(
+      session.userId,
+      asked.flatMap((r) => (r.assignmentId ? [r.assignmentId] : []))
+    ),
+  ]);
+  const answers = new Map(
+    open.flatMap((a) => {
+      const map = byAttempt.get(a.inProgressAttemptId!);
+      return map ? [[a.id, map] as const] : [];
+    })
+  );
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl">Hi, {session.firstName}</h1>
+    <div className="bloom-home flex flex-col gap-7 text-base">
+      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
+        <div>
+          <h1 className="font-display text-[clamp(30px,5.5vw,40px)] leading-[1.1] font-semibold tracking-[-0.025em]">
+            {homeHeadline(session.firstName, lanes)}
+          </h1>
           <p className="sr-only" data-todo-count={list.count}>
             {list.headline}
           </p>
-          {chips.length ? (
-            <ul className="flex flex-wrap gap-2" aria-label="Your lanes">
-              {chips.map((c) => (
-                <li
-                  key={c.label}
-                  className={`rounded-full px-3 py-1 text-sm font-bold tabular ${c.className}`}
-                >
-                  {c.n} {c.label}
-                </li>
-              ))}
-            </ul>
-          ) : null}
         </div>
         <ul className="flex flex-wrap items-center gap-2" aria-label="Your classes">
           {classes.map((c) => (
-            <li
-              key={c.id}
-              className="rounded-full bg-brand-soft px-3 py-1 text-xs font-medium text-brand-deep"
-            >
-              {c.name}
-              <span className="font-normal text-brand-deep/80">
-                {" · "}
-                {c.teacherLastName}
-              </span>
+            <li key={c.id} className={cn(chip.base, chip.neutral, "min-h-11 px-4 text-sm")}>
+              {classChip(c)}
             </li>
           ))}
           <li>
-            <Link
-              href="/student/join"
-              className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:text-foreground"
-            >
-              <Plus className="size-3" aria-hidden /> Join a class
+            <Link href="/student/join" className={cn(btn.base, btn.outline, "rounded-full")}>
+              Join a class
             </Link>
           </li>
         </ul>
@@ -159,22 +160,36 @@ export default async function StudentHome({ searchParams }: PageProps<"/student"
       {me?.mustChangePassword ? (
         <Link
           href="/student/password"
-          className="flex items-center gap-3 rounded-lg border border-warning/50 bg-warning-soft px-4 py-3 text-sm text-warning-foreground hover:border-warning"
+          className="flex flex-wrap items-center gap-3 rounded-[20px] bg-owed px-5 py-4 text-[15px] text-owed-text"
           data-password-nudge
         >
           <KeyRound className="size-4 shrink-0" aria-hidden />
-          <span className="flex-1">
+          <span className="flex-1 basis-64">
             You&apos;re still using the temporary password your teacher gave you. Pick your own so
             nobody else can log in as you.
           </span>
-          <span className="font-medium">Change it →</span>
+          <span className="font-bold underline">Change it</span>
         </Link>
       ) : null}
 
       {/* The new relearning path (L1): a first-time "how it works", once they're on it. */}
       {assignments.some((a) => a.path) ? <PathIntro /> : null}
 
-      <ToDoList lanes={lanes} />
+      <AskAnnouncer>
+        <div className="flex flex-col gap-7">
+          <NowPanel rows={lanes.now} answers={answers} />
+          {lanes.fix.length || lanes.level.length || asked.length ? (
+            <div
+              className="grid items-start gap-7"
+              style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(420px, 100%), 1fr))" }}
+            >
+              <FixSection rows={lanes.fix} first={lanes.now.length === 0} />
+              <RetakeSection rows={lanes.level} asked={asked} askedAt={askedAt} />
+            </div>
+          ) : null}
+          <WaitingSection rows={waiting} />
+        </div>
+      </AskAnnouncer>
     </div>
   );
 }

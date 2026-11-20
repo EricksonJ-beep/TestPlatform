@@ -3,35 +3,31 @@ import { closeExpiredAttempts } from "@/lib/attempt-sweep";
 import { feedGroups, feedQuery, parseFeedFilter } from "@/lib/activity-filter";
 import { listClassActivity, listRecentActivity } from "@/lib/activity-log";
 import { currentResumeCode } from "@/lib/attempt-pause";
-import { periodLabel } from "@/lib/class-focus";
 import { getCurrentClass, getCurrentCourse } from "@/lib/current-course";
-import { needsYouCounts } from "@/lib/needs-you";
 import { getClassGradebook } from "@/lib/queries/class-gradebook";
 import { getNeedsYou } from "@/lib/queries/dashboard";
 import { getDashboardVersion } from "@/lib/queries/dashboard-version";
-import { ClassGradebookSection } from "@/components/app/class-gradebook";
 import { LiveRefresh } from "@/components/app/live-refresh";
 import { HideScoresScope } from "@/components/app/hide-scores";
-import { NeedsYouChips, NeedsYouInbox } from "@/components/app/needs-you";
 import { RecentActivity } from "@/components/app/recent-activity";
 import { ResumeCodeHeader } from "@/components/app/resume-code-button";
-
-function greeting(now = new Date()): string {
-  const h = now.getHours();
-  return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
-}
+import { ClassHome } from "@/components/home/class-home";
+import { Greeting } from "@/components/home/greeting";
+import { PeriodSegments } from "@/components/home/period-segments";
+import { SCHOOL_TIME_ZONE } from "@/lib/reopen";
+import { hourLabel } from "@/lib/teacher-home";
 
 const daysAgo = (days: number) => new Date(Date.now() - days * 86_400_000);
 
 /**
- * The Dashboard (Jon, Oct 13 2026, docs/dashboard-plan.md): "a page that allows me to control
- * and see all of the requests or things that I can monitor". The header carries the live resume
- * code and "N things need you", which is exactly the rows in "Needs you" (all courses) below.
- * Under it, the class gradebook for the sidebar course, on the period picked last (decisions 1
- * and 8). The course cards, number tiles, Recent results and Class at a glance are gone (the
- * glance lives on in the summative column footers); Recent activity stays, with its filters in
- * the address (decision 10). The page keeps itself current: `LiveRefresh` polls a coarse version
- * stamp every 15 s while the tab is visible and refreshes when it moves (build step 5).
+ * The teacher home (Jon, Oct 13 2026, docs/dashboard-plan.md: "a page that allows me to control
+ * and see all of the requests or things that I can monitor"; drawn as the home pages redesign,
+ * BLOOM_HOME_REDESIGN.md §3). The header carries the greeting, the sidebar course's class periods
+ * (it opens on the one picked last, decisions 1 and 8) and the live resume code. Under it the page
+ * is in one of two modes for that class (`ClassHome`): live while someone is testing or paused,
+ * quiet otherwise. Recent activity stays, with its filters in the address (decision 10). The page
+ * keeps itself current: `LiveRefresh` polls a coarse version stamp every 15 s while the tab is
+ * visible and refreshes when it moves (build step 5), which is also what switches the mode.
  */
 export default async function DashboardPage({ searchParams }: PageProps<"/app">) {
   const session = await requireTeacher();
@@ -62,50 +58,56 @@ export default async function DashboardPage({ searchParams }: PageProps<"/app">)
       : listRecentActivity(session.userId, feed),
     cls ? getClassGradebook(cls.id) : null,
   ]);
-  const counts = needsYouCounts(inbox);
+  const period = cls ? hourLabel(cls) : null;
+  // The greeting is by the teacher's own clock; the server renders the school's hour and the
+  // browser corrects it (the server's own hour said "Good afternoon" at 10:49 AM).
+  const schoolHour =
+    Number(
+      new Intl.DateTimeFormat("en-US", {
+        hour: "numeric",
+        hourCycle: "h23",
+        timeZone: SCHOOL_TIME_ZONE,
+      }).format(new Date())
+    ) % 24;
 
   // "Hide scores" (decision 6) covers the whole page: the gradebook, Needs you, Recent activity.
   return (
-    <HideScoresScope className="mx-auto flex max-w-6xl flex-col gap-6">
-      <div className="flex flex-wrap items-start gap-3">
-        <div className="mr-auto">
-          <h1 className="text-2xl">
-            {greeting()}, {session.firstName}
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground" data-needs-total={counts.total}>
-            {counts.total === 0
-              ? "Nothing is waiting on you."
-              : `${counts.total} ${counts.total === 1 ? "thing needs" : "things need"} you.`}
-          </p>
-          <NeedsYouChips counts={counts} />
+    <HideScoresScope className="bloom-home mx-auto flex max-w-[1400px] flex-col gap-6 md:px-4 md:pt-2 md:pb-8">
+      <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
+        <div className="flex min-w-0 flex-col gap-3">
+          <Greeting firstName={session.firstName} schoolHour={schoolHour} />
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            {focus.course ? (
+              <span
+                className="text-[15px] font-semibold"
+                title="Every test assigned this term. Switch courses in the sidebar."
+              >
+                {focus.course.name}
+              </span>
+            ) : null}
+            {focus.classes.length > 1 || (focus.classes.length === 1 && focus.classes[0].period) ? (
+              <PeriodSegments classes={focus.classes} currentId={cls?.id ?? null} />
+            ) : null}
+            <LiveRefresh
+              classId={cls?.id ?? null}
+              feed={feedQuery(filter, !!cls)}
+              version={version}
+            />
+          </div>
         </div>
         <ResumeCodeHeader
           initial={code ? { code: code.code, expiresAt: code.expiresAt.toISOString() } : null}
         />
       </div>
 
-      <NeedsYouInbox inbox={inbox} />
-
-      <ClassGradebookSection
-        course={focus.course}
-        classes={focus.classes}
-        currentClassId={cls?.id ?? null}
-        gradebook={gradebook}
-        live={
-          <LiveRefresh
-            classId={cls?.id ?? null}
-            feed={feedQuery(filter, !!cls)}
-            version={version}
-          />
-        }
-      />
+      <ClassHome course={focus.course} period={period} gradebook={gradebook} inbox={inbox} />
 
       <RecentActivity
         rows={activity}
         filter={filter}
         hasClass={!!cls}
         classId={cls?.id ?? null}
-        classLabel={cls ? periodLabel(cls) : null}
+        classLabel={period}
       />
     </HideScoresScope>
   );

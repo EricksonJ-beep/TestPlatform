@@ -17,11 +17,11 @@ import {
 } from "lucide-react";
 import { cn } from "cn";
 import type { ActionResult } from "@/lib/authz";
-import { Wordmark } from "@/components/brand/wordmark";
+import { BloomMark, Wordmark } from "@/components/brand/wordmark";
 import { CourseSwitcher, type CourseOption } from "@/components/app/course-switcher";
 
 const NAV = [
-  { href: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { href: "/app", label: "Home", icon: LayoutDashboard, exact: true },
   { href: "/app/banks", label: "Question banks", icon: Library },
   { href: "/app/assessments", label: "Assessments", icon: ClipboardList },
   { href: "/app/practice", label: "Practice sets", icon: Layers },
@@ -61,9 +61,11 @@ function writeCollapsed(value: boolean) {
 }
 
 /**
- * Teal left sidebar. Collapses to an icon rail; remembers the choice per browser.
- * The course list under the wordmark sets the course every scoped section
- * shows (docs/course-focus-plan.md).
+ * The teacher's sidebar (home pages redesign §2): white with a right border, about 220px wide.
+ * On a narrow screen it stacks above the page as wrapping rows (it is not sticky and not a full
+ * screen tall). From `md` it can collapse to an icon rail; the choice is remembered per browser.
+ * The course list under the wordmark sets the course every scoped section shows
+ * (docs/course-focus-plan.md).
  */
 export function AppSidebar({
   organizationName,
@@ -86,31 +88,32 @@ export function AppSidebar({
   const isActive = (href: string, exact?: boolean) =>
     exact ? pathname === href : pathname === href || pathname.startsWith(href + "/");
 
+  const navLink = (active: boolean) =>
+    cn(
+      "flex h-11 items-center gap-3 rounded-[10px] px-3 text-[15px] font-medium md:h-10",
+      active ? "bg-ink text-white" : "text-ink hover:bg-stain-wash",
+      collapsed && "md:justify-center md:px-0"
+    );
+  const navText = cn("truncate", collapsed && "md:sr-only");
+
   return (
     <aside
       data-collapsed={collapsed ? "" : undefined}
       className={cn(
-        "sticky top-0 flex h-screen shrink-0 flex-col bg-sidebar text-sidebar-foreground transition-[width] duration-200",
-        collapsed ? "w-14" : "w-14 md:w-56"
+        "bloom-shell flex w-full shrink-0 flex-col gap-2 border-b border-line bg-surface p-3 md:border-r md:border-b-0",
+        collapsed ? "md:w-16" : "md:w-[220px]"
       )}
     >
-      <div className={cn("flex h-14 items-center", collapsed ? "justify-center" : "px-3")}>
-        <Link
-          href="/app"
-          className="rounded-md outline-none focus-visible:ring-2 focus-visible:ring-white/70"
-        >
+      <div className={cn("flex h-11 items-center", collapsed ? "md:justify-center" : "px-1")}>
+        <Link href="/app" className="flex h-11 items-center rounded-[10px]" aria-label="Bloom home">
+          <span className={cn(collapsed && "md:hidden")}>
+            <Wordmark />
+          </span>
           {collapsed ? (
-            <span aria-label="Bloom" className="block size-6 rounded-md bg-coral" />
-          ) : (
-            <>
-              <span className="md:hidden">
-                <span aria-label="Bloom" className="block size-6 rounded-md bg-coral" />
-              </span>
-              <span className="hidden md:inline">
-                <Wordmark tone="inverse" />
-              </span>
-            </>
-          )}
+            <span className="hidden md:block">
+              <BloomMark />
+            </span>
+          ) : null}
         </Link>
       </div>
 
@@ -120,8 +123,11 @@ export function AppSidebar({
         collapsed={collapsed}
         pick={pickCourse}
       />
-      {courses.length > 0 ? <div className="mx-2 my-2 h-px bg-sidebar-border" /> : null}
-      <nav aria-label="Main" className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 pt-1">
+      {courses.length > 0 ? <div className="h-px bg-line" /> : null}
+      <nav
+        aria-label="Main"
+        className="flex flex-row flex-wrap gap-1 md:flex-1 md:flex-col md:flex-nowrap"
+      >
         {NAV.map(({ href, label, icon: Icon, ...rest }) => {
           const active = isActive(href, "exact" in rest ? rest.exact : false);
           return (
@@ -129,59 +135,44 @@ export function AppSidebar({
               key={href}
               href={href}
               aria-current={active ? "page" : undefined}
-              title={label}
-              className={cn(
-                "flex h-9 items-center gap-3 rounded-md px-2.5 text-sm font-medium transition-colors outline-none",
-                "focus-visible:ring-2 focus-visible:ring-white/70",
-                active
-                  ? "bg-sidebar-accent text-white"
-                  : "text-white/85 hover:bg-white/10 hover:text-white",
-                collapsed && "justify-center px-0"
-              )}
+              title={collapsed ? label : undefined}
+              className={navLink(active)}
             >
               <Icon className="size-4 shrink-0" aria-hidden />
-              <span className={cn("truncate", collapsed ? "sr-only" : "sr-only md:not-sr-only")}>
-                {label}
-              </span>
+              <span className={navText}>{label}</span>
             </Link>
           );
         })}
-        <div className="my-2 h-px bg-sidebar-border" />
         <Link
           href="/app/settings"
           aria-current={isActive("/app/settings") ? "page" : undefined}
-          title="Settings"
-          className={cn(
-            "flex h-9 items-center gap-3 rounded-md px-2.5 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-white/70",
-            isActive("/app/settings")
-              ? "bg-sidebar-accent text-white"
-              : "text-white/85 hover:bg-white/10 hover:text-white",
-            collapsed && "justify-center px-0"
-          )}
+          title={collapsed ? "Settings" : undefined}
+          className={navLink(isActive("/app/settings"))}
         >
           <Settings className="size-4 shrink-0" aria-hidden />
-          <span className={cn("truncate", collapsed ? "sr-only" : "sr-only md:not-sr-only")}>
-            Settings
-          </span>
+          <span className={navText}>Settings</span>
         </Link>
       </nav>
 
-      <div className={cn("flex items-center gap-2 p-2", collapsed ? "justify-center" : "px-3")}>
+      <div
+        className={cn("hidden items-center gap-2 md:flex", collapsed ? "justify-center" : "px-1")}
+      >
         {!collapsed && organizationName ? (
-          <span className="hidden truncate text-xs text-white/70 md:inline">
-            {organizationName}
-          </span>
+          <span className="truncate text-[13px] text-ink-muted">{organizationName}</span>
         ) : null}
         <button
           type="button"
           onClick={toggle}
           aria-pressed={collapsed}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className="ml-auto hidden size-8 items-center justify-center rounded-md text-white/80 outline-none hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white/70 md:inline-flex"
+          className="ml-auto inline-flex size-11 items-center justify-center rounded-[10px] text-ink-muted hover:bg-stain-wash hover:text-ink"
         >
           <PanelLeft className="size-4" aria-hidden />
         </button>
       </div>
+      {organizationName ? (
+        <p className="px-1 text-[13px] text-ink-muted md:hidden">{organizationName}</p>
+      ) : null}
     </aside>
   );
 }
