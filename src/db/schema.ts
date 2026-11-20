@@ -195,6 +195,14 @@ export const classes = pgTable(
     name: text("name").notNull(),
     period: text("period"),
     term: text("term"),
+    /** The school year it runs in, "2026-27" (Jon, Nov 20 2026); null on a class made by a script. */
+    schoolYear: text("school_year"),
+    /**
+     * Set when the teacher archives a finished class (Jon, Nov 20 2026): it leaves the Dashboard,
+     * the Classes grid and the Assign class list, and stays open on the Classes page under
+     * Archived. Students and work in it are untouched.
+     */
+    archivedAt: timestamp("archived_at", { withTimezone: true }),
     /** Short code students enter to join (PLAN.md: posted in Google Classroom); null = none yet. */
     joinCode: text("join_code"),
     joinOpen: boolean("join_open").default(true).notNull(),

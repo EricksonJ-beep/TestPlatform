@@ -6,7 +6,7 @@
  * The Dashboard's class period is remembered the same way (Oct 13 2026).
  */
 import { cookies } from "next/headers";
-import { and, asc, eq, sql } from "drizzle-orm";
+import { and, asc, eq, isNull, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import {
   CLASS_COOKIE,
@@ -59,7 +59,8 @@ export type PeriodOption = { id: string; name: string; period: string | null };
  * The Dashboard gradebook's class (Jon, Oct 13 2026, dashboard plan decisions 1 and 8): the
  * teacher's own classes on the sidebar course, in their Classes-page order, and the one they
  * picked last in that course (the `bloom.class` cookie, checked against that list), else the
- * first. No course, or a course with no classes, gives null.
+ * first. No course, or a course with no classes, gives null. Archived classes are left out
+ * (Jon, Nov 20 2026).
  */
 export async function getCurrentClass(
   teacherId: string,
@@ -69,7 +70,13 @@ export async function getCurrentClass(
   const classes = await db
     .select({ id: schema.classes.id, name: schema.classes.name, period: schema.classes.period })
     .from(schema.classes)
-    .where(and(eq(schema.classes.ownerId, teacherId), eq(schema.classes.courseId, courseId)))
+    .where(
+      and(
+        eq(schema.classes.ownerId, teacherId),
+        eq(schema.classes.courseId, courseId),
+        isNull(schema.classes.archivedAt)
+      )
+    )
     .orderBy(
       asc(schema.classes.sortOrder),
       sql`nullif(regexp_replace(coalesce(${schema.classes.period}, ''), '\\D', '', 'g'), '')::int nulls last`,

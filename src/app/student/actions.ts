@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db, schema } from "@/db";
 import { logActivity } from "@/lib/activity-log";
-import { canStartAttempt, startReasonText } from "@/lib/assignments";
+import { canStartAttempt, codesMatch, startReasonText } from "@/lib/assignments";
 import {
   claimAttempt,
   createAttempt,
@@ -18,6 +18,7 @@ import { AWAITING_GRADE_TEXT } from "@/lib/card-state";
 import {
   pauseAttempt,
   resumeAttempt,
+  currentResumeCode,
   resumeCodeValid,
   settleAttempt,
   touchAttempt,
@@ -201,6 +202,7 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
       opensAt: schema.assignments.opensAt,
       closesAt: schema.assignments.closesAt,
       accessCode: schema.assignments.accessCode,
+      ownerId: schema.assignments.ownerId,
       attemptsAllowed: schema.assignments.attemptsAllowed,
       retakeWaitHours: schema.assignments.retakeWaitHours,
       retakesNeedUnlock: schema.assignments.retakesNeedUnlock,
@@ -254,6 +256,16 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
   const codeKey = throttleKey("access-code", access.userId, assignmentId);
   if (assignment.accessCode && (await isThrottled(codeKey, THROTTLE.code)))
     throw new ActionError(TOO_MANY_TRIES, 429, { accessCode: [TOO_MANY_TRIES] });
+  // The teacher's code for today opens any of their tests that ask for a code (Nov 20 2026).
+  const todaysCode =
+    assignment.accessCode && accessCode
+      ? ((await currentResumeCode(assignment.ownerId, now))?.code ?? null)
+      : null;
+  const withTodaysCode =
+    !!todaysCode &&
+    !!assignment.accessCode &&
+    codesMatch(accessCode ?? "", todaysCode) &&
+    !codesMatch(accessCode ?? "", assignment.accessCode);
   const check = canStartAttempt({
     assignment: {
       ...assignment,
@@ -267,6 +279,7 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
     // A retake the teacher approved after the close (Jon, Oct 14 2026, R5).
     openUntil: used > 0 ? await openUntilFor(assignmentId, access.userId, used + 1) : null,
     accessCode,
+    todaysCode,
     now,
   });
   if (!check.ok) {
@@ -331,7 +344,7 @@ export const startAttempt = withAuthz(async (assignmentId: string, accessCode: s
     userId: access.userId,
     kind: "attempt_started",
     assignmentId,
-    detail: { attemptNumber: created.number },
+    detail: { attemptNumber: created.number, ...(withTodaysCode ? { todaysCode: true } : {}) },
   });
   revalidate(assignmentId);
   return { attemptId: created.attemptId, resumed: false };
@@ -592,7 +605,7 @@ async function writableAttempt(access: AttemptAccess) {
   return { access, attempt };
 }
 
-const PAUSED = "This test is paused. Your teacher's resume code opens it again.";
+const PAUSED = "This test is paused. Your teacher's code for today opens it again.";
 
 /** Autosave one answer. The answer is stored as given; nothing is graded until submit. */
 export const saveAnswer = withAuthz(
@@ -718,7 +731,7 @@ export const attemptHeartbeat = withAuthz(async (attemptId: string) => {
   return { paused: false };
 });
 
-/** Reopen a paused test with the teacher's resume code (good for one class period). */
+/** Reopen a paused test with the teacher's code for today (the resume code). */
 export const resumeWithCode = withAuthz(async (attemptId: string, code: string) => {
   const access = await requireAttemptAccess(attemptId);
   assertOwnStudentRow(access, access.attempt);

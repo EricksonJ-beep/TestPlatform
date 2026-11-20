@@ -199,19 +199,40 @@ export async function currentResumeCode(
   return row ?? null;
 }
 
-/** A fresh code for one class period; earlier codes stop working. */
+/** A fresh random code for one class period; earlier codes stop working. */
 export async function issueResumeCode(
   teacherId: string,
   now = new Date()
 ): Promise<{ code: string; expiresAt: Date }> {
+  return setResumeCode(
+    teacherId,
+    generateAccessCode(),
+    new Date(now.getTime() + RESUME_CODE_MS),
+    now
+  );
+}
+
+/**
+ * Today's code (Jon, Nov 20 2026): the teacher's own code, good until `expiresAt`; earlier
+ * codes stop working. The caller has checked the code and worked out the time.
+ */
+export async function setResumeCode(
+  teacherId: string,
+  code: string,
+  expiresAt: Date,
+  now = new Date()
+): Promise<{ code: string; expiresAt: Date }> {
+  await endResumeCode(teacherId, now);
+  await db.insert(schema.resumeCodes).values({ teacherId, code, expiresAt });
+  return { code, expiresAt };
+}
+
+/** Turn the teacher's code off now. */
+export async function endResumeCode(teacherId: string, now = new Date()): Promise<void> {
   await db
     .update(schema.resumeCodes)
     .set({ expiresAt: now })
     .where(and(eq(schema.resumeCodes.teacherId, teacherId), gt(schema.resumeCodes.expiresAt, now)));
-  const code = generateAccessCode();
-  const expiresAt = new Date(now.getTime() + RESUME_CODE_MS);
-  await db.insert(schema.resumeCodes).values({ teacherId, code, expiresAt });
-  return { code, expiresAt };
 }
 
 /** Whether `given` is the teacher's resume code right now. */

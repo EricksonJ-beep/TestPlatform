@@ -72,15 +72,15 @@ export function PausedScreen({ view }: { view: PausedView }) {
             run(resumeWithCode(view.attemptId, code), () => router.refresh());
           }}
         >
-          <Label htmlFor="resume-code">Resume code from your teacher</Label>
+          <Label htmlFor="resume-code">Today&apos;s code from your teacher</Label>
           <div className="flex flex-wrap gap-2">
             <Input
               id="resume-code"
               name="code"
               autoComplete="off"
-              autoCapitalize="characters"
-              className="h-11 max-w-48 font-mono text-lg tracking-widest uppercase"
-              placeholder="ABC123"
+              autoCapitalize="none"
+              className="h-11 max-w-56 font-mono text-lg tracking-widest"
+              placeholder="code"
               required
             />
             <Button type="submit" size="lg" disabled={pending}>

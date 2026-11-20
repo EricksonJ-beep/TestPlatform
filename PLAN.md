@@ -150,6 +150,7 @@ Jon's interactive worksheets (Apps Script web apps: per-problem Check with unlim
 ### 3.8 Deployment & student delivery
 - Assign to a class with an open/close window
 - Access code, time limit (server-enforced, autosubmit), attempt policy from type
+- Today's code (Nov 20 2026): one teacher-set code (a word and numbers, this hour or the school day) that resumes paused tests and stands in for any of the teacher's access codes; it never overrides windows, attempts or retake rules (docs/decisions.md)
 - Clean student test screen: one-at-a-time option, progress bar, **autosave** every answer
 - Accommodations: extended time per student, font scaling
 - **Google Classroom roster import** — teacher connects Google (OAuth, read-only Classroom rosters) and imports a class's names + emails; Bloom then creates the email/password student accounts exactly as the CSV path does. Login stays email/password; this only skips typing rosters. Re-import syncs new students.

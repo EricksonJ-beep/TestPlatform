@@ -22,7 +22,7 @@ import { eq } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { getPausedView } from "@/lib/queries/attempts";
 import { getGradebook } from "@/lib/queries/results";
-import { getResumeCode, letContinue } from "../app/results/actions";
+import { endTodaysCode, getResumeCode, letContinue, setTodaysCode } from "../app/results/actions";
 import {
   askToFinish,
   attemptHeartbeat,
@@ -221,5 +221,80 @@ describe("Finish later", () => {
     await ok(resumeWithCode(id, code));
     await ok(saveAnswer(id, ids.q[2].id, { kind: "choice", optionId: ids.q[2].opt }));
     await ok(submitAttempt(id));
+  });
+});
+
+/** Today's code (Jon, Nov 20 2026): the teacher's own code opens whatever asks for a code. */
+describe("today's code", () => {
+  let locked = "";
+  beforeAll(async () => {
+    const base = (await db.query.assignments.findFirst({
+      where: eq(schema.assignments.id, ids.asg),
+    }))!;
+    const [asg] = await db
+      .insert(schema.assignments)
+      .values({
+        ownerId: ids.teacher,
+        assessmentId: base.assessmentId,
+        classId: base.classId,
+        accessCode: "AB3K9Q",
+      })
+      .returning();
+    locked = asg.id;
+  });
+
+  it("only a teacher sets it, and only a word with numbers", async () => {
+    as(ids.s1, "student");
+    expect(await setTodaysCode({ code: "coffee123", length: "day" })).toMatchObject({ ok: false });
+    expect(await endTodaysCode()).toMatchObject({ ok: false });
+    as(ids.teacher, "teacher");
+    expect(await setTodaysCode({ code: "coffee", length: "day" })).toMatchObject({
+      ok: false,
+      status: 400,
+    });
+    const set = await ok(setTodaysCode({ code: "Coffee 123", length: "hour" }));
+    expect(set.code).toBe("coffee123");
+    expect((await ok(getResumeCode(false))).code).toBe("coffee123");
+  });
+
+  it("starts a code-locked test, logged as today's code; another teacher's code does not", async () => {
+    as(ids.other, "teacher");
+    await ok(setTodaysCode({ code: "fish365", length: "hour" }));
+    as(ids.s1, "student");
+    expect(await startAttempt(locked, "fish365")).toMatchObject({ ok: false, status: 400 });
+    const { attemptId } = await ok(startAttempt(locked, "COFFEE-123"));
+    const log = await db.query.activityLog.findMany({
+      where: eq(schema.activityLog.assignmentId, locked),
+    });
+    expect(log.find((l) => l.kind === "attempt_started")?.detail).toMatchObject({
+      todaysCode: true,
+    });
+    // It resumes a paused test too.
+    await ok(finishLater(attemptId));
+    await ok(resumeWithCode(attemptId, "coffee123"));
+  });
+
+  it("the test's own code still works and is not logged as today's code", async () => {
+    as(ids.s2, "student");
+    await ok(startAttempt(locked, "ab3k9q"));
+    const log = await db.query.activityLog.findMany({
+      where: eq(schema.activityLog.assignmentId, locked),
+    });
+    expect(log.filter((l) => l.kind === "attempt_started" && l.detail.todaysCode)).toHaveLength(1);
+  });
+
+  it("turned off, it opens nothing", async () => {
+    as(ids.s2, "student");
+    const open = (await db.query.attempts.findFirst({
+      where: eq(schema.attempts.assignmentId, locked),
+      orderBy: (a, { desc }) => [desc(a.startedAt)],
+    }))!;
+    await ok(finishLater(open.id));
+    as(ids.teacher, "teacher");
+    await ok(endTodaysCode());
+    as(ids.s2, "student");
+    expect(await resumeWithCode(open.id, "coffee123")).toMatchObject({ ok: false, status: 400 });
+    await db.delete(schema.attempts).where(eq(schema.attempts.id, open.id));
+    expect(await startAttempt(locked, "coffee123")).toMatchObject({ ok: false, status: 400 });
   });
 });

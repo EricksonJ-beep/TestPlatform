@@ -51,7 +51,7 @@ export function StartForm({
       {resume && paused ? (
         <p className="text-sm">
           Your test is paused. Your answers are saved and locked. You&apos;ll need your
-          teacher&apos;s resume code in class to finish it.
+          teacher&apos;s code for the day in class to finish it.
         </p>
       ) : resume ? (
         <p className="text-sm">You have an attempt in progress. Your answers are saved.</p>
@@ -66,14 +66,14 @@ export function StartForm({
       )}
       {needsCode && !resume ? (
         <div className="grid max-w-xs gap-1.5">
-          <Label htmlFor="sf-code">Access code</Label>
+          <Label htmlFor="sf-code">Code from your teacher</Label>
           <Input
             id="sf-code"
             name="accessCode"
             autoComplete="off"
-            autoCapitalize="characters"
-            className="h-11 font-mono text-lg tracking-widest uppercase"
-            placeholder="ABC123"
+            autoCapitalize="none"
+            className="h-11 font-mono text-lg tracking-widest"
+            placeholder="code"
             required
           />
           <FieldError errors={fieldErrors} name="accessCode" />

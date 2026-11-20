@@ -415,7 +415,7 @@ export function TestRunner({ payload }: { payload: RunnerPayload }) {
             <p>
               <strong>Out of time?</strong> Your answers so far are saved and{" "}
               <strong>locked</strong>, and the clock stops. To finish, you&apos;ll need{" "}
-              {assignment.teacherName}&apos;s resume code in class.
+              {assignment.teacherName}&apos;s code for the day in class.
             </p>
             <div className="flex flex-wrap gap-2">
               <Button

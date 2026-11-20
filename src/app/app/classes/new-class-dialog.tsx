@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { schoolYearChoices } from "@/lib/school-year";
 import { createClass } from "./actions";
 
 export function NewClassDialog({
@@ -30,6 +31,8 @@ export function NewClassDialog({
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+  // Last year, this year, next year; this year is filled in (Jon, Nov 20 2026).
+  const [years] = useState(() => schoolYearChoices(new Date()));
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -83,16 +86,35 @@ export function NewClassDialog({
                 Type a course name; it&apos;s created if it doesn&apos;t exist yet.
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <div className="grid gap-1.5">
                 <Label htmlFor="nc-period">Period</Label>
                 <Input id="nc-period" name="period" placeholder="3" />
               </div>
               <div className="grid gap-1.5">
                 <Label htmlFor="nc-term">Term</Label>
-                <Input id="nc-term" name="term" placeholder="Fall 2026" />
+                <Input id="nc-term" name="term" placeholder="Tri 2" />
+              </div>
+              <div className="grid gap-1.5">
+                <Label htmlFor="nc-year">School year</Label>
+                <Input
+                  id="nc-year"
+                  name="schoolYear"
+                  defaultValue={years[1]}
+                  list="nc-years"
+                  autoComplete="off"
+                  required
+                />
+                <datalist id="nc-years">
+                  {years.map((y) => (
+                    <option key={y} value={y} />
+                  ))}
+                </datalist>
               </div>
             </div>
+            {fieldErrors.schoolYear ? (
+              <p className="text-xs text-error-foreground">{fieldErrors.schoolYear[0]}</p>
+            ) : null}
           </div>
           {error && !Object.keys(fieldErrors).length ? (
             <p
